@@ -1047,3 +1047,52 @@ def test_valid_typed_evidence_still_reports_independent_unsupported_leaves(
         and repair["path"] == "/results/0/target/unsupported"
         for repair in repairs
     )
+
+
+def test_source_interval_binding_is_distinct_from_interpreted_scope(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "Adults aged 65 or older were eligible. The requested outcome was measured in the "
+        "analyzed population. All randomized participants were analyzed in assigned groups. "
+        "risk ratio, 0.81; 95% confidence interval [CI], 0.70 to 0.94.\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["target"]["measurement"]["method"] = "Requested ascertainment interpreted from sources"
+    result["reported"] = {
+        "form": "comparative_effect",
+        "endpoint": {"name": "requested outcome", "definition": None},
+        "analysis_population": "All randomized older adults in this Trial; eligibility does not "
+        "exclude a subset after randomization.",
+        "effect_measure": "risk ratio",
+        "estimate": "0.81",
+        "precision": "95% confidence interval [CI], 0.70 to 0.94",
+        "group_values": [],
+    }
+    accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert accepted["outcome"] == "review_required", accepted
+    stored = _state(workspace)["proposal"]["payload"]["results"][0]
+    assert stored["relation"] == "exact"
+    assert stored["target"].get("baseline_subgroup") is None
+    assert (
+        stored["target"]["intended_analysis_population"]
+        == "All randomized participants in the comparison groups"
+    )
+    assert stored["reported"]["analysis_population"] == result["reported"]["analysis_population"]
+
+    for precision in ("95% confidence interval, 0.70 to 0.94", "95% CI, 0.70 to 0.99"):
+        candidate = copy.deepcopy(result)
+        candidate["reported"]["precision"] = precision
+        before = _state(workspace)
+        rejected = _call(workspace, "save_proposal", _proposal_args(workspace, [candidate]))
+        assert rejected["outcome"] == "repair", rejected
+        repair = next(
+            item
+            for item in rejected["repairs"]
+            if item["code"] == "result_value_not_supported"
+            and item["path"] == "/results/0/reported/precision"
+        )
+        assert "literal-binding failure" in repair["detail"]
+        assert "candidate.precision" in repair["detail"]
+        assert _state(workspace) == before

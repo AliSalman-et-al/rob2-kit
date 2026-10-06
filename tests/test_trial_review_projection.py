@@ -506,7 +506,9 @@ def test_review_retains_scoped_count_arithmetic_and_unknown_ascertainment(tmp_pa
         revision = int(saved["head"]["state_revision"])
     before = _state(workspace)["domain_records"]
     reviewed = _call(
-        workspace, "review_trial", {"trial_id": "trial", "expected_revision": revision}
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision, "domain_id": "domain:missing"},
     )
     assert reviewed["outcome"] == "success", reviewed
     missing = next(
@@ -545,7 +547,11 @@ def test_review_retains_scoped_count_arithmetic_and_unknown_ascertainment(tmp_pa
     retry = _call(
         workspace,
         "review_trial",
-        {"trial_id": "trial", "expected_revision": reviewed["head"]["state_revision"]},
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "domain_id": "domain:missing",
+        },
     )
     assert retry["outcome"] == "success", retry
     assert retry["data"]["domain_findings"] == reviewed["data"]["domain_findings"]

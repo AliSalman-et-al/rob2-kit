@@ -1,0 +1,19 @@
+{
+  "positive_repetitions": 20,
+  "negative_guard_bypass_rejected": "FileExistsError",
+  "timeouts_unchanged": true,
+  "winner_rejection_source_assertions_unchanged": true,
+  "production_changes": false,
+  "windows_root_cause_limit": "Barrier timeout observed; precreated fixture parent isolates intended ownership race. No claim of a demonstrated production defect.",
+  "failed_head": "81a5d523893a9769c06fd402f3b3ae25648a8f7b",
+  "run": 37441780538,
+  "job": 112197379413,
+  "failure": "Only concurrency ownership test failed with BrokenBarrierError; 1662 passed, 8 skipped",
+  "fixture_change": "Create and resolve the shared parent before synchronizing exclusive workspace creation",
+  "focused_suite": "23 passed in 14.16s",
+  "ruff": "check and format --check passed, 197 files formatted",
+  "ty": "test_rsi_scripts.py passed",
+  "failed_log_sha256": "68e43eb2c85fdf23c5d70aa1b9621b279faff3eefa84b3019dd53120f143b62f",
+  "scientific_answers_changed": false,
+  "extra_paid_cases": false
+}

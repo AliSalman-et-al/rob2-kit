@@ -30,7 +30,6 @@ from rob2_kit.interfaces.mcp.contracts import (
     ResearcherReviewAction,
     ReviewTrialAction,
     SelectedNarrativeEvidence,
-    TrialReviewAction,
     output_schema,
     validate_output,
 )
@@ -101,10 +100,6 @@ def test_trial_review_actions_have_callable_normal_and_blocker_forms() -> None:
             "review_reference": identity,
         }
     )
-
-    # Keep the old combined model importable for callers that still validate
-    # persisted/public projections outside the NextAction schema.
-    assert TrialReviewAction.model_validate(close.model_dump()).review_reference == identity
 
 
 def test_domain_context_preserves_nullable_endpoint_definition_in_receipt(tmp_path: Path) -> None:
@@ -252,8 +247,16 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             assert all("items" in array or "prefixItems" in array for array in arrays)
         output = cast(dict[str, Any], tool.output_schema)
         assert output["type"] == "object"
+        if tool.name == "calculate_arithmetic":
+            assert output["properties"]["outcome"]["const"] == "success"
+            assert "result" in output["required"] and "head" not in output["properties"]
+            continue
         expected_outcomes = {
+            "read_guidance": 2,
             "get_status": 2,
+            "request_companion_source": 2,
+            "acquire_companion_source": 3,
+            "admit_companion_source": 3,
             "list_sources": 2,
             "search_sources": 2,
             "search_sources_batch": 2,
@@ -352,6 +355,7 @@ def test_prepare_batch_schema_is_closed_and_requires_outcome_request() -> None:
         "requested_outcome",
         "expected_revision",
         "trial_labels",
+        "acquire_registry_documents",
     }
     assert schema["properties"]["requested_outcome"]["type"] == "string"
     outcome_description = schema["properties"]["requested_outcome"]["description"]
@@ -624,14 +628,14 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "prepare_batch",
         "authority": "host",
         "expected_revision": 0,
-        "caller_inputs": ["requested_outcome", "trial_labels"],
+        "caller_inputs": ["requested_outcome", "trial_labels", "acquire_registry_documents"],
     }
     assert prepared["head"]["phase"] == "proposal"
     assert prepared["head"]["next_action"] == {
         "operation": "validate_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
-        "caller_inputs": ["results", "assessments"],
+        "caller_inputs": ["selections"],
     }
 
 
@@ -797,16 +801,29 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "data.remaining_windows" in instructions
     assert "Draft every active question in the dependency-closed path" in instructions
     assert "Include an inactive answer when it is already available" in instructions
-    assert "For 5.3, identify both the eligible alternatives" in instructions
-    assert '"kind": "quantified"' in instructions
+    assert "the complete official question guidance" in instructions
+    assert '"target_time_value": "15"' in instructions
+    assert '"target_time_unit": "days"' in instructions
     assert '"15 days after randomization"' in instructions
     assert "Trial ready for review" in instructions
     assert "`ready_to_finalize` is not completion" in instructions
-    assert "`probably_no` or `no`" in instructions
-    assert "Do not fabricate direct support" in instructions
+    assert "For D3, use the complete official question elaborations" in instructions
+    assert "official_d3_prototype" not in instructions
+    assert "complete official question" in instructions
+    assert "its bases support the claims attributed to them" in instructions
     assert "Choose the option whose literal meaning follows from those passages" in instructions
     assert "progress confirmation" in instructions
-    assert "Was allocation concealed until participants were enrolled and assigned?" in instructions
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    concealment = next(
+        q for q in SCIENTIFIC_PACK.questions if q.id == "sq:randomization:concealment"
+    )
+    assert (
+        concealment.wording
+        == "Was the allocation sequence concealed until participants were enrolled "
+        "and assigned to interventions?"
+    )
+    assert "complete official question guidance" in instructions
 
     trial_review_description = _tool_description("review_trial")
     assert "ordinary missing Evidence" in trial_review_description
@@ -834,26 +851,20 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
 
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     schema = _tool_schema("validate_proposal")
-    result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
-    assessable = cast(dict[str, Any], result_items["oneOf"][0])
-    relation = cast(dict[str, Any], assessable["properties"]["relation"])
-    assert relation["enum"] == ["exact", "broader", "narrower", "component", "related"]
-    relation_description = cast(dict[str, Any], assessable["properties"]["relation"])["description"]
-    assert "event set" in relation_description
-    assert "scope is a superset" in relation_description
-    assert "subset or has additional restrictions" in relation_description
-    assert "Added criteria make a candidate narrower" in relation_description
-    assert "matching numbers do not prove equivalence" in relation_description
-    assert "alternatives" not in relation_description
-    assert "clinical salience" in result_items["description"]
-    assert "complete non-exact comparative candidate" in result_items["description"]
-    assert "broader is a superset" in result_items["description"]
-    assert "subset or has additional restrictions" in result_items["description"]
-    results_description = cast(dict[str, Any], schema["properties"]["results"])["description"]
-    assert results_description == "The exact Result cards for this Proposal save."
-    tool_description = _tool_description("validate_proposal")
-    assert "brief evidence-based assessment" in tool_description
-    assert "conflicting evidence and unresolved facts" in tool_description
+    selection = schema["properties"]["selections"]["items"]
+    assert selection["properties"]["relation"]["enum"] == [
+        "exact",
+        "broader",
+        "narrower",
+        "component",
+        "related",
+        "ambiguous",
+        "unavailable",
+    ]
+    assert "Never infer exactness" in selection["properties"]["relation"]["description"]
+    assert "numeric correspondence does not establish exactness" in _tool_description(
+        "validate_proposal"
+    )
 
 
 def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -> None:
@@ -929,112 +940,24 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
 def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     schema = _tool_schema("validate_proposal")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["results", "assessments", "expected_revision"]
-    assert "proposal" not in schema["properties"]
-    assert "expected_revision" in schema["properties"]
-    assert "assessments" in schema["properties"]
-    result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
-    assert "exact assessable first" in result_items["description"]
-    assert "one-arm descriptive category profile" in result_items["description"]
-    assert [item["properties"]["kind"]["const"] for item in result_items["oneOf"]] == [
-        "assessable",
-        "unavailable",
-    ]
-    assessable = cast(dict[str, Any], result_items["oneOf"][0])
-    reported = cast(dict[str, Any], assessable["properties"]["reported"])
-    category_profile = next(
-        item
-        for item in reported["oneOf"]
-        if item["properties"]["form"]["const"] == "single_group_category_profile"
+    assert schema["required"] == ["selections", "expected_revision"]
+    assert set(schema["properties"]) == {"selections", "expected_revision"}
+    selection = schema["properties"]["selections"]["items"]
+    candidate = selection["properties"]["candidate"]["anyOf"][0]
+    assert candidate["additionalProperties"] is False
+    assert not {"kind", "form", "trial_id", "passage_refs", "relation_rationale"} & set(
+        candidate["properties"]
     )
-    assert "fully reports category cells" in category_profile["description"]
-    assert "denominator_basis" in category_profile["properties"]
-    assert "statistic" not in category_profile["properties"]
-    assert "unit" not in category_profile["properties"]
-    category_value = cast(dict[str, Any], category_profile["properties"]["categories"]["items"])
-    assert "categories must never be invented" in category_value["description"]
-    assert set(category_value["properties"]) == {"category_axes", "value"}
-    unavailable = cast(dict[str, Any], result_items["oneOf"][1])
-    assert "only when no complete assessable candidate" in unavailable["description"]
-    assert "bindings" not in assessable["properties"]
-    assert "clarity" in assessable["properties"]
-    assert "clarity" not in assessable["required"]
-    assert "alternatives" not in assessable["properties"]
-    assert "evidence" in assessable["properties"]
-    evidence_items = assessable["properties"]["evidence"]["items"]
-    assert [item["properties"]["kind"]["const"] for item in evidence_items["oneOf"]] == [
-        "narrative",
-        "table",
-        "table_multispan",
-        "figure",
-        "derived",
-    ]
-    assert "relation_rationale" in assessable["required"]
-    assert "clarity" in assessable["properties"]
-    assert (
-        "server records every facet as unclear"
-        in assessable["properties"]["clarity"]["description"]
-    )
-    assert "data-cut chronology" in assessable["properties"]["clarity"]["description"]
-    clarity_fields = assessable["properties"]["clarity"]["anyOf"][0]["properties"]
-    assert "data-cut chronology" in clarity_fields["time_point"]["description"]
-    assert "estimate and precision" in clarity_fields["source_table_meaning"]["description"]
-    target = cast(dict[str, Any], assessable["properties"]["target"])
-    assert "effect_of_interest" not in target["properties"]
-    assert "outcome_definition" not in target["properties"]
-    measurement = cast(dict[str, Any], target["properties"]["measurement"])
-    assert measurement["required"] == ["method"]
-    assert "baseline_subgroup" in target["properties"]
-    assert "baseline_subgroup" in target["required"]
-    assert "intended_analysis_population" not in target["properties"]
-    timing = cast(dict[str, Any], target["properties"]["time_point_or_window"])
-    assert [item["properties"]["kind"]["const"] for item in timing["oneOf"]] == [
-        "described",
-        "quantified",
-    ]
-    quantified = next(
-        item for item in timing["oneOf"] if item["properties"]["kind"]["const"] == "quantified"
-    )
-    timing_description = quantified["properties"]["description"]["description"]
-    assert "for example, '15 days after randomization'" in timing_description
-    assert "alongside value and unit" in timing_description
-    comparison_group = target["properties"]["comparison_groups"]["items"]
-    assert "label" not in comparison_group["properties"]
-    assert "assignment" in comparison_group["properties"]
-    comparative_variant = next(
-        item
-        for item in reported["oneOf"]
-        if item["properties"]["form"]["const"] == "comparative_effect"
-    )
-    comparative = comparative_variant["properties"]
-    assert "endpoint" in comparative
-    endpoint = comparative["endpoint"]
-    assert endpoint["required"] == ["name"]
-    assert endpoint["properties"]["definition"]["default"] is None
-    assert "group_values" in comparative
-    assert "quantities" not in comparative
-    assert "comparison_groups" not in comparative
-    assert "analysis_population" in comparative_variant["required"]
-    assert "analysis_population" in comparative
-    estimate = comparative["estimate"]
-    assert "point estimate as one string" in estimate["description"]
-    assert "Do not include a confidence interval" in estimate["description"]
-    assert estimate["examples"] == ["0.68"]
-    precision = comparative["precision"]
-    assert "one string" in precision["description"]
-    assert "Do not send an object" in precision["description"]
-    assert precision["examples"] == ["95% CI, 0.57 to 0.80"]
-    for form in reported["oneOf"]:
-        assert "analysis_population" in form["required"]
-    for name, definition in _walk_schema(schema):
-        if definition.get("type") == "object":
-            assert definition["additionalProperties"] is False, name
-    # Every nested caller field is self-describing; keep the complete proposal
-    # schema, including design applicability, compact enough for one definition.
-    # Reasoning assessments add a bounded source-bound structure to the Result
-    # cards while keeping the constructible request below one definition.
+    assert {
+        "target_measurement",
+        "target_window",
+        "analysis_population",
+        "comparison_groups",
+    } <= set(candidate["required"])
+    clarity = candidate["properties"]["clarity"]["anyOf"][0]
+    assert "data-cut chronology" in clarity["properties"]["time_point"]["description"]
+    assert "estimate and precision" in clarity["properties"]["source_table_meaning"]["description"]
     assert len(json.dumps(schema, separators=(",", ":")).encode()) < 30000
-    assert len(_walk_schema(schema)) <= 40
     save_schema = _tool_schema("save_proposal")
     assert save_schema["required"] == ["expected_revision"]
     assert set(save_schema["properties"]) == {"expected_revision"}
@@ -1051,6 +974,7 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "answers",
         "supersedes",
         "revision_basis",
+        "adjudication",
     }
     draft = schema
     assert draft["additionalProperties"] is False
@@ -1062,6 +986,8 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "question_id",
         "answer",
         "bases",
+        "absence_searches",
+        "limitations",
         "justification",
         "missing_data",
         "unknowns",
@@ -1074,18 +1000,24 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "no",
         "no_information",
     ]
-    variants = cast(dict[str, Any], answers["properties"]["bases"]["items"])["oneOf"]
-    assert len(variants) == 3
-    assert all(variant["additionalProperties"] is False for variant in variants)
-    kinds = {
-        variant["properties"]["kind"].get("const") or variant["properties"]["kind"]["enum"][0]
-        for variant in variants
-    }
-    assert kinds == {
+    variants = answers["properties"]["bases"]["items"]["anyOf"]
+    assert variants[1]["type"] == "string"
+    assert set(variants[2]["required"]) == {"source_id", "page", "start_line", "end_line"}
+    citation = variants[0]
+    assert citation["additionalProperties"] is False
+    assert set(citation["properties"]) == {"evidence", "role", "working_observation"}
+    assert set(citation["required"]) == {"evidence", "role"}
+    assert citation["properties"]["role"]["enum"] == [
         "direct_support",
-        "absence",
-        "limitation",
-    }
+        "indirect_support",
+        "contradiction",
+        "context",
+        "inference",
+    ]
+    limitation = answers["properties"]["limitations"]["items"]
+    assert limitation["additionalProperties"] is False
+    assert set(limitation["properties"]) == {"premise", "stopping_rationale", "search_receipt"}
+    assert set(limitation["required"]) == {"premise", "stopping_rationale"}
 
 
 def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Path) -> None:
@@ -1120,9 +1052,52 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         },
     )["data"]["evidence"]
 
+    note = {
+        "text": "A randomized population label does not establish observed outcome availability.",
+        "sources": [
+            {"source_id": selected["source_id"], "page": 1, "start_line": 1, "end_line": 1}
+        ],
+    }
+    notes = _call(
+        tmp_path,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "premise_records": [
+                    {
+                        "proposition": "Outcome availability was nearly complete.",
+                        "status": "unresolved",
+                        "counterevidence": [note],
+                        "unresolved_component": "Observed counts and follow-up losses are unknown.",
+                        "next_action": "Read the outcome-status accounting.",
+                    }
+                ],
+            }
+        },
+    )
+    assert notes["outcome"] == "success", notes
+
     # A new Client invocation stands in for a fresh host process.  The only
     # material it needs from the old process is the bounded selection record.
-    resumed = _call(tmp_path, "get_status", {})
+    compact = _call(tmp_path, "get_status", {})
+    locator = next(
+        item
+        for item in compact["data"]["selected_evidence"]
+        if item["handle"] == selected["handle"]
+    )
+    assert locator.get("quote") is None
+    assert locator["text_status"] == "omitted"
+    assert locator["recovery"]["windows"] == [
+        {"source_id": selected["source_id"], "page": 1, "start_line": 1, "end_line": 1}
+    ]
+    resumed = _call(tmp_path, "get_status", {"include_evidence_text": True})
+    assert {key: value for key, value in compact["data"].items() if key != "selected_evidence"} == {
+        key: value for key, value in resumed["data"].items() if key != "selected_evidence"
+    }
+    premise = compact["data"]["working_checkpoint"]["checkpoint"]["premise_records"][0]
+    assert premise["counterevidence"] and premise["unresolved_component"]
+    assert premise["next_action"] == "Read the outcome-status accounting."
     recovered = next(
         item
         for item in resumed["data"]["selected_evidence"]

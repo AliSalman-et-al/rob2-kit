@@ -32,6 +32,16 @@ from benchmark_contract import (
     trace_session_ids,
 )
 from prepare_rsi_workspace import approved_scope_record, prepare_workspace
+from workflow_completion import (
+    AssessmentScope,
+    Turn,
+    boundary,
+    drive,
+    finalized_artifact,
+    receipt_reading_report,
+    scope_verified,
+    scoped_status,
+)
 
 try:
     import fcntl
@@ -449,11 +459,11 @@ def _host_delivery_postcondition(
     )
 
 
-def _codex_mcp_config(command: str, workspace: Path) -> list[str]:
+def _codex_mcp_config(command: str, workspace: Path, mcp_command: str = "mcp-codex") -> list[str]:
     return [
         "[mcp_servers.rob2]",
         "command = " + json.dumps(command),
-        'args = ["mcp"]',
+        "args = " + json.dumps([mcp_command]),
         "env = { ROB2_WORKSPACE = " + json.dumps(str(workspace.resolve())) + " }",
         "required = true",
         'default_tools_approval_mode = "approve"',
@@ -1759,6 +1769,19 @@ def main() -> None:
         type=float,
         help="Stop and record an expired infrastructure attempt after this many seconds",
     )
+    parser.add_argument(
+        "--completion-resumes",
+        type=int,
+        default=0,
+        help="Opt in to bounded SAME-session resumes after unfinished natural exits (default off)",
+    )
+    parser.add_argument("--completion-no-progress", type=int, default=2)
+    parser.add_argument(
+        "--completion-scope",
+        type=Path,
+        help="Opt in to a frozen JSON Trial/Result/Domain scope; zero resumes still classifies "
+        "premature finals as unfinished. No review/closure/finalization for this scope.",
+    )
     parser.add_argument("--benchmark-index", type=Path)
     parser.add_argument("--benchmark-index-sha256")
     parser.add_argument("--attempt-number", type=int, default=1)
@@ -1805,6 +1828,12 @@ def main() -> None:
         help="Required nonempty reason when allowing a build-only continuation transition",
     )
     args = parser.parse_args()
+    completion_scope = None
+    if args.completion_scope is not None:
+        try:
+            completion_scope = AssessmentScope.load(args.completion_scope)
+        except (OSError, ValueError, TypeError) as error:
+            parser.error(str(error))
     if args.mark_scientific_terminal:
         if not args.terminal_reason or not args.terminal_reason.strip():
             parser.error("--mark-scientific-terminal requires --terminal-reason")
@@ -1820,6 +1849,10 @@ def main() -> None:
         parser.error("launching a phase requires --prompt and --phase")
     if args.timeout_seconds is not None and args.timeout_seconds <= 0:
         parser.error("--timeout-seconds must be positive")
+    if args.completion_resumes < 0 or args.completion_no_progress < 1:
+        parser.error("completion budgets must be nonnegative resumes and positive no-progress")
+    if (args.completion_resumes or completion_scope is not None) and args.timeout_seconds is None:
+        parser.error("completion controller requires a shared --timeout-seconds wall budget")
     if args.attempt_number < 1:
         parser.error("--attempt-number must be positive")
     if args.phase == 1 and (
@@ -2009,9 +2042,20 @@ def main() -> None:
         except (OSError, ValueError) as error:
             parser.error(str(error))
     try:
-        server_inventory = probe_server_advertised_inventory(rob2_command, workspace)
+        mcp_command = "mcp-codex"
+        if args.phase > 1:
+            previous = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
+            binding = previous.get("runtime_inputs", {}).get("codex_registered_mcp", {})
+            if binding.get("args") not in (["mcp"], ["mcp-codex"]):
+                raise ValueError("frozen MCP entrypoint is unavailable; start a fresh attempt")
+            mcp_command = binding["args"][0]
+        server_inventory = probe_server_advertised_inventory(
+            rob2_command, workspace, mcp_command=mcp_command
+        )
         # Process cleanup is per-probe telemetry, not part of frozen server identity.
-        preflight["rob2"]["probe_cleanup"] = server_inventory.pop("probe_cleanup", "unknown")
+        preflight["rob2"]["probe_cleanup"] = _first_text(
+            server_inventory.pop("probe_cleanup", "unknown"), default="unknown"
+        )
         server_info = server_inventory.get("server_info")
         server_version = server_info.get("version") if isinstance(server_info, dict) else None
         preflight["rob2"]["version"] = (
@@ -2196,13 +2240,14 @@ def main() -> None:
     codex_mcp_args = codex_mcp_binding.get("args")
     if (
         not isinstance(codex_mcp_command, str)
-        or codex_mcp_args != ["mcp"]
+        or not isinstance(codex_mcp_args, list)
+        or codex_mcp_args not in (["mcp"], ["mcp-codex"])
         or codex_mcp_binding.get("server") != "rob2"
         or codex_mcp_binding.get("workspace_sha256")
         != hashlib.sha256(str(workspace.resolve()).encode("utf-8")).hexdigest()
     ):
         parser.error("Codex rob2 command/args do not match the exact tools/list preflight")
-    profile.extend(_codex_mcp_config(codex_mcp_command, workspace))
+    profile.extend(_codex_mcp_config(codex_mcp_command, workspace, codex_mcp_args[0]))
     codex_config_path = codex_home / "config.toml"
     codex_config_bytes = ("\n".join(profile) + "\n").encode("utf-8")
     codex_config_path.write_bytes(codex_config_bytes)
@@ -2297,7 +2342,11 @@ def main() -> None:
         ),
         "budget": {
             "reasoning_effort": effort,
-            "phase": "single host invocation",
+            "phase": (
+                "bounded same-session workflow"
+                if args.completion_resumes
+                else "single host invocation"
+            ),
             "declared": "Codex CLI budget for the selected reasoning effort",
             "timeout_seconds": args.timeout_seconds,
         },
@@ -2373,6 +2422,27 @@ def main() -> None:
     }
     _atomic_json(run_dir / "execution.json", execution)
     metadata_path = run_dir / f"phase-{args.phase}.meta.json"
+    metadata["completion_policy"] = {
+        "max_same_session_resumes": args.completion_resumes,
+        "no_progress_limit": args.completion_no_progress,
+        "shared_wall_seconds": args.timeout_seconds,
+        "approval_automatic": False,
+        "selection": "one workflow; retain every turn; no answer-dependent retry",
+        "controller": "workflow_completion.drive"
+        if args.completion_resumes or completion_scope
+        else None,
+        "goal": "bound assessment Domains" if completion_scope else "verified finalized Batch",
+        "scope_file_sha256": _sha256_file(args.completion_scope) if completion_scope else None,
+        "scope": (
+            {
+                "trial_id": completion_scope.trial_id,
+                "result_identity": completion_scope.result_identity,
+                "domain_ids": completion_scope.domain_ids,
+            }
+            if completion_scope
+            else None
+        ),
+    }
     _atomic_json(metadata_path, metadata)
     environment = _codex_environment(
         codex_home,
@@ -2382,22 +2452,166 @@ def main() -> None:
     completed: subprocess.CompletedProcess[bytes] | None = None
     terminal_state: str | None = None
     terminal_reason: str | None = None
+    completion_record: dict[str, object] | None = None
     try:
         auth_copy.unlink(missing_ok=True)
         shutil.copyfile(auth_source, auth_copy)
         _mark_execution_running(run_dir, execution, args.phase)
-        completed = subprocess.CompletedProcess(
-            command,
-            _run_owned_codex(
+        if args.completion_resumes or completion_scope is not None:
+            outside_scope_baseline = None
+
+            def read_workflow_status() -> dict[str, object]:
+                nonlocal outside_scope_baseline
+                receipt = subprocess.run(
+                    [str(rob2_command), "status", "--workspace", str(workspace)],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                status = json.loads(receipt.stdout)
+                if completion_scope is not None:
+                    from rob2_kit.application._state import _state
+                    from rob2_kit.application.working import _result_identity
+
+                    state = _state(workspace)
+                    if outside_scope_baseline is None:
+                        outside_scope_baseline = {
+                            key: record["identity"]
+                            for key, record in state.get("domain_records", {}).items()
+                            if key.startswith(completion_scope.trial_id + ":")
+                            and record["domain_id"] not in completion_scope.domain_ids
+                        }
+                    status = scoped_status(
+                        status,
+                        completion_scope,
+                        result_identity=_result_identity(state, completion_scope.trial_id),
+                        domain_records=state.get("domain_records", {}),
+                        traces=turn_paths,
+                        outside_scope_baseline=outside_scope_baseline,
+                    )
+                return status
+
+            def verify_workflow_artifact(status: dict[str, object]) -> bool:
+                if completion_scope is not None:
+                    return scope_verified(status, completion_scope)
+                artifact = status.get("artifact") or finalized_artifact(status, turn_paths)
+                if status.get("phase") != "finalized" or not isinstance(artifact, dict):
+                    return False
+                path = artifact.get("path")
+                if not isinstance(path, str):
+                    return False
+                artifact_path = (workspace / path).resolve()
+                if not artifact_path.is_relative_to(workspace) or not artifact_path.is_file():
+                    return False
+                verifier = runpy.run_path(str(Path(__file__).with_name("verify_bundle.py")))
+                return bool(verifier["verify"](artifact_path)[0])
+
+            turn_paths: list[Path] = []
+
+            def invoke_turn(
+                session: str | None, message: str, remaining: float, index: int
+            ) -> Turn:
+                turn_trace = run_dir / f"phase-{args.phase}.turn-{index}.jsonl"
+                turn_errors = run_dir / f"phase-{args.phase}.turn-{index}.stderr.log"
+                turn_prompt = run_dir / f"phase-{args.phase}.turn-{index}.prompt.txt"
+                turn_prompt.write_text(message, encoding="utf-8")
+                turn_command = list(command)
+                if index:
+                    tail = turn_command[2:]
+                    if tail[:1] == ["resume"]:
+                        tail = tail[2:]
+                    turn_command = [turn_command[0], "exec", "resume", str(session), *tail]
+                    output_index = turn_command.index("--output-last-message") + 1
+                    turn_command[output_index] = str(
+                        run_dir / f"phase-{args.phase}.turn-{index}.last-message.txt"
+                    )
+                turn_paths.append(turn_trace)
+                _atomic_json(
+                    run_dir / f"phase-{args.phase}.turn-{index}.command.json",
+                    {
+                        "command": turn_command,
+                        "session": session,
+                        "remaining_wall_seconds": remaining,
+                    },
+                )
+                try:
+                    code = _run_owned_codex(
+                        turn_command,
+                        cwd=workspace,
+                        prompt=message.encode(),
+                        trace=turn_trace,
+                        stderr=turn_errors,
+                        environment=environment,
+                        timeout_seconds=remaining,
+                    )
+                except subprocess.TimeoutExpired:
+                    code = 124
+                finally:
+                    trace.write_bytes(
+                        b"".join(path.read_bytes() for path in turn_paths if path.exists())
+                    )
+                return Turn(code, turn_trace)
+
+            completion_record = drive(
+                invoke_turn,
+                read_workflow_status,
+                verify_workflow_artifact,
+                prompt=prompt_bytes.decode("utf-8"),
+                session=args.session,
+                max_resumes=args.completion_resumes,
+                no_progress_limit=args.completion_no_progress,
+                wall_seconds=args.timeout_seconds,
+                scope=completion_scope,
+            )
+            completion_record["host_invocations"] = len(completion_record["turns"])
+            completion_record["same_session_resumes"] = max(
+                len(completion_record["turns"]) - (0 if args.session else 1), 0
+            )
+            completion_record["model_turn_completed_receipts"] = sum(
+                turn["completed_turns"] for turn in completion_record["turns"]
+            )
+            completion_record["usage_receipts_complete"] = all(
+                turn["usage_receipt_available"] for turn in completion_record["turns"]
+            )
+            completion_record["usage_basis"] = (
+                "preserved turn.completed receipts; absent usage is unknown"
+            )
+            completion_record["dollar_cost"] = None
+            completion_record["goal"] = metadata["completion_policy"]["goal"]
+            completion_record["scope"] = metadata["completion_policy"]["scope"]
+            # Preserve each original turn and an aggregate trace for existing phase audits.
+            trace.write_bytes(b"".join(path.read_bytes() for path in turn_paths))
+            _atomic_json(run_dir / f"phase-{args.phase}.completion.json", completion_record)
+            terminal_reason = str(completion_record["reason"])
+            turns = completion_record["turns"]
+            code = turns[-1]["exit_code"] if isinstance(turns, list) and turns else 0
+            completed = subprocess.CompletedProcess(command, int(code))
+            if completion_record["boundary"] == "aborted":
+                terminal_state = "expired" if code == 124 else "failed_infrastructure"
+            elif completion_record["boundary"] == "blocked":
+                terminal_state = "failed_infrastructure"
+            elif completion_record["boundary"] == "waiting_for_user":
+                terminal_state = "waiting_for_user"
+            elif completion_scope is not None and completion_record["boundary"] == "complete":
+                # A scoped diagnostic is complete, but it is not a scored finalized Batch.
+                terminal_state = "resumable"
+                terminal_reason = "Requested assessment scope complete; full Batch not finalized."
+            elif completion_record["boundary"] == "unfinished":
+                terminal_state = "resumable"
+        else:
+            completed = subprocess.CompletedProcess(
                 command,
-                cwd=workspace,
-                prompt=prompt_bytes,
-                trace=trace,
-                stderr=stderr,
-                environment=environment,
-                timeout_seconds=args.timeout_seconds,
-            ),
-        )
+                _run_owned_codex(
+                    command,
+                    cwd=workspace,
+                    prompt=prompt_bytes,
+                    trace=trace,
+                    stderr=stderr,
+                    environment=environment,
+                    timeout_seconds=args.timeout_seconds,
+                ),
+            )
+
     except subprocess.TimeoutExpired:
         terminal_state = "expired"
         terminal_reason = f"Codex phase exceeded {args.timeout_seconds} seconds."
@@ -2415,7 +2629,9 @@ def main() -> None:
         raise RuntimeError("Codex phase did not start")
     codex_exit_code = completed.returncode
     postcondition_exit, postcondition_state, postcondition_reason, delivery_diagnosis = (
-        _host_delivery_postcondition(codex_exit_code, trace, args.session)
+        (codex_exit_code, None, None, None)
+        if completion_record is not None and not completion_record["turns"]
+        else _host_delivery_postcondition(codex_exit_code, trace, args.session)
     )
     if postcondition_state is not None:
         terminal_state = postcondition_state
@@ -2447,8 +2663,27 @@ def main() -> None:
                 and isinstance(continuation, dict)
                 and continuation.get("authority") == "researcher"
             )
+            if completion_record is None and terminal_state is None:
+                state_boundary = boundary(status_data, verified=False)
+                if state_boundary == "unfinished":
+                    # Artifact hints and final prose never complete actionable canonical work.
+                    terminal_state = "resumable"
+                    terminal_reason = (
+                        "Authoritative host workflow remains actionable; no automatic resume."
+                    )
+                elif state_boundary == "waiting_for_user":
+                    terminal_state = "waiting_for_user"
+
         except (OSError, subprocess.CalledProcessError, json.JSONDecodeError):
             artifact = None
+    reading_report_path = run_dir / f"phase-{args.phase}.reading-delivery.json"
+    reading_report = receipt_reading_report(sorted(run_dir.glob("phase-*.jsonl")))
+    _atomic_json(reading_report_path, reading_report)
+    metadata["reading_verification"] = {
+        "path": reading_report_path.name,
+        "sha256": _sha256_file(reading_report_path),
+        "basis": "native receipts, never final narrative",
+    }
     terminal_reason = _finish_execution(
         run_dir,
         execution,
@@ -2465,6 +2700,7 @@ def main() -> None:
             "finished_at": datetime.now(UTC).isoformat(),
             "exit_code": completed.returncode,
             "codex_exit_code": codex_exit_code,
+            "completion_record": completion_record,
             **(
                 {"host_delivery_diagnosis": delivery_diagnosis}
                 if delivery_diagnosis is not None

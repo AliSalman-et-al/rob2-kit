@@ -26,6 +26,7 @@ from .evidence import (
     _result_value_contains,
     main_report_read_gaps,
 )
+from .result_scope import result_scope_review
 from .working import main_report_identity, working_checkpoint_status
 
 
@@ -77,6 +78,7 @@ def _source_bound_leaves(value: Any, path: str) -> dict[str, Any]:
             }
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path == "/reported/precision" and leaf is None)
+            or (leaf_path.endswith("/statistic") and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
             or (
@@ -201,6 +203,21 @@ def _proposal_shape_repairs(
             reported_ids = []
         if reported_path:
             for value_index, value in enumerate(reported_values):
+                if (
+                    value.statistic is None
+                    and result.clarity is not None
+                    and result.clarity.source_table_meaning == "specified"
+                ):
+                    result_repairs.append(
+                        {
+                            "path": f"{path}/clarity/source_table_meaning",
+                            "code": "unknown_statistic_conflicts_with_clarity",
+                            "detail": (
+                                "A null statistic preserves unresolved meaning; do not mark "
+                                "source_table_meaning as specified."
+                            ),
+                        }
+                    )
                 if value.unit == MISSING_GROUP_VALUE_UNIT:
                     result_repairs.append(
                         {
@@ -323,7 +340,7 @@ def _canonical_result(
     # navigation list.
     raw.pop("passage_refs", None)
     evidence = raw.pop("evidence", [])
-    if not evidence:
+    if not evidence or result.passage_refs:
         selected_for_trial = sorted(
             (
                 item
@@ -335,8 +352,11 @@ def _canonical_result(
             ),
             key=lambda item: (str(item.get("identity", "")), str(item["handle"])),
         )
+        retained_handles = {item.get("handle") for item in evidence}
         for selected in selected_for_trial:
             handle = selected["handle"]
+            if handle in retained_handles:
+                continue
             if selected.get("kind") == "figure":
                 render = selected.get("render", {})
                 evidence.append(
@@ -845,6 +865,10 @@ def _coherent_anchor_indices(
     endpoint_name = reported["endpoint"]["name"]
 
     quantitative_tuples = _reported_quantitative_paths(reported)
+    quantitative_tuples = [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in quantitative_tuples
+    ]
 
     def multi_span_anchor(item: dict[str, Any]) -> bool:
         """Check each cited fragment without treating them as one quotation."""
@@ -1047,10 +1071,17 @@ def _derive_bindings(
                     "code": "result_value_not_supported",
                     "detail": (
                         f"leaf {leaf_path} value {value!r} is not supported: no selected "
-                        "Evidence contains it after normalization; copy the source wording "
-                        "exactly or select Evidence containing it"
+                        "Evidence contains that source expression after normalization; this "
+                        "literal-binding failure does not establish incorrect scientific meaning. "
+                        "Copy the source expression or select Evidence containing it; put "
+                        "interpretation in scope_rationale, not the source-owned reported field"
                     ),
                 }
+                if leaf_path == "/reported/precision":
+                    defect["detail"] += (
+                        " Correct candidate.precision, preserving the source confidence level "
+                        "and units when stated."
+                    )
                 if leaf_path.startswith("/reported/categories/"):
                     defect["value"] = str(value)
                     category_binding_defects.append(defect)
@@ -1095,14 +1126,6 @@ def _derive_bindings(
         binding["evidence_index"] = remap[binding["evidence_index"]]
     result["bindings"] = bindings
     return bindings
-
-
-def _has_local_defect(defects: list[dict[str, Any]], path: str) -> bool:
-    return any(
-        defect_path == path or defect_path.startswith(path + "/")
-        for defect in defects
-        if (defect_path := defect.get("path"))
-    )
 
 
 def _bind_result(
@@ -1155,13 +1178,16 @@ def _bind_result(
         )
     ):
         detail = (
-            "no single selected Evidence item supports the endpoint name and any "
-            "provided definition together with one complete quantitative Result tuple. "
+            "no single selected Evidence item anchors the source endpoint label to one "
+            "complete quantitative Result tuple. Any provided source definition also needs "
+            "explicit joint support for that label. "
             "Do not resubmit the "
             "same cross-passage combination: either use the endpoint identifier exactly "
             "as it appears in the quantitative Evidence, or select one complete table "
             "block or figure containing the endpoint, headers, values, units, and "
-            "applicable footnotes"
+            "applicable footnotes. In the public selection, candidate.reported_outcome "
+            "holds this raw quantitative-anchor label; scope_rationale can explain "
+            "equivalent wording or separately sourced endpoint criteria"
         )
         gap = _closest_evidence_gap(result, catalog)
         if gap is not None:
@@ -1370,7 +1396,7 @@ def save_proposal(
                     "detail": (
                         "Finish the required bounded text pass before submitting the Proposal. "
                         "Call get_status, read data.main_report_reading[trial_id].required_ranges "
-                        "with read_pages, then resubmit the complete Result cards and assessments "
+                        "with read_pages, then resubmit the complete Trial selections "
                         "to validate_proposal. Save only after validation succeeds."
                     ),
                 }
@@ -1766,13 +1792,13 @@ def validate_proposal(
                     "code": "reasoning_stale",
                     "detail": (
                         "The Proposal receipt is stale. Call get_status. If work remains active, "
-                        "submit complete replacement Result cards and matching assessments to "
+                        "submit complete replacement Trial selections to "
                         "validate_proposal, then save its returned receipt. Otherwise follow "
                         "head.next_action."
                     ),
                 },
             )
-        return _reasoning_proposal_receipt(state, prior)
+        return _reasoning_proposal_receipt(state, prior, validation)
     if parsed.expected_revision != state.get("revision", 0):
         raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
     record = {
@@ -1790,10 +1816,15 @@ def validate_proposal(
         parsed.expected_revision,
         {f"reasoning:{reasoning_id}": record},
     )
-    return _reasoning_proposal_receipt(committed, record)
+    return _reasoning_proposal_receipt(committed, record, validation)
 
 
-def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[str, Any]:
+def _reasoning_proposal_receipt(
+    state: dict[str, Any], record: dict[str, Any], validation: dict[str, Any]
+) -> dict[str, Any]:
+    proposal = validation.get("proposal_payload") or (state.get("proposal") or {}).get(
+        "payload", {}
+    )
     next_action = {
         "expected_revision": state.get("revision", 0),
     }
@@ -1801,6 +1832,7 @@ def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -
         "success",
         state,
         validation_scope="structure_and_references_only",
+        scope_review=result_scope_review(proposal.get("results", [])),
         repairs=[],
         next_action=next_action,
         continuation={

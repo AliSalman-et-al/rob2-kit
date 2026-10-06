@@ -24,18 +24,7 @@ def test_public_question_card_uses_readable_question_scoped_answer_values() -> N
             options=tuple(question.allowed_answers),
             activation_status="always_active",
             activation=question.activation.model_dump(mode="python"),
-            official_guidance=question.guidance.official.source_excerpt,
-            source_locator=question.guidance.official.source_locator,
-            bias_construct=question.guidance.operational.bias_construct,
-            decision_rule=question.guidance.operational.decision_rule,
-            evidence_needed=question.guidance.operational.evidence_needed,
-            no_information_rule=question.guidance.operational.no_information_rule,
-            answer_anchors=tuple(
-                anchor.model_dump(mode="python")
-                for anchor in question.guidance.operational.answer_anchors
-            ),
-            considerations=question.guidance.operational.considerations,
-            invalid_shortcuts=question.guidance.operational.invalid_shortcuts,
+            guidance_locator=question.guidance.official.source_locator,
             query_suggestions=question.guidance.operational.query_suggestions,
         )
         assert [answer.value for answer in card.options] == [
@@ -141,7 +130,7 @@ def test_question_scope_rejects_unlisted_value_without_rewriting_it(tmp_path) ->
     assert _state(workspace) == before
 
 
-def test_public_repair_preserves_negative_answer_and_unaffected_answers(tmp_path) -> None:
+def test_basis_role_does_not_rewrite_negative_answer_or_unaffected_answers(tmp_path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     draft = _domain_draft("trial", "domain:randomization", revision, evidence)
     draft["answers"][0]["answer"] = "no"
@@ -156,14 +145,10 @@ def test_public_repair_preserves_negative_answer_and_unaffected_answers(tmp_path
 
     repaired = _call(workspace, "save_domain_judgment", draft)
 
-    assert repaired["outcome"] == "repair", repaired
-    repair = next(
-        item for item in repaired["repairs"] if item["code"] == "answer_requires_direct_basis"
-    )
-    assert "'no'" in repair["detail"]
-    assert "direct, indirect, or contradictory Evidence basis" in repair["detail"]
-    assert "probably_yes" not in repair["detail"]
-    assert "probably_no" not in repair["detail"]
+    assert repaired["outcome"] == "success", repaired
+    committed = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    assert committed["answers"][0]["answer"] == "no"
+    assert committed["answers"][0]["bases"][0]["kind"] == "inference"
     assert draft["answers"][0]["answer"] == "no"
     assert draft["answers"][1:] == unaffected
 

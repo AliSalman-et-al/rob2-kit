@@ -5,19 +5,95 @@ description: Assess or resume RoB 2 for a requested outcome in one or more Trial
 
 # Assess a trial result
 
+Packaged reference links are available through `read_guidance(document="references/<name>.md")`
+when filesystem reading is unavailable. Start with `read_guidance(document="SKILL.md")`
+for exact instruction content and follow its returned `links`; linked documents
+return their own further links. Resource-capable clients can also read
+`rob2://guidance/SKILL` or `rob2://guidance/<reference basename>`.
+These instructions are separate from captured Trial Sources and Evidence.
+
+`calculate_arithmetic` optionally executes bounded decimal `+ - * /` expressions
+with parentheses and named numeric inputs. Declare units and assumptions when
+useful; verify source values, arm assignment and denominators yourself. Its result
+is scratch arithmetic, not Evidence or a scientific judgment. No answer requires it.
+
 Drive the complete assessment through the public rob2-kit tools, not shell
 commands.
+
+For an explicit protocol/SAP reference found during an approved open Trial,
+call `acquire_companion_source` with its Source handle, page, exact citation,
+locator, linkage rationale and current revision. This uses bounded public access
+and returns a staged candidate; it does not admit or deliver the PDF pages.
+Put the reference fields inside the `reference` object; only `expected_revision`
+is beside it. `reference.citation` must be a contiguous literal page quote, without
+line-number prefixes, explanatory prose, or joined excerpts. Keep the page in
+`reference.page` and your explanation in `reference.linkage_rationale`.
+If capture succeeds, call `admit_companion_source` with that candidate identity,
+the same named Trial and the new current revision. It appends immutable Other
+Sources in the existing assessment and preserves the old Sources and answers.
+Read the returned PDF and provenance Source handles with `read_pages` before
+using them. Capture metadata observations are not proof of document reading,
+applicability or conduct. Match comparison, population, outcome and version;
+separate embedded historical plans from later updates. Dates alone do not prove
+prespecification or pre-unblinding access.
+
+After admission, restart target searches/context and reorient stale or absent
+working notes from the current inventory. Prior Source coordinates and reading
+receipts survive; they do not cover the new document. Inspect any material impact
+on saved Domain answers and use the ordinary explicit revision lineage when
+changing them. The target Trial review must be performed again. Other Trials'
+reviews and receipts remain current. Admission never changes a Result or label.
+If the document changes the approved Result mapping, surface that scope conflict
+for explicit researcher-authorized Proposal Review; do not silently assess a
+different Result under the existing approval. The current authority contract has
+no post-approval Result replacement gate. Unavailable optional documents do not
+determine NI or any judgment.
+
+Before approval, or for a separately intended prospective dossier, use
+`request_companion_source` to record an optional host acquisition handoff. This
+does not fetch, stage, admit or read the referenced document. A host may stage it
+in a fresh workspace and choose an explicit registry replay/refresh policy. The
+current assessment need not restart or pause for this optional reference; continue
+with existing Sources and honestly bounded unknowns. Missing optional documents
+do not determine NI or any judgment.
+
+Decide source acquisition before the first intake. When protocol/SAP evidence is
+relevant and exact Trial labels are supplied, the assessing agent can call
+`prepare_batch(acquire_registry_documents=true, trial_labels=[...])` to obtain
+official registry-linked PDFs for supplied NCT identifiers without an operator
+rebuilding the dossier. This is optional; false disables acquisition and omission
+uses the manifest setting. A returned registry filename is not a captured PDF.
+Default dossiers stay unchanged. This adds current evidence, not historical
+replay, so retain frozen-source settings for a replay or controlled comparison.
+An existing Batch cannot enable this initial choice later. For an approved open
+Trial, the explicit native acquisition/admission route above is available.
+The optional request handoff itself still does not fetch, admit or read anything.
+Missing optional material does not itself
+determine NI or risk. Read acquired content and provenance, match its comparison,
+population, outcome and version to the approved Result, and distinguish embedded
+historical plans from later updates. Capture, upload and cover dates do not prove
+pre-unblinding finalization or actual conduct.
 
 The server owns workflow state, identities, and deterministic RoB 2 logic. You
 own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue
 without asking for signalling answers, progress confirmation, or final approval.
 
-Overall risk is deterministic: all five Low Domains produce Low overall; one
-Some concerns Domain with no High produces Some concerns overall; any High
-Domain, or at least two Some concerns Domains with no High Domain, produces
-High overall. The server applies this Cochrane-style aggregation at the Trial
-snapshot; no researcher decision is requested for it.
+Overall risk concerns the exact approved Result. All five Low Domains propose
+Low; any High Domain produces High; otherwise the proposal is Some concerns.
+Multiple Some concerns do not automatically establish High. If their combination
+substantially lowers confidence in this result, optionally submit
+`cumulative_concerns` in `review_trial`, with the exact Result identity, all five
+current checkpoint identities, that conclusion, and a result-specific rationale.
+You may instead record `no_escalation` or `unresolved` with the rationale and
+limitation. Omission is valid and distinct from either conclusion; no researcher
+confirmation or extra form is required. An unresolved combination preserves Some
+concerns. All-Low and any-High aggregates cannot be overridden this way.
+The server records the proposal, adopted judgment, host attribution and versioned
+rule. Result or Domain revisions require reconsidering this bound assessment.
+ADR 0039 supersedes the former count policy; old snapshots retain their historical
+policy. Sensitivity alternatives show algorithmic proposals and do not transfer
+a cumulative judgment to changed checkpoints.
 
 ## Read one complete MCP receipt
 
@@ -127,57 +203,44 @@ unavailable Result with the missing comparator result as a concrete missing fact
 
 Read [Select Evidence](references/evidence.md). Use exact passages you have
 inspected. Search hits and `read_pages` windows already provide reusable
-`passage_ref` handles. Put the chosen handles in an assessable card's optional
-`passage_refs`; the server promotes them atomically to Evidence. Use
-`select_text_evidence` only when you need a different line boundary. Use
+`passage_ref` handles. Put the chosen handles in the Trial selection's
+`source_passages`; the server promotes them atomically to Evidence. Use
+`select_text_evidence` when you need a narrower passage: copy a unique literal
+`selected_text` quote from `read_pages` on the same physical Source page, or
+supply the issued line range. Quote selection requires delivered text and does
+not move between pages or verify your claim's meaning. Use
 `render_page` and `select_visual_evidence` when layout carries meaning. Select
 visual Evidence only with the `delivery_receipt` returned alongside an actual
 `ImageContent` block; metadata-only renders do not issue a receipt.
 
-Build Result cards for the live `validate_proposal` schema. The first validation call
-contains one card for every captured Trial. While Proposal Review is pending,
-submit only complete replacement cards for corrected Trials; the server preserves
-the rest.
+Build one complete Trial selection for the live `validate_proposal` schema. The
+first validation covers every captured Trial in `selections`. While Proposal
+Review is pending, submit only complete replacements for corrected Trials; the
+server preserves the rest.
 
-Construct the complete request before calling `validate_proposal`. Never call it
-with `{}`, placeholder strings, partial nested objects, or guessed enum values to
-discover the schema. Open and follow the complete assessable or unavailable
-example in [Specify the Result](references/result.md), replace every fictional
-value, and then make one validation call. In particular, `applicability`,
-`target`, and `reported` are typed objects rather than prose shortcuts.
+Each selection keeps `trial_id`, explicit `relation`, `candidate`,
+`scope_rationale`, `population_rationale`, `source_passages`, `unknowns` and
+`counterevidence` together. The candidate holds the scientific target/report
+fields. The server reuses your scope rationale and source citations in separate
+canonical Result and reasoning records; do not construct those internal records,
+repeat an assessment array, or send an evidence-basis list. Design-specific
+citations and advanced quantitative proofs remain explicit in the candidate.
 
-For an assessable Result, classify `clarity` for the outcome definition,
-measurement, time point, analysis population, comparison groups, effect measure,
-source table meaning, and candidate choice. Use `time_point` for time-window and
-data-cut chronology, and `source_table_meaning` for whether the selected estimate
-and precision agree across the relevant source material. Use `specified`,
-`unclear`, `unavailable`, or `conflicting` to keep unknowns and disagreements
-visible.
-Omitted clarity is stored as `unclear`; use `exact` only when every facet is
-specified. Clarity is your report of the scope, not a server-verified scientific
-conclusion. The server reconstructs the captured outcome and closed effect of
-interest, then derives retained Evidence and bindings. Do not put Evidence
-objects inside `reported`.
-Copy `reported.endpoint.name`, `reported.precision`, and other Source-owned
-quantities from the quantitative passage. Include `reported.endpoint.definition`
-only when one selected passage explicitly joins that name and definition.
-For `analysis_population`, a supported summary may combine passages when it preserves
-the reported inclusion criteria and exclusions.
+Use `candidate: null` and typed source-grounded `missing_facts` only when no
+complete comparative candidate can proceed. Unknown scope facts about a complete
+candidate belong in `unknowns`, not a second selection. Give one selection per
+Trial. Explain the relation and chosen time window in `scope_rationale`, and
+separate baseline eligibility from exclusions or missing observations in
+`population_rationale`. Preserve conflicting evidence and material unknowns.
 
-For an unavailable Result, give each concrete missing fact its closed basis:
-selected missing-reporting Evidence, or `no_supported_sources` only for a
-captured Trial with zero Sources. Unavailable Results still enter Proposal Review.
-
-Before saving a Proposal, submit its Result cards and a brief evidence-based
-assessment for each submitted Trial with `validate_proposal`. For an assessable
-Result, provide separate `scope_justification` and `population_justification`;
-for an unavailable Result, provide `missing_fact_justification`. Explain why the
-reported result supports the target relation and chosen time point or window.
-Distinguish baseline eligibility from exclusions or missing observations in the
-reported analysis. Identify material conflicting evidence and unresolved facts;
-do not infer unavailable facts. The server validates structure, Evidence
-references and workflow requirements, not scientific correctness. Save using the
-returned revision; the server keeps the validated draft and its audit identity.
+Construct the complete request before calling. Follow the complete examples in
+[Specify the Result](references/result.md); replace every fictional value.
+Never use placeholders or partial objects to discover the schema. Estimate and
+precision remain source strings. Exact scope still requires all eight
+`candidate.clarity` facets explicitly specified; matching numbers do not prove
+outcome, model-window, population or estimand equivalence. The server validates
+structure, source support and workflow, not scientific entailment. Save with the
+returned revision; the server retains the exact validated draft.
 
 ### 4. Complete Proposal Review
 
@@ -214,7 +277,35 @@ required bounded reading, and save useful notes against the approved Result.
 Discard Result-dependent drafts after a Result change. Researcher messages
 after approval do not set or revise signalling answers.
 
-### 5. Assess a Domain
+### 5. Reconstruct the selected Result, then assess a Domain
+
+Before drafting answers, reconstruct how the selected Result was produced. Use
+[Selected Result reconstruction](references/result-account.md). Keep a connected,
+source-linked account of assignment and intervention course, outcome collection,
+analysis, and the plan-to-report history. Follow the actual participants and
+measurements across these steps. Unknown transitions remain unknown. Establish
+this account before the first Domain; refine it when a discriminating source
+changes the account, rather than reconstructing facts separately for each question.
+
+This is a reasoning procedure, not a requirement to complete a fact inventory,
+read every document, or justify a risk label in advance. Existing notes remain
+usable. The typed `result_account` is an optional supported format in the same
+working-checkpoint workflow. It replaces overlapping notes/premises rather than
+adding another ledger. Choose the format that fits the material reasoning; do not
+migrate frozen assessments.
+
+For each active official proposition, identify which step bears on it and the
+mechanism connecting those facts to material bias in this Result. Ask what the
+facts distinguish: a reported event, a possibility, a probable mechanism, or
+reassuring evidence. Explain any transfer from a different arm, period, population
+or method as an inference while retaining the original source scope. Read the
+relevant original passage/image alongside the step if its meaning is uncertain.
+A known fact can be irrelevant to this question. A method label can be true while
+its claimed protection is unsupported. Do not inherit another answer's certainty
+or polarity from the shared account: apply each question independently, including
+its activation and permitted probably responses. Record a concise public warrant,
+not a private reasoning transcript or a repeated account for every answer.
+
 
 Call `get_domain_context` for the active Trial and Domain in `head.next_action`,
 or pass an explicit `domain_id` to inspect or assess another Domain before
@@ -225,9 +316,10 @@ When current notes make recovery unnecessary, use them to resume orientation
 and inspect exact passages as needed. Follow
 [Read the main report](references/read-main-report.md) for the bounded pass.
 
-Read `data.pack.version` and treat every returned
-question field, including wording, options, activation, and official and
-operational guidance, as authoritative. Domain receipts remain usable while you
+Read `data.pack.version`. Use the complete source-bound official guidance as the
+scientific authority, with each question’s wording, options and activation.
+Search hints and workflow instructions guide tool use; they do not add scientific
+answer rules. Domain receipts remain usable while you
 investigate or commit another Domain in the same Trial, provided the approved
 Result, pack, preview, and requested Domain checkpoint stay unchanged. Search
 results and unrelated Domain commits do not invalidate an existing page chain.
@@ -238,9 +330,16 @@ Result, pack, preview, Source set, or checkpoint.
 Recoverable discovery candidates are omitted by default; use
 `include_candidates:true` on a fresh request when those candidates are needed.
 Revalidate after changing an assessment dependency. Treat each returned
-question card as authoritative for wording, allowed answer values, activation,
-official guidance, decision rules, and uncertainty. Open the matching
+question card for exact wording, allowed answer values and activation, and follow
+the complete official core for scientific interpretation and uncertainty. Open the matching
 scientific reference when working on that Domain:
+
+Inspect the proposed Domain label separately from the signalling answers. The
+Cochrane algorithm proposes a judgment; when a source-bound rationale justifies
+another judgment, use the existing `adjudication` field in `save_domain_judgment`
+and inspect the resulting review. Preserve justified signalling answers and
+explain the departure, its counterevidence and the adopted label. Structural
+acceptance does not establish that the departure is scientifically justified.
 
 Before the first `save_domain_judgment` call, read
 [Build a Domain answer](references/evidence.md#build-a-domain-answer) for the
@@ -252,8 +351,17 @@ complete answer and basis shapes.
 - [Outcome measurement](references/measurement.md)
 - [Selection of the reported result](references/selection.md)
 
+Read primary-report text through `reading_recovery`/`read_pages`; the scientific
+context does not embed it. Reuse verified delivery coverage across Domains,
+while reassessing each passage's relevance to the current Result and question.
+`read_complete` establishes delivery, not comprehension or scientific sufficiency.
+
 If `data.context_page` is present, fetch ordered pages until `next_cursor` is
-null. Verify the same Trial, Domain, frozen page revision, page count, and
+null. While `delivery_status` is `incomplete`, `head.next_action` carries the
+exact pending cursor and byte budget. A page's `section: complete` identifies
+the header section; only `delivery_status: complete` means no context pages
+remain. Neither means the Domain or batch is assessed. Verify the same Trial,
+Domain, frozen page revision, page count, and
 contiguous page indexes across the sequence. The current `head.state_revision`
 may advance after unrelated workflow changes. Pass each cursor unchanged and
 do not assess while a cursor remains. Use [Receipt and continuation recovery]
@@ -270,8 +378,10 @@ lossless character fragments. A fragment has no `passage_ref` or Evidence
 authority; continue its exact `next_start_char` window until the complete line
 is returned before selecting or citing it. Recover the Evidence needed for each premise
 with `read_pages`, and render `render_page` image blocks separately when layout
-matters. Inspect the actual image block and pass its `delivery_receipt` to
-`select_visual_evidence` before using a transcription.
+matters. Inspect the actual image block. A Domain basis may directly contain
+`{delivery_receipt, region, transcription, uncertainty?}` from that image, or use
+`select_visual_evidence` first for a reusable handle. Text ranges do not capture
+graphical cells. The host's transcription remains an observation, not verified OCR.
 
 For a comparison card, use `question_id` to find its wording and options in
 `questions`. Before citing Evidence with `text_status:"omitted"`, confirm that
@@ -280,8 +390,21 @@ the passage is unfamiliar or its content is uncertain after a restart or
 compaction, follow
 [Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
 
+The card's `result_scope` is the assessment target. Its `reported_result` is
+the selected reported endpoint, quantitative tuple, and analysis population;
+`target_relation` preserves their relation. Compare these before using a
+population or count. A randomized target or an ITT analysis population does not
+establish observed outcomes. Preserve exclusions, incomplete follow-up, and
+source disagreements from the reported Result when investigating D2, D3, and D5.
+
 Review inspected passages against each active proposition and check material
 contradictions. Reuse adequate Evidence without another search.
+Explain relevant group, stage, window, population and method distinctions in the
+source-bound warrant. For an optional compact submission format, use
+[Opt-in lean Domain drafting](references/evidence.md#opt-in-lean-domain-drafting).
+Source-specific interpretation annotations remain available when useful; they
+are not a prerequisite for combining facts or saving an answer.
+
 
 Before a new material discovery attempt, follow the
 [unresolved-premise loop](references/evidence.md#recover-an-unresolved-premise).
@@ -302,27 +425,30 @@ the submitted proposition literal in the repair; do not change `no` to
 `probably_yes`, or infer a different answer from the repair wording. Reconsider
 the scientific conclusion only from the evidence and your own reasoning.
 
-For each active answer, use at least one closed basis from the live schema:
+For each active answer, supply at least one premise in the live submission schema:
 
-- selected Evidence for `direct_support`, `indirect_support`, `contradiction`,
-  `context`, or `inference`;
-- an untruncated no-hit search receipt for `absence`;
-- an explicit `unresolved_premise` and `stopping_rationale` for `limitation`, with an
-  optional current-Trial search receipt when retrieval provenance is useful; a direct
-  read does not require a search receipt.
+- `bases`: selected Evidence with an explicit `direct_support`, `indirect_support`,
+  `contradiction`, `context`, or `inference` role;
+- `absence_searches`: untruncated no-hit search receipt handles;
+- `limitations`: objects with `premise` and `stopping_rationale`, plus
+  an optional current-Trial `search_receipt`.
+
+Do not put absence or limitation objects in `bases`. The server derives their
+canonical tags without choosing a scientific answer. Counterevidence objects
+name selected Evidence handles and their joint implication; no array indexes are needed.
+A direct read does not require a search receipt.
 
 Selected Evidence must contain the complete premise. A relationship kind adds
-no facts. Definitive `yes` or `no` requires direct,
-indirect, or contradictory Evidence. Probable answers may instead rest on a
-limitation, absence receipt, or exact context/inference premise when the card
-allows that answer. Apply `response_framework.no_information_rule`: consider
-`probably_yes` and `probably_no` from the available facts and trial circumstances
-before choosing `no_information`, subject to the card's rule. State any inference
-in `justification`. Missing explicit text alone does not establish
-`no_information`; silence alone does not establish `probably_no`. For D3.2,
-`no_information` is unavailable, but `probably_no` or `no` may express that the
-available evidence does not demonstrate freedom from missing-data bias; do not
-invent affirmative Evidence.
+no facts. Scientific response semantics come from the official guidance in
+`get_domain_context`; state the inference connecting Evidence to the answer in
+`justification`. Use the shared response semantics in the official core and the complete official question guidance. Follow the official
+allowed options and activation predicates, including D3.2's absence of
+`no_information`.
+
+Submission validation checks Evidence roles, ownership and provenance. Its
+role constraints do not establish scientific certainty or entailment. Repair a
+reported structural problem using inspected support or an honest permitted
+uncertainty; do not change scientific confidence merely to satisfy a validator.
 
 After a Domain is saved, use the returned `evidence_sufficiency` summary as an
 audit receipt. Its statuses distinguish supported, contradicted, indirect,
@@ -355,14 +481,10 @@ Follow `head.next_action`, `reading_recovery`, and any required Evidence reading
 before submitting the Domain; follow another continuation first when it is
 present.
 
-For D3.1, run the **availability audit** before saving. Yes/Probably Yes needs
-evidence of all or nearly-all availability; No/Probably No needs evidence of
-materially incomplete availability. If the extent remains unknown, use No
-information. Analysis membership, planned follow-up, treatment status, and a
-generic censoring rule alone establish neither direction. For mortality,
-recovery or discharge alone does not establish later vital status. Use
-[Missing outcome data](references/missing.md) to reconcile outcome-specific
-counts, follow-up, and censoring.
+For D3, use the complete official question elaborations and response guidance
+returned by the context. [Missing outcome data](references/missing.md) describes
+source recovery and typed-count submission; it does not supply additional
+scientific decision rules.
 
 When participant-count comparisons support 3.1, retain the source-supported
 `missing_data` rows with that answer. Name the arm, population, unit, and time
@@ -373,6 +495,11 @@ those facts observed outcomes. Rate-only evidence or an explicit ascertainment
 statement need not invent counts. The server retains provenance and derives only
 scope-matched arithmetic. Use the existing preview when reconciliation helps;
 follow [Reconcile availability](references/missing.md#reconcile-availability).
+
+Inline bases and counterevidence may cite a copied quote using `source_id`,
+physical `page` and `selected_text`, without line coordinates or a separate
+selection call. The quote must be unique on that page and fully delivered by
+`read_pages`; successful binding does not establish claim entailment.
 
 Supply the complete draft and current expected revision to `save_domain_judgment`.
 If its response is lost, retry the identical request with the original revision;
@@ -390,6 +517,16 @@ wait for a researcher decision.
 
 ### 7. Review and close every Trial
 
+An explicitly requested separate source check may use the existing opt-in factual
+exporter (`docs/source-checking.md` in the repository). This is advisory and is not
+part of the default assessment loop. Inspect any returned findings against their
+exact sources, distinguish source facts from legitimate inference, and accept or
+reject them yourself. A valid locator is not proof that a critique is correct.
+Use ordinary Domain edit/submission only for changes you judge warranted; retain
+uncertainty and official Cochrane authority. Do not change labels automatically or
+require direct proof of every inference, exact missing counts or MNAR methods.
+
+
 Save each Domain before moving on. The fifth accepted checkpoint makes the
 Trial ready for review and returns `data.trial_ready_for_review:true`; it remains
 correctable until closed. Call `review_trial` with the current Trial and
@@ -400,12 +537,24 @@ blocker on a supported Trial, provide a typed `needs_input` or `failed` request.
 Inspect the review's exact Result, checkpoint identities, and compact
 `domain_findings` projection. Use its decisive justifications, material
 unknowns, counterevidence, and exact Evidence expansion actions to reconcile
-concrete contradictions or unsupported links in one bounded pass. Large reviews
+concrete contradictions or unsupported links in one bounded pass. Compare material
+claims with what each selected source actually establishes, using cited fact text
+or exact Evidence expansions. Distinguish an unsupported clause, a correct claim
+with the wrong citation, and a defensible inference; preserve uncertainty.
+A planned analysis is not a performed result. Use this focus within the existing
+review; it does not require another model call or reassessing the whole Domain.
+For figure, legend and
+conduct distinctions, use [visual Evidence](references/evidence.md#use-visual-evidence-for-visual-meaning).
+Large reviews
 return `data.review_page.mode:"summary"`: all answer headers and actual driver
 flags remain visible, but named deferred fields and counts identify incomplete
 support. Use `review_trial` with `domain_id` and, when needed, `question_id` to
 inspect decisive answers and material unknowns or counterevidence. A complete
-selected detail has `mode:"complete"`; an oversized detail has `mode:"fragment"`.
+selected detail has `mode:"complete"`. An oversized selected summary preserves full
+saved claims, unknowns, counterevidence, and citation bindings when they fit; its
+source facts remain deferred and `complete:false`. Recover those sources through
+`stable_recovery` or exact Evidence expansions. When the full claim set itself is
+too large, the selected detail has `mode:"fragment"`.
 Follow `next_cursor`, concatenate `fragment` strings in Unicode codepoint offset
 order, and parse the JSON once complete. The summary's `stable_recovery` also
 recovers the exact full review. Use the current revision and returned recovery
@@ -482,7 +631,9 @@ the saved overall judgment.
   correction is a new save, not a transport retry.
 - To revise a pending Trial's saved Domain, name the current checkpoint in
   `supersedes` and use the closed `new_evidence`, `self_correction`, or
-  `mechanical_repair` revision basis. A mechanical repair must include its
+  `mechanical_repair` revision basis. `self_correction` requires `rationale`,
+  for example `{"kind":"self_correction","rationale":"The prior citation omitted a relevant passage."}`.
+  A mechanical repair must include its
   `repair_id` or codes; do not use researcher coaching as a revision basis.
 - Handle the current error, repair, or required recovery first. Complete the
   current pagination sequence. After successful validation, execute its returned

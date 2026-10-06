@@ -1,0 +1,17 @@
+{
+  "autocrlf_preserves_intended_missing_window_rejection": "required diagnostic evidence omitted: sh_bcf70e5423c2d8ef page 188 lines 20-40",
+  "fixture_sha256": "d6306ff715172ff127ce48abbe652daec42d88dcda7ea1dceaedf2c894de79fc",
+  "test_complete_question_capture_and_background_are_pack_bound": "passed with cp1252 default",
+  "test_background_and_faq_wording_preserve_source_versions_and_scope": "passed with cp1252 default",
+  "test_box9_continuation_preserves_words_and_reading_order": "passed with cp1252 default",
+  "test_fixed_pack_inputs_add_current_reference_and_question_context": "passed with cp1252 default",
+  "branch_head": "45326861b117332da5f09fadce7a976ba25c16c2",
+  "focused_pytest": "28 passed in 195.64s",
+  "concurrency_owner_focused": "1 passed in 25.65s",
+  "ruff": "check and format --check passed; 197 files formatted",
+  "ty": "changed test files passed",
+  "windows_previous_run": "37431835832",
+  "additional_windows311_failure": "BrokenBarrierError in ownership test; not reproduced locally; exact-head CI remains required",
+  "fixture_bytes_changed": false,
+  "missing_window_check_weakened": false
+}

@@ -1,14 +1,30 @@
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import ValidationError
 
+from ..logic.adjudication import (
+    ADJUDICATION_CONTEXT_METADATA_RESERVE,
+    DOMAIN_CONTEXT_MAX_BYTES,
+    DOMAIN_JUDGMENT_CONTRACT,
+    adjudication_context_header_bytes,
+    domain_evidence_ids,
+    require_current_adjudication_pack,
+)
+from ..logic.aggregation import aggregation_record
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
-from ..models import ResponseFramework, canonical_json_bytes
+from ..models import canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
-from ..workflow_models import DomainDraft
+from ..workflow_models import (
+    DomainCounterpoint,
+    DomainDraft,
+    DomainEvidenceCitation,
+    DomainSaveAnswer,
+    WorkingNote,
+)
 from ._state import (
     _canonical_evidence_records,
     _commit_records,
@@ -16,9 +32,12 @@ from ._state import (
     _ensure,
     _identity,
     _ordered_sources,
+    _reading_batch_basis,
     _result,
     _root,
     _state,
+    _trial_inventory_basis,
+    internal_path,
 )
 from .contracts import WorkflowConflict
 from .evidence import (
@@ -29,11 +48,16 @@ from .evidence import (
     _search_continuation,
     _search_evidence_identities,
     _search_receipt,
+    _search_session_question_purpose,
+    _source_navigation_entries,
     _unassigned_search_continuation,
     _unassigned_search_evidence,
+    _verified_source_projections,
     main_report_reading_status,
+    source_reading_status,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
+from .source_handles import source_handle
 from .status import _active_trial_and_domain, _continuation
 from .working import investigation_projection, working_checkpoint_status
 
@@ -49,8 +73,7 @@ def _domain_context_delivery(
     prefer_views: bool = True,
 ) -> dict[str, Any] | None:
     state = _state(root)
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         return None
     with _db(root, "derivative.sqlite3") as connection:
@@ -151,8 +174,7 @@ def _record_domain_context_view(
     """Persist one opaque context view without sharing a cursor chain."""
 
     state = _state(root)
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
     with _db(root, "derivative.sqlite3") as connection:
@@ -230,8 +252,7 @@ def _record_domain_context_delivery(
     preview_scope: list[dict[str, Any]] | None = None,
 ) -> None:
     state = _state(root)
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
     with _db(root, "derivative.sqlite3") as connection:
@@ -590,8 +611,8 @@ _DOMAIN_GUIDANCE = (
     "across relevant Sources, including a protocol or SAP when relevant. Inspect returned "
     "passages before using them. A limitation requires that explicit premise and stopping "
     "rationale; include a Trial-scoped search receipt when retrieval provenance is useful, "
-    "but a direct read does not require a search receipt. Absence "
-    "requires a scoped untruncated no-hit receipt.",
+    "but a direct read does not require a search receipt. A no-hit receipt records "
+    "a bounded lexical search, not scientific absence.",
     "Cite complete premises for the active question. One passage may support several facts. "
     "When an answer depends on separate passages, cite each with its own boundaries. "
     "A relationship kind describes the use of Evidence; it adds no scientific fact.",
@@ -604,8 +625,6 @@ _DOMAIN_GUIDANCE = (
     "working checkpoint is current for this exact approved Result and captured Source projection; "
     "a stale checkpoint requires the stated recovery action and never carries a prior Domain "
     "judgment into this assessment.",
-    "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
-    "a limitation or absence alone supports uncertainty, not a definitive answer.",
     "Evaluate activation against your draft answers. If validation reports missing active "
     "question IDs, add those questions with allowed answer values and supported bases, then "
     "resubmit the complete active set in one validation call. The server commits only active "
@@ -613,17 +632,6 @@ _DOMAIN_GUIDANCE = (
     "Apply every reported repair and retain other drafted answers. Add missing questions to "
     "the existing answer set. Resolve further activation from the repaired answers before "
     "resubmitting. The server ignores inactive answers.",
-)
-_DOMAIN_TRAPS = (
-    "A planned method does not prove conduct; a time origin or analysis population does "
-    "not prove complete follow-up or equal assessment.",
-    "An endpoint label or definition does not prove objectivity, blinding, "
-    "prespecification, or no alternative analyses.",
-    "A treatment assignment or visibly different intervention does not by itself prove "
-    "that participants or personnel knew the assignment.",
-    "Different treatment or visit schedules do not by themselves prove that outcome "
-    "measurement differed between groups.",
-    "Stratification does not prove allocation concealment.",
 )
 
 
@@ -641,6 +649,23 @@ def _official_guidance_recovery(domain_id: str) -> dict[str, Any]:
         for question in SCIENTIFIC_PACK.questions
         if question.domain_id == domain_id
     ]
+    sections = [
+        {
+            "question_ids": item.question_ids
+            or tuple(
+                question.id
+                for question in SCIENTIFIC_PACK.questions
+                if question.domain_id == domain_id
+            ),
+            "source_version": item.guidance.version,
+            "source_sha256": item.guidance.source_sha256,
+            "source_locator": item.guidance.source_locator,
+            "source_url": item.source_url,
+            "excerpt": item.guidance.source_excerpt,
+        }
+        for item in SCIENTIFIC_PACK.official_sections or ()
+        if item.domain_id in {"all", domain_id}
+    ] + sections
     if not sections:
         raise ValueError("official guidance is unavailable for Domain")
     return {
@@ -655,37 +680,6 @@ def _official_guidance_recovery(domain_id: str) -> dict[str, Any]:
     }
 
 
-_RESPONSE_FRAMEWORK = ResponseFramework(
-    version="22 August 2019",
-    source_locator="Full guidance p. 3, sections 1.1 and 1.1.1",
-    response_options=("yes", "probably_yes", "probably_no", "no", "no_information"),
-    firm_evidence_rule=(
-        "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence "
-        "is available in relation to the signalling question."
-    ),
-    probable_judgment_rule=(
-        "The ‘Probably’ versions would typically imply that a judgement has been made. "
-        "‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ "
-        "and ‘Probably no’."
-    ),
-    no_information_rule=(
-        "Use ‘No information’ only when both (i) insufficient details are reported to permit "
-        "a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these "
-        "details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the "
-        "circumstances of the trial."
-    ),
-    independence_rule=(
-        "Signalling questions should be answered independently: the answer to one question "
-        "should not affect answers to other questions in the same or other domains other than "
-        "through determining which subsequent questions are answered."
-    ),
-    quotation_rule=(
-        "Brief direct quotations from the text of the study report should be used whenever "
-        "possible to support the answer."
-    ),
-)
-
-
 def _comparison_cards(
     domain_id: str,
     result: dict[str, Any],
@@ -696,6 +690,7 @@ def _comparison_cards(
     registry_navigation: dict[str, dict[str, Any]] | None = None,
     registry_capture: dict[str, Any] | None = None,
     participant_flow_data: dict[str, Any] | None = None,
+    candidate_questions: dict[str, set[str]] | None = None,
 ) -> list[dict[str, Any]]:
     """Return a small deterministic read projection for D2/D3/D5.
 
@@ -740,471 +735,14 @@ def _comparison_cards(
         "domain:selection": (
             "reported_result",
             "analysis_plan",
-            "unblinded_access",
-            "amendment",
             "correspondence",
+            "amendment",
+            "unblinded_access",
         ),
     }
     if domain_id not in question_by_domain:
         return []
 
-    proposition_specs = {
-        "domain:deviations": (
-            (
-                "sq:deviations:context-deviations",
-                "protocol_inconsistency",
-                "The observed change was inconsistent with the trial protocol.",
-                (),
-            ),
-            (
-                "sq:deviations:context-deviations",
-                "trial_context_cause",
-                "The trial context caused the protocol-inconsistent change.",
-                ("sq:deviations:context-deviations",),
-            ),
-            (
-                "sq:deviations:affected-outcome",
-                "outcome_pathway",
-                "The identified trial-context deviation could affect the approved outcome.",
-                ("sq:deviations:context-deviations",),
-            ),
-            (
-                "sq:deviations:balanced",
-                "group_balance",
-                "The identified deviation was balanced between randomized groups.",
-                ("sq:deviations:context-deviations", "sq:deviations:affected-outcome"),
-            ),
-        ),
-        "domain:missing": (
-            (
-                "sq:missing:data-available",
-                "availability",
-                "Outcome data were available for all or nearly all randomized participants.",
-                (),
-            ),
-            (
-                "sq:missing:evidence-unbiased",
-                "mitigation",
-                "The approved Result was not biased by missing outcome data.",
-                ("sq:missing:data-available",),
-            ),
-            (
-                "sq:missing:true-value-dependent",
-                "possible_dependence",
-                "Missingness could depend on the true outcome value.",
-                ("sq:missing:evidence-unbiased",),
-            ),
-            (
-                "sq:missing:likely-dependent",
-                "likely_dependence",
-                "Missingness likely depended on the true outcome value.",
-                ("sq:missing:true-value-dependent",),
-            ),
-        ),
-        "domain:measurement": (
-            (
-                "sq:measurement:method-inappropriate",
-                "suitability",
-                "The measurement method was inappropriate for the approved outcome.",
-                (),
-            ),
-            (
-                "sq:measurement:differential",
-                "differential_detection",
-                "Outcome measurement or detection could differ between groups.",
-                (),
-            ),
-            (
-                "sq:measurement:assessor-aware",
-                "assessor_awareness",
-                "The relevant outcome assessor knew the assigned intervention.",
-                (),
-            ),
-            (
-                "sq:measurement:influence-possible",
-                "susceptibility",
-                "Knowledge of assignment could influence this outcome assessment.",
-                ("sq:measurement:assessor-aware",),
-            ),
-            (
-                "sq:measurement:influence-likely",
-                "likely_influence",
-                "Knowledge of assignment likely influenced this outcome assessment.",
-                ("sq:measurement:influence-possible",),
-            ),
-        ),
-        "domain:selection": (
-            (
-                "sq:selection:prespecified-analysis",
-                "document_availability",
-                "A plan or SAP describing the approved Result is available in the captured "
-                "Sources.",
-                (),
-            ),
-            (
-                "sq:selection:prespecified-analysis",
-                "plan_applicability",
-                "The plan applies to the exact comparison, cohort, endpoint, population, window, "
-                "analysis, and effect measure.",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:prespecified-analysis",
-                "chronology",
-                "Plan finalization preceded access to unblinded outcome data.",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:multiple-measurements",
-                "eligible_measurements",
-                "The eligible outcome measurements and the reported subset are known.",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:multiple-analyses",
-                "eligible_analyses",
-                "The eligible analyses and the reported analysis are known.",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:multiple-analyses",
-                "results_based_selection",
-                "The reported measurement or analysis was selected because of its result.",
-                ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"),
-            ),
-        ),
-    }
-    paired_examples_by_domain = {
-        "domain:deviations": (
-            {
-                "pair_id": "d2-protocol-status-same-trial-context",
-                "changed_premise": (
-                    "whether the same trial-context conduct was protocol-consistent"
-                ),
-                "left_facts": (
-                    "Trial staff encouraged rescue treatment during participation; "
-                    "the protocol permitted it.",
-                ),
-                "right_facts": (
-                    "Trial staff encouraged the same rescue treatment during participation; "
-                    "the protocol prohibited it.",
-                ),
-                "reasoning_focus": (
-                    "Hold trial-context conduct fixed while changing protocol consistency."
-                ),
-            },
-            {
-                "pair_id": "d2-cause-same-protocol-inconsistency",
-                "changed_premise": (
-                    "whether the same prohibited conduct was caused by trial participation"
-                ),
-                "left_facts": (
-                    "The protocol prohibited rescue treatment. A clinician independently "
-                    "provided it as ordinary care; trial staff did not direct the change.",
-                ),
-                "right_facts": (
-                    "The protocol prohibited rescue treatment. Trial staff directed the same "
-                    "change during participation.",
-                ),
-                "reasoning_focus": (
-                    "Hold the protocol inconsistency and conduct fixed while changing the "
-                    "source of the change."
-                ),
-            },
-            {
-                "pair_id": "d2-exclusion-before-versus-after-outcome",
-                "changed_premise": (
-                    "when eligible participants were excluded relative to outcome assessment"
-                ),
-                "left_facts": (
-                    "The same 12 eligible randomized participants were excluded from analysis "
-                    "for the same recorded reasons.",
-                    "The approved endpoint was assessed for all 12 participants at day 90.",
-                    "The exclusions occurred before the day-90 endpoint assessment.",
-                ),
-                "right_facts": (
-                    "The same 12 eligible randomized participants were excluded from analysis "
-                    "for the same recorded reasons.",
-                    "The approved endpoint was assessed for all 12 participants at day 90.",
-                    "The exclusions occurred after the day-90 endpoint assessment.",
-                ),
-                "reasoning_focus": (
-                    "Keep exclusions fixed. Timing may distinguish observed-but-omitted outcomes "
-                    "from outcome availability, but does not set a risk label."
-                ),
-            },
-        ),
-        "domain:missing": (
-            {
-                "pair_id": "d3-complete-versus-unresolved-availability",
-                "changed_premise": "whether the approved outcome was actually ascertained",
-                "left_facts": (
-                    "The outcome was ascertained for every randomized participant at the "
-                    "approved window.",
-                ),
-                "right_facts": (
-                    "The report gives an analysis denominator but does not establish outcome "
-                    "ascertainment.",
-                ),
-                "reasoning_focus": (
-                    "Keep observed outcome availability separate from analysis membership and "
-                    "preserve No information when extent is unresolved."
-                ),
-            },
-            {
-                "pair_id": "d3-administrative-versus-informative-censoring",
-                "changed_premise": "why outcome follow-up ended",
-                "left_facts": (
-                    "Administrative censoring occurred at a common cutoff after the approved "
-                    "window.",
-                ),
-                "right_facts": (
-                    "Participants stopped follow-up after worsening symptoms before the "
-                    "approved window.",
-                ),
-                "reasoning_focus": (
-                    "Separate administrative censoring from a mechanism that could depend on "
-                    "the true outcome."
-                ),
-            },
-            {
-                "pair_id": "d3-mitigation-evidence",
-                "changed_premise": (
-                    "whether a credible analysis addresses bias from missing outcomes"
-                ),
-                "left_facts": (
-                    "A prespecified sensitivity analysis covers plausible missing outcomes and its "
-                    "estimate remains compatible with the primary result.",
-                ),
-                "right_facts": (
-                    "The report gives no analysis or evidence addressing possible bias from "
-                    "missing outcomes.",
-                ),
-                "reasoning_focus": (
-                    "Assess evidence about mitigation separately from the number or proportion "
-                    "of observed outcomes."
-                ),
-            },
-            {
-                "pair_id": "d3-possible-versus-likely-dependence",
-                "changed_premise": (
-                    "strength of evidence that missingness depends on the true outcome"
-                ),
-                "left_facts": (
-                    "The reported reason for loss could be related to the unobserved outcome, "
-                    "but the link is unresolved.",
-                ),
-                "right_facts": (
-                    "Source records show that worsening outcome status commonly preceded and "
-                    "explained follow-up loss.",
-                ),
-                "reasoning_focus": (
-                    "Keep a plausible pathway distinct from evidence that makes dependence "
-                    "likely; neither follows from missing counts alone."
-                ),
-            },
-            {
-                "pair_id": "d3-treatment-stop-with-followup-versus-loss",
-                "changed_premise": "whether outcome follow-up continued after treatment stopped",
-                "left_facts": (
-                    "Twelve participants stopped assigned treatment after documented worsening.",
-                    "The approved endpoint was due at day 90 for all randomized participants.",
-                    "All 12 participants were assessed at day 90 after stopping treatment.",
-                ),
-                "right_facts": (
-                    "Twelve participants stopped assigned treatment after documented worsening.",
-                    "The approved endpoint was due at day 90 for all randomized participants.",
-                    "Outcome follow-up ended before day 90 for all 12 participants after they "
-                    "stopped treatment.",
-                ),
-                "reasoning_focus": (
-                    "Treatment discontinuation alone does not establish missing outcomes. "
-                    "Check follow-up and the possible effect of unavailable outcomes."
-                ),
-            },
-        ),
-        "domain:measurement": (
-            {
-                "pair_id": "d4-objective-versus-judgment-dependent",
-                "changed_premise": "whether the assessor must exercise outcome judgment",
-                "left_facts": (
-                    "An independent registry establishes all-cause mortality.",
-                    "The detection opportunity is the same in both groups.",
-                ),
-                "right_facts": (
-                    "A participant reports symptom severity on a standardized questionnaire.",
-                    "The assessor interprets a judgment-dependent threshold.",
-                ),
-                "reasoning_focus": (
-                    "Assess suitability, detection opportunity, awareness, susceptibility, and "
-                    "likely influence as separate propositions."
-                ),
-            },
-            {
-                "pair_id": "d4-equal-versus-differential-detection",
-                "changed_premise": (
-                    "whether the opportunity to detect the approved outcome differs"
-                ),
-                "left_facts": ("Both groups use the same ascertainment method and schedule.",),
-                "right_facts": (
-                    "One intervention causes additional visits that can detect the approved "
-                    "outcome.",
-                ),
-                "reasoning_focus": (
-                    "A different opportunity matters only through an explicit pathway to "
-                    "differential detection; do not infer a risk label automatically."
-                ),
-            },
-            {
-                "pair_id": "d4-assessor-awareness",
-                "changed_premise": ("whether the outcome assessor knew intervention assignment"),
-                "left_facts": (
-                    "The outcome assessor was masked to assignment through assessment.",
-                ),
-                "right_facts": (
-                    "The assessor was told each participant's assignment before judging the "
-                    "outcome.",
-                ),
-                "reasoning_focus": (
-                    "Record assessor awareness separately from measurement suitability and any "
-                    "resulting detection or influence."
-                ),
-            },
-            {
-                "pair_id": "d4-possible-versus-likely-influence",
-                "changed_premise": ("whether awareness likely changed a susceptible measurement"),
-                "left_facts": (
-                    "An assessor knew assignment and rated a judgment-dependent symptom scale; "
-                    "no differential ratings are documented.",
-                ),
-                "right_facts": (
-                    "An assessor knew assignment and source records document ratings shifting "
-                    "toward the expected intervention effect.",
-                ),
-                "reasoning_focus": (
-                    "Separate the possibility of influence from evidence that influence likely "
-                    "affected recorded outcomes."
-                ),
-            },
-            {
-                "pair_id": "d4-toxicity-visits-by-endpoint",
-                "changed_premise": ("which endpoint is assessed under the same visit pattern"),
-                "left_facts": (
-                    "Blinded registry staff captured all deaths in both groups with the same "
-                    "complete follow-up method.",
-                    "Intervention-group participants received extra visits to monitor "
-                    "laboratory toxicity.",
-                    "The approved endpoint was all-cause mortality.",
-                ),
-                "right_facts": (
-                    "Blinded registry staff captured all deaths in both groups with the same "
-                    "complete follow-up method.",
-                    "Intervention-group participants received extra visits to monitor "
-                    "laboratory toxicity.",
-                    "The approved endpoint was lab-defined toxicity detected at those visits.",
-                ),
-                "reasoning_focus": (
-                    "Link extra visits to the selected endpoint. Complete equal death-registry "
-                    "ascertainment gives no mortality-specific path, while extra visits may "
-                    "create more opportunity to detect lab toxicity."
-                ),
-            },
-            {
-                "pair_id": "d4-safety-window-evidence",
-                "changed_premise": ("whether the adverse-event observation window was documented"),
-                "left_facts": (
-                    "The approved adverse-event endpoint includes events through 30 days "
-                    "after treatment ends.",
-                    "Median treatment duration was four months; median progression-free "
-                    "survival was seven months.",
-                    "The report specifies a safety visit 30 days after treatment ends in "
-                    "both groups.",
-                ),
-                "right_facts": (
-                    "The approved adverse-event endpoint includes events through 30 days "
-                    "after treatment ends.",
-                    "Median treatment duration was four months; median progression-free "
-                    "survival was seven months.",
-                    "The report does not say whether either group had a safety visit 30 days "
-                    "after treatment ended.",
-                ),
-                "reasoning_focus": (
-                    "Use visit and follow-up evidence to assess the safety window. Treatment "
-                    "duration and progression-free survival do not establish that schedule."
-                ),
-            },
-        ),
-        "domain:selection": (
-            {
-                "pair_id": "d5-applicable-versus-inapplicable-plan",
-                "changed_premise": "whether the located plan covers the approved Result",
-                "left_facts": (
-                    "The SAP names the approved comparison, cohort, endpoint, window, population, "
-                    "analysis, and effect measure.",
-                ),
-                "right_facts": (
-                    "A platform master plan names a different cohort and intervention phase.",
-                ),
-                "reasoning_focus": (
-                    "Assess plan applicability before using its dates or content for chronology."
-                ),
-            },
-            {
-                "pair_id": "d5-multiplicity-versus-selection",
-                "changed_premise": "whether reporting choice depended on the result",
-                "left_facts": (
-                    "The SAP lists three eligible analyses. All three were conducted, but only "
-                    "the adjusted model was reported. Dated correspondence made before "
-                    "unblinded results confirms that reporting plan.",
-                ),
-                "right_facts": (
-                    "The SAP lists the same three eligible analyses. All three were conducted, "
-                    "but only the adjusted model was reported. Dated minutes after unblinding "
-                    "state it was chosen because its estimate was favorable and the other two "
-                    "were withheld.",
-                ),
-                "reasoning_focus": (
-                    "Hold the eligible analyses and reporting pattern fixed; inspect the "
-                    "evidence about why the reporting decision was made."
-                ),
-            },
-            {
-                "pair_id": "d5-amendment-versus-unblinded-access",
-                "changed_premise": ("whether unblinded access preceded the amendment"),
-                "left_facts": (
-                    "Amended SAP signed June 15; cutoff and lock were August 1.",
-                    "Same cohort, endpoint, and analysis.",
-                    "Unblinded access began July 15.",
-                ),
-                "right_facts": (
-                    "Amended SAP signed June 15; cutoff and lock were August 1.",
-                    "Same cohort, endpoint, and analysis.",
-                    "Unblinded access began May 15.",
-                ),
-                "reasoning_focus": (
-                    "Compare access with amendment timing; chronology alone does not establish "
-                    "result-driven selection."
-                ),
-            },
-            {
-                "pair_id": "d5-embedded-versus-separate-sap",
-                "changed_premise": "where the same signed analysis plan is packaged",
-                "left_facts": (
-                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
-                    "Plan signed before unblinded access.",
-                    "Plan is protocol appendix 2.",
-                ),
-                "right_facts": (
-                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
-                    "Plan signed before unblinded access.",
-                    "Plan is a separate repository PDF.",
-                ),
-                "reasoning_focus": (
-                    "Find the plan by scope and chronology; packaging does not change its content."
-                ),
-            },
-        ),
-    }
     refs = []
     for item in catalog.values():
         if not isinstance(item, dict) or item.get("kind") != "narrative":
@@ -1220,6 +758,11 @@ def _comparison_cards(
                 "page": item["page"],
                 "start_line": item.get("start_line", 1),
                 "end_line": item.get("end_line", item.get("start_line", 1)),
+                **(
+                    {"retrieval_question_ids": sorted(candidate_questions[item["identity"]])}
+                    if candidate_questions and item.get("identity") in candidate_questions
+                    else {}
+                ),
             }
         )
     refs.sort(
@@ -1293,6 +836,7 @@ def _comparison_cards(
                 "registry_url": (
                     registry_capture.get("url")
                     if source.get("origin") == "registry"
+                    and source.get("role") == "registry"
                     and isinstance(registry_capture, dict)
                     and registry_capture.get("kind") == "matched"
                     else None
@@ -1300,6 +844,7 @@ def _comparison_cards(
                 "registry_retrieved_at": (
                     registry_capture.get("retrieved_at")
                     if source.get("origin") == "registry"
+                    and source.get("role") == "registry"
                     and isinstance(registry_capture, dict)
                     and registry_capture.get("kind") == "matched"
                     else None
@@ -1467,6 +1012,7 @@ def _comparison_cards(
     ):
         result_scope = {
             "result_identity": _identity(result),
+            "scope_basis": "assessment_target",
             "endpoint": target["outcome_definition"],
             "measurement": measurement_method,
             "time_window": timing_description,
@@ -1474,19 +1020,6 @@ def _comparison_cards(
             "comparison_groups": group_descriptions,
             "effect_measure": target["intended_effect_measure"],
         }
-
-    proposition_rows = []
-    for question_id, name, proposition, depends_on in proposition_specs[domain_id]:
-        proposition_rows.append(
-            {
-                "question_id": question_id,
-                "name": name,
-                "proposition": proposition,
-                "status": "unknown",
-                "depends_on": depends_on,
-                "passages": [],
-            }
-        )
 
     # A row-backed count establishes a quantitative premise, not an answer.
     # Expose every stage so the host cannot silently substitute analysis or
@@ -1525,6 +1058,7 @@ def _comparison_cards(
                     "randomized",
                     "eligible",
                     "treated",
+                    "completed",
                     "observed",
                     "analyzed",
                     "imputed",
@@ -1538,6 +1072,7 @@ def _comparison_cards(
             ("randomized", "randomized"),
             ("eligible", "eligible"),
             ("treated", "treated"),
+            ("completed", "completed"),
             ("observed", "observed"),
             ("analyzed", "analyzed"),
             ("imputed", "imputed"),
@@ -1575,7 +1110,28 @@ def _comparison_cards(
                     for key in ("handle", "source_id", "page", "start_line", "end_line")
                 )
             ]
+            # Visual counts have no extracted line coordinates. Keep their
+            # source/render provenance rather than silently dropping the basis.
+            basis_figures = [
+                {
+                    key: evidence.get(key)
+                    for key in (
+                        "handle",
+                        "source_id",
+                        "render",
+                        "delivery_receipt",
+                        "region",
+                        "provenance",
+                        "uncertainty",
+                    )
+                }
+                for identity in row.get("basis", [])
+                for evidence in (catalog.get(identity),)
+                if isinstance(evidence, dict) and evidence.get("kind") == "figure"
+            ]
             for kind, field in flow_fields:
+                if kind == "completed" and field not in row:
+                    continue
                 value = row.get(field)
                 status = (
                     "conflicted"
@@ -1597,30 +1153,14 @@ def _comparison_cards(
                         "event_definition": row.get("event_definition"),
                         "scope": scope,
                         "passages": basis_passages,
+                        **({"figures": basis_figures} if basis_figures else {}),
+                        **({"semantics": row["semantics"]} if "semantics" in row else {}),
                     }
                 )
 
-    # Counts expose the availability inputs but never establish the scientific
-    # proposition that data were available for all or nearly all participants.
-    # Even 10 observed of 100 randomized needs a host judgement, while an
-    # analyzed-only or event-only row says nothing about ascertainment.
-    if participant_flow:
-        availability = next(
-            (item for item in proposition_rows if item["name"] == "availability"), None
-        )
-        if availability is not None:
-            availability["status"] = (
-                "conflicted"
-                if any(
-                    item["kind"] in {"randomized", "observed"} and item["status"] == "conflicted"
-                    for item in participant_flow
-                )
-                else "unknown"
-            )
-
     card_id = _identity(
         {
-            "version": "rob2-kit.comparison-card.v0.5",
+            "version": "rob2-kit.comparison-card.v0.6",
             "domain_id": domain_id,
             "question_id": question_by_domain[domain_id],
             "result": _identity(result),
@@ -1632,18 +1172,20 @@ def _comparison_cards(
             "question_id": question_by_domain[domain_id],
             "result_identity": _identity(result),
             "result_scope": result_scope,
+            "reported_result": reported
+            if isinstance(reported.get("analysis_population"), str)
+            else None,
+            "target_relation": result.get("relation"),
             "passage_groups": passage_groups,
             "slots": slots,
-            "propositions": proposition_rows,
-            "paired_examples": list(paired_examples_by_domain[domain_id]),
             "participant_flow": participant_flow,
             "missing_data": missing_data,
             "prompt": (
-                "Use the exact Result scope, passages, and quantities above. Classify only the "
-                "remaining propositions; do not infer causation, availability, censoring, "
-                "measurement influence, plan correspondence, or risk from metadata, arithmetic, "
-                "or wording alone. An empty passage group is unopened, not a no-hit; inspect "
-                "relevant Sources before recording an information limitation."
+                "Compare the approved target, reported Result and recorded relation using "
+                "the cited source passages. Preserve scope differences and source conflicts. "
+                "Slots and quantities are navigation and reconstruction aids; use the complete "
+                "official guidance to answer each active question. Empty passage groups denote "
+                "unopened source material, not an established absence."
             ),
         }
     ]
@@ -1715,11 +1257,60 @@ def _search_session_complete(accounts: list[dict[str, Any]]) -> bool:
     return ranks == set(range(1, expected_count + 1))
 
 
+def _flow_navigation(
+    root: Path, trial_id: str, sources: list[dict[str, Any]]
+) -> dict[str, list[dict[str, Any]]]:
+    """Find structural flow/disposition captions, never infer endpoint counts from them."""
+    headings = re.compile(
+        r"\b(?:consort|(?:patient|participant|subject|study)\s+(?:flow|disposition)|"
+        r"(?:follow[- ]up|outcome)\s+(?:status|availability|ascertainment))\b",
+        re.IGNORECASE,
+    )
+    available = {
+        (trial_id, source["id"])
+        for source in sources
+        if source.get("role") == "supplement"
+        and internal_path(root, "sources", trial_id, f"{source['id']}.bin").is_file()
+    }
+    verified = _verified_source_projections(root, available)
+    state = _state(root)
+    with _db(root, "derivative.sqlite3") as connection:
+        reads = connection.execute(
+            "SELECT source_id,page,start_line,end_line FROM page_reads "
+            "WHERE batch_id=? AND phase=? AND trial_id=?",
+            (_reading_batch_basis(state), state.get("phase"), trial_id),
+        ).fetchall()
+    result: dict[str, list[dict[str, Any]]] = {}
+    for (_, source_id), (_, pages) in verified.items():
+        windows = []
+        for entry in _source_navigation_entries(pages):
+            if entry["kind"] != "heading_candidate" or not headings.search(entry["text"]):
+                continue
+            page, number = entry["page"], entry["start_line"]
+            end = min(len(pages[page - 1].splitlines()), entry["end_line"] + 79)
+            covered = all(
+                any(
+                    row[0] == source_id and row[1] == page and row[2] <= n <= row[3]
+                    for row in reads
+                )
+                for n in range(number, end + 1)
+            )
+            if not covered and len(windows) < 20:
+                windows.append(
+                    {"source_id": source_id, "page": page, "start_line": number, "end_line": end}
+                )
+        if windows:
+            result[source_id] = windows
+    return result
+
+
 def _source_coverage(
     trial_id: str,
     sources: list[dict[str, Any]],
     catalog: dict[str, dict[str, Any]],
     search_accounts: dict[str, dict[str, Any]],
+    structural_windows: dict[str, list[dict[str, Any]]] | None = None,
+    read_states: dict[str, Literal["partially_read", "read_complete"]] | None = None,
 ) -> list[dict[str, Any]]:
     """Project bounded retrieval state without making a scientific claim.
 
@@ -1796,10 +1387,9 @@ def _source_coverage(
         elif searched_any:
             search_state = "searched_match"
 
-        # Selecting one passage proves that a passage was inspected, not that
-        # the entire Source was read.  Keep this conservative until an
-        # explicit source-wide read receipt exists.
-        read_state = "partially_read" if selected else "unread"
+        # Source-wide delivery requires verified read receipts, not a quote
+        # selected for this Domain or text merely present in the cache.
+        read_state = (read_states or {}).get(source_id, "partially_read" if selected else "unread")
         render_state = (
             "render_delivered"
             if any(item.get("kind") == "figure" for item in selected)
@@ -1822,10 +1412,20 @@ def _source_coverage(
                         ],
                     }
                 )
+        structural_recovery = (structural_windows or {}).get(source_id)
+        if structural_recovery:
+            recovery.insert(
+                0,
+                {
+                    "operation": "read_pages",
+                    "trial_id": trial_id,
+                    "windows": structural_recovery,
+                },
+            )
         if render_state == "render_delivered":
             status = "render_delivered"
-        elif read_state == "partially_read":
-            status = "partially_read"
+        elif read_state in {"partially_read", "read_complete"}:
+            status = read_state
         elif search_incomplete:
             status = "retrieval_incomplete"
         elif candidates:
@@ -1914,24 +1514,6 @@ def _repair(path: str, code: str, detail: str) -> dict[str, str]:
     return {"path": path, "code": code, "detail": detail}
 
 
-def _duplicate_repairs(values: list[str], path: str, code: str, label: str) -> list[dict[str, str]]:
-    seen: dict[str, int] = {}
-    repairs: list[dict[str, str]] = []
-    for index, value in enumerate(values):
-        first = seen.get(value)
-        if first is None:
-            seen[value] = index
-            continue
-        repairs.append(
-            _repair(
-                f"{path}/{index}",
-                code,
-                f"{label} '{value}' duplicates item {first}; keep one entry.",
-            )
-        )
-    return repairs
-
-
 def _ids(values: list[str]) -> str:
     return ", ".join(values) if values else "none"
 
@@ -1952,21 +1534,27 @@ def _domain_context_basis_identity(
     trial_id: str,
     domain_id: str,
     preview_missing_data: list[dict[str, Any]] | None,
+    root: Path | None = None,
 ) -> str:
-    batch = state.get("batch")
+    account = None
+    if root is not None:
+        account = (working_checkpoint_status(root, state, trial_id).get("checkpoint") or {}).get(
+            "result_account"
+        )
     current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
     return _identity(
         {
-            "batch_identity": batch.get("identity") if isinstance(batch, dict) else None,
+            "batch_identity": _trial_inventory_basis(state, trial_id),
             "trial_id": trial_id,
             "domain_id": domain_id,
             "result_identity": _identity(_approved_result(state, trial_id)),
             "pack_identity": _pack_identity(),
             "checkpoint_identity": current.get("identity") if isinstance(current, dict) else None,
-            # Advisory note edits do not change this scientific cursor. The
-            # captured Batch/Source, approved Result, pack, Domain checkpoint,
-            # and preview remain the authority for invalidating the view.
+            # Legacy advisory note edits do not change this scientific cursor.
+            # Experimental accounts supply upstream flow facts, so their content
+            # joins the Source, Result, pack, Domain and caller-preview dependencies.
             "preview_identity": _identity(preview_missing_data or []),
+            **({"account_identity": _identity(account)} if account is not None else {}),
         }
     )
 
@@ -1981,22 +1569,43 @@ def _pack_identity() -> str:
     )
 
 
-def _domain_premise_status(status: dict[str, Any]) -> dict[str, Any]:
-    """Project only the reusable, source-grounded fields into Domain context."""
+def _step_source_intersects(note: dict[str, Any], evidence: dict[str, Any]) -> bool:
+    page = evidence.get("page", evidence.get("render", {}).get("page"))
+    return any(
+        item["source_id"] == source_handle(evidence["source_id"])
+        and item["page"] == page
+        and (
+            item["start_line"] == 0
+            or (
+                evidence.get("start_line", 0) <= item["end_line"]
+                and evidence.get("end_line", 0) >= item["start_line"]
+            )
+        )
+        for item in note["sources"]
+    )
 
-    result = {
+
+def _domain_working_context(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict) and checkpoint.get("result_account") is not None:
+        return status
+    # Keep the legacy compact projection; the optional account replaces
+    # its fragmented notes instead of inflating every existing context header.
+    projected = {
         key: status.get(key)
         for key in ("status", "reason", "trial_id", "checkpoint_identity", "recovery")
     }
-    checkpoint = status.get("checkpoint")
-    if isinstance(checkpoint, dict):
-        result["checkpoint"] = {
+    projected["checkpoint"] = (
+        {
             key: checkpoint.get(key)
             for key in ("identity", "result_identity", "source_scope", "premise_records")
         }
-    else:
-        result["checkpoint"] = None
-    return result
+        if isinstance(checkpoint, dict)
+        else None
+    )
+    if status.get("reconsideration"):
+        projected["reconsideration"] = status["reconsideration"]
+    return projected
 
 
 def _domain_identity(record: dict[str, Any]) -> str:
@@ -2016,6 +1625,8 @@ def _domain_identity(record: dict[str, Any]) -> str:
     )
     if "result_identity" in record:
         fields = (*fields, "result_identity")
+    if "decision" in record:
+        fields = (*fields, "decision")
     return _identity({key: record[key] for key in fields})
 
 
@@ -2188,6 +1799,7 @@ def _overall_receipt(
                 "checkpoint": record.get("identity"),
                 "judgment": record.get("judgment"),
                 "trace": list(record.get("trace", [])),
+                **({"decision": record["decision"]} if "decision" in record else {}),
                 "driver_questions": driver_questions,
                 "driver_answers": [
                     {
@@ -2322,6 +1934,41 @@ def _canonical_observed_at(root: Path, identity: str) -> str | None:
     return observed_at
 
 
+def resolve_domain_sources(
+    workspace: str | Path, trial_id: str, answers: list[DomainSaveAnswer]
+) -> list[DomainSaveAnswer]:
+    """Normalize compact references through the existing text and visual selectors.
+
+    Compact bases are a host assertion of supporting facts, not a server finding
+    of direct entailment. The unchanged canonical validator still checks the
+    active path, uncertainty, Trial ownership and every selected Evidence identity.
+    """
+    from .evidence import source_reference_resolver
+
+    resolve = source_reference_resolver(workspace, trial_id)
+
+    return [
+        answer.model_copy(
+            update={
+                "bases": tuple(
+                    citation.model_copy(update={"evidence": resolve(citation.evidence)})
+                    if isinstance(citation, DomainEvidenceCitation)
+                    else DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support")
+                    for citation in answer.bases
+                ),
+                "counterevidence": tuple(
+                    DomainCounterpoint(
+                        evidence=tuple(resolve(ref) for ref in point.evidence),
+                        implication=point.implication,
+                    )
+                    for point in answer.counterevidence
+                ),
+            }
+        )
+        for answer in answers
+    ]
+
+
 def save_domain_judgment(
     workspace: str | Path,
     draft: dict[str, Any] | DomainDraft,
@@ -2330,6 +1977,7 @@ def save_domain_judgment(
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    require_current_adjudication_pack(state, SCIENTIFIC_PACK.content_hash)
     try:
         parsed = draft if isinstance(draft, DomainDraft) else DomainDraft.model_validate(draft)
     except ValidationError as error:
@@ -2339,9 +1987,6 @@ def save_domain_judgment(
     is_revision = parsed.supersedes is not None
     records = state.get("domain_records") or {}
     existing_domain = f"{parsed.trial_id}:{parsed.domain_id}" in records
-    trial_has_checkpoint = any(
-        isinstance(key, str) and key.startswith(f"{parsed.trial_id}:") for key in records
-    )
     disposition = state.get("trial_dispositions", {}).get(parsed.trial_id)
     if disposition == "assessed" and (is_revision or not existing_domain):
         raise ValueError("Trial is closed; Domain revisions are not allowed")
@@ -2362,7 +2007,7 @@ def save_domain_judgment(
         )
     if disposition not in {"pending", "reviewable", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
-    if state.get("phase") == "assessment" and not trial_has_checkpoint:
+    if state.get("phase") == "assessment" and not existing_domain:
         notes = working_checkpoint_status(root, state, parsed.trial_id)
         recovery = (
             None
@@ -2379,7 +2024,7 @@ def save_domain_judgment(
                         "code": "post_approval_main_report_reading_required",
                         "detail": (
                             "Finish the post-approval bounded text pass before saving this Trial's "
-                            "first Domain. Call get_domain_context to receive the typed "
+                            "Domain. Call get_domain_context to receive the typed "
                             "reading_recovery windows, use them with read_pages, then retry."
                         ),
                     }
@@ -2461,13 +2106,19 @@ def save_domain_judgment(
     missing_active = [item for item in active if item not in answers]
     if missing_active:
         repairs.append(
-            _repair(
-                "/answers",
-                "answers_must_match_active_questions",
-                "active IDs: "
-                f"[{_ids(active)}]; missing active IDs: [{_ids(missing_active)}]. "
-                "Supplied inactive branch answers are ignored.",
-            )
+            {
+                **_repair(
+                    "/answers",
+                    "answers_must_match_active_questions",
+                    "active IDs: "
+                    f"[{_ids(active)}]; missing active IDs: [{_ids(missing_active)}]. "
+                    "Supplied inactive branch answers are ignored.",
+                ),
+                "answer_path": {
+                    "active_question_ids": active,
+                    "missing_question_ids": missing_active,
+                },
+            }
         )
     active_answer_items = [
         items_by_question[question_id][0] for question_id in active if question_id in answers
@@ -2478,17 +2129,40 @@ def save_domain_judgment(
         for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
         if isinstance(value, dict) and value.get("trial_id") == parsed.trial_id
     }
+    working_steps = {
+        step["identity"]: step
+        for step in (
+            (working_checkpoint_status(root, state, parsed.trial_id).get("checkpoint") or {}).get(
+                "result_account"
+            )
+            or ()
+        )
+    }
     referenced_handles: set[str] = set()
     for _, answer in active_answer_items:
         for basis in answer.bases:
             evidence_handle = getattr(basis, "evidence", None)
             if isinstance(evidence_handle, str):
                 referenced_handles.add(evidence_handle)
+            link = getattr(basis, "working_observation", None)
+            if link is not None:
+                submitted = link.model_dump(mode="json", exclude_none=True)
+                step = (
+                    working_steps.get(submitted.get("step_identity"))
+                    or submitted.get("result_step")
+                    or {}
+                )
+                for count in step.get("counts", ()):
+                    referenced_handles.update(count["basis"])
         for row in answer.missing_data or ():
             referenced_handles.update(row.basis)
+    if parsed.adjudication is not None:
+        referenced_handles.update(parsed.adjudication.evidence)
+        referenced_handles.update(item.evidence for item in parsed.adjudication.counterevidence)
     if parsed.revision_basis is not None and parsed.revision_basis.kind == "new_evidence":
         referenced_handles.add(parsed.revision_basis.evidence)
     catalog = dict(proposal_catalog)
+    catalog.update(_canonical_account_count_evidence(root, state, parsed.trial_id))
     missing_handles = {
         handle
         for handle in referenced_handles
@@ -2526,9 +2200,10 @@ def save_domain_judgment(
                         _repair(
                             f"/answers/{answer_index}/missing_data/{row_index}/result_identity",
                             "missing_data_result_mismatch",
-                            "This participant-flow row names another approved Result. Remove the "
-                            "field to bind it to the current approved Result, or submit the "
-                            "current Result identity.",
+                            "This participant-flow row names another approved Result. Verify that "
+                            "its endpoint, window and population apply to the current Result "
+                            "before correcting its identity. Preserve a genuine scope mismatch; "
+                            "changing the identity does not make the counts applicable.",
                         )
                     )
                 row["result_identity"] = approved_result_identity
@@ -2560,14 +2235,11 @@ def save_domain_judgment(
                 missing_data_rows.append(row)
             answer["missing_data"] = reconcile_missing_data(missing_data_rows)
         bases: list[dict[str, Any]] = []
-        direct_basis = False
-        uncertainty_basis = False
         seen_basis: set[bytes] = set()
         for basis_index, basis_model in enumerate(answer_item.bases):
             basis = basis_model.model_dump(mode="json", exclude_none=True)
             path = f"/answers/{answer_index}/bases/{basis_index}"
             if basis["kind"] == "limitation":
-                uncertainty_basis = True
                 if basis.get("search_receipt") is not None:
                     try:
                         receipt = _search_receipt(root, basis["search_receipt"])
@@ -2603,7 +2275,6 @@ def save_domain_judgment(
                             "could resolve the premise; change the query only when its wording "
                             "or the premise warrants it."
                         )
-                    uncertainty_basis = True
                     # Keep the disposable handle at the MCP boundary only.
                     # Checkpoints and their identities refer to the validated
                     # receipt content, so later finalization and verification
@@ -2622,10 +2293,6 @@ def save_domain_judgment(
                         )
                     )
             else:
-                if basis["kind"] in {"direct_support", "indirect_support", "contradiction"}:
-                    direct_basis = True
-                elif basis["kind"] in {"context", "inference"}:
-                    uncertainty_basis = True
                 evidence = catalog_by_handle.get(basis["evidence"]) or catalog.get(
                     basis["evidence"]
                 )
@@ -2639,6 +2306,161 @@ def save_domain_judgment(
                         )
                     )
                 else:
+                    link = basis.get("working_observation")
+                    if isinstance(link, dict) and "step_identity" in link:
+                        working = working_checkpoint_status(root, state, parsed.trial_id)
+                        checkpoint = working.get("checkpoint") or {}
+                        step = next(
+                            (
+                                item
+                                for item in checkpoint.get("result_account") or ()
+                                if item["identity"] == link["step_identity"]
+                            ),
+                            None,
+                        )
+                        if step is None or working.get("reason") in {
+                            "result_changed",
+                            "source_changed",
+                        }:
+                            repairs.append(
+                                _repair(
+                                    f"{path}/working_observation",
+                                    "result_step_stale",
+                                    "Recover the current selected-Result account step.",
+                                )
+                            )
+                        else:
+                            note = step["observation"]
+                            transfer = link.get("transfer")
+                            scope = note.get("scope") or {}
+                            if scope.get("relation") == "mismatch" and (
+                                basis["kind"] not in {"inference", "context", "contradiction"}
+                                or not transfer
+                            ):
+                                repairs.append(
+                                    _repair(
+                                        f"{path}/working_observation",
+                                        "result_step_transfer",
+                                        "Different scope needs an explicit relevance rationale "
+                                        "for context/counterevidence, or transfer as inference; "
+                                        "preserve the source scope.",
+                                    )
+                                )
+                            if not _step_source_intersects(note, evidence):
+                                repairs.append(
+                                    _repair(
+                                        f"{path}/working_observation",
+                                        "result_step_source",
+                                        "Cited Evidence must intersect this factual step's "
+                                        "Source location.",
+                                    )
+                                )
+                            count_evidence = {}
+                            for row in step.get("counts", ()):
+                                for handle in row["basis"]:
+                                    nested_evidence = catalog_by_handle.get(handle) or catalog.get(
+                                        handle
+                                    )
+                                    if (
+                                        nested_evidence is None
+                                        or nested_evidence.get("trial_id") != parsed.trial_id
+                                    ):
+                                        repairs.append(
+                                            _repair(
+                                                f"{path}/working_observation",
+                                                "result_step_count_evidence",
+                                                "Nested count Evidence must resolve in this Trial.",
+                                            )
+                                        )
+                                    else:
+                                        count_evidence[handle] = nested_evidence["identity"]
+                            basis["working_observation"] = {
+                                **({"count_evidence": count_evidence} if count_evidence else {}),
+                                "checkpoint_identity": checkpoint["identity"],
+                                "observation": note,
+                                "result_step": step,
+                                **({"transfer": transfer} if transfer else {}),
+                            }
+                    elif isinstance(link, dict) and "text" in link:
+                        # Copy the selected Evidence locator only. Semantic scope
+                        # stays exactly host supplied, independent of the Result.
+                        note = WorkingNote(
+                            text=link["text"],
+                            scope=link.get("scope"),
+                            sources=(
+                                {
+                                    "source_id": source_handle(evidence["source_id"]),
+                                    "page": (
+                                        evidence["render"]["page"]
+                                        if evidence["kind"] == "figure"
+                                        else evidence["page"]
+                                    ),
+                                    "start_line": evidence.get("start_line", 0),
+                                    "end_line": evidence.get("end_line", 0),
+                                },
+                            ),
+                        )
+                        basis["working_observation"] = {
+                            "observation": note.model_dump(mode="json", exclude_none=True)
+                        }
+                    elif isinstance(link, dict):
+                        working = working_checkpoint_status(root, state, parsed.trial_id)
+                        checkpoint = working.get("checkpoint") or {}
+                        step = link.get("result_step")
+                        if step is not None and (
+                            step not in (checkpoint.get("result_account") or ())
+                            or not _step_source_intersects(link["observation"], evidence)
+                            or (
+                                (link["observation"].get("scope") or {}).get("relation")
+                                == "mismatch"
+                                and (
+                                    basis["kind"] not in {"inference", "context", "contradiction"}
+                                    or not link.get("transfer")
+                                )
+                            )
+                        ):
+                            repairs.append(
+                                _repair(
+                                    f"{path}/working_observation",
+                                    "result_step_snapshot_invalid",
+                                    "Use an unchanged current factual step and preserve its Source "
+                                    "scope; contextual use needs relevance rationale, "
+                                    "support needs explicit inference.",
+                                )
+                            )
+                        notes = list(checkpoint.get("observations", ()))
+                        notes.extend(
+                            step["observation"] for step in checkpoint.get("result_account") or ()
+                        )
+                        for premise in checkpoint.get("premise_records") or ():
+                            notes.extend(premise.get("observations", ()))
+                            notes.extend(premise.get("counterevidence", ()))
+                        if (
+                            working.get("reason") in {"result_changed", "source_changed"}
+                            or (
+                                step is not None
+                                and link.get("count_evidence", {})
+                                != {
+                                    handle: (
+                                        catalog_by_handle.get(handle) or catalog.get(handle) or {}
+                                    ).get("identity")
+                                    for row in step.get("counts", ())
+                                    for handle in row["basis"]
+                                }
+                            )
+                            or checkpoint.get("identity") != link.get("checkpoint_identity")
+                            or link["observation"] not in notes
+                        ):
+                            repairs.append(
+                                _repair(
+                                    f"{path}/working_observation",
+                                    "working_observation_link_invalid",
+                                    "Link an unchanged observation from the current "
+                                    "source/Result-bound "
+                                    "working checkpoint. Scope is advisory "
+                                    "and does not determine answers.",
+                                )
+                            )
                     basis["evidence"] = evidence["identity"]
                     material = str(evidence.get("quote", evidence.get("transcription", "")))
                     basis["source"] = material
@@ -2653,38 +2475,16 @@ def save_domain_judgment(
                 )
             seen_basis.add(key)
             bases.append(basis)
-        if answer["answer"] in {"yes", "no"} and not direct_basis:
+        # Relationship labels preserve the host's use of each premise. They are
+        # not a second scientific standard for selecting Cochrane answer values.
+        if not bases:
             repairs.append(
                 _repair(
                     f"/answers/{answer_index}/bases",
-                    "answer_requires_direct_basis",
-                    f"question '{answer_item.question_id}' has definitive answer "
-                    f"'{answer['answer']}', which needs a direct, indirect, or contradictory "
-                    "Evidence basis. The submitted answer is unchanged; add the required "
-                    "support or reconsider the answer from the evidence.",
-                )
-            )
-        elif answer["answer"] in {"probably_yes", "probably_no"} and not (
-            direct_basis or uncertainty_basis
-        ):
-            repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/bases",
-                    "answer_requires_uncertainty_basis",
-                    f"the submitted probable answer '{answer['answer']}' needs direct evidence, "
-                    "a limitation, a valid scoped no-hit receipt, or an exact context/inference "
-                    "premise. The submitted answer is unchanged.",
-                )
-            )
-        if answer["answer"] in {"yes", "no"} and any(
-            item.get("kind") == "limitation" for item in bases
-        ):
-            repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/bases",
-                    "complete_claim_has_unresolved_premise",
-                    "a definitive claim cannot be saved while a required premise is unresolved; "
-                    "use a probable answer or resolve the limitation first.",
+                    "answer_basis_required",
+                    "Provide an inspected source premise, scoped search account or explicit "
+                    "limitation. Explain the answer using the complete official guidance; "
+                    "the server verifies provenance and structure, not semantic sufficiency.",
                 )
             )
         answer["bases"] = bases
@@ -2757,6 +2557,72 @@ def save_domain_judgment(
     existing_rows = state.get("domain_records", {})
     key = f"{parsed.trial_id}:{parsed.domain_id}"
     existing_record = existing_rows.get(key)
+    adjudication = None
+    if parsed.adjudication is not None:
+        supplied = parsed.adjudication
+        parent = next(
+            (
+                item
+                for item in state.get("domain_history_records", {}).get(key, [])
+                if item.get("identity") == supplied.checkpoint_identity
+            ),
+            None,
+        )
+        parent_evidence = domain_evidence_ids(parent)
+        adjudication_evidence = [
+            catalog_by_handle.get(handle) or catalog.get(handle) for handle in supplied.evidence
+        ]
+        counterpoints = [
+            catalog_by_handle.get(item.evidence) or catalog.get(item.evidence)
+            for item in supplied.counterevidence
+        ]
+        if (
+            not isinstance(parent, dict)
+            or supplied.result_identity != approved_result_identity
+            or supplied.domain_id != parsed.domain_id
+            or supplied.pack_identity != SCIENTIFIC_PACK.content_hash
+            or parent.get("result_identity") != approved_result_identity
+            or parent.get("answers") != canonical_answers
+            or parsed.supersedes != supplied.checkpoint_identity
+            or supplied.judgment == evaluation.judgment
+            or any(
+                not item
+                or item.get("trial_id") != parsed.trial_id
+                or item.get("identity") not in parent_evidence
+                for item in [*adjudication_evidence, *counterpoints]
+            )
+        ):
+            return _result(
+                "repair",
+                state,
+                repairs=[
+                    _repair(
+                        "/adjudication",
+                        "domain_adjudication_basis_invalid",
+                        "Adjudicate an unchanged saved checkpoint for this exact Result "
+                        "and Domain, "
+                        "name it in supersedes, cite its answer Evidence, and explain a departure "
+                        "from the proposed judgment. Changed answers need a new checkpoint first.",
+                    )
+                ],
+            )
+        adjudication = supplied.model_dump(mode="json")
+        adjudication["evidence"] = list(
+            dict.fromkeys(item["identity"] for item in adjudication_evidence if item)
+        )
+        adjudication["counterevidence"] = [
+            {"evidence": item["identity"], "implication": point.implication}
+            for point, item in zip(supplied.counterevidence, counterpoints, strict=True)
+            if item
+        ]
+    decision = {
+        "contract": DOMAIN_JUDGMENT_CONTRACT,
+        "proposed": evaluation.judgment.value,
+        "adopted": evaluation.judgment.value if adjudication is None else adjudication["judgment"],
+        "authority": "algorithm" if adjudication is None else "host",
+        "trace_authority": "proposed_algorithm",
+        "adjudication": adjudication,
+    }
     if existing_record is None and (
         parsed.supersedes is not None or parsed.revision_basis is not None
     ):
@@ -2794,13 +2660,43 @@ def save_domain_judgment(
         "search_accounts": [search_accounts[key] for key in sorted(search_accounts)],
         "active_questions": active,
         "inactive_questions": [key for key in allowed if key not in active],
-        "judgment": evaluation.judgment.value,
+        "judgment": decision["adopted"],
+        "decision": decision,
         "trace": list(evaluation.trace),
         "driver_questions": list(evaluation.driver_questions),
         "observed_at": datetime.now(UTC).isoformat(),
     }
     record["evidence_sufficiency"] = _evidence_sufficiency(canonical_answers, search_accounts)
+    if (
+        existing_record is not None
+        and "decision" not in existing_record
+        and parsed.adjudication is None
+    ):
+        legacy_candidate = {key: value for key, value in record.items() if key != "decision"}
+        if _domain_identity(legacy_candidate) == existing_record.get("identity"):
+            return _result("success", state, checkpoint=existing_record, retry=True)
     record["identity"] = _domain_identity(record)
+    if adjudication is not None:
+        recovery_context = get_domain_context(root, parsed.trial_id, parsed.domain_id)
+        required_bytes = (
+            adjudication_context_header_bytes(recovery_context, record)
+            + ADJUDICATION_CONTEXT_METADATA_RESERVE
+        )
+        if required_bytes > DOMAIN_CONTEXT_MAX_BYTES:
+            return _result(
+                "repair",
+                state,
+                repairs=[
+                    _repair(
+                        "/adjudication",
+                        "domain_adjudication_context_oversized",
+                        f"Complete UTF-8 stable context header requires {required_bytes} bytes "
+                        f"including reserved transport metadata; limit {DOMAIN_CONTEXT_MAX_BYTES}. "
+                        "No text was truncated or saved. Submit a substantive concise rationale, "
+                        "assessor attribution and counterevidence within this recovery budget.",
+                    )
+                ],
+            )
     prior_observed_at = _canonical_observed_at(root, record["identity"])
     if prior_observed_at is not None:
         record["observed_at"] = prior_observed_at
@@ -2885,6 +2781,7 @@ def save_domain_judgment(
             parsed.trial_id,
             parsed.domain_id,
             preview_scope if isinstance(preview_scope, list) else None,
+            root,
         )
         if delivery.get("basis_identity") != current_basis:
             return _result(
@@ -2966,6 +2863,7 @@ def save_domain_judgment(
                 overall_evaluation,
             ),
         }
+        snapshot["aggregation"], _ = aggregation_record(snapshot)
         snapshot["identity"] = _identity(snapshot)
         current_snapshots = state.get("snapshots")
         snapshots: dict[str, Any] = (
@@ -3022,6 +2920,54 @@ def save_domain_judgment(
     )
 
 
+def _canonical_account_count_evidence(
+    root: Path, state: dict[str, Any], trial_id: str
+) -> dict[str, dict[str, Any]]:
+    """Recover promoted count Evidence without depending on disposable handles."""
+    identities = {
+        value
+        for record in (state.get("domain_records") or {}).values()
+        if record.get("trial_id") == trial_id
+        for answer in record.get("answers", [])
+        for basis in answer.get("bases", [])
+        for value in (basis.get("working_observation", {}).get("count_evidence") or {}).values()
+    }
+    return _canonical_evidence_records(root, identities)
+
+
+def _domain_question_cards(
+    domain_id: str,
+    active: set[str],
+    checkpoint_identity: str | None,
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": item.id,
+            "wording": item.wording,
+            "options": [answer.value for answer in item.allowed_answers],
+            "activation_status": (
+                "always_active"
+                if item.activation.kind == "always"
+                else "dependent_on_draft_answers"
+                if checkpoint_identity is None
+                else (
+                    "active_in_saved_checkpoint"
+                    if item.id in active
+                    else "inactive_in_saved_checkpoint"
+                )
+            ),
+            "activation": item.activation.model_dump(mode="json"),
+            "guidance_locator": item.guidance.official.source_locator,
+            "query_suggestions": tuple(
+                suggestion.model_dump(mode="json")
+                for suggestion in item.guidance.operational.query_suggestions
+            ),
+        }
+        for item in SCIENTIFIC_PACK.questions
+        if item.domain_id == domain_id
+    ]
+
+
 def get_domain_context(
     workspace: str | Path,
     trial_id: str | None = None,
@@ -3032,6 +2978,8 @@ def get_domain_context(
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    require_current_adjudication_pack(state, SCIENTIFIC_PACK.content_hash)
+    requested_preview = preview_missing_data
     if state.get("phase") not in {"assessment", "ready_to_finalize"}:
         raise ValueError("Domain work is not active")
     active_trial, active_domain = _active_trial_and_domain(state)
@@ -3068,10 +3016,6 @@ def get_domain_context(
     checkpoint_identity = existing.get("identity") if isinstance(existing, dict) else None
     if not isinstance(checkpoint_identity, str):
         checkpoint_identity = None
-    trial_has_checkpoint = any(
-        isinstance(key, str) and key.startswith(f"{trial_id}:")
-        for key in (state.get("domain_records") or {})
-    )
     answer_rows = existing.get("answers", []) if isinstance(existing, dict) else []
     answers = {
         item["question_id"]: item["answer"]
@@ -3126,6 +3070,7 @@ def get_domain_context(
         and isinstance(basis.get("evidence"), str)
     )
     handles.update(result_handles)
+    handles.update(handle for row in preview_missing_data or () for handle in row.get("basis", ()))
     checkpoint_answers = [
         answer
         for answer in (existing.get("answers", []) if isinstance(existing, dict) else [])
@@ -3134,6 +3079,9 @@ def get_domain_context(
     current_result_identity = _identity(result)
     flow_answers: list[dict[str, Any]] = []
     flow_rows: list[dict[str, Any]] = []
+    account = (premise_status.get("checkpoint") or {}).get("result_account")
+    if preview_missing_data is None and account is not None:
+        preview_missing_data = [row for step in account for row in step.get("counts", ())]
     if preview_missing_data is None:
         all_domain_records = state.get("domain_records") or {}
         for flow_domain in ("domain:deviations", "domain:missing"):
@@ -3172,6 +3120,7 @@ def get_domain_context(
                             "randomized",
                             "eligible",
                             "treated",
+                            "completed",
                             "observed",
                             "analyzed",
                             "imputed",
@@ -3386,6 +3335,7 @@ def get_domain_context(
         "deduplicated": associated_duplicates + explicit_duplicates + unassigned_duplicates,
     }
     catalog = dict(proposal_catalog)
+    catalog.update(_canonical_account_count_evidence(root, state, trial_id))
     for value in [*selected_candidates, *selected_discoveries, *selected_explicit]:
         catalog[value["identity"]] = value
     missing_handles = {
@@ -3407,6 +3357,7 @@ def get_domain_context(
         for reference in row.get("basis", [])
         if isinstance(reference, str) and reference.startswith("eh_")
     }
+    preview_handles -= {item.get("handle") for item in catalog.values()}
     if preview_handles:
         catalog.update(_evidence_for_handles(root, preview_handles, trial_id))
 
@@ -3455,6 +3406,27 @@ def get_domain_context(
     domain_question_ids = tuple(
         item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id
     )
+    visible_candidates = {
+        value["identity"]
+        for value in catalog.values()
+        if value.get("inclusion_reason") == "active_domain_candidate"
+    }
+    session_questions = {
+        session: _search_session_question_purpose(root, session, domain_id)
+        for session in {
+            session
+            for identity, session, _rank in associated_rows
+            if identity in visible_candidates
+        }
+    }
+    candidate_questions: dict[str, set[str]] = {}
+    for evidence_identity, session, _rank in associated_rows:
+        if evidence_identity not in visible_candidates:
+            continue
+        question_id = session_questions[session]
+        candidate_questions.setdefault(evidence_identity, set()).update(
+            (question_id,) if question_id is not None else domain_question_ids
+        )
     questions_by_evidence: dict[str, set[str]] = {}
     for answer in checkpoint_answers:
         question_id = answer.get("question_id")
@@ -3591,13 +3563,22 @@ def get_domain_context(
             if reason in {"active_domain_candidate", "explicit_carry_forward"}
             else []
         )
-        workspace_groups.append(
-            {
-                "inclusion_reason": reason,
-                "question_ids": scoped_questions,
-                "evidence_handles": sorted(value["handle"] for value in items),
-            }
-        )
+        grouped_handles: dict[tuple[str, ...], list[str]] = {}
+        for value in items:
+            questions = (
+                sorted(candidate_questions.get(value["identity"], domain_question_ids))
+                if reason == "active_domain_candidate"
+                else scoped_questions
+            )
+            grouped_handles.setdefault(tuple(questions), []).append(value["handle"])
+        for questions, handles in sorted(grouped_handles.items()):
+            workspace_groups.append(
+                {
+                    "inclusion_reason": reason,
+                    "question_ids": list(questions),
+                    "evidence_handles": sorted(handles),
+                }
+            )
 
     def result_projection(value: dict[str, Any]) -> dict[str, Any]:
         if value.get("kind") == "unavailable":
@@ -3728,11 +3709,12 @@ def get_domain_context(
                 item.id for item in SCIENTIFIC_PACK.questions if item.id in active
             ),
         ),
-        "working_checkpoint": _domain_premise_status(premise_status),
+        "working_checkpoint": _domain_working_context(premise_status),
         "evidence_sufficiency": _host_asserted_sufficiency(
             existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
         ),
         "current_checkpoint": checkpoint_identity,
+        "decision": existing.get("decision") if isinstance(existing, dict) else None,
         "guidance": [
             (
                 "Answer every initially active question plus each dependent question whose "
@@ -3741,52 +3723,16 @@ def get_domain_context(
             ),
             *_DOMAIN_GUIDANCE,
         ],
-        "response_framework": _RESPONSE_FRAMEWORK.model_dump(mode="json"),
         "traps": [
             "A no-hit search describes one lexical query, not scientific absence.",
-            *_DOMAIN_TRAPS,
         ],
-        "questions": [
-            {
-                "id": item.id,
-                "wording": item.wording,
-                "options": [answer.value for answer in item.allowed_answers],
-                "activation_status": (
-                    "always_active"
-                    if item.activation.kind == "always"
-                    else "dependent_on_draft_answers"
-                    if checkpoint_identity is None
-                    else (
-                        "active_in_saved_checkpoint"
-                        if item.id in active
-                        else "inactive_in_saved_checkpoint"
-                    )
-                ),
-                "activation": item.activation.model_dump(mode="json"),
-                "official_guidance": item.guidance.official.source_excerpt,
-                "source_locator": item.guidance.official.source_locator,
-                "bias_construct": item.guidance.operational.bias_construct,
-                "decision_rule": item.guidance.operational.decision_rule,
-                "evidence_needed": item.guidance.operational.evidence_needed,
-                "no_information_rule": item.guidance.operational.no_information_rule,
-                "answer_anchors": tuple(
-                    anchor.model_dump(mode="json")
-                    for anchor in item.guidance.operational.answer_anchors
-                ),
-                "considerations": item.guidance.operational.considerations,
-                "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
-                "query_suggestions": tuple(
-                    suggestion.model_dump(mode="json")
-                    for suggestion in item.guidance.operational.query_suggestions
-                ),
-            }
-            for item in SCIENTIFIC_PACK.questions
-            if item.domain_id == domain_id
-        ],
+        "questions": _domain_question_cards(domain_id, active, checkpoint_identity),
         "completion_rule": (
-            "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
-            "discovery for unresolved premises. Supply every question activated by the submitted "
-            "answer path with an Evidence use, scoped absence receipt, or limitation. "
+            "Ground each active proposition and uncertainty in inspected Evidence, scoped "
+            "search receipts, or an explicit scientific limitation. Complete reading_recovery "
+            "with read_pages and all context continuations. Document-structure recovery in "
+            "coverage is navigation, not selected Evidence; inspect relevant unopened windows "
+            "before claiming information is unreported, or retain a bounded stopping rationale. "
             "Inactive extras are ignored."
         ),
         "evidence_workspace": {
@@ -3821,6 +3767,7 @@ def get_domain_context(
             participant_flow_data=(
                 reconcile_missing_data(participant_flow_rows) if participant_flow_rows else None
             ),
+            candidate_questions=candidate_questions,
         ),
         "coverage": _source_coverage(
             trial_id,
@@ -3838,20 +3785,19 @@ def get_domain_context(
                     if isinstance(item, dict) and isinstance(item.get("identity"), str)
                 },
             ),
+            _flow_navigation(root, trial_id, trial_sources)
+            if domain_id in {"domain:deviations", "domain:missing"}
+            else None,
+            source_reading_status(root, trial_id),
         ),
-        "reading_recovery": (
-            (
-                None
-                if working_checkpoint_status(root, state, trial_id).get("status") == "current"
-                else _main_report_recovery(root, state, trial_id, include_budget=True)
-            )
-            if not trial_has_checkpoint
-            else None
-        ),
+        # Keep source reading out of immutable scientific context snapshots.
+        # Otherwise a read_pages call cannot retire their frozen report text.
+        "primary_report": [],
+        "reading_recovery": _main_report_recovery(root, state, trial_id, include_budget=True),
         "continuation": continuation,
     }
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
-        state, trial_id, domain_id, preview_missing_data
+        state, trial_id, domain_id, requested_preview, root
     )
     return projected

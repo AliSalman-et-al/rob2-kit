@@ -29,7 +29,7 @@ from pydantic import (
 )
 from pydantic.functional_validators import AfterValidator
 
-from .models import Answer, canonical_json_bytes
+from .models import Answer, Judgment, canonical_json_bytes
 
 
 class StrictModel(BaseModel):
@@ -117,12 +117,106 @@ class WorkingSourceRange(StrictModel):
         return self
 
 
+class VisualEvidenceReference(StrictModel):
+    """Host transcription of an authentic delivered image, not verified OCR."""
+
+    delivery_receipt: Identity = Field(
+        description="Receipt returned alongside render_page ImageContent for this Trial."
+    )
+    region: tuple[
+        NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
+    ] = Field(description="Normalized x0,y0,x1,y1 bounds of the transcribed image region.")
+    transcription: VisualTranscription = Field(
+        description="Literal self-contained account of the region, including relevant labels, "
+        "values, units, denominators and footnotes. This is a host observation, not OCR truth."
+    )
+    uncertainty: VisualTranscription | None = Field(
+        default=None,
+        max_length=2_000,
+        exclude_if=lambda value: value is None,
+        description="Optional uncertainty about the image interpretation; do not invent a value.",
+    )
+
+    @model_validator(mode="after")
+    def ordered_region(self) -> VisualEvidenceReference:
+        x0, y0, x1, y1 = self.region
+        if not (x0 < x1 and y0 < y1):
+            raise ValueError("region must be ordered and inside the render page")
+        return self
+
+
+class SourceQuoteReference(StrictModel):
+    """A copied literal from a delivered physical page, resolved by the server."""
+
+    source_id: SourceHandle = Field(description="Exact current-Trial Source handle.")
+    page: PageNumber = Field(description="1-based physical Source page.")
+    selected_text: NonBlankText = Field(
+        description="Unique contiguous unnumbered literal quote copied from read_pages. "
+        "Presentation normalization only; no paraphrase or automatic page relocation."
+    )
+
+
+DomainSourceReference = (
+    SubmittedEvidenceHandle | WorkingSourceRange | SourceQuoteReference | VisualEvidenceReference
+)
+
+
+class WorkingObservationScope(StrictModel):
+    """Host interpretation of source scope, never a source-entailment certificate."""
+
+    result_identity: Identity | None = Field(
+        default=None, description="Result against which this observation's relation is assessed."
+    )
+    relation: Literal[
+        "matched", "mismatch", "partial_overlap", "unknown", "shared_trial_context"
+    ] = Field(
+        description="Host-asserted relation to the Result: mismatch is a known different scope; "
+        "partial_overlap covers some of it; unknown leaves applicability unresolved; "
+        "shared_trial_context can inform several Results indirectly. No category decides an answer."
+    )
+    groups: tuple[NonBlankText, ...] = Field(
+        default=(),
+        description="Groups actually described by this observation, including other arms.",
+    )
+    stage: NonBlankText | None = Field(
+        default=None,
+        description="Stage covered, such as sampling or treatment completion.",
+    )
+    window: NonBlankText | None = Field(
+        default=None, description="Time point or interval actually covered by this observation."
+    )
+    population: NonBlankText | None = Field(
+        default=None,
+        description="Participant or measurement population actually covered by this observation.",
+    )
+    method: NonBlankText | None = Field(
+        default=None,
+        description="Measurement or analysis method to which this observation applies.",
+    )
+    meaning: Literal["reported", "inferred", "uncertain"] = Field(
+        default="uncertain", description="Whether the observation is reported or host inferred."
+    )
+    uncertainty: NonBlankText | None = Field(
+        default=None,
+        description="Unresolved source meaning, scope or interpretation; not proof of absence.",
+    )
+
+
 class WorkingNote(StrictModel):
+    scope: WorkingObservationScope | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional host interpretation of the observation scope relative to the Result.",
+    )
+
     text: NonBlankText = Field(
         max_length=4_000, description="Concise observation, interpretation, or open question."
     )
     sources: tuple[WorkingSourceRange, ...] = Field(
-        min_length=1, max_length=8, description="Exact Trial source locations for this note."
+        min_length=1,
+        max_length=8,
+        description="Array of exact Trial source locations for this note; "
+        "coordinates belong inside these items, not beside the note text.",
     )
     domain_id: DomainId | None = Field(
         default=None, description="Related RoB 2 Domain, when known."
@@ -227,10 +321,94 @@ class WorkingPremiseRecord(StrictModel):
 
 # Keep the shorter name available to callers while the wire/storage field uses
 # the explicit plural ``premise_records`` name.
-WorkingPremise = WorkingPremiseRecord
+
+
+class WorkingResultStep(StrictModel):
+    """A source-linked step in producing the selected Result, before answering questions."""
+
+    id: NonBlankText = Field(description="Stable host name for this editable factual step.")
+    identity: Identity | None = Field(
+        default=None,
+        description="Content identity returned by the server; omit for a changed step.",
+    )
+    aspect: Literal["assignment_course", "outcome_ascertainment", "analysis", "plan_report"] = (
+        Field(description="Part of producing the selected Result that this step describes.")
+    )
+    observation: WorkingNote = Field(
+        description="Original source-located factual observation; preserve its actual scope."
+    )
+    inference: NonBlankText | None = Field(
+        default=None, description="Explicit connection to the selected Result; not a source fact."
+    )
+    counterevidence: tuple[WorkingNote, ...] = Field(
+        default=(), description="Source-located qualifications or counterpoints to this step."
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        default=(), description="Unresolved facts or transitions; not evidence of absence."
+    )
+    counts: tuple[MissingDataRow, ...] = Field(
+        default=(), description="Optional existing participant-flow rows; explicit Evidence bases."
+    )
+
+    @model_validator(mode="after")
+    def identity_matches(self) -> WorkingResultStep:
+        return _identity(self, self.identity)
+
+
+class WorkingAccountNote(StrictModel):
+    text: NonBlankText = Field(
+        max_length=4_000, description="Source-grounded observation or qualification."
+    )
+    sources: tuple[DomainSourceReference, ...] = Field(
+        min_length=1,
+        max_length=8,
+        description="Same Evidence references as Domain bases: selected handle, exact text "
+        "range, or delivered visual transcription. Resolves original source locations.",
+    )
+    scope: WorkingObservationScope | None = Field(
+        default=None, description="Scope actually observed in the source."
+    )
+    domain_id: DomainId | None = Field(default=None, description="Related Domain, when known.")
+    question_id: QuestionId | None = Field(
+        default=None, description="Related signalling question, when known."
+    )
+
+
+class WorkingResultStepDraft(StrictModel):
+    id: NonBlankText = Field(description="Stable host name; reused when revising this step.")
+    identity: Identity | None = Field(
+        default=None, description="Returned content identity; omit when editing."
+    )
+    aspect: Literal["assignment_course", "outcome_ascertainment", "analysis", "plan_report"] = (
+        Field(description="Part of producing the selected Result described by this step.")
+    )
+    observation: WorkingAccountNote = Field(
+        description="Original source-grounded factual observation."
+    )
+    inference: NonBlankText | None = Field(
+        default=None, description="Optional host inference, not a source fact."
+    )
+    counterevidence: tuple[WorkingAccountNote, ...] = Field(
+        default=(), description="Source-grounded qualifications and counterpoints."
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        default=(),
+        description="Preserve unresolved facts and qualifiers during structural repair; "
+        "empty is valid.",
+    )
+    counts: tuple[MissingDataRow, ...] = Field(
+        default=(), description="Optional participant-flow rows with their Evidence bases."
+    )
 
 
 class WorkingCheckpointDraft(StrictModel):
+    result_account: tuple[WorkingResultStepDraft, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional selected-Result reconstruction. Replaces overlapping notes, "
+        "premises and drafts; source-linked steps are shared across Domains, "
+        "not signalling answers.",
+    )
     trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
     main_report_source_id: SourceHandle | Literal["missing"] | None = Field(
         default=None,
@@ -271,6 +449,27 @@ class WorkingCheckpointDraft(StrictModel):
         default=None, max_length=2_000, description="Next source-review step, when useful."
     )
 
+    @model_validator(mode="after")
+    def account_replaces_fragmented_notes(self) -> WorkingCheckpointDraft:
+        if self.result_account is not None:
+            if any(
+                (
+                    self.observations,
+                    self.interpretations,
+                    self.premise_records,
+                    self.drafts,
+                    self.open_questions,
+                    self.terminology,
+                )
+            ):
+                raise ValueError(
+                    "result_account replaces notes/premises/drafts; do not duplicate them"
+                )
+            ids = [step.id for step in self.result_account]
+            if len(ids) != len(set(ids)):
+                raise ValueError("Result account step IDs must be unique")
+        return self
+
 
 class WorkingSourceBinding(StrictModel):
     source_id: SourceId
@@ -285,6 +484,7 @@ class WorkingDomainBinding(StrictModel):
 
 
 class WorkingCheckpoint(StrictModel):
+    result_account: tuple[WorkingResultStep, ...] | None = None
     identity: Identity | None = None
     batch_id: Identity
     trial_id: TrialId
@@ -392,6 +592,7 @@ ParticipantFlowKind = Literal[
     "randomized",
     "eligible",
     "treated",
+    "completed",
     "observed",
     "analyzed",
     "imputed",
@@ -442,6 +643,13 @@ class MissingDataRow(StrictModel):
     )
     treated: NonNegativeInt | None = Field(
         default=None, description="Number receiving or starting the assigned intervention."
+    )
+    completed: NonNegativeInt | None = Field(
+        default=None,
+        description=(
+            "Number reported to complete study or follow-up in this scope. This is not an "
+            "observed-outcome count; endpoint availability and overlap remain separate facts."
+        ),
     )
     observed: NonNegativeInt | None = Field(
         default=None, description="Number with observed outcome data when reported."
@@ -550,6 +758,7 @@ class SourceOrigin(StrEnum):
     LOCAL_DOSSIER = "local_dossier"
     REGISTRY = "registry"
     RESEARCHER_PROVIDED = "researcher_provided"
+    CITED_PUBLIC_DOCUMENT = "cited_public_document"
 
 
 class SourceRole(StrEnum):
@@ -950,7 +1159,11 @@ class GroupResultValue(StrictModel):
             "id but does not require a separate Source Evidence mapping."
         ),
     )
-    statistic: NonBlankText = Field(description="Source-reported statistic label for this group.")
+    statistic: NonBlankText | None = Field(
+        default=None,
+        description="Source statistic label when identified. Omission or null preserves "
+        "unresolved meaning; the server does not infer a label.",
+    )
     value: NonBlankText = Field(description="Source-reported value for this group.")
     unit: NonBlankText = Field(description="Source-reported unit for this group value.")
 
@@ -1484,6 +1697,45 @@ class AssessableResult(StrictModel):
         return self
 
 
+class ScopeTargetSummary(StrictModel):
+    outcome: NonBlankText
+    measurement: NonBlankText
+    window: NonBlankText
+    population: NonBlankText
+    effect_measure: NonBlankText
+    comparison: tuple[NonBlankText, ...]
+
+
+class ScopeEndpointSummary(StrictModel):
+    name: NonBlankText
+    definition: NonBlankText | None
+
+
+class ResultScopeReview(StrictModel):
+    """Read-only comparison of represented scope; not an entailment judgment."""
+
+    trial_id: TrialId
+    result_identity: Identity
+    claimed_relation: AssessableTargetRelation
+    relation_rationale: NonBlankText
+    target: ScopeTargetSummary
+    reported_endpoint: ScopeEndpointSummary
+    reported_analysis_population: NonBlankText
+    reported_time_point_or_window: None = None
+    reported_effect_of_interest: None = None
+    source_bound_reported_fields: tuple[NonBlankText, ...]
+    caller_declared_clarity: ResultClarity
+    verification: Literal["requires_source_interpretation"] = "requires_source_interpretation"
+    instruction: NonBlankText = (
+        "Compare outcome definition, time window, estimand and population against the selected "
+        "source passages. Null reported timing/estimand means not separately represented, not "
+        "absent from the source. Known target fields, a matching endpoint label, or bound numbers "
+        "do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; "
+        "choose a supported non-exact relation or another candidate when exact scope is not "
+        "established. Do not redefine the target."
+    )
+
+
 class AssessableResultDraft(StrictModel):
     """The MCP proposal form before the server adds canonical leaf digests."""
 
@@ -1516,6 +1768,8 @@ class AssessableResultDraft(StrictModel):
             "the server records every facet as unclear. Include data-cut chronology in "
             "time_point and estimate/precision consistency in source_table_meaning. Exact "
             "relation requires every Result scope facet to be specified."
+            " Specified does not itself prove compatibility with the target; preserve material "
+            "scope conflicts even when both scopes are known."
         ),
     )
     applicability: ResultApplicabilityDraft = Field(
@@ -1654,6 +1908,190 @@ class UnavailableResultDraft(StrictModel):
     )
 
 
+class ProposedReportedResult(StrictModel):
+    """One source-reported candidate and the interpreted target facets."""
+
+    clarity: ResultClarity | None = Field(
+        default=None,
+        description="Caller-declared scope facets; omission preserves unclear facets and cannot "
+        "establish exactness.",
+    )
+    design: Literal["individual_parallel", "cluster_randomized", "crossover", "unclear"] = Field(
+        description="Source-supported randomization design; not inferred from the effect estimate."
+    )
+    design_rationale: NonBlankText = Field(
+        description="Why inspected source evidence establishes this design."
+    )
+    design_evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+        default=(),
+        description="Selected handles specifically supporting design, distinct from general "
+        "selection citations.",
+    )
+    target_measurement: NonBlankText = Field(
+        description="Requested measurement or ascertainment, not a summary statistic."
+    )
+    target_window: NonBlankText = Field(description="Preserve the requested target window.")
+    target_time_value: NonBlankText | None = Field(
+        default=None,
+        description="Target time quantity when explicitly quantified; pair with target_time_unit.",
+    )
+    target_time_unit: NonBlankText | None = Field(
+        default=None, description="Target time unit paired with target_time_value."
+    )
+    comparison_groups: tuple[ComparisonGroup, ...] = Field(
+        min_length=2, description="Complete target randomized-arm identifiers and assignments."
+    )
+    baseline_subgroup: NonBlankText | None = Field(
+        description="Baseline-defined target subgroup, or null for all randomized participants "
+        "in this Trial; enrollment eligibility alone does not narrow that Trial target."
+    )
+    intended_effect_measure: NonBlankText = Field(
+        description="Target effect measure, which can differ from the selected reported measure."
+    )
+    reported_outcome: NonBlankText = Field(
+        description="Literal endpoint label from this candidate's quantitative source anchor; "
+        "put interpreted equivalence or separately sourced endpoint criteria in scope_rationale."
+    )
+    reported_definition: NonBlankText | None = Field(
+        default=None,
+        description="Source-tied definition including reported model window and "
+        "population when supported; do not borrow the target window.",
+    )
+    analysis_population: NonBlankText = Field(
+        description="Source-supported participants and exclusions in the reported analysis; ITT "
+        "is not complete observation."
+    )
+    effect_measure: NonBlankText | None = Field(
+        default=None,
+        description="Source-reported comparative effect measure; supply together with estimate.",
+    )
+    estimate: NonBlankText | None = Field(
+        default=None, description="Source-reported estimate string, not a numeric object."
+    )
+    precision: NonBlankText | None = Field(
+        default=None,
+        description="Optional verbatim source interval expression for this estimate, preserving "
+        "confidence level and units when stated; interpreted meaning belongs in scope_rationale.",
+    )
+    group_values: tuple[GroupResultValue, ...] = Field(
+        default=(),
+        description="Complete paired source values when no comparative estimate is reported; "
+        "optional alongside an estimate.",
+    )
+    category_group_id: NonBlankText | None = Field(
+        default=None,
+        description="Descriptive profile group; one-arm descriptions cannot proceed to "
+        "comparative assessment.",
+    )
+    category_denominator: NonBlankText | None = Field(
+        default=None, description="Source-reported denominator basis for a category profile."
+    )
+    category_axis_names: tuple[NonBlankText, ...] = Field(
+        default=(), description="Explicit category dimensions in the source profile."
+    )
+    categories: tuple[CategoryValue, ...] = Field(
+        default=(),
+        description="Complete source-reported category cells; never infer omitted cells.",
+    )
+    evidence: tuple[
+        Annotated[
+            TableEvidenceDraft | MultiSpanTableEvidenceDraft | DerivedEvidenceDraft,
+            Field(discriminator="kind"),
+        ],
+        ...,
+    ] = Field(
+        default=(),
+        description="Optional table/derived quantitative proof only. "
+        "Use selection.source_passages for narrative/figure handles.",
+    )
+
+    @field_validator("group_values", mode="before")
+    @classmethod
+    def missing_units_reach_scientific_repair(cls, value: Any) -> Any:
+        if not isinstance(value, (list, tuple)):
+            return value
+        return [
+            {**group, "unit": MISSING_GROUP_VALUE_UNIT}
+            if isinstance(group, dict) and group.get("unit") is None
+            else group
+            for group in value
+        ]
+
+    def to_draft(
+        self,
+        trial_id: TrialId,
+        relation: TargetRelation,
+        scope_rationale: str,
+        source_passages: tuple[SubmittedEvidenceHandle, ...],
+    ) -> AssessableResultDraft:
+        if (self.target_time_value is None) != (self.target_time_unit is None):
+            raise ValueError("target_time_value and target_time_unit must be supplied together")
+        timing = {"kind": "described", "description": self.target_window}
+        if self.target_time_value is not None:
+            timing.update(
+                kind="quantified", value=self.target_time_value, unit=self.target_time_unit
+            )
+        reported = {
+            "analysis_population": self.analysis_population,
+            "endpoint": {"name": self.reported_outcome, "definition": self.reported_definition},
+            "group_values": self.group_values,
+        }
+        if self.category_group_id is not None or self.categories:
+            if self.estimate is not None or self.effect_measure is not None or self.group_values:
+                raise ValueError("a category profile cannot also be a comparative estimate")
+            if self.precision is not None:
+                raise ValueError("precision requires a comparative estimate")
+            reported.pop("group_values")
+            reported.update(
+                form="single_group_category_profile",
+                group_id=self.category_group_id,
+                denominator_basis=self.category_denominator,
+                category_axis_names=self.category_axis_names,
+                categories=self.categories,
+            )
+        elif self.estimate is not None or self.effect_measure is not None:
+            if self.category_denominator is not None or self.category_axis_names:
+                raise ValueError("category metadata requires a category profile")
+            if self.estimate is None or self.effect_measure is None:
+                raise ValueError("effect_measure and estimate must be supplied together")
+            reported.update(
+                form="comparative_effect",
+                effect_measure=self.effect_measure,
+                estimate=self.estimate,
+                precision=self.precision,
+            )
+        else:
+            if self.category_denominator is not None or self.category_axis_names:
+                raise ValueError("category metadata requires a category profile")
+            if self.precision is not None:
+                raise ValueError("precision requires a comparative estimate")
+            reported["form"] = "group_bound_values"
+        return AssessableResultDraft.model_validate(
+            {
+                "kind": "assessable",
+                "trial_id": trial_id,
+                "relation": relation,
+                "relation_rationale": scope_rationale,
+                "clarity": self.clarity,
+                "applicability": {
+                    "design": self.design,
+                    "rationale": self.design_rationale,
+                    "evidence": self.design_evidence,
+                },
+                "target": {
+                    "measurement": {"method": self.target_measurement},
+                    "time_point_or_window": timing,
+                    "comparison_groups": self.comparison_groups,
+                    "baseline_subgroup": self.baseline_subgroup,
+                    "intended_effect_measure": self.intended_effect_measure,
+                },
+                "reported": reported,
+                "passage_refs": source_passages,
+                "evidence": self.evidence,
+            }
+        )
+
+
 AssessableResultChoice = Annotated[AssessableResult, Field(discriminator="kind")]
 UnavailableResultChoice = Annotated[UnavailableResult, Field(discriminator="kind")]
 ResultChoice = Annotated[AssessableResult | UnavailableResult, Field(discriminator="kind")]
@@ -1722,7 +2160,79 @@ class DomainLimitationBasis(StrictModel):
         return value
 
 
+class WorkingObservationDraft(StrictModel):
+    """Host interpretation supplied with an Evidence basis, not a new source quote."""
+
+    text: NonBlankText = Field(
+        max_length=4_000,
+        description="Interpreted observation for this cited Evidence, not a quotation.",
+    )
+    scope: WorkingObservationScope | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional interpreted scope; leave unknown dimensions unset.",
+    )
+
+
+class WorkingResultStepReference(StrictModel):
+    step_identity: Identity = Field(
+        description="Exact identity of an unchanged current account step."
+    )
+    transfer: NonBlankText | None = Field(
+        default=None, description="Explicit inference for transfer from a known different scope."
+    )
+
+
+class WorkingObservationLink(StrictModel):
+    """Durable snapshot of an existing working observation used in a warrant."""
+
+    checkpoint_identity: Identity | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Existing working checkpoint identity for a resumed note; omitted for a "
+        "basis-local observation captured during judgment submission.",
+    )
+    count_evidence: dict[str, Identity] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Server-resolved count handles to canonical Evidence identities; "
+        "original step stays unchanged.",
+    )
+    result_step: WorkingResultStep | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Original step snapshot resolved by the server; "
+        "reference step_identity when drafting.",
+    )
+    transfer: NonBlankText | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Relevance rationale for different-scoped context/counterevidence, "
+        "or scientific transfer as inference.",
+    )
+    observation: WorkingNote = Field(
+        description="Source-located observation retained as a warrant snapshot."
+    )
+
+    @model_validator(mode="after")
+    def step_retains_original_observation(self) -> WorkingObservationLink:
+        if self.result_step is not None and self.result_step.observation != self.observation:
+            raise ValueError("Result step snapshot must retain its original observation")
+        if self.transfer is not None and self.result_step is None:
+            raise ValueError("Transfer requires a Result step snapshot")
+        return self
+
+
 class DirectEvidenceUse(StrictModel):
+    working_observation: (
+        WorkingObservationDraft | WorkingObservationLink | WorkingResultStepReference | None
+    ) = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional compact or resumed interpretation; scope is host asserted. "
+        "The snapshot survives replacement of advisory notes. Evidence remains authoritative.",
+    )
+
     kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="How the selected Evidence bears on this question answer.")
     )
@@ -1788,9 +2298,8 @@ class DomainAnswer(StrictModel):
     bases: tuple[DomainBasis, ...] = Field(
         min_length=1,
         description=(
-            "Evidence premises for this answer. Definitive yes or no needs direct_support, "
-            "indirect_support, or contradiction; probable answers may also use a limitation, "
-            "valid absence receipt, context, or inference."
+            "Source-bound premises and uncertainty for this answer. Basis roles describe "
+            "provenance; use the complete official guidance to select the answer."
         ),
     )
     missing_data: tuple[MissingDataRow, ...] | None = Field(
@@ -1830,12 +2339,12 @@ class DomainAnswer(StrictModel):
     @model_validator(mode="before")
     @classmethod
     def normalize_limitation_context(cls, value: Any) -> Any:
-        """Move a common nested limitation citation into a non-definitive context basis.
+        """Move a common nested limitation citation into a context basis.
 
         A limitation records what the Sources did not establish. Models sometimes place the
         inspected handle inside that object instead of adding a separate ``context`` basis.
-        Preserve the limitation and make the citation's weaker role explicit before strict
-        validation; definitive answers still require a direct, indirect, or contradictory basis.
+        Preserve the limitation and its citation before strict structural validation.
+        Basis roles do not impose a separate scientific answer standard.
         """
 
         if not isinstance(value, dict) or not isinstance(value.get("bases"), list):
@@ -1946,52 +2455,161 @@ class EvidenceSufficiencySummary(StrictModel):
         return _identity(self, self.identity)
 
 
-class DomainSaveAnswer(StrictModel):
-    question_id: QuestionId = Field(description="Question ID from the current Domain card.")
-    answer: Answer = Field(
-        description=(
-            "Official RoB 2 answer value from this question card's options. The server checks "
-            "that this value is allowed for the stated question."
-        ),
+class DomainEvidenceCitation(StrictModel):
+    working_observation: (
+        WorkingObservationDraft | WorkingObservationLink | WorkingResultStepReference | None
+    ) = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional observation: supply text and optional scope with this "
+        "Evidence "
+        "basis. The server retains a source-bound WorkingNote without a separate checkpoint. "
+        "Existing checkpoint-identity/observation links remain valid for resumed notes. "
+        "No scope, source entailment or answer is inferred by the server.",
     )
-    bases: tuple[DomainBasis, ...] = Field(
+    evidence: DomainSourceReference = Field(
+        description="Selected handle, exact text range, copied delivered quote, "
+        "or visual-region transcription."
+    )
+    role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
+        Field(description="Scientific relationship of the inspected Evidence to this question.")
+    )
+
+
+class DomainInformationLimit(StrictModel):
+    premise: NonBlankText = Field(description="Unresolved premise needed to answer this question.")
+    stopping_rationale: NonBlankText = Field(
+        description="Why the bounded investigation stopped with this premise unresolved."
+    )
+    search_receipt: SubmittedSearchReceiptHandle | None = Field(
+        default=None,
+        description="Optional current-Trial search receipt documenting the investigation.",
+    )
+
+
+class DomainCounterpoint(StrictModel):
+    """One scientific counterclaim citing inspected Evidence directly."""
+
+    evidence: tuple[DomainSourceReference, ...] = Field(
         min_length=1,
-        description=(
-            "Evidence premises for this answer. Definitive yes or no needs direct_support, "
-            "indirect_support, or contradiction; probable answers may also use a limitation, "
-            "valid absence receipt, context, or inference."
-        ),
+        description="Selected handles, exact text ranges, copied delivered quotes "
+        "or visual references.",
+    )
+    implication: NonBlankText = Field(
+        description="How the cited passages together limit or challenge the answer."
+    )
+
+    @model_validator(mode="after")
+    def evidence_is_distinct(self) -> DomainCounterpoint:
+        if len(set(self.evidence)) != len(self.evidence):
+            raise ValueError("counterpoint Evidence handles must be distinct")
+        return self
+
+
+class DomainSaveAnswer(StrictModel):
+    """Submission separates inspected Evidence from unresolved information.
+
+    Only the server adds the non-scientific absence/limitation tags. Canonical
+    answers retain their original audit representation.
+    """
+
+    question_id: QuestionId = Field(
+        description="Active signalling question from the current Domain card."
+    )
+    answer: Answer = Field(
+        description="Submitted response; must be among this question card's permitted options."
+    )
+    bases: tuple[DomainEvidenceCitation | DomainSourceReference, ...] = Field(
+        default=(),
+        description="Lean support: handles, exact text ranges, copied delivered quotes "
+        "or visual references "
+        "assert supporting "
+        "facts, saved as indirect_support. Use full citations for other roles or annotations. "
+        "Source resolution does not establish entailment or change an answer.",
+    )
+    absence_searches: tuple[SubmittedSearchReceiptHandle, ...] = Field(
+        default=(),
+        description="Scoped zero-hit search receipts; not scientific absence.",
+    )
+    limitations: tuple[DomainInformationLimit, ...] = Field(
+        default=(),
+        description="Unresolved premises and why investigation stopped.",
     )
     missing_data: tuple[MissingDataRow, ...] | None = Field(
         default=None,
         min_length=1,
-        description=(
-            "Optional source-bound participant-flow facts for the always-active Domain 2.6 "
-            "analysis question, the Domain 2.3 deviation question, or the Domain 3.1 "
-            "outcome-availability question. Counts remain descriptive and do not answer "
-            "any question."
-        ),
+        description="Optional source-grounded participant-flow rows for this question.",
     )
-    justification: str | None = Field(
-        default=None,
-        description=(
-            "Explain how cited facts support this answer when inference, conflict, or "
-            "uncertainty matters."
-        ),
+    justification: NonBlankText = Field(
+        description="Explain how the inspected sources support the response."
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        description="Remaining material unknowns; explicitly use [] when none remain."
+    )
+    counterevidence: tuple[DomainCounterpoint, ...] = Field(
+        description="Counterclaims cite inspected source references; explicitly use [] when none."
     )
 
-    @field_validator("justification")
-    @classmethod
-    def justification_is_meaningful(cls, value: str | None) -> str | None:
-        if value is not None and not value.strip():
-            raise ValueError("justification must contain non-whitespace text")
-        return value
-
-    @model_validator(mode="after")
-    def missing_data_has_flow_question(self) -> DomainSaveAnswer:
-        if self.missing_data is not None and self.question_id not in MISSING_DATA_QUESTION_IDS:
-            raise ValueError("missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1")
-        return self
+    def canonical_payload(self) -> dict[str, Any]:
+        payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
+        if any(not isinstance(citation, DomainEvidenceCitation) for citation in self.bases):
+            raise ValueError("resolve compact source references before canonical submission")
+        if any(
+            isinstance(citation, DomainEvidenceCitation) and not isinstance(citation.evidence, str)
+            for citation in self.bases
+        ):
+            raise ValueError("resolve citation source references before canonical submission")
+        payload["bases"] = [
+            {
+                "kind": citation.role,
+                "evidence": citation.evidence,
+                **(
+                    {
+                        "working_observation": citation.working_observation.model_dump(
+                            mode="json", exclude_none=True
+                        )
+                    }
+                    if citation.working_observation is not None
+                    else {}
+                ),
+            }
+            for citation in self.bases
+            if isinstance(citation, DomainEvidenceCitation)
+        ]
+        counterpoints = []
+        for point in self.counterevidence:
+            for handle in point.evidence:
+                if not isinstance(handle, str):
+                    raise ValueError(
+                        "resolve counterpoint source references before canonical submission"
+                    )
+                indexes = [
+                    index
+                    for index, basis in enumerate(payload["bases"])
+                    if basis["evidence"] == handle
+                ]
+                if not indexes:
+                    # A counterclaim references inspected material, not a new
+                    # support classification. Keep that extra citation neutral.
+                    indexes = [len(payload["bases"])]
+                    payload["bases"].append({"kind": "context", "evidence": handle})
+                counterpoints.extend(
+                    {"basis_index": index, "implication": point.implication} for index in indexes
+                )
+        payload["counterevidence"] = counterpoints
+        payload["bases"] += [
+            {"kind": "absence", "search_receipt": receipt} for receipt in self.absence_searches
+        ]
+        payload["bases"] += [
+            {
+                "kind": "limitation",
+                "unresolved_premise": limit.premise,
+                "stopping_rationale": limit.stopping_rationale,
+                "search_receipt": limit.search_receipt,
+            }
+            for limit in self.limitations
+        ]
+        return payload
 
 
 class NewEvidenceRevision(StrictModel):
@@ -2068,27 +2686,69 @@ DomainRevisionBasis = Annotated[
 ]
 
 
+class AdjudicationCounterevidence(StrictModel):
+    evidence: SubmittedEvidenceHandle = Field(
+        description="Countervailing Evidence already bound by the saved answers."
+    )
+    implication: NonBlankText = Field(
+        description="How this source-bound counterpoint bears on adoption."
+    )
+
+
+class CanonicalAdjudicationCounterevidence(AdjudicationCounterevidence):
+    evidence: Identity
+
+
+class DomainAdjudication(StrictModel):
+    """Explicit host judgment about one unchanged, saved Domain assessment."""
+
+    result_identity: Identity = Field(description="Exact approved Result identity.")
+    domain_id: DomainId = Field(description="Domain of the unchanged saved assessment.")
+    checkpoint_identity: Identity = Field(
+        description="Exact unchanged checkpoint also named in supersedes."
+    )
+    pack_identity: Identity = Field(
+        description="Current scientific pack content identity from Domain context."
+    )
+    judgment: Judgment = Field(
+        description="Explicit adopted label differing from the deterministic proposal."
+    )
+    rationale: NonBlankText = Field(
+        description="Why the default misrepresents material bias for this Result."
+    )
+    counterevidence: tuple[AdjudicationCounterevidence, ...] = Field(
+        description="Relevant source-linked counterpoints; use [] when none are identified."
+    )
+    assessor: NonBlankText = Field(
+        description="Host assessor attribution; not researcher approval."
+    )
+    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+        min_length=1, description="Supporting Evidence already bound by this checkpoint’s answers."
+    )
+
+
+class CanonicalDomainAdjudication(DomainAdjudication):
+    counterevidence: tuple[CanonicalAdjudicationCounterevidence, ...]
+    evidence: tuple[Identity, ...] = Field(min_length=1)
+
+
+class DomainDecision(StrictModel):
+    contract: Literal["rob2-kit.domain.reasoned-adjudication.v1"]
+    proposed: Judgment
+    adopted: Judgment
+    authority: Literal["algorithm", "host"]
+    trace_authority: Literal["proposed_algorithm"]
+    adjudication: CanonicalDomainAdjudication | None
+
+
 class DomainDraft(StrictModel):
+    adjudication: DomainAdjudication | None = None
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: ExpectedRevision
     answers: tuple[DomainAnswer, ...]
     supersedes: Identity | None = None
     revision_basis: DomainRevisionBasis | None = None
-
-
-class DomainContext(StrictModel):
-    trial_id: TrialId
-    domain_id: DomainId
-    result: ResultChoice
-    evidence: tuple[ResultEvidence, ...] = ()
-    evidence_sufficiency: EvidenceSufficiencySummary | None = None
-    prior_digests: tuple[Identity, ...] = ()
-    active_questions: tuple[QuestionId, ...]
-    guidance: tuple[str, ...] = ()
-    traps: tuple[str, ...] = ()
-    completion_rule: str = Field(min_length=1)
-    state_revision: NonNegativeInt
 
 
 class NeedsInputTerminalRequest(StrictModel):
@@ -2207,6 +2867,90 @@ class ProposalReasoningAssessment(StrictModel):
     )
 
 
+class ProposalSelection(StrictModel):
+    """One Trial's choice, source citations and scientific reasoning together.
+
+    The public request does not mirror separate canonical Result and reasoning
+    records. Conversion duplicates the caller's explicit claims, never infers
+    a scientific relation, missing fact, design or source meaning.
+    """
+
+    trial_id: TrialId = Field(description="Server-issued Trial ID for this single selection.")
+    relation: TargetRelation = Field(
+        description="Explicit relation to the target. Exact, broader, "
+        "narrower, component or related requires a candidate; ambiguous or unavailable requires "
+        "candidate=null and source-grounded missing facts. Never infer exactness from numbers."
+    )
+    candidate: ProposedReportedResult | None = Field(
+        description="One complete comparative "
+        "candidate, or null only when no complete candidate can proceed."
+    )
+    scope_rationale: NonBlankText = Field(
+        description="Why this candidate supports the chosen "
+        "relation and time window, or why captured missing facts prevent a complete candidate."
+    )
+    population_rationale: NonBlankText | None = Field(
+        default=None,
+        description="For a candidate, "
+        "distinguish baseline eligibility from analysis exclusions and missing observations.",
+    )
+    source_passages: tuple[SubmittedEvidenceHandle, ...] = Field(
+        description="Inspected same-Trial "
+        "passage handles supporting the selection and reasoning. The server reuses these "
+        "citations in Result and reasoning records; it does not certify entailment. Use [] "
+        "only for a captured zero-source intake condition."
+    )
+    missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(
+        default=(),
+        description="Grounded missing inputs, only when candidate is null; candidate "
+        "uncertainties go in unknowns.",
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        description="Material unresolved facts about this "
+        "selection; explicitly use []. Unknowns about an existing candidate are not another "
+        "selection."
+    )
+    counterevidence: tuple[ProposalReasoningCounterevidence, ...] = Field(
+        description="Source-bound "
+        "counterclaims and implications; explicitly use [] when none are identified."
+    )
+
+    @model_validator(mode="after")
+    def one_choice(self) -> ProposalSelection:
+        self.to_result_draft()
+        return self
+
+    def to_result_draft(self) -> ResultChoiceDraft:
+        if self.candidate is not None:
+            if self.missing_facts:
+                raise ValueError(
+                    "A candidate cannot also contain missing_facts; use unknowns "
+                    "for unresolved facts about a complete candidate"
+                )
+            return self.candidate.to_draft(
+                self.trial_id, self.relation, self.scope_rationale, self.source_passages
+            )
+        return UnavailableResultDraft.model_validate(
+            {
+                "kind": "unavailable",
+                "trial_id": self.trial_id,
+                "relation": self.relation,
+                "missing_facts": self.missing_facts,
+            }
+        )
+
+    def to_assessment(self) -> ProposalReasoningAssessment:
+        return ProposalReasoningAssessment(
+            trial_id=self.trial_id,
+            evidence_basis=self.source_passages,
+            scope_justification=self.scope_rationale if self.candidate is not None else None,
+            population_justification=self.population_rationale,
+            missing_fact_justification=self.scope_rationale if self.candidate is None else None,
+            unknowns=self.unknowns,
+            counterevidence=self.counterevidence,
+        )
+
+
 class ProposalReasoningDraft(StrictModel):
     results: tuple[ResultChoiceDraft, ...] = Field(
         min_length=1,
@@ -2219,10 +2963,28 @@ class ProposalReasoningDraft(StrictModel):
     expected_revision: ExpectedRevision
 
 
+class CumulativeConcernsAssessment(StrictModel):
+    """Optional host assessment of the combined impact for one exact Result."""
+
+    result_identity: Identity = Field(description="Exact approved Result identity being assessed.")
+    checkpoints: tuple[Identity, ...] = Field(
+        min_length=5,
+        max_length=5,
+        description="Exact five current Domain checkpoint identities in pack order.",
+    )
+    conclusion: Literal["substantially_lowers_confidence", "no_escalation", "unresolved"] = Field(
+        description="Host conclusion about the combined impact on confidence in this result."
+    )
+    rationale: NonBlankText = Field(
+        description="Result-specific combined-impact rationale; retain any unresolved limitation."
+    )
+
+
 class TrialReviewRequest(StrictModel):
     trial_id: TrialId
     expected_revision: ExpectedRevision
     request: TerminalRequest | None = None
+    cumulative_concerns: CumulativeConcernsAssessment | None = None
 
     @model_validator(mode="after")
     def request_matches_trial(self) -> TrialReviewRequest:

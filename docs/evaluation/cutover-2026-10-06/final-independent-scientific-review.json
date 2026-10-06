@@ -1,0 +1,44 @@
+{
+  "review_date": "2026-10-06",
+  "review_kind": "Independent source-aware AI review relayed by parent; bounded scientific review, not expert accuracy certification",
+  "cases": {
+    "beerendonk-1999": {
+      "finding": "No material unsupported premise found",
+      "source_verification_limit": "Detailed closure relayed by parent; no blanket independent rendering of all raw binaries claimed. Operator visual scope checks are separately recorded in beerendonk-scope-continuation.json."
+    },
+    "chua-2022": {
+      "finding": "D1\u2013D4 defensible; D5 acquisition gap caused by verified DOI parser defect",
+      "qualification": "Later technical repair and unpaid native acquisition/admission replay provide no retrospective source credit and do not change original answers",
+      "source_verification_limit": "Closure relayed by parent; source/scope and technical replay receipts remain separate, not blanket semantic certification of the acquired document."
+    },
+    "sanctuary": {
+      "study_identity": "Inherited archive slug for felzartamab IGNAZ/NCT05065970; not ravulizumab SANCTUARY",
+      "finding": "No blocking material scientific defect established; qualified operational closure supported",
+      "independently_corroborated": [
+        "Exact three-dose Part 1 target",
+        "PPS/exposure exclusions distinct from missingness",
+        "Central-laboratory UPCR",
+        "July 2023 direct-percent SAP addition after April unblinding"
+      ]
+    },
+    "fr-as-2018": {
+      "finding": "No blocking material scientific defect established; qualified operational closure supported",
+      "independently_corroborated": [
+        "All eight requested 26-week HbA1c contrasts",
+        "mITT and post-rescue distinction",
+        "Protocol rescue and central-laboratory rules",
+        "Publisher supplement versus SAP prior/model discrepancy"
+      ],
+      "qualification": "Six rescues reported; individual indications/timing not reported. Protocol also classifies more than 14 days of required insulin as rescue, so all six are not proven sustained-high-FPG rescues. Broader D3 concern remains defensible."
+    }
+  },
+  "last_two_source_verification": "44 archived matching passages plus official protocol/SAP/publisher-supplement text; full binary/visual glyph verification unavailable and not claimed",
+  "all_ten_reviewed": true,
+  "other_preserved_qualifications": {
+    "bendix-1996": "Consequential D2.6 overconfidence: contactability/exclusion does not establish observed workability was discarded",
+    "stop-igan": "Minor allocation-timing over-uncertainty despite post-run-in allocation passage"
+  },
+  "answers_changed": false,
+  "extra_paid_cases": false,
+  "accuracy_gain_claimed": false
+}

@@ -46,7 +46,7 @@ def test_assessable_relation_enum_excludes_unavailable_values(
     result["relation_rationale"] = "Use unavailable Result kind instead."
 
     proposal = _proposal_args(workspace, [result])
-    with pytest.raises(ToolError, match=r"validation error for call\[validate_proposal\]"):
+    with pytest.raises(ToolError, match=r"invalid_proposal_arguments"):
         _call(
             workspace,
             "validate_proposal",
@@ -68,7 +68,7 @@ def test_removed_equivalence_relation_is_rejected_at_typed_boundary(
     result["relation"] = "source_defined_equivalent"
 
     proposal = _proposal_args(workspace, [result])
-    with pytest.raises(ToolError, match=r"validation error for call\[validate_proposal\]"):
+    with pytest.raises(ToolError, match=r"invalid_proposal_arguments"):
         _call(
             workspace,
             "validate_proposal",
@@ -89,11 +89,33 @@ def test_exact_relation_rationale_is_preserved(tmp_path: Path) -> None:
         "The selected Evidence supports this exact endpoint correspondence."
     )
 
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    proposal = _proposal_args(workspace, [result])
+    validation = _call(
+        workspace,
+        "validate_proposal",
+        {
+            "results": proposal["results"],
+            "assessments": _proposal_assessments(proposal["results"]),
+            "expected_revision": proposal["expected_revision"],
+        },
+        _raw=True,
+    )
+    assert validation["outcome"] == "success"
+    scope = validation["data"]["scope_review"][0]
+    assert scope["verification"] == "requires_source_interpretation"
+    assert scope["reported_time_point_or_window"] is None
+    saved = _call(
+        workspace,
+        "save_proposal",
+        {"expected_revision": validation["head"]["state_revision"]},
+        _raw=True,
+    )
 
     assert saved["outcome"] == "review_required"
     canonical = _state_proposal(workspace)["results"][0]
     assert canonical["relation_rationale"] == result["relation_rationale"]
+    pending = _call(workspace, "get_status", {})["data"]["scope_review"][0]
+    assert pending == scope
 
 
 def test_canonical_target_is_reconstructed_from_captured_outcome(tmp_path: Path) -> None:

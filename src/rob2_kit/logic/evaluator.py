@@ -338,7 +338,7 @@ def evaluate_domain(domain_id: str, answers: Mapping[str, Answer | str]) -> Eval
 
 
 def evaluate_overall(judgments: Mapping[str, Judgment | str]) -> OverallEvaluation:
-    """Apply the deterministic Cochrane-style overall RoB 2 rule."""
+    """Propose overall RoB 2; the legacy count policy is verification-only."""
 
     values = {key: Judgment(value) for key, value in judgments.items()}
     expected = {d.id for d in SCIENTIFIC_PACK.domains}
@@ -355,16 +355,6 @@ def evaluate_overall(judgments: Mapping[str, Judgment | str]) -> OverallEvaluati
             ),
         )
     concerns = sum(value == Judgment.SOME_CONCERNS for value in values.values())
-    if concerns >= 2:
-        return OverallEvaluation(
-            judgment=Judgment.HIGH,
-            trace=("overall.multiple_some_concerns_high",),
-            driver_domains=tuple(
-                domain.id
-                for domain in SCIENTIFIC_PACK.domains
-                if values[domain.id] is Judgment.SOME_CONCERNS
-            ),
-        )
     if concerns:
         return OverallEvaluation(
             judgment=Judgment.SOME_CONCERNS,
@@ -376,3 +366,15 @@ def evaluate_overall(judgments: Mapping[str, Judgment | str]) -> OverallEvaluati
             ),
         )
     return OverallEvaluation(judgment=Judgment.LOW, trace=("overall.all_low",))
+
+
+def evaluate_historical_overall(judgments: Mapping[str, Judgment | str]) -> OverallEvaluation:
+    """Replay the former count policy only for historical artifact verification."""
+    proposed = evaluate_overall(judgments)
+    if proposed.judgment is Judgment.SOME_CONCERNS and len(proposed.driver_domains) >= 2:
+        return OverallEvaluation(
+            judgment=Judgment.HIGH,
+            trace=("overall.multiple_some_concerns_high",),
+            driver_domains=proposed.driver_domains,
+        )
+    return proposed

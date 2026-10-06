@@ -285,7 +285,11 @@ def test_narrative_and_vector_figure_remain_separate_evidence(
 
     status = _call(workspace, "get_status", {})["data"]["selected_evidence"]
     by_handle = {item["handle"]: item for item in status}
-    assert by_handle[passage["handle"]]["quote"] == passage["quote"]
+    assert by_handle[passage["handle"]]["quote"] is None
+    assert by_handle[passage["handle"]]["recovery"]["operation"] == "read_pages"
+    expanded = _call(workspace, "get_status", {"include_evidence_text": True})["data"]
+    expanded_by_handle = {item["handle"]: item for item in expanded["selected_evidence"]}
+    assert expanded_by_handle[passage["handle"]]["quote"] == passage["quote"]
     assert by_handle[visual["handle"]]["transcription"] == visual["transcription"]
     assert by_handle[visual["handle"]]["provenance"] == "host_visual"
     assert by_handle[visual["handle"]]["delivery_receipt"] == rendered["data"]["delivery_receipt"]
@@ -382,11 +386,23 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
     _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     for domain in SCIENTIFIC_PACK.domains:
-        receipt = _call(
-            workspace,
-            "save_domain_judgment",
-            _domain_draft("trial", domain.id, revision, passage),
-        )
+        draft = _domain_draft("trial", domain.id, revision, passage)
+        if domain == SCIENTIFIC_PACK.domains[0]:
+            draft["answers"][0]["bases"].append(
+                {
+                    "kind": "context",
+                    "evidence": selected["handle"],
+                    "working_observation": {
+                        "text": "Host interpretation, separate from the diagram transcription.",
+                        "scope": {
+                            "relation": "unknown",
+                            "uncertainty": "Applicability is unresolved.",
+                        },
+                    },
+                }
+            )
+            draft["answers"][0]["bases"].append(selected["handle"])
+        receipt = _call(workspace, "save_domain_judgment", draft)
         assert receipt["outcome"] == "success", receipt
         revision = int(receipt["head"]["state_revision"])
     finalized = _finalize_assessment(workspace, revision)
@@ -410,3 +426,16 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
     )
     assert result_record["delivery_receipt"] == selected_record["delivery_receipt"]
     assert result_record["handle"] == selected["handle"]
+
+    visual_bases = canonical["domain_records"]["trial:domain:randomization"]["answers"][0]["bases"]
+    visual_basis = next(item for item in visual_bases if "working_observation" in item)
+    lean_basis = next(item for item in visual_bases if item["kind"] == "indirect_support")
+    assert lean_basis["source"] == selected["transcription"]
+    assert lean_basis["evidence"] == visual_basis["evidence"]
+    note = visual_basis["working_observation"]["observation"]
+    assert note["sources"] == [
+        {"source_id": figure_source["id"], "page": 1, "start_line": 0, "end_line": 0}
+    ]
+    assert visual_basis["source"] == selected["transcription"]
+    assert note["scope"]["uncertainty"] == "Applicability is unresolved."
+    assert "result_identity" not in note["scope"]

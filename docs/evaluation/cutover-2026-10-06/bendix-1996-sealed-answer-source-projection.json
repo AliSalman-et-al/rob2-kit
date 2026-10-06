@@ -1,0 +1,1558 @@
+{
+  "case": "bendix-1996",
+  "purpose": "Sealed answers and selected evidence/source accesses for independent material-warrant review; adopted Domain/overall labels withheld. Structural verification is not scientific support certification.",
+  "artifact_sha256": "d25fdb8754e3398a4bdaf91d075b323f7885a370f63bf090489333af27f54965",
+  "session_sha256": "ead8aa541ce532f510a612db59b33f4fc7049105fad7b833d8c957cd93787fcc",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "runtime_strata": {
+    "initial_runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+    "freeze": "7355c4c original first two; 2a4f9fe amended remaining eight",
+    "host_recovery": false,
+    "same_session_idle_recovery": false,
+    "all_original_attempts_retained": true
+  },
+  "approved_result": {
+    "results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_409a171e488a2f2c"
+          ],
+          "rationale": "Patients were individually assigned after initial medical examination by minimization to treatment or control in an explicitly parallel-group study."
+        },
+        "bindings": [
+          {
+            "evidence_index": 4,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:5c63fc075d241ed3029104a16f49c6746c8e1890b329315f89edaa9cf084b178"
+          },
+          {
+            "evidence_index": 4,
+            "field": {
+              "path": "/reported/group_values/0/value"
+            },
+            "value_digest": "sha256:06998a9f7c3bd27271effa6f37d89ba0f60a00fb32f5f48b1d1309c30fade120"
+          },
+          {
+            "evidence_index": 4,
+            "field": {
+              "path": "/reported/group_values/0/unit"
+            },
+            "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+          },
+          {
+            "evidence_index": 4,
+            "field": {
+              "path": "/reported/group_values/1/value"
+            },
+            "value_digest": "sha256:789d9e7dc67f986660d9b28f5946cce995f9b145e4c2ef61828679cee07bb316"
+          },
+          {
+            "evidence_index": 4,
+            "field": {
+              "path": "/reported/group_values/1/unit"
+            },
+            "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "specified",
+          "comparison_groups": "specified",
+          "effect_measure": "specified",
+          "eligible_result_choice": "specified",
+          "measurement": "unclear",
+          "outcome_definition": "specified",
+          "source_table_meaning": "unclear",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_06b9041f390846f0",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_0ff2fe8a8c6cc218",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_409a171e488a2f2c",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_8ead4a3e7bb0a0e3",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_b0f845f58b7c8e42",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_c776ca0a5e7a9f74",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "narrower",
+        "relation_rationale": "This selects the reported between-group follow-up workability result, the first-named abstract outcome, without declaring it primary. The body gives 29/45 versus 14/49 able to work (64% versus 28%), whereas the abstract gives control 29%; counts agree. Workability includes school and seeking work, so actual full-time employment alone (17 versus 10) would be a narrower competing construct and is not selected. Baseline-to-follow-up change and sick-leave days are separate results. The target preserves the paper's 4-month timing after graduation, not 4 months after randomization. Reported analysis is narrower than all randomized patients through postassignment exclusion and nonreturn. Counts are retained as source quantities without adding a computed effect, confidence interval, or statistic label. Follow-up ascertainment details and the precise allocation of the stated tests to the endpoint contrast remain unclear.",
+        "reported": {
+          "analysis_population": "45 treated program completers who returned at follow-up and 49 returning controls, out of 55 and 51 randomized. Two treatment nonstarters and seven dropouts excluded, including two who could be contacted; one graduate and two controls could not be reached.",
+          "endpoint": {
+            "definition": null,
+            "name": "able to work"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "treated",
+              "statistic": null,
+              "unit": "patients",
+              "value": "29"
+            },
+            {
+              "group_id": "control",
+              "statistic": null,
+              "unit": "patients",
+              "value": "14"
+            }
+          ]
+        },
+        "requested_outcome": "Ability to work at 4-month follow-up (first-named outcome in the abstract; no primary outcome is designated)",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "3-week full-time multidisciplinary functional restoration with behavioral support; after graduation, 6 hours weekly follow-up training for 3 weeks.",
+              "id": "treated"
+            },
+            {
+              "assignment": "No treatment by the study center; permitted to seek treatment elsewhere.",
+              "id": "control"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Between-group comparison of ability-to-work proportions at follow-up",
+          "measurement": {
+            "method": "Ability to work (workability: having a job, being in school, or seeking work) assessed at the follow-up examination.",
+            "metric": "Ability to work at 4-month follow-up (first-named outcome in the abstract; no primary outcome is designated)"
+          },
+          "outcome_definition": "Ability to work at 4-month follow-up (first-named outcome in the abstract; no primary outcome is designated)",
+          "time_point_or_window": {
+            "description": "Reported 4-month follow-up: first Monday after 122 days after treatment graduation; controls matched at randomization for the same initial-examination-to-follow-up interval.",
+            "kind": "quantified",
+            "unit": "months",
+            "value": "4"
+          }
+        },
+        "trial_id": "bendix-1996"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "label": "ccjm.63.1.62.pdf",
+      "logical_path": "ccjm.63.1.62.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 8,
+      "projection_hash": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "role": "main_article",
+      "sha256": "sha256:9366df364ca7d144ca7f7be4d88c863d8f8097fd916dd3722470c17f79ef4458",
+      "trial_id": "bendix-1996"
+    }
+  ],
+  "questions": [
+    {
+      "domain_id": "domain:deviations",
+      "checkpoint_identity": "sha256:5d828303a037747d22c478a1c5d1c37457e7cae63eefa3dceb73e956a84d1130",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ],
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "Participants received a conspicuous 39-hour/week multidisciplinary program versus no center treatment, and disclosed assignment to the examining physician in some cases. Participant awareness is established.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "Providers delivered active group exercise, work simulation and behavioral sessions only to assigned treatment participants; the intervention could not be delivered without knowing assignment. Physician assessor blinding is a separate protection.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "Nonstarting and discontinuation arose from illness, pain, difficulty tolerating the program or its smoking rule, and nonappearance. These can occur outside a trial. Seeking outside care was explicitly allowed for controls. The examined conduct provides no strong reason that recruitment or trial personnel caused an inconsistent intervention departure; probably no is justified without claiming perfect adherence.",
+          "question_id": "sq:deviations:context-deviations",
+          "unknowns": [
+            "Other unreported deviations and their causes remain unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:8ead4a3e7bb0a0e315c5453cb3bb0cecbbba3eccdec4a1efbbf62a386c75d1ce",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read full report, treatment/control methods and nonstarter/dropout reasons. No other source or applicable protocol is captured; further lexical searching would not establish unreported trial-context causes.",
+              "unresolved_premise": "Completeness of deviation reporting is uncertain."
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The 45-person treatment analysis is restricted to completers returning at follow-up; two nonstarters and seven dropouts are expressly excluded, including two contactable patients. This is a naive completion-based restriction, not simply an analysis omitting missing outcomes. It is inappropriate for the all-randomized assignment effect.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [
+            "Which of the contacted excluded patients had ascertained workability is unknown; contact alone does not prove outcome observation."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Nine nonstarters/dropouts among 55 assigned to treatment were excluded; seven dropouts were on sick leave at entry and several stopped for increased pain or difficulty. Selecting program completers can select better workability prognosis. These treatment-specific exclusions are large enough relative to the 29/45 versus 14/49 contrast for a substantial impact to be plausible; unknown excluded outcomes prevent an exact impact or direction claim.",
+          "question_id": "sq:deviations:substantial-impact",
+          "unknowns": [
+            "Excluded workability outcomes and exact bias magnitude are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:b0f845f58b7c8e4278dddfd4c262f6d48123bcbf2b9cfeda3f19efa4746d5b1f",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "indirect_support"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:measurement",
+      "checkpoint_identity": "sha256:ed84c7ffd9872f23a51c9d1ef23a87bd4314b2c48e869f01863cebcef337ba33",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "The operational definition specifies job, school or seeking work and reports those categories for both arms at examination. This can capture changes in the approved workability construct; no unsuitable instrument or insensitive range is identified. Its broad definition is not itself evidence that the measuring method is inappropriate.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [
+            "How employment, enrollment and seeking work were verified is not reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0da3bc6827dc3d5e451668a22ea7d1958c9808560f877a5646dd1764f21d53ac",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "Both groups were examined by the same physician, using the same reported workability definition at matched follow-up intervals. Workability is a status at that visit, not a passively detected event whose ascertainment depends on extra treatment visits. Differential data-collection methods are not suggested by these procedures.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [
+            "Detailed verification procedures by arm are unavailable."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0da3bc6827dc3d5e451668a22ea7d1958c9808560f877a5646dd1764f21d53ac",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The examining physician's blinding was expressly broken in about 10% of cases, equally across groups, during follow-up. Thus awareness occurred for some assessments. The source does not specify whether workability was independently verified or directly participant-reported; if the latter, unblinded participants also contribute assessment.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [
+            "Workability-specific assessor role and timing of disclosure relative to workability classification are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Employment and school status are comparatively concrete, but seeking work may require reporting or judgment. With no described independent verification, knowledge of treatment could affect reporting or classification of that component in partially unblinded assessments. This concerns measurement, not genuine changes in employment or job-seeking caused by treatment.",
+          "question_id": "sq:measurement:influence-possible",
+          "unknowns": [
+            "Verification and classification discretion for seeking work are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0da3bc6827dc3d5e451668a22ea7d1958c9808560f877a5646dd1764f21d53ac",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Attempted physician blinding with balanced breaches provides reassurance and limits an inference of likely biased assessment."
+            }
+          ],
+          "justification": "Some awareness and a potentially susceptible seeking-work component establish possibility, but not likely material influence. Most assessments retained physician blinding, breaches were balanced, and most positive cases were employed or in school. The report does not establish participant reporting versus external verification or altered classifications, leaving both a reassuring and an influential mechanism plausible.",
+          "question_id": "sq:measurement:influence-likely",
+          "unknowns": [
+            "The actual source of workability data, verification, assessor expectations and consequences of disclosure are unresolved."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:0da3bc6827dc3d5e451668a22ea7d1958c9808560f877a5646dd1764f21d53ac",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read the full report and reread the blinding and workability sections. Only one source is captured; these sections specify no verification or disclosure-related assessment changes.",
+              "unresolved_premise": "Whether knowledge likely influenced workability assessment remains unresolved."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:ebafada3c66312d5f0c69da5f5ab65923c3d7661908cc1cfaa41440c0f364f25",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "Workability is reported for 45/55 treated and 49/51 controls. Seven of nine treatment nonstarters/dropouts could not be contacted, plus one graduate and two controls could not be reached. Thus genuinely unavailable outcomes, independently of deliberate exclusions, are plausibly large enough to change this dichotomous contrast materially. The two contacted excluded patients may or may not have supplied workability; contact is not counted as observation.",
+          "missing_data": {
+            "conflicts": [],
+            "rows": [
+              {
+                "analyzed": 45,
+                "basis": [
+                  "sha256:6da46a7182c2b1fd759cae91aa5218e6faf787947008efe40dee54bc19f64203",
+                  "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+                  "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949"
+                ],
+                "eligible": null,
+                "endpoint": "able to work",
+                "event_count": 29,
+                "event_definition": "Able to work: having a job, being in school, or seeking work",
+                "excluded": 9,
+                "exclusions": [
+                  "Two nonstarters and seven dropouts excluded; two contacted but workability ascertainment unknown"
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 55
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 55,
+                "result_identity": "sha256:83f98d5ce67d6b84070629aed13588a86538abfc7fe4ce578a4d6c75abaeea50",
+                "scope": {
+                  "arm": "treated",
+                  "population": "Randomized treatment arm; analyzed subset is program completers returning at follow-up",
+                  "time_point": "Reported 4-month follow-up after graduation",
+                  "unit": "participants"
+                },
+                "treated": null
+              },
+              {
+                "analyzed": 49,
+                "basis": [
+                  "sha256:6da46a7182c2b1fd759cae91aa5218e6faf787947008efe40dee54bc19f64203",
+                  "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949"
+                ],
+                "eligible": null,
+                "endpoint": "able to work",
+                "event_count": 14,
+                "event_definition": "Able to work: having a job, being in school, or seeking work",
+                "excluded": null,
+                "exclusions": [],
+                "imputed": null,
+                "missing": 2,
+                "missing_bounds": {
+                  "kind": "exact",
+                  "lower": 2,
+                  "upper": 2
+                },
+                "missing_fraction": 0.0392156862745098,
+                "observed": 49,
+                "randomized": 51,
+                "result_identity": "sha256:83f98d5ce67d6b84070629aed13588a86538abfc7fe4ce578a4d6c75abaeea50",
+                "scope": {
+                  "arm": "control",
+                  "population": "Randomized control arm; returning follow-up subset analyzed",
+                  "time_point": "Matched reported 4-month follow-up interval",
+                  "unit": "participants"
+                },
+                "treated": null
+              }
+            ]
+          },
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Exact total observed workability among all randomized treated patients is unknown; analysis exclusion is not equated with missingness."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:6da46a7182c2b1fd759cae91aa5218e6faf787947008efe40dee54bc19f64203",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The report supplies a restricted follow-up comparison and conventional tests, with no evidence that assumptions covering plausible outcomes among uncontactable participants remove or bound bias. Similar measured baseline characteristics of dropouts do not establish their four-month workability or demonstrate robustness to outcome-dependent missingness.",
+          "question_id": "sq:missing:evidence-unbiased",
+          "unknowns": [
+            "Missing participants' workability and any unpublished robustness analyses are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Full report and the statistical-methods, workability and dropout sections were inspected; no correction or plausible-outcome sensitivity evidence is reported. Only this article is captured.",
+              "unresolved_premise": "No evidence establishing freedom from missing-outcome bias was found."
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Uncontactable treatment patients came from nonstarters/dropouts with reported increased pain, neurologic illness, disk herniation or difficulty tolerating rehabilitation. These health and tolerance factors can relate to actual workability. Outcome-dependent missingness is therefore possible, without assigning a workability value to any missing patient.",
+          "question_id": "sq:missing:true-value-dependent",
+          "unknowns": [
+            "The identities and outcomes of the two contacted patients and reasons for later inability to contact are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Authors say dropouts did not differ in measured baseline characteristics from graduates; this limits certainty but does not establish equivalent subsequent workability or missing-at-random follow-up."
+            }
+          ],
+          "justification": "Follow-up loss is concentrated in the treatment group: seven uncontactable nonstarters/dropouts plus one graduate, versus two controls. The treatment discontinuation reasons include increased back pain, illness and inability to tolerate the program, with all seven dropouts initially on sick leave. Their combination with disproportionate loss supports a probable relation between unavailable four-month workability and its true value. This remains inference, not proof that every lost participant was unable to work.",
+          "question_id": "sq:missing:likely-dependent",
+          "unknowns": [
+            "Which health-related dropouts were contactable and the actual outcomes of those lost are unresolved."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:6da46a7182c2b1fd759cae91aa5218e6faf787947008efe40dee54bc19f64203",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "indirect_support"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:randomization",
+      "checkpoint_identity": "sha256:67f29381315df9c755aa34264592614a1cee8cda3d6ddc0f07a9f3580b02e773",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "The report specifies minimization rather than merely calling the study randomized. Official guidance generally treats minimization as random. This supports probably yes; the exact random component and tie-breaking implementation are not described.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [
+            "The minimization algorithm's random element and tie-breaking implementation are not reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:409a171e488a2f2c6908fc362c4ba4cfb4928a4c47e984d58cb07859378083ad",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Assignment after medical examination and use of minimization do not establish concealment from enrolling personnel. The full report's methods describe no independent allocator or other concealment safeguard. Neither successful nor failed concealment is sufficiently supported.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [
+            "Who performed allocation and what recruiters could predict before enrollment are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:409a171e488a2f2c6908fc362c4ba4cfb4928a4c47e984d58cb07859378083ad",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read the complete original report and its methods; bounded allocation/concealment search added no relevant safeguard. Inventory contains only this report, with no applicable protocol/SAP locator.",
+              "unresolved_premise": "Allocation concealment is unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Table 1 explicitly presents baseline characteristics only for the 45/49 patients eventually returning for follow-up, not all 55/51 randomized. Its workability difference (12 versus 8) and authors' statement of no significant differences cannot establish balance of all randomized participants. Official guidance permits no information when only final-analysis baseline characteristics are reported.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [
+            "Baseline characteristics for all randomized participants are unavailable."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:a14ed0bca2aa2c3ad47fda368ac7f46c5e74db04af3038b5ff1d5251c2aae7df",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Full report, Table 1 header and accompanying patient-flow text were read; no complete randomized-cohort baseline table is supplied.",
+              "unresolved_premise": "All-randomized baseline balance cannot be evaluated."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:selection",
+      "checkpoint_identity": "sha256:c6c9c42a996c7385f11863c22cce16beb2ead34da410d5a23d85b10f8638bec7",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Explicit statistical methods and a 5% significance threshold describe the performed analysis, but do not date its specification."
+            }
+          ],
+          "justification": "The report describes objectives, workability and statistical methods, but does not establish an analysis plan finalized before unblinded outcome data were available. No primary outcome is designated; first position in the abstract does not establish prespecification. Published methods alone do not supply the required chronology.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "Existence, finalization date, amendments and correspondence of any prospective analysis plan."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:409a171e488a2f2c6908fc362c4ba4cfb4928a4c47e984d58cb07859378083ad",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The complete eight-page original report and relevant Methods, Results and references were inspected. A bounded protocol/prespecification/analysis-plan search found only unrelated uses of analysis, not a trial-specific plan. No protocol/SAP or trial-specific locator is supplied. Further inference from published methods cannot establish prospective intentions; preserve No information.",
+              "unresolved_premise": "Prospective measurement and analysis intentions and their timing relative to unblinded outcome data are unknown."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "The definition and its job, school and seeking-work counts are disclosed, reducing concern about hidden components but not establishing prospective intentions."
+            }
+          ],
+          "justification": "Workability is explicitly defined as job, school or seeking work, with components reported. More than one definition could measure this domain, but prospective measurement intentions are unavailable; there is no clear evidence that the selected definition was chosen because of its results. Other outcome domains and future 12/24-month follow-up are not eligible alternatives to this approved 4-month Result. Abstract/body control percentages differ (29%/28%), with the same count 14/49; this discrepancy does not establish result-based selection.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [
+            "Whether this workability definition and eligible measurement alternatives were specified prospectively.",
+            "Whether any eligible measurements were omitted or selected on the basis of results."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:b0f845f58b7c8e4278dddfd4c262f6d48123bcbf2b9cfeda3f19efa4746d5b1f",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The complete eight-page original report and relevant Methods, Results and references were inspected. A bounded protocol/prespecification/analysis-plan search found only unrelated uses of analysis, not a trial-specific plan. No protocol/SAP or trial-specific locator is supplied. Further inference from published methods cannot establish prospective intentions; preserve No information.",
+              "unresolved_premise": "Prospective measurement and analysis intentions and their timing relative to unblinded outcome data are unknown."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "The report discloses baseline and follow-up counts, extra testing and exclusions; this transparency does not establish all intended analyses were reported."
+            },
+            {
+              "basis_index": 1,
+              "implication": "The report discloses baseline and follow-up counts, extra testing and exclusions; this transparency does not establish all intended analyses were reported."
+            }
+          ],
+          "justification": "Published methods describe separate baseline/follow-up Mann-Whitney comparisons and additional Fisher-Irwin testing because baseline workability differed; before/after and between-group P values are reported. Their exact attribution and prospective intentions remain unclear. Eligible analyses could differ in baseline adjustment or handling excluded participants. Completion restriction is an established assignment-effect analysis problem in Domain 2, not itself proof of selective reporting. No evidence establishes that an eligible analysis was selected because of its results.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "Prospectively intended eligible analyses, adjustment and missing-data strategies.",
+            "Exact test attribution and whether additional eligible analyses were conducted but not reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The complete eight-page original report and relevant Methods, Results and references were inspected. A bounded protocol/prespecification/analysis-plan search found only unrelated uses of analysis, not a trial-specific plan. No protocol/SAP or trial-specific locator is supplied. Further inference from published methods cannot establish prospective intentions; preserve No information.",
+              "unresolved_premise": "Prospective measurement and analysis intentions and their timing relative to unblinded outcome data are unknown."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    }
+  ],
+  "selected_evidence": {
+    "06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048": {
+      "end": 2972,
+      "end_line": 104,
+      "handle": "eh_06b9041f390846f0",
+      "identity": "sha256:06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Patients with any of the\nfollowing were excluded:\ncurrent disk\nherniation\n(which might be amenable\nto surgery or bed rest),\nother surgically remediable\nlesions, inflammatory dis-\nease of the back, pregnancy, cancer, or clinically\nrelevant osteoporosis with or without fractures. Peo-\nple receiving social pensions were also excluded.\nAt baseline (Table 1), 12 (27%) of the 45 pa-\ntients in the treatment group who eventually fin-\nished the program and returned for the 4-month\nfollow-up were able to work (nine were working\nfull-time, two were in school, and one was laid off).\nIn the control group, eight of the 49 patients who\nreturned for the 4-month follow-up had been able\nto work at baseline (five were working full-time,\none was in school, and two were laid off). There\nwere no significant differences between the two\ngroups upon entering the project.\nFigure 1 illustrates the flow of patients through\nthe project. Two patients never started the treat-\nment: one had a disk herniation while waiting, and\none never appeared. Seven patients dropped out of",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 1912,
+      "start_line": 79,
+      "trial_id": "bendix-1996"
+    },
+    "0da3bc6827dc3d5e451668a22ea7d1958c9808560f877a5646dd1764f21d53ac": {
+      "end": 2417,
+      "end_line": 103,
+      "handle": "eh_0da3bc6827dc3d5e",
+      "identity": "sha256:0da3bc6827dc3d5e451668a22ea7d1958c9808560f877a5646dd1764f21d53ac",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "The results are based on data collected at a fol-\nlow-up examination at 4 months (the first Monday\nafter 122 days after graduation). Each patient in the\ncontrol group was matched at randomization with\none in the treated group, so that the interval be-\ntween the initial medical examination and the 4-\nmonth examination was identical.\nReturn to work\nOne of the major goals of the project was to\nprepare patients physically and psychologically to go\nback to work. \"Workability\" was defined as having a\njob, being in school, or seeking work.\nAt the 4-month follow-up, 29 (64%) of the 45\ntreated patients were able to work, compared with\n12 (27%) at baseline; in the control group, 14\n(28%) of the 49 patients were able to work at the\ntime of the 4-month follow-up, compared with 8\n(16%) at baseline. The difference between the two\ngroups was significant (P < .001); the differences in\nthe before and after values in the two groups were\nalso significant (P < .001 by Fisher-Irwin test). Of\nthe 29 patients able to work in the treated group, 17\nhad full-time jobs, seven were unemployed but seek-\ning work, and five were in school. Of the patients in\nthe treated group who could not work, six were\nreceiving social pensions and the rest were still on\nsick leave. In the control group, 10 of the 14 pa-\ntients able to work were working full-time, three\nwere unemployed but seeking work, and one was in\nschool. Eight persons in this group were receiving\nsocial pensions and the rest were on sick leave.",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 922,
+      "start_line": 73,
+      "trial_id": "bendix-1996"
+    },
+    "0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660": {
+      "end": 3696,
+      "end_line": 94,
+      "handle": "eh_0ff2fe8a8c6cc218",
+      "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "Dropouts\nOf the two patients who\nnever started the treatment\nprogram and the seven who\ndropped\nout,\nonly\ntwo\ncould be contacted after 4\nmonths. Therefore, these\npatients are not included in\nthis analysis.",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 3492,
+      "start_line": 83,
+      "trial_id": "bendix-1996"
+    },
+    "409a171e488a2f2c6908fc362c4ba4cfb4928a4c47e984d58cb07859378083ad": {
+      "end": 3664,
+      "end_line": 135,
+      "handle": "eh_409a171e488a2f2c",
+      "identity": "sha256:409a171e488a2f2c6908fc362c4ba4cfb4928a4c47e984d58cb07859378083ad",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "O B J E C T I V E\nThe aim of this study was to determine whether a\n3-week, full-time, multidisciplinary program would\naffect the return-to-work rate, the number of days of\nsick leave used, the number of contacts with health\ncare providers, pain and disability levels, and iso-\nmetric back-muscle endurance in patients with\nchronic low back pain.\nM E T H O D S\nThis parallel-group study was prospective and ob-\nserver-blinded. After an initial medical examination,\npatients were randomly assigned to a treatment group\nor a control group according to the minimization prin-\nciple'5 (a means of achieving an even distribution ac-\ncording to sex, age, pain and function scores,36 days of\nsick leave, and smoking status in the two groups).\nPatients\nThe study included 106 patients referred to the\nCopenhagen Back Center between May 1991 and\nMay 1992. Subjects had to be 18 to 59 years in age,\nread and write Danish, have had at least 6 months\nof disabling low back trouble, and have a threat-\nened job situation owing to back problems (most\nwere on sick leave or did not have a job). Most of",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 2578,
+      "start_line": 112,
+      "trial_id": "bendix-1996"
+    },
+    "477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d": {
+      "end": 4393,
+      "end_line": 112,
+      "handle": "eh_477fb72f1b541dd0",
+      "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nthe program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.\nThe project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.\nTreatment\nOur program was a modification of the functional\nrestoration programs described earlier by Mayer31 and\nHazard.20 The concept is described in detail else-\nwhere.3' On the first day, the patients underwent\nvarious tests. Physical tests included dynamic and\nisometric endurance, lifting capacity, walking and\nrunning 400 meters, and standing and sitting toler-\nance. The psychological tests included the Millon\nBehavioral Health Inventory, the Million Pain Ana-\nlog Scale, the Symptom Check List 90-R, the Thera-\npeutic Alexithymia Scale (TAS), and the Vanderbilt\nCoping Questionnaire. A structured psychological\ninterview was also carried out the first day.\nEach patient participated for 39 hours per week\nfor 3 successive weeks. The daily schedule is shown\nin Table 2. The aerobics class included training in\ncardiovascular fitness, muscular endurance, coordi-\nnation, and stretching. This was followed by pro-\ngressive strength and endurance training for all ma-\njor muscle groups, using air-moderated machines\nand other training equipment. Occupational ther-\napy consisted of simulated work situations, includ-\ning lifting, pulling, pushing, sitting and standing\nworkplaces, garden work, and kitchen work. Bio-\nfeedback was used in some of the sitting work situ-\nations.\nThe psychological treatment had a behavioral\napproach; patients were urged to take greater re-\nsponsibility for coping with pain, set realistic per-\nsonal goals, change the negative sensation of pain\ninto a more positive way of living, and give them-\nTABLE 2\nPROGRAM SCHEDULE\nTime\nActivity\n08:00-09:00\nAerobics\n09:00-10:00\nWeight training\n10:00-11:30\nWork simulation, work hardening\n11:30-12:00\nLunch\n12:00-12:30\nRelaxation\n12:30-01:30\nPsychological group\n01:30-02:00\nStretching\n02:00-03:00\nTheoretical class\n03:00-04:00\nRecreation\nselves credit for their achievements. It included\ndaily group therapy and relaxation and an average of\none individual counseling session per week.\nIn the daily stretching classes, patients worked on\nall major muscle groups. Classes in spinal anatomy\nand pathology addressed each patient's condition\nand the topics of sexuality, pain, hobbies, nutrition,\nand medication. In a 3-hour job-analysis course, pa-\ntients learned how to write an application and re-\nsum\u00e9, find out about job possibilities, and evaluate\nadvertisements in light of their own abilities and\nskills. Recreation consisted of different games and\nphysical training, such as ball games, walking, run-\nning, and swimming.\nAll training was carried out in groups of seven\npatients. Every Monday, two or three new patients\nstarted the program, and every Friday two or three\npatients \"graduated.\" This group structure is essen-\ntial, as the program is especially difficult during the\nfirst week. Patients in their third week inspire the\n\"first-weekers\" to endure and encourage them to\ncontinue. This also gives the \"third-weekers\" a re-\nsponsibility and authority in relation to the begin-\nners, which in turn increases self-confidence.\nAfter graduating, patients underwent a follow-up\nprogram of 6 hours of psychological, physical, and\nergonomie training, as described above, once a week\nfor 3 weeks.\nThe control group\nPatients randomized to the control group after\nthe medical examination were not treated by us.\nThey could go anywhere else for treatment, and as\nsuch they represent the \"spontaneous\" progress of\npatients with chronic back pain in Denmark.\nJANUARY . FEBRUARY 1996\nCLEVELAND CLINIC JOURNAL OF MEDICINE\n6 5",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "bendix-1996"
+    },
+    "6da46a7182c2b1fd759cae91aa5218e6faf787947008efe40dee54bc19f64203": {
+      "delivery_receipt": "sha256:6e785fa3451e8348522065a1d0730f68a73c2fb65c9624e51f8a75719322d7db",
+      "handle": "eh_6da46a7182c2b1fd",
+      "identity": "sha256:6da46a7182c2b1fd759cae91aa5218e6faf787947008efe40dee54bc19f64203",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.09,
+        0.125,
+        0.71,
+        0.62
+      ],
+      "render": {
+        "identity": "sha256:bdb265ed349b384d90711029adc6923bca2516cd0ac410e0b94c44bbd07c02ee",
+        "page": 3,
+        "png_sha256": "sha256:c80c5d48541b6eee3601c4bcb03913dea8a6b9c14f5483ba85429daf7596ee1d",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a"
+      },
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "transcription": "FIGURE 1. Patient flow from randomization until the 4-month follow-up examination. Randomized: 106 branches to Treatment group: 55 and Control group: 51. Treatment branch: Never started: 2 branches off before Started treatment: 53. Dropped out: 7 branches off before Graduated: 46. Could not be reached at 4 months: 1 branches off after graduation before In program at 4 months: 45. Control branch: Could not be reached at 4 months: 2 branches off before In program at 4 months: 49. A dashed rectangle surrounds Started treatment: 53, Dropped out: 7 and Graduated: 46.",
+      "trial_id": "bendix-1996"
+    },
+    "8ead4a3e7bb0a0e315c5453cb3bb0cecbbba3eccdec4a1efbbf62a386c75d1ce": {
+      "end": 4328,
+      "end_line": 109,
+      "handle": "eh_8ead4a3e7bb0a0e3",
+      "identity": "sha256:8ead4a3e7bb0a0e315c5453cb3bb0cecbbba3eccdec4a1efbbf62a386c75d1ce",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "After graduating, patients underwent a follow-up\nprogram of 6 hours of psychological, physical, and\nergonomie training, as described above, once a week\nfor 3 weeks.\nThe control group\nPatients randomized to the control group after\nthe medical examination were not treated by us.\nThey could go anywhere else for treatment, and as\nsuch they represent the \"spontaneous\" progress of\npatients with chronic back pain in Denmark.",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 3907,
+      "start_line": 100,
+      "trial_id": "bendix-1996"
+    },
+    "9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859": {
+      "end": 894,
+      "end_line": 21,
+      "handle": "eh_9a30de85ea5dad7f",
+      "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "The project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 479,
+      "start_line": 13,
+      "trial_id": "bendix-1996"
+    },
+    "a14ed0bca2aa2c3ad47fda368ac7f46c5e74db04af3038b5ff1d5251c2aae7df": {
+      "end": 3781,
+      "end_line": 139,
+      "handle": "eh_a14ed0bca2aa2c3a",
+      "identity": "sha256:a14ed0bca2aa2c3ad47fda368ac7f46c5e74db04af3038b5ff1d5251c2aae7df",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nmuch lower these days.\nOngoing technological\ndevelopment has opened\nmany new doors in the\ntreatment system, lead-\ning to increased patient\ndemands and expecta-\ntions.\nFor many years, the\nmost frequent treatments\nfor back pain have been\nshort-term and passive\nones such as manipula-\ntion, chiropractic, injec-\ntions, heat, bed rest, and\nmassage. At best, these\ntreatments\nprovide\na\nshort-term effect,9-14 and\nwork best for patients\nwith acute or subacute\nback pain.15 However,\nthe value of manipula-\ntion was recently questioned by Powell et al.16 Sur-\ngery is effective in a small minority.17,18\nBecause ordinary treatment is not sufficient in\npatients with chronic low back pain, several years\nago a new, more active approach was tried that\nfeatures intensive physical training. Results showed\nthat one must exceed the pain threshold and \"over-\ncome oneself' in training intensity.19\"21 Not even 2\nhours a week of intensive training for a month seem\nadequate,19 at least not for hard-working men.22\nHowever, very often, we cannot find an organic\nexplanation for disabling low back pain.23\"2' Com-\nplaints of chronic back pain often correlate poorly\nwith apparent pathology18,26 or with measured\nphysical capacities and behaviors.27\"30 This obser-\nvation suggests we ought not only to focus on the\nphysical part of the pain, but to consider the prob-\nlem as a biopsychosocial complex, all parts of\nwhich need to be addressed in treatment. In the\nUnited States, Mayer et al\" first proved that in-\ntensive multidisciplinary intervention could get\npatients back to work, a finding corroborated by\nHazard et al20 and-in a modified program--by\nSachs et al.32 However, modified programs in Nor-\nway and Finland failed to get people back to\nwork.33,34 To our knowledge, no randomized, ob-\nserver-blinded study has ever been conducted to\ntest such an intensive multidisciplinary program\nfor this very expensive, complex problem.\nTABLE 1\nBASELINE VALUES FOR PATIENTS\nWHO EVENTUALLY RETURNED FOR FOLLOW-UP AT 4 MONTHS\nValue\nTreated group\n(n = 45)\nControl group\n(n = 49)\nP value\nMedian age (years)\n41\n40\n-\nMen/Women\n13/32\n15/34\n-\nNo. who could work\n12 (27%)\n8(16%)\n.22\nMedian days of sick leave\n340\n370\n.55\nin 3 years\nMedian back pain score\n(scale 0-10)\n6.1\n6.1\n.9\nMedian leg pain score\n(scale 0-10)\n4.1\n4.6\n.8\nMedian functional score\n(scale 0-30)\n16.9\n15.9\n.8\nNo. of smokers\n26 (58%)\n27 (55%)\n.79\nNo. who took medication\nfor back pain\n36 (80%)\n36 (73%)\n.39\nNo. who had previous back surgery\n7 (16%)\n9 (18%)\n.8\n*By Mann-Whitney test\nO B J E C T I V E\nThe aim of this study was to determine whether a\n3-week, full-time, multidisciplinary program would\naffect the return-to-work rate, the number of days of\nsick leave used, the number of contacts with health\ncare providers, pain and disability levels, and iso-\nmetric back-muscle endurance in patients with\nchronic low back pain.\nM E T H O D S\nThis parallel-group study was prospective and ob-\nserver-blinded. After an initial medical examination,\npatients were randomly assigned to a treatment group\nor a control group according to the minimization prin-\nciple'5 (a means of achieving an even distribution ac-\ncording to sex, age, pain and function scores,36 days of\nsick leave, and smoking status in the two groups).\nPatients\nThe study included 106 patients referred to the\nCopenhagen Back Center between May 1991 and\nMay 1992. Subjects had to be 18 to 59 years in age,\nread and write Danish, have had at least 6 months\nof disabling low back trouble, and have a threat-\nened job situation owing to back problems (most\nwere on sick leave or did not have a job). Most of\nthe patients had a degenerative disease of the disk\nJANUARY . FEBRUARY 1996\nCLEVELAND CLINIC JOURNAL OF MEDICINE\n6 3",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "bendix-1996"
+    },
+    "b0f845f58b7c8e4278dddfd4c262f6d48123bcbf2b9cfeda3f19efa4746d5b1f": {
+      "end": 1201,
+      "end_line": 24,
+      "handle": "eh_b0f845f58b7c8e42",
+      "identity": "sha256:b0f845f58b7c8e4278dddfd4c262f6d48123bcbf2b9cfeda3f19efa4746d5b1f",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "\u2022fliai:!\u00bb:\u00bb\u00ab Patients who had experienced at least 6 months of dis-\nabling low back pain were randomly assigned to either a 3-week\nintensive treatment program (n = 55) or an untreated control group\n(n = 51).\nOf the 106 patients randomized, 94 (89%) returned\nfor a 4-month follow-up visit. At that time, 29 (64%) of the\n45 treated patients were able to work, compared with 14 of 49\n(29%) in the control group. The treated patients had used\nfewer days of sick leave (P < .02), had contacted health care\nprofessionals fewer times (P < .001), and had lower pain and\ndisability scores.",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 621,
+      "start_line": 14,
+      "trial_id": "bendix-1996"
+    },
+    "c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949": {
+      "end": 2417,
+      "end_line": 103,
+      "handle": "eh_c776ca0a5e7a9f74",
+      "identity": "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "Statistical methods\nThe baseline and 4-month values were compared\nin separate analyses using Mann-Whitney tests. Be-\ncause more patients in the treated group were able\nto work at baseline, an additional Fisher-Irwin test\nwas done for this parameter. The level of signifi-\ncance was defined as 5%.\nThe results are based on data collected at a fol-\nlow-up examination at 4 months (the first Monday\nafter 122 days after graduation). Each patient in the\ncontrol group was matched at randomization with\none in the treated group, so that the interval be-\ntween the initial medical examination and the 4-\nmonth examination was identical.\nReturn to work\nOne of the major goals of the project was to\nprepare patients physically and psychologically to go\nback to work. \"Workability\" was defined as having a\njob, being in school, or seeking work.\nAt the 4-month follow-up, 29 (64%) of the 45\ntreated patients were able to work, compared with\n12 (27%) at baseline; in the control group, 14\n(28%) of the 49 patients were able to work at the\ntime of the 4-month follow-up, compared with 8\n(16%) at baseline. The difference between the two\ngroups was significant (P < .001); the differences in\nthe before and after values in the two groups were\nalso significant (P < .001 by Fisher-Irwin test). Of\nthe 29 patients able to work in the treated group, 17\nhad full-time jobs, seven were unemployed but seek-\ning work, and five were in school. Of the patients in\nthe treated group who could not work, six were\nreceiving social pensions and the rest were still on\nsick leave. In the control group, 10 of the 14 pa-\ntients able to work were working full-time, three\nwere unemployed but seeking work, and one was in\nschool. Eight persons in this group were receiving\nsocial pensions and the rest were on sick leave.",
+      "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+      "source_version": "sha256:670760058b25da38cab47d8d59f7e2a5c4dcd071f502ad00612e8d9f575d76d6",
+      "start": 625,
+      "start_line": 66,
+      "trial_id": "bendix-1996"
+    }
+  },
+  "source_and_guidance_access": [
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 81
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 139
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 112
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 161
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 112
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 6,
+            "start_line": 45,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 161
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 112
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "source_id": "sh_36194f1aa06ed76f",
+        "page": 3
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "source_id": "sh_36194f1aa06ed76f",
+        "query": "primary",
+        "mode": "literal",
+        "limit": 10
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 81
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 139
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 112
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 161
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 112
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 6,
+            "start_line": 41,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 161
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 112
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f2a13302dba04e939fa83124d13b9222.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f2a13302dba04e939fa83124d13b9222.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f2a13302dba04e939fa83124d13b9222.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "query": "allocation concealed envelope",
+        "mode": "any",
+        "limit": 10,
+        "purpose_domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f094e6d647684e098c224da8c1cd8080.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f094e6d647684e098c224da8c1cd8080.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f094e6d647684e098c224da8c1cd8080.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f094e6d647684e098c224da8c1cd8080.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f094e6d647684e098c224da8c1cd8080.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 4,
+            "start_line": 4,
+            "end_line": 21
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 4,
+            "start_line": 36,
+            "end_line": 53
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 3,
+            "start_line": 90,
+            "end_line": 104
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b93a354395a4467ba3aa6ef0eb93f603.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b93a354395a4467ba3aa6ef0eb93f603.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b93a354395a4467ba3aa6ef0eb93f603.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b93a354395a4467ba3aa6ef0eb93f603.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "source_id": "sh_36194f1aa06ed76f",
+        "page": 3
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 6,
+            "start_line": 83,
+            "end_line": 94
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 5,
+            "start_line": 66,
+            "end_line": 103
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:measurement"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d5b7523d3b3245089d22e04245322edb.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d5b7523d3b3245089d22e04245322edb.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d5b7523d3b3245089d22e04245322edb.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d5b7523d3b3245089d22e04245322edb.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "windows": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 4,
+            "start_line": 13,
+            "end_line": 21
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 5,
+            "start_line": 73,
+            "end_line": 103
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:measurement"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.0147e8e1cbf848479f9cec9ebac1e942.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.0147e8e1cbf848479f9cec9ebac1e942.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.0147e8e1cbf848479f9cec9ebac1e942.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.0147e8e1cbf848479f9cec9ebac1e942.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:selection"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.734b59d39fc7409fb457746b993ab2f5.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.734b59d39fc7409fb457746b993ab2f5.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.734b59d39fc7409fb457746b993ab2f5.3",
+        "max_response_bytes": 32768
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.734b59d39fc7409fb457746b993ab2f5.4",
+        "max_response_bytes": 32768
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.734b59d39fc7409fb457746b993ab2f5.5",
+        "max_response_bytes": 32768
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "bendix-1996",
+        "query": "protocol prespecified analysis plan",
+        "mode": "any",
+        "purpose_domain_id": "domain:selection",
+        "limit": 10
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 70,
+    "tokens": {
+      "input_tokens": 8459314,
+      "cached_input_tokens": 8149760,
+      "output_tokens": 20897,
+      "reasoning_output_tokens": 2376
+    },
+    "dollars": null
+  },
+  "review_focus": "Assess exact target/result matching and source entailment, official interpretation, material mechanisms and warranted uncertainty. Identify material defects with locators; do not score preferred labels.",
+  "raw_seal": "diagnostics/final-medium-verifier-cutover-20261006/cases/bendix-1996/scientific-review-seal"
+}

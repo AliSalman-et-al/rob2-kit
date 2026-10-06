@@ -23,6 +23,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -149,11 +150,13 @@ def _convert_group_bound_result_to_legacy(canonical: dict[str, Any]) -> None:
         latest_proposal["identity"] = proposal["identity"]
         latest["review"] = json.loads(json.dumps(review))
         latest["acknowledgment"] = json.loads(json.dumps(acknowledgment))
-    _strip_result_bound_domain_lineage(canonical)
+    _rewrite_legacy_domain_lineage(canonical)
 
 
-def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
-    """Model pre-v0.8 records, which predate Result-bound Domain identities."""
+def _rewrite_legacy_domain_lineage(
+    canonical: dict[str, Any], *, legacy_semantics: bool = True
+) -> None:
+    """Remove newer decision markers and rebind the historical checkpoint lineage."""
     domain_fields = (
         "trial_id",
         "domain_id",
@@ -171,8 +174,20 @@ def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
         legacy_records = []
         for record in records:
             old_identity = record["identity"]
-            record.pop("result_identity", None)
-            record["identity"] = _identity({field: record[field] for field in domain_fields})
+            record.pop("decision", None)
+            if legacy_semantics:
+                record.pop("result_identity", None)
+            fields = domain_fields + (
+                ()
+                if legacy_semantics
+                else tuple(
+                    field
+                    for field in ("driver_questions", "evidence_sufficiency", "result_identity")
+                    if field in record
+                )
+            )
+            record["supersedes"] = identity_map.get(record["supersedes"], record["supersedes"])
+            record["identity"] = _identity({field: record[field] for field in fields})
             identity_map[old_identity] = record["identity"]
             legacy_records.append(record)
         canonical["domain_history_records"][key] = legacy_records
@@ -188,7 +203,11 @@ def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
             snapshot["checkpoints"] = [
                 identity_map.get(identity, identity) for identity in snapshot["checkpoints"]
             ]
-            snapshot.pop("result_identity", None)
+            if legacy_semantics:
+                snapshot.pop("result_identity", None)
+            for driver in snapshot["overall_receipt"]["drivers"]:
+                driver.pop("decision", None)
+                driver["checkpoint"] = identity_map.get(driver["checkpoint"], driver["checkpoint"])
             snapshot["identity"] = _identity(
                 {field: value for field, value in snapshot.items() if field != "identity"}
             )
@@ -299,7 +318,7 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
         "The requested outcome was not reported; only an alternate endpoint was measured; "
         "death ascertainment; end of follow-up; assigned to intervention; assigned to control; "
         "randomized population; risk ratio; The requested outcome was measured in the "
-        "analyzed population.; risk; 1; events; 2.\n" + "context\n" * 12 + "requested outcome\n",
+        "analyzed population.; risk; 1; events; 2.\n" + "context\n" * 200 + "requested outcome\n",
         encoding="utf-8",
     )
     evidence = _prepared_evidence(workspace)
@@ -624,6 +643,11 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
             claim["support_attribution"] = "not_established"
     expected = {
         "trial": {
+            "aggregation": snapshot["aggregation"],
+            "domain_decisions": {
+                domain.id: _state(tmp_path)["domain_records"][f"trial:{domain.id}"]["decision"]
+                for domain in SCIENTIFIC_PACK.domains
+            },
             "overall": snapshot["overall"],
             "domains": snapshot["domain_judgments"],
             "overall_trace": snapshot["overall_trace"],
@@ -685,6 +709,8 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
     assert len(official_sources) == 1
     official_version, official_sha256 = next(iter(official_sources))
     assert descriptor == {
+        "aggregation_contract": "rob2-kit.overall.cochrane-conditional.v1",
+        "domain_judgment_contract": "rob2-kit.domain.reasoned-adjudication.v1",
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
         "content_hash": SCIENTIFIC_PACK.content_hash,
@@ -692,15 +718,54 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
-        "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+        "result_semantics_version": "rob2-kit.result-semantics.v0.9",
     }
     assert _standalone_verify(artifact).returncode == 0
+
+
+def _historical_count_fixture(canonical: dict[str, Any]) -> None:
+    """Construct the historical schema before testing historical pack pins."""
+    canonical.pop("legacy_aggregation_snapshots")
+    canonical.pop("legacy_domain_checkpoints")
+    canonical["scientific_pack"].pop("aggregation_contract")
+    canonical["scientific_pack"].pop("domain_judgment_contract")
+    _rewrite_legacy_domain_lineage(canonical, legacy_semantics=False)
+    for trial_id, historical in canonical["snapshot_history_records"].items():
+        for snapshot in historical:
+            snapshot.pop("aggregation")
+            snapshot["identity"] = _identity({k: v for k, v in snapshot.items() if k != "identity"})
+        canonical["snapshot_history"][trial_id] = [item["identity"] for item in historical]
+        canonical["snapshots"][trial_id] = deepcopy(historical[-1])
+        review = canonical["trial_reviews"][trial_id]
+        review.pop("snapshot_identity")
+        review.pop("aggregation")
+        review["identity"] = _identity({k: v for k, v in review.items() if k != "identity"})
+        closure = canonical["trial_closures"][trial_id]
+        closure["review_identity"] = review["identity"]
+        closure["identity"] = _identity({k: v for k, v in closure.items() if k != "identity"})
+
+
+def test_pre_d27_clarification_pack_remains_verifiable(tmp_path: Path) -> None:
+    source = _artifact(tmp_path / "source")
+
+    def use_previous_guidance(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
+        canonical["scientific_pack"]["content_hash"] = (
+            "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
+        )
+
+    previous = tmp_path / "pre-d27-clarification.rob2.zip"
+    _rewrite_rehashed(source, previous, use_previous_guidance)
+    assert verify_bundle(previous)
+    assert _standalone_verify(previous).returncode == 0
 
 
 def test_prior_v08_scientific_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 
     def use_prior_guidance(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.8"
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60"
         )
@@ -723,6 +788,7 @@ def test_previous_v07_scientific_packs_remain_verifiable(tmp_path: Path, content
     source = _artifact(tmp_path / "source")
 
     def use_previous_pack(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.7"
         canonical["scientific_pack"]["content_hash"] = content_hash
         _convert_group_bound_result_to_legacy(canonical)
@@ -872,6 +938,7 @@ def test_rehashed_v06_empty_derived_inputs_fail_both_verifiers(tmp_path: Path) -
     source = _artifact(tmp_path / "source")
 
     def convert_to_v06(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.6"
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4"
@@ -1002,38 +1069,52 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     target = draft["answers"][0]
     target["bases"] = [
         {"kind": "direct_support", "evidence": evidence["handle"]},
-        {
-            "kind": "limitation",
-            "unresolved_premise": "One allocation detail remains unresolved.",
-            "stopping_rationale": "The relevant report and protocol passages were inspected.",
-            "evidence": [second_evidence["handle"], evidence["handle"]],
-        },
+        {"kind": "context", "evidence": second_evidence["handle"]},
         {"kind": "direct_support", "evidence": second_evidence["handle"]},
     ]
+    target["limitations"] = [
+        {
+            "premise": "One allocation detail remains unresolved.",
+            "stopping_rationale": "The relevant report and protocol passages were inspected.",
+        }
+    ]
     target["counterevidence"] = [
-        {"basis_index": index, "implication": f"Original basis {index} limits this answer."}
+        {
+            "basis_index": index,
+            "implication": f"Original Evidence basis {index} limits this answer.",
+        }
         for index in range(3)
     ]
 
-    malformed = deepcopy(draft)
-    malformed["answers"][0]["counterevidence"][1]["basis_index"] = 3
+    malformed = _domain_submission(deepcopy(draft))
+    malformed["answers"][0]["counterevidence"][1]["evidence"] = ["not-an-evidence-handle"]
     before = _state(workspace)
     rejected = _public_tool_result(workspace, "save_domain_judgment", malformed)
     assert rejected.is_error
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
 
-    saved = _call(workspace, "save_domain_judgment", draft)
+    joint = _domain_submission(draft)
+    joint_implication = (
+        "Taken together, these inspected passages leave one allocation detail unresolved."
+    )
+    joint["answers"][0]["counterevidence"] = [
+        {
+            "evidence": [evidence["handle"], second_evidence["handle"]],
+            "implication": joint_implication,
+        }
+    ]
+    saved = _call(workspace, "save_domain_judgment", joint)
     assert saved["outcome"] == "success", saved
     revision = int(saved["head"]["state_revision"])
     stored = _state(workspace)["domain_records"][f"trial:{domain_id}"]["answers"][0]
-    expected_kinds = ["direct_support", "limitation", "context", "context", "direct_support"]
-    expected_indices = [0, 1, 4]
+    expected_kinds = ["direct_support", "context", "direct_support", "limitation"]
+    expected_indices = [0, 1, 2]
     assert [basis["kind"] for basis in stored["bases"]] == expected_kinds
     assert [point["basis_index"] for point in stored["counterevidence"]] == expected_indices
+    assert all(point["implication"] == joint_implication for point in stored["counterevidence"])
+    assert stored["bases"][1]["evidence"] == second_evidence["identity"]
     assert stored["bases"][2]["evidence"] == second_evidence["identity"]
-    assert stored["bases"][3]["evidence"] == evidence["identity"]
-    assert stored["bases"][4]["evidence"] == second_evidence["identity"]
 
     for domain in SCIENTIFIC_PACK.domains[1:]:
         result = _call(
@@ -1063,7 +1144,7 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     ] == expected_indices
     assert [reviewed_answer["bases"][index]["kind"] for index in expected_indices] == [
         "direct_support",
-        "limitation",
+        "context",
         "direct_support",
     ]
 
@@ -1256,3 +1337,50 @@ def test_d2_participant_flow_rows_pass_the_full_bundle_contract(tmp_path: Path) 
         assert by_question["sq:deviations:appropriate-analysis"]["missing_data"]["rows"]
     assert verify_bundle(artifact)
     assert _standalone_verify(artifact).returncode == 0
+
+
+@pytest.mark.parametrize("basis_kind", ["context", "inference", "absence"])
+def test_d32_scoped_negative_basis_survives_both_bundle_verifiers(
+    tmp_path: Path,
+    basis_kind: str,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain in SCIENTIFIC_PACK.domains:
+        draft = _domain_draft("trial", domain.id, revision, evidence)
+        if domain.id == "domain:missing":
+            answer = draft["answers"][1]
+            if basis_kind == "absence":
+                search = _call(
+                    workspace,
+                    "search_sources",
+                    {
+                        "trial_id": "trial",
+                        "source_id": evidence["source_id"],
+                        "query": "unreported sensitivity analysis",
+                        "mode": "phrase",
+                    },
+                )
+                answer["bases"] = [
+                    {
+                        "kind": "absence",
+                        "search_receipt": search["data"]["search_receipt"],
+                    }
+                ]
+            else:
+                answer["bases"][0]["kind"] = basis_kind
+            answer["limitations"] = [
+                {
+                    "premise": "Unobserved outcomes and missingness mechanism remain unknown.",
+                    "stopping_rationale": "The bounded source review found no reassuring evidence.",
+                }
+            ]
+        saved = _call(workspace, "save_domain_judgment", draft)
+        assert saved["outcome"] == "success", saved
+        revision = saved["head"]["state_revision"]
+    revision = _close_trials(workspace, revision)
+    exported = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    assert exported["outcome"] == "success", exported
+    artifact = workspace / exported["data"]["artifact"]["path"]
+    assert verify_bundle(artifact)
+    standalone = _standalone_verify(artifact)
+    assert standalone.returncode == 0, standalone.stdout + standalone.stderr

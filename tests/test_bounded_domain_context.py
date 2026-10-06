@@ -46,7 +46,7 @@ from rob2_kit.interfaces.mcp.server import (
     mcp,
 )
 from rob2_kit.packs import SCIENTIFIC_PACK
-from scripts.profile_domain_context_delivery import _omit_empty_section_arrays
+from scripts.profile_domain_context_delivery import _omit_empty_section_arrays, _reconstruct
 
 
 def _wire_context(
@@ -87,6 +87,20 @@ def _wire_context(
                                 for page in pages
                                 for item in page.structured_content["data"].get(section, [])
                             ]
+                        cores = [
+                            page.structured_content["data"]["official_guidance"]
+                            for page in pages
+                            if page.structured_content["data"].get("official_guidance")
+                        ]
+                        if cores:
+                            data["official_guidance"] = {
+                                "pack": cores[0]["pack"],
+                                "sections": [
+                                    section for core in cores for section in core["sections"]
+                                ],
+                                "complete": True,
+                                "next_cursor": None,
+                            }
                         data.pop("context_page", None)
                         merged["data"] = data
                         merged["head"] = pages[-1].structured_content.get("head")
@@ -124,9 +138,19 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     page = first["data"]["context_page"]
     assert page["index"] == 0
     assert page["next_cursor"]
+    assert page["delivery_status"] == "incomplete"
     assert first["head"]["next_action"]["operation"] == "get_domain_context"
+    assert first["head"]["next_action"]["cursor"] == page["next_cursor"]
+    assert first["head"]["next_action"]["max_response_bytes"] == page["max_response_bytes"]
     assert transport_bytes <= 32_768
     first_cursor = page["next_cursor"]
+
+    status = _call(workspace, "get_status", {})
+    assert status["head"]["next_action"]["cursor"] == first_cursor
+    premature = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    assert premature["outcome"] == "condition"
+    assert premature["head"]["next_action"]["domain_id"] == "domain:randomization"
+    assert premature["head"]["next_action"]["cursor"] == first_cursor
 
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         row = connection.execute(
@@ -141,6 +165,7 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     )
     assert blocked["outcome"] == "condition"
     assert blocked["condition"]["code"] == "domain_context_delivery_pending"
+    assert blocked["head"]["next_action"]["cursor"] == first_cursor
     recovery = blocked["condition"]["recovery"]
     assert recovery["operation"] == "get_domain_context"
     assert recovery["arguments"]["cursor"] == first_cursor
@@ -187,6 +212,13 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     while cursor is not None:
         next_page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
         cursor = next_page["data"]["context_page"]["next_cursor"]
+        assert next_page["data"]["context_page"]["delivery_status"] == (
+            "incomplete" if cursor is not None else "complete"
+        )
+        if cursor is not None:
+            assert next_page["head"]["next_action"]["cursor"] == cursor
+        else:
+            assert next_page["head"]["next_action"]["operation"] == "save_domain_judgment"
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         assert connection.execute(
             "SELECT complete,next_cursor FROM domain_context_delivery"
@@ -215,6 +247,8 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
         _domain_draft("trial", "domain:randomization", revision, evidence),
     )
     assert saved["outcome"] == "success"
+    assert saved["head"]["next_action"]["domain_id"] == "domain:deviations"
+    assert saved["head"]["next_action"].get("cursor") is None
 
 
 def test_small_domain_context_receipt_remains_unpaged(
@@ -288,10 +322,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert question_ids == expected_ids
     assert "sq:deviations:substantial-impact" in question_ids
 
-    reconstructed = dict(pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(pages)})
     full, _transport_bytes = _wire_context(
         workspace,
         {"trial_id": "trial", "domain_id": "domain:deviations"},
@@ -324,12 +355,7 @@ def test_empty_delta_arrays_are_omittable_without_changing_reconstructed_context
         validated = mcp_server.validate_output("get_domain_context", candidate)
         assert validated["data"]["context_page"] == candidate["data"]["context_page"]
 
-    reconstructed = dict(candidate_pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [
-            item for page in candidate_pages for item in page["data"].get(section, [])
-        ]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(candidate_pages)})
     full = _call(workspace, "get_domain_context", {})["data"]
     assert reconstructed == full
 
@@ -472,10 +498,7 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
         pages.append(page)
         cursor = page["data"]["context_page"]["next_cursor"]
 
-    reconstructed = dict(pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(pages)})
     assert reconstructed == original["data"]
 
     replaced, _transport_bytes = _wire_context(
@@ -522,10 +545,7 @@ def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) 
 
     assert pages[-1]["head"]["state_revision"] > first["head"]["state_revision"]
     assert pages[-1]["data"]["context_page"]["state_revision"] == first_page["state_revision"]
-    reconstructed = dict(pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(pages)})
     assert reconstructed == original["data"]
 
 
@@ -742,6 +762,35 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
     assert intermediate["next_cursor"] is not None
 
 
+def test_larger_budget_delivers_unchanged_full_context_in_one_call(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    expected, _bytes = _wire_context(workspace)
+    actual, transport_bytes = _wire_context(workspace, {"max_response_bytes": 131_072}, drain=False)
+    data = dict(actual["data"])
+    page = data.pop("context_page")
+    assert page["count"] == 1
+    assert page["next_cursor"] is None
+    assert transport_bytes <= 131_072
+    assert data == expected["data"]
+    assert actual["head"]["next_action"] == expected["head"]["next_action"]
+    assert actual["head"]["next_action"]["operation"] == "save_domain_judgment"
+    recovered, _bytes = _wire_context(
+        workspace, {"cursor": page["stable_recovery"]["cursor"]}, drain=False
+    )
+    assert recovered["outcome"] == "success", recovered
+    recovered_data = dict(recovered["data"])
+    recovered_page = recovered_data.pop("context_page")
+    assert recovered_page["count"] == 1
+    assert recovered_data == data
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+
+
 def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     tmp_path: Path,
 ) -> None:
@@ -806,17 +855,11 @@ def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
         "options",
         "activation_status",
         "activation",
-        "official_guidance",
-        "source_locator",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "considerations",
-        "invalid_shortcuts",
+        "guidance_locator",
         "query_suggestions",
     } <= question.keys()
-    assert question["decision_rule"]
-    assert question["official_guidance"]
+    assert not {"decision_rule", "official_guidance", "answer_anchors"} & question.keys()
+    assert data["official_guidance"]["complete"]
     assert question["query_suggestions"]
     assert (
         data["evidence_workspace"]["recoverable_narrative_text_bytes"]
@@ -856,17 +899,20 @@ def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> No
         "end_line": 80,
         "quote": quote,
         "inclusion_reason": "active_domain_candidate",
+        "returned_previously": True,
     }
     projected = _compact_domain_evidence(
         {
             "answers": [],
             "evidence": [item],
+            "coverage": [{"source_id": item["source_id"], "read": "read_complete"}],
             "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
         }
     )
     output = projected["evidence"][0]
     assert output["quote"] is None
     assert output["text_status"] == "omitted"
+    assert output["returned_previously"] is True
     assert output["recovery"] == {
         "operation": "read_pages",
         "trial_id": "trial",
@@ -1299,3 +1345,132 @@ def test_public_boundary_exposes_executable_narrative_recovery(monkeypatch, tmp_
     read_result = asyncio.run(invoke())
     assert read_result.structured_content is not None
     assert read_result.structured_content["outcome"] == "success"
+
+
+def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    supplement = workspace / "input" / "trial" / "supplement.txt"
+    supplement.write_text(
+        "Ascertainment was incomplete at the outcome visit.\n\n"
+        + "An unrelated neutral passage.\n" * 20
+        + "\nSensitivity analysis varied the unobserved outcome assumptions.\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    source_id = next(
+        source["id"]
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if source["label"] == "supplement.txt"
+    )
+    domain = "domain:missing"
+    availability = "sq:missing:data-available"
+    bias = "sq:missing:evidence-unbiased"
+    handles = {}
+    for query, question in (("Ascertainment", availability), ("Sensitivity", bias)):
+        searched = _call(
+            workspace,
+            "search_sources",
+            {
+                "trial_id": "trial",
+                "source_id": source_id,
+                "query": query,
+                "mode": "all",
+                "purpose_domain_id": domain,
+                "purpose_question_id": question,
+            },
+        )["data"]
+        handles[question] = searched["hits"][0]["passage_ref"]
+
+    arguments: dict[str, object] = {
+        "trial_id": "trial",
+        "domain_id": domain,
+        "include_candidates": True,
+    }
+    context, _bytes = _wire_context(workspace, arguments)
+    data = context["data"]
+    groups = data["evidence_workspace"]["groups"]
+    scopes = {
+        handle: set(group["question_ids"])
+        for group in groups
+        if group["inclusion_reason"] == "active_domain_candidate"
+        for handle in group["evidence_handles"]
+    }
+    assert scopes[handles[availability]] == {availability}
+    assert scopes[handles[bias]] == {bias}
+    first, _bytes = _wire_context(
+        workspace, {**arguments, "max_response_bytes": 32_768}, drain=False
+    )
+    assert first["data"]["evidence"][0]["handle"] == handles[availability]
+    identities = {item["handle"]: item["identity"] for item in data["evidence"]}
+    for card in data["comparison_cards"]:
+        refs = {ref["handle"]: ref for group in card["passage_groups"] for ref in group["passages"]}
+        for question, handle in handles.items():
+            assert refs[handle]["retrieval_question_ids"] == [question]
+
+    reused = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source_id,
+            "query": "Ascertainment",
+            "mode": "all",
+            "purpose_domain_id": domain,
+            "purpose_question_id": bias,
+        },
+    )["data"]
+    assert reused["hits"][0]["passage_ref"] == handles[availability]
+    shared, _bytes = _wire_context(workspace, arguments)
+    shared_scope = next(
+        group["question_ids"]
+        for group in shared["data"]["evidence_workspace"]["groups"]
+        if handles[availability] in group["evidence_handles"]
+    )
+    assert availability in shared_scope and bias in shared_scope
+    assert identities == {item["handle"]: item["identity"] for item in shared["data"]["evidence"]}
+
+    # An unqualified reuse must broaden discovery scope, rather than implying
+    # that a search purpose determines where the passage can be scientific support.
+    _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source_id,
+            "query": "Ascertainment",
+            "mode": "all",
+            "purpose_domain_id": domain,
+        },
+    )
+    widened, _bytes = _wire_context(workspace, arguments)
+    widened_groups = widened["data"]["evidence_workspace"]["groups"]
+    scope = next(
+        group["question_ids"]
+        for group in widened_groups
+        if handles[availability] in group["evidence_handles"]
+    )
+    assert availability in scope and bias in scope
+    assert identities == {item["handle"]: item["identity"] for item in widened["data"]["evidence"]}
+    original = refs[handles[availability]]
+    adjacent = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": original["source_id"],
+                    "page": original["page"],
+                    "start_line": original["start_line"],
+                    "end_line": original["end_line"] + 2,
+                }
+            ],
+        },
+    )["data"]["pages"][0]["numbered_text"]
+    assert "Ascertainment was incomplete" in adjacent
+    assert "An unrelated neutral passage" in adjacent

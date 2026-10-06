@@ -1,0 +1,15 @@
+{
+  "production_runtime_commit": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+  "current_head": "a24cb9708791bb1c580847b58517d15fbadd64e7",
+  "later_runtime_changes": false,
+  "wheel": ".release-dist/wheel-d77b16f/rob2_kit-0.11.0-py3-none-any.whl",
+  "wheel_sha256": "63b232e4da69fc2878f6d7e925fc17add92383739d19f7292426b901a11e4038",
+  "wheel_bytes": 462320,
+  "route": "Normal offline uv build and docs/release/verify.py --wheel using private permitted cache; new installed environment, no dependency bypass",
+  "build_exit": 0,
+  "installed_verification_exit": 0,
+  "log_sha256": "9e7d99f6d0279e11d2bb482890f9d0b9c984813a9ae2b4ccae73c96349d3f521",
+  "five_official_domain_projections_and_normal_workflow": true,
+  "product_and_standalone_verification": true,
+  "scientific_support_certified": false
+}

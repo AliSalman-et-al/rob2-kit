@@ -1,0 +1,154 @@
+{
+  "freeze_commit": "7355c4ce5e3ac5f377cfb8a0fb861605575ea7c4",
+  "fixed_sample_cases": 10,
+  "concurrency": 2,
+  "focused_cohort": "14 passed, 0 failed at0dc9002",
+  "cases": [
+    {
+      "slug": "albert-2013",
+      "stage": "proposal",
+      "launch": {
+        "command": [
+          "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+          "exec",
+          "--strict-config",
+          "--ignore-rules",
+          "--skip-git-repo-check",
+          "-s",
+          "read-only",
+          "-m",
+          "gpt-6.1-sol",
+          "-c",
+          "model_reasoning_effort=\"medium\"",
+          "--json",
+          "-o",
+          "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-run-20261006/cases/albert-2013/proposal-final.txt",
+          "-"
+        ],
+        "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-run-20261006/cases/albert-2013/workspace-run",
+        "model": "gpt-6.1-sol",
+        "effort": "medium",
+        "config_sha256": "576f83a49ffdcc4da2eb64c4acb425b04758011a78f930ff3e6836ac55b7d39b",
+        "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+        "manifest_sha256": "8b13600b273206997eed19bdee4916bd39d6e93b55c756464b9db492ce30c3a3",
+        "input_sha256": "e43f484b6fe6dd49ee9baf4a44c62382ec676bc274120bed24055c72f75e4910",
+        "environment_keys": [
+          "CODEX_HOME",
+          "HOME",
+          "LANG",
+          "LC_ALL",
+          "LC_CTYPE",
+          "LOGNAME",
+          "NO_COLOR",
+          "PATH",
+          "ROB2_WORKSPACE",
+          "SHELL",
+          "TEMP",
+          "TERM",
+          "TMP",
+          "TMPDIR",
+          "USER",
+          "XDG_RUNTIME_DIR"
+        ],
+        "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+        "started_at_utc": "2026-10-06T05:08:15.047670+00:00",
+        "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+        "authorized_new_sessions": 1
+      },
+      "preflight": {
+        "passed": true,
+        "manifest_sha256": "8b13600b273206997eed19bdee4916bd39d6e93b55c756464b9db492ce30c3a3",
+        "input_sha256": "e43f484b6fe6dd49ee9baf4a44c62382ec676bc274120bed24055c72f75e4910",
+        "evidence_bundle_sha256": "41e6e9c3c7ae0d76966d17e78c8875e1baa9f9d27a89b1ed2c3cc66042cf841e",
+        "required_window_count": 12,
+        "supplied_window_count": 12,
+        "required_image_count": 0,
+        "supplied_image_count": 0,
+        "scope": "declared research-design coverage only; no semantic sufficiency claim"
+      },
+      "durable_profiles_observed": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "session_file": "rollout-2026-10-06T10-08-16-01a10f9c-ca9d-7d71-9800-a71d9f9d3418.jsonl",
+      "terminal_result_available": false
+    },
+    {
+      "slug": "sustain-6",
+      "stage": "proposal",
+      "launch": {
+        "command": [
+          "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+          "exec",
+          "--strict-config",
+          "--ignore-rules",
+          "--skip-git-repo-check",
+          "-s",
+          "read-only",
+          "-m",
+          "gpt-6.1-sol",
+          "-c",
+          "model_reasoning_effort=\"medium\"",
+          "--json",
+          "-o",
+          "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-run-20261006/cases/sustain-6/proposal-final.txt",
+          "-"
+        ],
+        "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-run-20261006/cases/sustain-6/workspace-run",
+        "model": "gpt-6.1-sol",
+        "effort": "medium",
+        "config_sha256": "44d3faef2e92446fe165ed6c8463365885ca7b297adf65616f24d659ff6f490a",
+        "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+        "manifest_sha256": "064b67298f076bcc75e47842cdb568bfeb9c90694c49a98bb113a361dc1e61d0",
+        "input_sha256": "a59e4cadc4c1e0251832716351fea33257bb87f13c584a5edff768e91fe95502",
+        "environment_keys": [
+          "CODEX_HOME",
+          "HOME",
+          "LANG",
+          "LC_ALL",
+          "LC_CTYPE",
+          "LOGNAME",
+          "NO_COLOR",
+          "PATH",
+          "ROB2_WORKSPACE",
+          "SHELL",
+          "TEMP",
+          "TERM",
+          "TMP",
+          "TMPDIR",
+          "USER",
+          "XDG_RUNTIME_DIR"
+        ],
+        "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+        "started_at_utc": "2026-10-06T05:08:15.943132+00:00",
+        "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+        "authorized_new_sessions": 1
+      },
+      "preflight": {
+        "passed": true,
+        "manifest_sha256": "064b67298f076bcc75e47842cdb568bfeb9c90694c49a98bb113a361dc1e61d0",
+        "input_sha256": "a59e4cadc4c1e0251832716351fea33257bb87f13c584a5edff768e91fe95502",
+        "evidence_bundle_sha256": "635b58cf4e2498ab998033b7cbeec031d713acdb1ac0a4497d62245bf18693c2",
+        "required_window_count": 474,
+        "supplied_window_count": 474,
+        "required_image_count": 0,
+        "supplied_image_count": 0,
+        "scope": "declared research-design coverage only; no semantic sufficiency claim"
+      },
+      "durable_profiles_observed": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "session_file": "rollout-2026-10-06T10-08-17-01a10f9c-cfe4-7060-87e7-ae82e62f7ef6.jsonl",
+      "terminal_result_available": false
+    }
+  ],
+  "clean_full_suite": "Single durable run at0dc9002 ongoing; no complete green result yet",
+  "ci": "Immediate snapshots queued; no CI pass claim",
+  "pr": "483 remains draft",
+  "accuracy_gain_claimed": false
+}

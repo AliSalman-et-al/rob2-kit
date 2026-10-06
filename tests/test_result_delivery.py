@@ -12,6 +12,7 @@ from mcp import types as mcp_types
 from support.rob2 import (
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -21,6 +22,7 @@ from support.rob2 import (
 )
 
 from rob2_kit.interfaces.mcp.server import mcp
+from scripts.profile_domain_context_delivery import _reconstruct
 
 
 def _wire_call(
@@ -31,7 +33,10 @@ def _wire_call(
         try:
             os.environ["ROB2_WORKSPACE"] = str(workspace)
             async with Client(mcp) as client:
-                return await client.call_tool(tool, arguments)
+                return await client.call_tool(
+                    tool,
+                    _domain_submission(arguments) if tool == "save_domain_judgment" else arguments,
+                )
         finally:
             if previous_workspace is None:
                 os.environ.pop("ROB2_WORKSPACE", None)
@@ -85,6 +90,7 @@ def test_structured_consumer_receives_the_complete_workflow_result(
     _review(workspace)
     _read_required_main_reports(workspace)
     context = _assert_structured_result(_wire_call(workspace, "get_domain_context", {}))
+    context_pages = [context]
     while (
         isinstance(context.get("data"), dict)
         and isinstance(context["data"].get("context_page"), dict)
@@ -94,7 +100,11 @@ def test_structured_consumer_receives_the_complete_workflow_result(
         context = _assert_structured_result(
             _wire_call(workspace, "get_domain_context", {"cursor": cursor})
         )
-    assert context["data"]["trial_id"] == "trial"
+        context_pages.append(context)
+    reconstructed = _reconstruct({i: page for i, page in enumerate(context_pages)})
+    assert reconstructed is not None
+    assert reconstructed["trial_id"] == "trial"
+    assert reconstructed["official_guidance"]["complete"]
     revision = int(context["head"]["state_revision"])
     draft = _domain_draft("trial", "domain:randomization", revision, evidence=evidence)
     duplicated = dict(draft["answers"][0]["bases"][0])

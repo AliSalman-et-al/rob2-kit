@@ -1,0 +1,11 @@
+{
+  "case": "sustain-6",
+  "evidence_identity": "sha256:b716380ffad5343705f72955175a256f9fde6343605c536e53c9b98114a59d14",
+  "source_id": "source_d45cbe326d165ddd950e8fd806cb080f754f70aa56443f4b6273c84374a6ad42",
+  "physical_page": 36,
+  "printed_page": 35,
+  "independently_rendered_png_sha256": "7541c158fc6b35dbb7c03373bef3efc9002bbb5ff1bf69761231b81b5dcf6bff",
+  "render_count_false": true,
+  "visual_check": "Figure S1A counts and completion footnote match recorded transcription. Semaglutide1648/1623complete/25noncomplete with7withdrawal18lost and17alive2dead6unknown; placebo1649/1609complete/40noncomplete with8withdrawal32lost and30alive3dead7unknown. Completion includes attendance at finalfollow-up or death duringtrial.",
+  "limit": "Counts and transcription verified; nonfatal component observation, exact pre-first-event censoring and scientific answer support are not certified."
+}

@@ -7,11 +7,11 @@ from typing import Any
 
 import pytest
 from fastmcp import Client
-from support.rob2 import _assessment_workspace, _domain_draft
+from support.rob2 import _assessment_workspace, _domain_draft, _domain_submission
 
 from rob2_kit.application._state import _state
 from rob2_kit.interfaces.mcp.server import mcp
-from rob2_kit.workflow_models import DomainAnswer
+from rob2_kit.workflow_models import DomainAnswer, DomainSaveAnswer
 
 
 def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> None:
@@ -29,25 +29,43 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
     assert public_tool.input_schema == local_tool.parameters
 
     schema = public_tool.input_schema
-    counterevidence_shape = schema["$defs"]["DomainCounterevidence"]
-    assert set(counterevidence_shape["required"]) == {"basis_index", "implication"}
-    assert counterevidence_shape["properties"]["basis_index"]["type"] == "integer"
+    counterevidence_shape = schema["properties"]["answers"]["items"]["properties"][
+        "counterevidence"
+    ]["items"]
+    assert set(counterevidence_shape["required"]) == {"evidence", "implication"}
+    evidence_variants = counterevidence_shape["properties"]["evidence"]["items"]["anyOf"]
+    assert {variant["type"] for variant in evidence_variants} == {"string", "object"}
+    range_shape = next(
+        variant for variant in evidence_variants if "source_id" in variant.get("properties", {})
+    )
+    assert set(range_shape["required"]) == {"source_id", "page", "start_line", "end_line"}
+    visual_shape = next(
+        variant
+        for variant in evidence_variants
+        if "delivery_receipt" in variant.get("properties", {})
+    )
+    assert set(visual_shape["required"]) == {"delivery_receipt", "region", "transcription"}
     assert counterevidence_shape["properties"]["implication"]["type"] == "string"
-    answer = DomainAnswer.model_validate(
+    answer = DomainSaveAnswer.model_validate(
         {
             "question_id": "sq:randomization:sequence",
             "answer": "probably_no",
-            "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+            "justification": "The inspected passage challenges this premise.",
+            "unknowns": [],
+            "bases": [{"role": "context", "evidence": "eh_0123456789abcdef"}],
             "counterevidence": [
                 {
-                    "basis_index": 0,
+                    "evidence": ["eh_0123456789abcdef"],
                     "implication": "The cited passage limits the premise under assessment.",
                 }
             ],
         }
     )
     assert answer.counterevidence is not None
-    assert answer.counterevidence[0].basis_index == 0
+    assert answer.counterevidence[0].evidence == ("eh_0123456789abcdef",)
+    canonical = DomainAnswer.model_validate(answer.canonical_payload())
+    assert canonical.counterevidence is not None
+    assert canonical.counterevidence[0].basis_index == 0
 
     answer_example = schema["properties"]["answers"]["examples"][0][0]
     assert answer_example["counterevidence"] == []
@@ -56,11 +74,11 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
 @pytest.mark.parametrize(
     ("shape", "expected_error"),
     [
-        ("obsolete_kind", "union_tag_invalid"),
-        ("scalar_counterevidence", "DomainCounterevidence"),
-        ("identity_as_handle", "string_pattern_mismatch"),
-        ("array_evidence", "string_type"),
-        ("array_revision_evidence", "revision_basis.new_evidence.evidence"),
+        ("obsolete_kind", "/answers/0/bases/0/evidence"),
+        ("scalar_counterevidence", "/answers/0/counterevidence/0"),
+        ("identity_as_handle", "/answers/0/bases/0/evidence"),
+        ("array_evidence", "/answers/0/bases/0/evidence"),
+        ("array_revision_evidence", "/revision_basis/new_evidence/evidence"),
     ],
 )
 def test_observed_domain_shapes_fail_at_public_boundary_without_state_change(
@@ -99,7 +117,9 @@ def test_observed_domain_shapes_fail_at_public_boundary_without_state_change(
 
     async def invoke() -> Any:
         async with Client(mcp) as client:
-            return await client.call_tool("save_domain_judgment", draft, raise_on_error=False)
+            return await client.call_tool(
+                "save_domain_judgment", _domain_submission(draft), raise_on_error=False
+            )
 
     result = asyncio.run(invoke())
     error = result.content[0].text
@@ -133,5 +153,5 @@ def test_obsolete_proposal_discriminator_fails_at_public_boundary_without_state_
     error = result.content[0].text
     assert result.is_error is True
     assert result.structured_content is None
-    assert "union_tag_invalid" in error
+    assert "invalid_proposal_arguments" in error
     assert _state(workspace) == before

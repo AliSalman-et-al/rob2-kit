@@ -1,6 +1,9 @@
 # Retain current overall aggregation during the post-benchmark repair
 
-Status: accepted
+Status: superseded by [ADR 0039](0039-conditional-cumulative-concerns.md)
+
+The count policy below applies only when verifying historical assessments.
+New assessments follow the conditional, result-specific rule in ADR 0039.
 
 The 21 September 2026 audit questions whether multiple `Some concerns` Domains
 should produce `High` without an additional judgment that the combination

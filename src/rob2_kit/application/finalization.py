@@ -16,8 +16,23 @@ from typing import Any, cast
 
 from pydantic import ValidationError
 
+from ..logic.adjudication import (
+    DOMAIN_JUDGMENT_CONTRACT,
+    LEGACY_DOMAIN_JUDGMENT_CONTRACT,
+    require_current_adjudication_pack,
+    valid_domain_contract,
+    valid_domain_decision,
+)
+from ..logic.adjudication import (
+    domain_evidence_ids as _domain_evidence_ids,
+)
+from ..logic.aggregation import (
+    AGGREGATION_CONTRACT,
+    LEGACY_AGGREGATION_CONTRACT,
+    snapshot_evaluation,
+)
 from ..logic.evaluator import active_questions as derive_active_questions
-from ..logic.evaluator import evaluate_domain, evaluate_overall
+from ..logic.evaluator import evaluate_domain, evaluate_historical_overall, evaluate_overall
 from ..models import canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import (
@@ -27,6 +42,7 @@ from ..workflow_models import (
     ExpectedRevision,
     MissingDataRow,
     ResultApplicability,
+    WorkingObservationLink,
 )
 from ._state import (
     _canonical_evidence_records,
@@ -64,10 +80,18 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
+_GROUP_VALUES_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
 _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
 _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
+
+# The official core accepts structurally valid bases uniformly, including limitations.
+# Basis validation does not certify entailment or prescribe answer modality.
+# Retain predecessor modality rules for old bundles.
+_UNIFORM_ANSWER_BASIS_PACKS = frozenset(
+    {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
+)
 
 
 def _nonblank(value: object) -> bool:
@@ -181,7 +205,9 @@ def _valid_missing_data(
         "event_definition",
     )
     legacy_optional = {"semantics"}
-    current_optional = legacy_optional | set(result_scope_fields[1:]) | {"result_identity"}
+    current_optional = (
+        legacy_optional | set(result_scope_fields[1:]) | {"result_identity", "completed"}
+    )
     current_schema = any(isinstance(row, dict) and "missing_bounds" in row for row in value["rows"])
     required = current_required if current_schema else legacy_required
     optional = current_optional if current_schema else legacy_optional
@@ -198,7 +224,7 @@ def _valid_missing_data(
             return False
         numeric_fields = ["randomized", "observed", "analyzed", "imputed"]
         if current_schema:
-            numeric_fields.extend(["eligible", "treated", "excluded", "event_count"])
+            numeric_fields.extend(["eligible", "treated", "completed", "excluded", "event_count"])
         if any(
             row.get(key) is not None
             and (isinstance(row[key], bool) or not isinstance(row[key], int) or row[key] < 0)
@@ -230,6 +256,7 @@ def _valid_missing_data(
             "randomized",
             "eligible",
             "treated",
+            "completed",
             "observed",
             "analyzed",
             "imputed",
@@ -335,6 +362,7 @@ def _valid_missing_data(
             "randomized",
             "eligible",
             "treated",
+            "completed",
             "observed",
             "analyzed",
             "imputed",
@@ -444,6 +472,7 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
         if not (
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
+            or (leaf_path.endswith("/statistic") and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
@@ -537,6 +566,170 @@ def _valid_batch(batch: object) -> bool:
     except (TypeError, ValueError, ValidationError):
         return False
     return True
+
+
+def _valid_source_history(canonical: dict, hash_identity: Callable[[object], str]) -> bool:
+    """Authenticate append-only inventory versions and their acquisition provenance."""
+    if not _valid_batch(canonical.get("batch")):
+        return False
+    history = canonical.get("batch_history")
+    admissions = canonical.get("source_admissions")
+    if history is None and admissions is None:
+        batch = canonical.get("batch")
+        return isinstance(batch, dict) and not any(
+            s.get("origin") == "cited_public_document"
+            for t in batch.get("trials", [])
+            for s in t.get("sources", [])
+        )
+    if (
+        not isinstance(history, list)
+        or not history
+        or not isinstance(admissions, list)
+        or len(history) != len(admissions)
+    ):
+        return False
+    current_batch = canonical.get("batch")
+    if not isinstance(current_batch, dict):
+        return False
+    versions: list[dict[str, Any]] = [*history, current_batch]
+    if any(not _valid_batch(batch) for batch in versions):
+        return False
+    if len({batch["identity"] for batch in versions}) != len(versions):
+        return False
+    if any(
+        s["origin"] == "cited_public_document" for t in versions[0]["trials"] for s in t["sources"]
+    ):
+        return False
+    changed_trials = set()
+    for previous, current, admission in zip(versions, versions[1:], admissions):
+        if (
+            not isinstance(admission, dict)
+            or set(admission)
+            != {
+                "identity",
+                "trial_id",
+                "candidate",
+                "source_ids",
+                "previous_batch_identity",
+                "batch_identity",
+                "trial_inventory_identity",
+            }
+            or admission.get("identity")
+            != hash_identity({k: v for k, v in admission.items() if k != "identity"})
+        ):
+            return False
+        trial_id = admission["trial_id"]
+        prior = {t["id"]: t for t in previous["trials"]}
+        after = {t["id"]: t for t in current["trials"]}
+        if (
+            set(prior) != set(after)
+            or trial_id not in prior
+            or previous["conditions"] != current["conditions"]
+        ):
+            return False
+        if any(prior[t] != after[t] for t in prior if t != trial_id):
+            return False
+        old, new = prior[trial_id], after[trial_id]
+        if {k: v for k, v in old.items() if k not in {"identity", "sources"}} != {
+            k: v for k, v in new.items() if k not in {"identity", "sources"}
+        }:
+            return False
+        added = new["sources"][len(old["sources"]) :]
+        if new["sources"][: len(old["sources"])] != old["sources"] or len(added) != 2:
+            return False
+        candidate = admission["candidate"]
+        if not isinstance(candidate, dict) or set(candidate) != {
+            "identity",
+            "trial_id",
+            "reference",
+            "parent_source_sha256",
+            "capture",
+        }:
+            return False
+        if (
+            candidate["identity"]
+            != hash_identity({k: v for k, v in candidate.items() if k != "identity"})
+            or candidate["trial_id"] != trial_id
+        ):
+            return False
+        reference, capture = candidate["reference"], candidate["capture"]
+        if (
+            not isinstance(reference, dict)
+            or not isinstance(capture, dict)
+            or reference.get("trial_id") != trial_id
+        ):
+            return False
+        parent = next((s for s in old["sources"] if s["id"] == reference.get("source_id")), None)
+        if (
+            parent is None
+            or parent["sha256"] != candidate["parent_source_sha256"]
+            or not isinstance(reference.get("page"), int)
+            or not 1 <= reference["page"] <= parent["page_count"]
+        ):
+            return False
+        if (
+            capture.get("status") != "captured"
+            or capture.get("reference") != reference
+            or capture.get("source_role") != "other"
+        ):
+            return False
+        prefix = "companions/" + candidate["identity"].removeprefix("sha256:")
+        pdf, provenance = added
+        if any(
+            s["role"] != "other"
+            or s.get("declared_role") != "other"
+            or s["origin"] != "cited_public_document"
+            for s in added
+        ):
+            return False
+        if (
+            pdf["logical_path"] != prefix + "/candidate.pdf"
+            or pdf["media_type"] != "application/pdf"
+            or pdf["sha256"] != capture.get("sha256")
+            or pdf["page_count"] != capture.get("page_count")
+        ):
+            return False
+        if (
+            provenance["logical_path"] != prefix + "/capture.json"
+            or provenance["media_type"] != "application/json"
+            or provenance["sha256"] != hash_identity(candidate)
+        ):
+            return False
+        if (
+            admission["source_ids"] != [s["id"] for s in added]
+            or admission["previous_batch_identity"] != previous["identity"]
+            or admission["batch_identity"] != current["identity"]
+            or admission["trial_inventory_identity"] != new["identity"]
+        ):
+            return False
+        changed_trials.add(trial_id)
+    for trial in versions[-1]["trials"]:
+        review = canonical.get("trial_reviews", {}).get(trial["id"])
+        if trial["id"] in changed_trials and (
+            not isinstance(review, dict)
+            or review.get("trial_inventory_identity") != trial["identity"]
+        ):
+            return False
+        if (
+            isinstance(review, dict)
+            and "trial_inventory_identity" in review
+            and review["trial_inventory_identity"] != trial["identity"]
+        ):
+            return False
+    return True
+
+
+def _valid_versioned_search_account(
+    account: object, trial_id: object, canonical: dict, hash_identity: Callable[[object], str]
+) -> bool:
+    if not isinstance(account, dict):
+        return False
+    for batch in [*canonical.get("batch_history", []), canonical["batch"]]:
+        if batch["identity"] != account.get("batch_identity"):
+            continue
+        sources = {s["id"]: s for t in batch["trials"] if t["id"] == trial_id for s in t["sources"]}
+        return _valid_search_account(account, trial_id, batch["identity"], sources, hash_identity)
+    return False
 
 
 def _valid_main_report_scopes(
@@ -742,7 +935,8 @@ def _valid_source(source: object, trial_id: str) -> bool:
         or not re.fullmatch(r"source_[0-9a-f]{64}", source["id"])
         or not re.fullmatch(r"sha256:[0-9a-f]{64}", source["sha256"])
         or not re.fullmatch(r"sha256:[0-9a-f]{64}", source["projection_hash"])
-        or source["origin"] not in {"local_dossier", "registry", "researcher_provided"}
+        or source["origin"]
+        not in {"local_dossier", "registry", "researcher_provided", "cited_public_document"}
         or source["role"]
         not in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
         or (
@@ -1529,10 +1723,17 @@ def _valid_result_shape(
             if (
                 not isinstance(item, dict)
                 or set(item) != {"group_id", "statistic", "value", "unit"}
-                or not all(
-                    _nonblank(item.get(key)) for key in ("group_id", "statistic", "value", "unit")
+                or not all(_nonblank(item.get(key)) for key in ("group_id", "value", "unit"))
+                or not (
+                    _nonblank(item.get("statistic"))
+                    or (
+                        semantics_version == "rob2-kit.result-semantics.v0.9"
+                        and item.get("statistic") is None
+                    )
                 )
             ):
+                return False, set()
+            if item.get("statistic") is None and clarity.get("source_table_meaning") == "specified":
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
@@ -1556,7 +1757,12 @@ def _valid_result_shape(
             return False
         valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
-        values_key = "group_values" if semantics_version == _RESULT_SEMANTICS_VERSION else "values"
+        values_key = (
+            "group_values"
+            if semantics_version
+            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            else "values"
+        )
         if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
             return False
         valid, reported_ids = valid_values(reported[values_key])
@@ -1677,7 +1883,12 @@ def _reported_result_has_coherent_anchor(
             ),
         ]
     elif reported["form"] == "group_bound_values":
-        values_key = "group_values" if semantics_version == _RESULT_SEMANTICS_VERSION else "values"
+        values_key = (
+            "group_values"
+            if semantics_version
+            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            else "values"
+        )
         quantitative_tuples = [
             (
                 (f"/reported/{values_key}/{index}/statistic", item["statistic"]),
@@ -1702,6 +1913,11 @@ def _reported_result_has_coherent_anchor(
             )
             for index, item in enumerate(reported["categories"])
         ]
+
+    quantitative_tuples = [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in quantitative_tuples
+    ]
 
     def multispan_anchor(reference: dict[str, object]) -> bool:
         spans = reference.get("spans")
@@ -1871,7 +2087,10 @@ def _verify_result_evidence(
         return False
     if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
-    strict_numeric = semantics_version == _RESULT_SEMANTICS_VERSION
+    strict_numeric = semantics_version in {
+        _RESULT_SEMANTICS_VERSION,
+        _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+    }
 
     def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
         return (
@@ -2375,28 +2594,6 @@ def _valid_proposal_gate(
     )
 
 
-def _domain_evidence_ids(record: object) -> set[str]:
-    if not isinstance(record, dict) or not isinstance(record.get("answers"), list):
-        return set()
-    answer_basis_ids = {
-        basis.get("evidence")
-        for answer in record["answers"]
-        if isinstance(answer, dict) and isinstance(answer.get("bases"), list)
-        for basis in answer["bases"]
-        if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
-    }
-    missing_data_ids = {
-        evidence_identity
-        for answer in record["answers"]
-        if isinstance(answer, dict)
-        for row in (answer.get("missing_data") or {}).get("rows", [])
-        if isinstance(row, dict) and isinstance(row.get("basis"), list)
-        for evidence_identity in row["basis"]
-        if isinstance(evidence_identity, str)
-    }
-    return answer_basis_ids | missing_data_ids
-
-
 def _domain_identity_fields(
     record: dict[str, Any], *, legacy_semantics: bool = False
 ) -> tuple[str, ...]:
@@ -2420,6 +2617,8 @@ def _domain_identity_fields(
         fields.append("evidence_sufficiency")
     if not legacy_semantics and "result_identity" in record:
         fields.append("result_identity")
+    if not legacy_semantics and "decision" in record:
+        fields.append("decision")
     return tuple(fields)
 
 
@@ -2637,6 +2836,11 @@ def _valid_overall_receipt(
             "driver_questions",
             "driver_answers",
             "evidence_sufficiency",
+            *(
+                {"decision"}
+                if "decision" in records.get(f"{trial_id}:{item.get('domain_id')}", {})
+                else set()
+            ),
         }:
             return False
         domain_id = item.get("domain_id")
@@ -2645,6 +2849,7 @@ def _valid_overall_receipt(
             not isinstance(record, dict)
             or item.get("checkpoint") != record.get("identity")
             or item.get("judgment") != record.get("judgment")
+            or item.get("decision") != record.get("decision")
             or item.get("trace") != record.get("trace")
             or item.get("driver_questions") != record.get("driver_questions", [])
             or item.get("evidence_sufficiency") != record.get("evidence_sufficiency")
@@ -2781,7 +2986,10 @@ def _valid_overall_receipt(
             hypothetical_domain = evaluate_domain(domain_id, projected_answers).judgment.value
             hypothetical_judgments = dict(current_judgments)
             hypothetical_judgments[domain_id] = hypothetical_domain
-            hypothetical_overall = evaluate_overall(hypothetical_judgments).judgment.value
+            aggregate = (
+                evaluate_overall if "aggregation" in snapshot else evaluate_historical_overall
+            )
+            hypothetical_overall = aggregate(hypothetical_judgments).judgment.value
         except (KeyError, TypeError, ValueError):
             return False
         expected_alternative_keys = required | {
@@ -2931,7 +3139,8 @@ def _verify_domain_lineage(
 def _scientific_contract_descriptor() -> dict[str, Any]:
     """Return the exact scientific contract bound into finalized artifacts.
 
-    The pack's content hash binds the complete question and decision contract.
+    The pack's content hash binds the Domain question and decision contract;
+    the separate aggregation marker binds the overall policy.
     The official source hash is repeated on each question because the pack's
     provenance model records the source version but not its digest.  Requiring
     one consistent pair here makes an ambiguous or partially edited pack fail
@@ -2947,6 +3156,8 @@ def _scientific_contract_descriptor() -> dict[str, Any]:
     if official_version != SCIENTIFIC_PACK.provenance.version:
         raise ValueError("scientific pack has inconsistent official source provenance")
     return {
+        "domain_judgment_contract": DOMAIN_JUDGMENT_CONTRACT,
+        "aggregation_contract": AGGREGATION_CONTRACT,
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
         "result_semantics_version": _RESULT_SEMANTICS_VERSION,
@@ -2966,6 +3177,99 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    # Exact predecessor guidance pins retain their original contract shape.
+    if value in (
+        {
+            **expected,
+            "content_hash": (
+                "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08"
+            ),
+        },
+        {
+            **expected,
+            "content_hash": (
+                "sha256:b7da8a956f8c35edb26a62681561ce8f2c6849259dcd97fbad88df4973aa89a1"
+            ),
+        },
+        {
+            **expected,
+            "content_hash": (
+                "sha256:8d4d6c3e8e7c54dbe7b99ca4cd1fe6a11763dbc3c2bdcf4d28045c8ad4f1d814"
+            ),
+        },
+        {
+            **expected,
+            "content_hash": (
+                "sha256:f62648b7c4401cb68abf1c9d34ac28d44a232b9c01a697ddac6b11adc4c8b9d2"
+            ),
+        },
+    ):
+        return True
+    pre_d5_eligibility = {
+        **expected,
+        "content_hash": "sha256:bbf29393fa164107d096edf5fcdf58e08a379ab626534d01ea97b7028620b015",
+    }
+    if value == pre_d5_eligibility:
+        return True
+    pre_admission = {
+        **expected,
+        "content_hash": "sha256:7ed63739d320db9a7411c003756153a84939fd61a662aacef7b7bf53f8232b30",
+    }
+    if value == pre_admission:
+        return True
+    pre_composite = {
+        **expected,
+        "content_hash": "sha256:16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698",
+    }
+    if value == pre_composite:
+        return True
+    expected.pop("domain_judgment_contract")
+    if value == expected:
+        return True
+    pre_adjudication = {
+        **expected,
+        "content_hash": "sha256:16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698",
+    }
+    if value == pre_adjudication:
+        return True
+    prior = {
+        **expected,
+        "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1",
+    }
+    if value == prior:
+        return True
+    expected.pop("aggregation_contract")
+    if value == expected:
+        return True
+    # These exact historical descriptors are also retained by the dependency-free
+    # verifier. Guidance edits change the computed pack hash, not result semantics.
+    prior_guidance = (
+        ("v0.9", "16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698"),
+        ("v0.9", "49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1"),
+        ("v0.9", "2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a"),
+        ("v0.9", "d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a"),
+        ("v0.9", "d6ff8a6af60f92a9f810f24f1264303a8fa90d0ac1d600ed66a37be9eefa6623"),
+        ("v0.9", "c2650a6e71e28a007872e95fabeafad99688367d8433d4b9f3d3da280ab8a431"),
+        ("v0.9", "5051ec3c56391d241fd4a5b46e5bcddc16f9879fcfa461986973d695429ba4e4"),
+        ("v0.9", "d4ae0ee8f50c99b09154d789ccf8d4498c8162e721af999a8d37a21a11b4ad82"),
+        ("v0.9", "ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"),
+        ("v0.8", "ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"),
+        ("v0.8", "aeeb5c8aa3fa8f9fd46f4429ae93a4b8ea3f6d89cc292640305f1aa702a449ea"),
+        ("v0.8", "7cd97694107582be8fe6cd1091b8a851b631fed0e90aa5b453ffa8d4d9f50d17"),
+    )
+    if value in tuple(
+        {
+            **expected,
+            "result_semantics_version": f"rob2-kit.result-semantics.{version}",
+            "content_hash": f"sha256:{content_hash}",
+        }
+        for version, content_hash in prior_guidance
+    ):
+        return True
+    prior_conditional_impact_guidance = {
+        **expected,
+        "content_hash": "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c",
+    }
     historical = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
@@ -2982,21 +3286,21 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     current_pack_legacy_proof = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:86ad209ba3504bbe353049245b44cebf3b7d83862b2b3e475c431c6fec0a581f",
         "official_source": expected["official_source"],
     }
     current_pack_prior_guidance = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60",
         "official_source": expected["official_source"],
     }
     current_pack_pre_semantic_guidance = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:bb4f07a86662df2decaad739013e1178a6767aceb9b63e6b438c7f98074d5d84",
         "official_source": expected["official_source"],
     }
@@ -3035,7 +3339,13 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
+    previous_result_proof = {
+        **expected,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+    }
     return value in (
+        prior_conditional_impact_guidance,
+        previous_result_proof,
         current_pack_legacy_proof,
         current_pack_prior_guidance,
         current_pack_pre_semantic_guidance,
@@ -3054,8 +3364,13 @@ def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
     snapshots = state.get("snapshots", {})
     return {
         trial_id: {
+            "aggregation": snapshot.get("aggregation"),
             "overall": snapshot["overall"],
             "domains": dict(snapshot["domain_judgments"]),
+            "domain_decisions": {
+                domain.id: state["domain_records"][f"{trial_id}:{domain.id}"].get("decision")
+                for domain in SCIENTIFIC_PACK.domains
+            },
             "overall_trace": list(snapshot.get("overall_trace", ())),
             "overall_driver_domains": list(snapshot.get("overall_driver_domains", ())),
             "overall_receipt": snapshot.get("overall_receipt"),
@@ -3130,7 +3445,15 @@ def _valid_trial_review_closures(
         review_shape_with_attribution = review_shape | {"domain_attribution"}
         if (
             not isinstance(review, dict)
-            or set(review) not in (review_shape, review_shape_with_attribution)
+            or set(review)
+            not in (
+                review_shape,
+                review_shape_with_attribution,
+                review_shape_with_attribution | {"snapshot_identity", "aggregation"},
+                review_shape_with_attribution | {"trial_inventory_identity"},
+                review_shape_with_attribution
+                | {"snapshot_identity", "aggregation", "trial_inventory_identity"},
+            )
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in review_dispositions
             or review.get("disposition") != disposition
@@ -3365,7 +3688,32 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
         "snapshot_history_records": state.get("snapshot_history_records", {}),
         "terminals": state.get("terminals", {}),
         "scientific_pack": _scientific_contract_descriptor(),
+        "legacy_domain_checkpoints": {
+            "contract": LEGACY_DOMAIN_JUDGMENT_CONTRACT,
+            "identities": sorted(
+                {
+                    record["identity"]
+                    for records in state.get("domain_history_records", {}).values()
+                    for record in records
+                    if "decision" not in record
+                }
+            ),
+        },
+        "legacy_aggregation_snapshots": {
+            "contract": LEGACY_AGGREGATION_CONTRACT,
+            "identities": sorted(
+                {
+                    snapshot["identity"]
+                    for records in state.get("snapshot_history_records", {}).values()
+                    for snapshot in records
+                    if "aggregation" not in snapshot
+                }
+            ),
+        },
     }
+    if "batch_history" in state:
+        canonical["batch_history"] = state["batch_history"]
+        canonical["source_admissions"] = state["source_admissions"]
     has_trial_reviews = "trial_reviews" in state
     has_trial_closures = "trial_closures" in state
     if has_trial_reviews != has_trial_closures:
@@ -3373,6 +3721,8 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     if has_trial_reviews:
         canonical["trial_reviews"] = state["trial_reviews"]
         canonical["trial_closures"] = state["trial_closures"]
+    if not _valid_source_history(canonical, _identity):
+        raise ValueError("source admission history or review inventory basis is invalid")
     identity = _identity({"schema": "rob2-kit.bundle.v0.3", "canonical": canonical})
     public = presentation(state)
     if not has_trial_reviews:
@@ -3506,6 +3856,8 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    if state.get("phase") != "finalized":
+        require_current_adjudication_pack(state, SCIENTIFIC_PACK.content_hash)
     if state.get("phase") == "finalized":
         artifact = state.get("artifact")
         if (
@@ -3635,6 +3987,33 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
         trial_dispositions=final_dispositions,
         assessment_summary=_assessment_summary(state),
     )
+
+
+def _valid_count_evidence_closure(link: object, evidence: dict, trial_id: object) -> bool:
+    if not isinstance(link, dict):
+        return False
+    handles = {
+        handle
+        for row in (link.get("result_step") or {}).get("counts", [])
+        for handle in row["basis"]
+    }
+    bindings = link.get("count_evidence") or {}
+    if not isinstance(bindings, dict) or set(bindings) != handles:
+        return False
+    return all(
+        isinstance(evidence.get(identity), dict)
+        and evidence[identity].get("handle") == handle
+        and evidence[identity].get("trial_id") == trial_id
+        for handle, identity in bindings.items()
+    )
+
+
+def _valid_working_observation_link(value: object) -> bool:
+    try:
+        WorkingObservationLink.model_validate(value)
+    except ValueError:
+        return False
+    return True
 
 
 def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None) -> bool:
@@ -3865,12 +4244,59 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         ),
                     }
                 )
+            canonical_shapes.update(
+                {shape | {"legacy_aggregation_snapshots"} for shape in tuple(canonical_shapes)}
+            )
+            canonical_shapes.update(
+                {shape | {"legacy_domain_checkpoints"} for shape in tuple(canonical_shapes)}
+            )
+            canonical_shapes.update(
+                {
+                    shape | {"batch_history", "source_admissions"}
+                    for shape in tuple(canonical_shapes)
+                }
+            )
             if not isinstance(canonical_value, dict) or set(canonical_value) not in (
                 *canonical_shapes,
             ):
                 return fail()
+            if not _valid_source_history(canonical_value, independent_identity):
+                return fail()
             scientific_pack = canonical_value.get("scientific_pack")
             if not _valid_scientific_contract_descriptor(scientific_pack):
+                return fail()
+            if not valid_domain_contract(canonical_value):
+                return fail()
+            decision_history = {
+                item["identity"]: item
+                for records in canonical_value["domain_history_records"].values()
+                for item in records
+            }
+            aggregation_history = canonical_value.get("snapshot_history_records")
+            if not isinstance(aggregation_history, dict) or any(
+                not isinstance(records, list) for records in aggregation_history.values()
+            ):
+                return fail()
+            unmarked = sorted(
+                {
+                    item.get("identity")
+                    for records in aggregation_history.values()
+                    for item in records
+                    if isinstance(item, dict) and "aggregation" not in item
+                }
+            )
+            if scientific_pack.get("aggregation_contract") == AGGREGATION_CONTRACT:
+                if canonical_value.get("legacy_aggregation_snapshots") != {
+                    "contract": LEGACY_AGGREGATION_CONTRACT,
+                    "identities": unmarked,
+                }:
+                    return fail()
+            elif "legacy_aggregation_snapshots" in canonical_value or any(
+                "aggregation" in item
+                for records in aggregation_history.values()
+                for item in records
+                if isinstance(item, dict)
+            ):
                 return fail()
             semantics_version = (
                 scientific_pack.get(
@@ -4137,12 +4563,8 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                     if isinstance(item, dict)
                 }
                 for account in accounts:
-                    if not _valid_search_account(
-                        account,
-                        record.get("trial_id"),
-                        canonical_value["batch"].get("identity"),
-                        sources,
-                        independent_identity,
+                    if not _valid_versioned_search_account(
+                        account, record.get("trial_id"), canonical_value, independent_identity
                     ):
                         return fail()
                 for answer in answers:
@@ -4189,7 +4611,20 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                             return fail()
                         if use.get("kind") in {"context", "inference"}:
                             uncertainty_basis = True
-                        if set(use) != {"kind", "evidence", "source"}:
+                        if set(use) not in (
+                            {"kind", "evidence", "source"},
+                            {"kind", "evidence", "source", "working_observation"},
+                        ) or (
+                            "working_observation" in use
+                            and (
+                                not _valid_working_observation_link(use["working_observation"])
+                                or not _valid_count_evidence_closure(
+                                    use["working_observation"],
+                                    evidence_by_identity,
+                                    record.get("trial_id"),
+                                )
+                            )
+                        ):
                             return fail()
                         evidence = evidence_by_identity.get(use.get("evidence"))
                         if not isinstance(evidence, dict) or evidence.get("trial_id") != record.get(
@@ -4202,7 +4637,18 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         material = str(evidence.get("quote") or evidence.get("transcription") or "")
                         if material != source:
                             return fail()
-                    if answer["answer"] in {"yes", "no"} and not direct_basis:
+                    if (
+                        scientific_pack["content_hash"] not in _UNIFORM_ANSWER_BASIS_PACKS
+                        and answer["answer"] in {"yes", "no"}
+                        and not (
+                            direct_basis
+                            or (
+                                answer["question_id"] == "sq:missing:evidence-unbiased"
+                                and answer["answer"] == "no"
+                                and any(use.get("kind") != "limitation" for use in answer["bases"])
+                            )
+                        )
+                    ):
                         return fail()
                     if answer["answer"] in {"probably_yes", "probably_no"} and not (
                         direct_basis or uncertainty_basis
@@ -4352,24 +4798,26 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         or set(item["active_questions"]) != derived
                         or set(item["active_questions"]) | set(item["inactive_questions"])
                         != allowed
-                        or item.get("judgment") != judgment
+                        or not valid_domain_decision(
+                            item,
+                            judgment,
+                            decision_history,
+                            evidence_by_identity,
+                            scientific_pack["content_hash"],
+                        )
                     ):
                         return fail()
                     accounts = item["search_accounts"]
                     if not isinstance(accounts, list):
                         return fail()
-                    trial_sources = {
+                    {
                         source.get("id"): source
                         for source in batch_trials.get(item.get("trial_id"), [])
                         if isinstance(source, dict)
                     }
                     for account in accounts:
-                        if not _valid_search_account(
-                            account,
-                            item.get("trial_id"),
-                            canonical_value["batch"].get("identity"),
-                            trial_sources,
-                            independent_identity,
+                        if not _valid_versioned_search_account(
+                            account, item.get("trial_id"), canonical_value, independent_identity
                         ):
                             return fail()
                     history_account_by_identity = {
@@ -4480,7 +4928,26 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                                 "contradiction",
                                 "context",
                                 "inference",
-                            } or set(use) != {"kind", "evidence", "source"}:
+                            } or (
+                                set(use)
+                                not in (
+                                    {"kind", "evidence", "source"},
+                                    {"kind", "evidence", "source", "working_observation"},
+                                )
+                                or (
+                                    "working_observation" in use
+                                    and (
+                                        not _valid_working_observation_link(
+                                            use["working_observation"]
+                                        )
+                                        or not _valid_count_evidence_closure(
+                                            use["working_observation"],
+                                            evidence_by_identity,
+                                            item.get("trial_id"),
+                                        )
+                                    )
+                                )
+                            ):
                                 return fail()
                             if use.get("kind") in {"context", "inference"}:
                                 uncertainty_basis = True
@@ -4497,7 +4964,20 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                             )
                             if material != source:
                                 return fail()
-                        if answer["answer"] in {"yes", "no"} and not direct_basis:
+                        if (
+                            scientific_pack["content_hash"] not in _UNIFORM_ANSWER_BASIS_PACKS
+                            and answer["answer"] in {"yes", "no"}
+                            and not (
+                                direct_basis
+                                or (
+                                    answer["question_id"] == "sq:missing:evidence-unbiased"
+                                    and answer["answer"] == "no"
+                                    and any(
+                                        use.get("kind") != "limitation" for use in answer["bases"]
+                                    )
+                                )
+                            )
+                        ):
                             return fail()
                         if answer["answer"] in {"probably_yes", "probably_no"} and not (
                             direct_basis or uncertainty_basis
@@ -4531,6 +5011,7 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         expected_shape.update(
                             key
                             for key in (
+                                "aggregation",
                                 "overall_trace",
                                 "overall_driver_domains",
                                 "overall_receipt",
@@ -4568,7 +5049,7 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         )
                     ):
                         return fail()
-                    expected_overall = evaluate_overall(item["domain_judgments"])
+                    expected_overall = snapshot_evaluation(item)
                     if (
                         "overall_trace" in item
                         and item["overall_trace"] != list(expected_overall.trace)
@@ -4707,8 +5188,15 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         ):
                             return fail()
                         judgment = local_domain_judgment(domain.id, answer_map)
-                        if record.get("judgment") != judgment:
+                        if not valid_domain_decision(
+                            record,
+                            judgment,
+                            decision_history,
+                            evidence_by_identity,
+                            scientific_pack["content_hash"],
+                        ):
                             return fail()
+                        judgment = record["judgment"]
                         expected_checkpoints.append(str(record.get("identity")))
                         expected_judgments[domain.id] = judgment
                     if (
@@ -4716,7 +5204,8 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         or snapshot.get("domain_judgments") != expected_judgments
                     ):
                         return fail()
-                    expected_overall = evaluate_overall(expected_judgments)
+                    expected_overall = snapshot_evaluation(snapshot)
+
                     if (
                         (
                             "overall_trace" in snapshot
@@ -4742,6 +5231,15 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                     overall = expected_overall.judgment.value
                     if snapshot.get("overall") != overall:
                         return fail()
+            if any(
+                (
+                    review.get("snapshot_identity") != snapshots[trial_id].get("identity")
+                    or review.get("aggregation") != snapshots[trial_id].get("aggregation")
+                )
+                for trial_id, review in canonical_value.get("trial_reviews", {}).items()
+                if trial_id in snapshots and "aggregation" in snapshots[trial_id]
+            ):
+                return fail()
             if has_trial_reviews and not _valid_trial_review_closures(
                 canonical_value.get("trial_reviews"),
                 canonical_value.get("trial_closures"),

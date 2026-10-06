@@ -581,7 +581,7 @@ def _source_triage_addendum(matrix):
     arches_d1 = by_key[("adverse-events", "arches", "domain:randomization")]
     return {
         "status": "provisional_ai_source_triage_recorded",
-        "source_report": "docs/evaluation/2026-09-27-fresh-audit-evidence/science.md",
+        "source_report": "docs/archive/evaluation/2026-09-27-fresh-audit-evidence/science.md",
         "independent_adjudication_status": "pending_external_adjudication",
         "labels_corrected": False,
         "uniquely_wrong_model_label_established": False,

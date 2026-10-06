@@ -1,0 +1,13 @@
+{
+  "frozen_before_selection_utc": "2026-10-06T02:02:48.196300+00:00",
+  "entropy_seed_hex": "90135594174fc9bb09ec0044974939b97ef84c867a69af84d12ef1a88837ffa7",
+  "entropy_source": "Python secrets.token_hex(32), operating-system entropy",
+  "algorithm": "For every eligible unique slug, SHA256(bytes.fromhex(seed) + b\"\\x00\" + slug.encode(\"utf-8\")); ascending (digest,slug) sort, take first10 in that order. No exclusions, replacement, redraw or conditioning on exposure.",
+  "sample_size": 10,
+  "eligible_count": 106,
+  "manifest_sha256": "527d7099980063ca28d7528095c64c7f2f426d375e362fcf43efbfa08873f827",
+  "original_outcomes_csv_sha256": "5ac71b8cad741a4bf2a8dffa68c9385fba2e73d3d41c13d64730441b14388a77",
+  "benchmark_revision": "d04473df4a07a3117f3171df2d8471ec0defd522",
+  "branch_head_before_cleanup": "43de8f79013a31c2a319987d48448ec50005d388",
+  "purpose": "Random operational cutover test, not benchmark accuracy estimate."
+}

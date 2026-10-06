@@ -68,7 +68,5 @@ def test_intake_warning_is_reconstructed_and_cannot_be_removed(
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o644 << 16
             archive.writestr(info, files[name])
-    diagnostic = {}
-    assert not verify_bundle(tampered, diagnostic=diagnostic)
-    assert diagnostic["failed_check_line"] == 4797
+    assert not verify_bundle(tampered)
     assert _standalone_verify(tampered).returncode == 1

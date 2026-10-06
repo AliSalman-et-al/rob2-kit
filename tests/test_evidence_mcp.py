@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import runpy
 import sqlite3
@@ -32,6 +33,169 @@ from rob2_kit.application.evidence import (
 )
 from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.packs import SCIENTIFIC_PACK
+
+
+def test_native_quote_selection_requires_delivered_text_and_preserves_range_identity(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/quotes.txt").write_text(
+        "Header.\nUnique outcome at 3 years.\nRepeated phrase.\nRepeated phrase.\n"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "quotes.txt"
+    )
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "Unique outcome", "mode": "all"}
+    )
+    rejected = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "Unique outcome at 3 years."},
+    )
+    assert rejected["outcome"] != "success"
+    assert "not fully delivered by read_pages" in json.dumps(rejected)
+    _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [{"source_id": source["id"], "page": 1, "start_line": 2, "end_line": 2}],
+        },
+    )
+    quote = _call(
+        workspace, "select_text_evidence", {**args, "selected_text": "Unique outcome at 3 years."}
+    )["data"]["evidence"]
+    ranged = _call(workspace, "select_text_evidence", {**args, "start_line": 2, "end_line": 2})[
+        "data"
+    ]["evidence"]
+    assert quote == ranged
+    assert quote["quote"] == "Unique outcome at 3 years."
+    assert quote["start_line"] == quote["end_line"] == 2
+    for text, message in (
+        ("Repeated phrase.", "ambiguous"),
+        ("Unique outcome at 4 years.", "not an exact page selection"),
+    ):
+        rejected = _call(workspace, "select_text_evidence", {**args, "selected_text": text})
+        assert rejected["outcome"] != "success"
+        assert message in json.dumps(rejected)
+    rejected = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "Header.", "start_line": 1, "end_line": 1},
+    )
+    assert rejected["outcome"] != "success"
+    assert "not both" in json.dumps(rejected)
+    assert _state(workspace)["revision"] == 1
+
+
+def test_native_quote_preserves_numeric_hyphens_and_source_line_wraps(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/hyphens.txt").write_text(
+        "Risk 1 3 years.\nDose 50 69 mg.\nChange 3 points.\n"
+        "A multi-\nstage procedure.\nRange 50-\n69 mg.\n"
+        "Repeated multistage.\nRepeated multi-\nstage.\n"
+        "follow-up\nfollow-\nup\n"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "hyphens.txt"
+    )
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    _call(workspace, "read_pages", {"trial_id": "trial", "source_id": source["id"], "pages": [1]})
+    for quote in (
+        "Risk 1-3 years.",
+        "Dose 50-69 mg.",
+        "Change -3 points.",
+        "Range 5069 mg.",
+    ):
+        rejected = _call(workspace, "select_text_evidence", {**args, "selected_text": quote})
+        assert rejected["outcome"] != "success"
+        assert "not an exact page selection" in json.dumps(rejected)
+    for quote, raw in (
+        ("A multistage procedure.", "A multi-\nstage procedure."),
+        ("A multi-stage procedure.", "A multi-\nstage procedure."),
+        ("A multi-\nstage procedure.", "A multi-\nstage procedure."),
+        ("Range 50-69 mg.", "Range 50-\n69 mg."),
+    ):
+        selected = _call(workspace, "select_text_evidence", {**args, "selected_text": quote})
+        assert selected["data"]["evidence"]["quote"] == raw
+    rejected = _call(
+        workspace, "select_text_evidence", {**args, "selected_text": "Repeated multistage."}
+    )
+    assert rejected["outcome"] != "success"
+    assert "ambiguous" in json.dumps(rejected)
+    rejected = _call(workspace, "select_text_evidence", {**args, "selected_text": "follow-up"})
+    assert rejected["outcome"] != "success"
+    assert "ambiguous" in json.dumps(rejected)
+
+
+def test_native_quote_selection_rejects_coverage_gaps_and_wrong_physical_page(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    document.new_page().insert_text((48, 48), "First line.\nMiddle line.\nLast line.")
+    document.new_page().insert_text((48, 48), "Unique second page.")
+    (workspace / "input/trial/quotes.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "quotes.pdf"
+    )
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {"source_id": source["id"], "page": 1, "start_line": line, "end_line": line}
+                for line in (1, 3)
+            ],
+        },
+    )
+    rejected = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "First line. Middle line. Last line."},
+    )
+    assert rejected["outcome"] != "success"
+    assert "not fully delivered by read_pages" in json.dumps(rejected)
+    _call(workspace, "read_pages", {"trial_id": "trial", "source_id": source["id"], "pages": [2]})
+    rejected = _call(
+        workspace, "select_text_evidence", {**args, "selected_text": "Unique second page."}
+    )
+    assert rejected["outcome"] != "success"
+    assert "not an exact page selection" in json.dumps(rejected)
+    second = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "page": 2, "selected_text": "Unique second page."},
+    )["data"]["evidence"]
+    assert second["page"] == 2
+    _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [{"source_id": source["id"], "page": 1, "start_line": 2, "end_line": 2}],
+        },
+    )
+    joined = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "First line. Middle line. Last line."},
+    )["data"]["evidence"]
+    assert joined["quote"] == "First line.\nMiddle line.\nLast line."
 
 
 def test_source_navigation_distinguishes_posting_approval_retrieval_and_unblinding_dates(
@@ -531,7 +695,11 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
 ) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "alpha beta one\nunrelated\nalpha beta two\nunrelated\nalpha beta three\n",
+        "alpha beta one\n"
+        + "unrelated context\n" * 100
+        + "alpha beta two\n"
+        + "unrelated context\n" * 100
+        + "alpha beta three\n",
         encoding="utf-8",
     )
     _call(
@@ -581,7 +749,7 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
     assert [hit["rank"] for hit in restarted["hits"]] == [2, 3]
 
 
-def test_search_returns_multiple_source_windows_for_one_matching_page(
+def test_search_groups_identical_windows_from_separate_match_anchors(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -599,18 +767,19 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
         "search_sources",
         {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 10},
     )["data"]
-    assert len(result["hits"]) == 2
-    assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
-    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
+    assert len(result["hits"]) == 1
+    assert [hit["rank"] for hit in result["hits"]] == [1]
+    assert [hit["start_line"] for hit in result["hits"]] == [1]
+    assert [hit["end_line"] for hit in result["hits"]] == [4]
+    assert "alpha" in result["hits"][0]["preview"]
+    assert "beta" in result["hits"][0]["preview"]
+    assert result["candidate_count"] == result["distinct_passage_count"] == 1
+    assert result["matching_page_count"] == 1
+    assert result["exhausted"] is True
     receipt = _search_receipt(workspace, result["search_receipt"])
     assert receipt["hits"] == [
         {
             "source_id": resolve_source_handle(workspace, "trial", result["hits"][0]["source_id"]),
-            "page": 1,
-        },
-        {
-            "source_id": resolve_source_handle(workspace, "trial", result["hits"][1]["source_id"]),
             "page": 1,
         },
     ]
@@ -619,7 +788,7 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
 def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "alpha beta first\nnoise\nnoise\nalpha beta second\n",
+        "alpha beta first\n" + "noise context\n" * 100 + "alpha beta second\n",
         encoding="utf-8",
     )
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
@@ -631,8 +800,10 @@ def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Pa
     )["data"]
 
     assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
-    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
+    assert "alpha beta first" in result["hits"][0]["preview"]
+    assert "alpha beta second" not in result["hits"][0]["preview"]
+    assert "alpha beta second" in result["hits"][1]["preview"]
+    assert "alpha beta first" not in result["hits"][1]["preview"]
 
 
 def test_search_preview_and_passage_ref_share_one_bounded_window(tmp_path: Path) -> None:
@@ -983,7 +1154,7 @@ def test_search_candidate_identity_is_invariant_and_purpose_is_explicit(tmp_path
     )
 
 
-def test_missing_question_card_exposes_explicit_availability_premise(tmp_path: Path) -> None:
+def test_missing_question_card_recovers_full_official_and_faq_context(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     for domain_id in ("domain:randomization", "domain:deviations"):
         saved = _call(
@@ -1005,29 +1176,24 @@ def test_missing_question_card_exposes_explicit_availability_premise(tmp_path: P
     pack_question = next(
         item for item in SCIENTIFIC_PACK.questions if item.id == "sq:missing:data-available"
     )
-    assert card["official_guidance"] == pack_question.guidance.official.source_excerpt
-    assert card["source_locator"] == pack_question.guidance.official.source_locator
-
-    evidence = " ".join(card["evidence_needed"]).casefold()
-    assert "yes or probably yes" in evidence
-    assert "actual outcome-availability evidence" in evidence
-    assert "observed-outcome counts" in evidence
-    assert "loss-to-follow-up or censoring accounting" in evidence
-    assert "complete/nearly-complete ascertainment" in evidence
-
-    shortcuts = [item.casefold() for item in card["invalid_shortcuts"]]
-    assert any("analysis denominator" in item and "itt membership" in item for item in shortcuts)
-    assert any("planned or scheduled follow-up" in item for item in shortcuts)
-    assert any("treatment continuation" in item and "discontinuation" in item for item in shortcuts)
-    assert any(
-        "generic censoring rule" in item
-        and "actual rates" in item
-        and "follow-up accounting" in item
-        for item in shortcuts
+    assert card["guidance_locator"] == pack_question.guidance.official.source_locator
+    core = context["data"]["official_guidance"]
+    assert core["complete"]
+    relevant = [
+        section for section in core["sections"] if pack_question.id in section["question_ids"]
+    ]
+    assert pack_question.guidance.official.source_excerpt in {s["excerpt"] for s in relevant}
+    expected_faq = [
+        section
+        for section in SCIENTIFIC_PACK.official_sections or ()
+        if section.question_ids == (pack_question.id,)
+    ]
+    assert expected_faq
+    assert all(
+        section.guidance.source_excerpt in {s["excerpt"] for s in relevant}
+        for section in expected_faq
     )
-    considerations = " ".join(card["considerations"]).casefold()
-    assert "administrative censoring" in considerations
-    assert "missing follow-up" in considerations
+    assert not {"decision_rule", "evidence_needed", "invalid_shortcuts"} & card.keys()
 
 
 def test_list_sources_resolves_one_captured_trial_or_returns_boundary_error(tmp_path: Path) -> None:
@@ -1127,7 +1293,7 @@ def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) 
     )["data"]["navigation"]
     assert first["source_id"] == source["id"]
     assert first["projection_hash"] == source["projection_hash"]
-    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.2"
+    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.5"
     assert first["pages_examined"] == 7
     assert all(len(entry["text"]) <= 512 for entry in first["entries"])
 
@@ -1512,7 +1678,7 @@ def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal
 ) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "alpha beta first\ncontext\ncontext\nalpha beta second\n", encoding="utf-8"
+        "alpha beta first\n" + "unrelated context\n" * 100 + "alpha beta second\n", encoding="utf-8"
     )
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
 
@@ -2197,6 +2363,76 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     assert selected["data"]["evidence"]["quote"] == source_text
 
 
+def test_read_pages_budget_includes_pending_assessment_context_cursor(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/supplement.txt").write_text(
+        "\n".join("é" * 30 for _ in range(1000)), encoding="utf-8"
+    )
+    evidence = _prepared_evidence(workspace)
+    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    assert proposed["outcome"] == "review_required"
+    _review(workspace)
+    too_small = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 4096},
+    )
+    assert too_small["outcome"] == "condition"
+    assert "domain_context_header_oversized" in json.dumps(too_small)
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 16384},
+    )
+    assert context["outcome"] == "success", context
+    assert context["data"]["context_page"]["next_cursor"] is not None
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "supplement.txt"
+    )
+    request: dict[str, object] = {
+        "trial_id": "trial",
+        "windows": [{"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1000}],
+    }
+    first = _call(workspace, "read_pages", request)
+    assert first["outcome"] == "success"
+    continuation = first["head"]["next_action"]
+    assert continuation["cursor"] == context["data"]["context_page"]["next_cursor"]
+    assert continuation["max_response_bytes"] == 16384
+    wire_bytes = len(
+        json.dumps(
+            {
+                "content": [],
+                "structured_content": {
+                    key: value for key, value in first.items() if key != "_image_content"
+                },
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode()
+    )
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("ROB2_WORKSPACE", str(workspace))
+        assert (
+            mcp_server._read_pages_transport_bytes(
+                {"outcome": "success", **first["data"]}, mcp_server._get_status_head(workspace)
+            )
+            == wire_bytes
+        )
+    assert 23_000 < wire_bytes <= 24_000
+    assert first["data"]["remaining_windows"]
+
+    internal_id = resolve_source_handle(workspace, "trial", source["id"])
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        assert (
+            connection.execute(
+                "SELECT MAX(end_line) FROM page_reads WHERE source_id=?", (internal_id,)
+            ).fetchone()[0]
+            == first["data"]["pages"][0]["returned_end_line"]
+        )
+
+
 def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     trial = workspace / "input" / "trial"
@@ -2234,6 +2470,25 @@ def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: 
         },
     )
     assert first["outcome"] == "success"
+    wire_bytes = len(
+        json.dumps(
+            {
+                "content": [],
+                "structured_content": {
+                    key: value for key, value in first.items() if key != "_image_content"
+                },
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode()
+    )
+    assert (
+        mcp_server._read_pages_transport_bytes(
+            {"outcome": "success", **first["data"]}, first["head"]
+        )
+        == wire_bytes
+    )
+    assert wire_bytes <= 24_000
     pages = first["data"]["pages"]
     assert [page["source_id"] for page in pages] == [main["id"], supplement["id"]]
     supplement_page = pages[1]
@@ -2273,19 +2528,20 @@ def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: 
     assert seen == list(range(1, 1_001))
 
 
+@pytest.mark.parametrize(
+    "oversized_text", ["x" * 30_000, "é🧪|数\t" * 6_000], ids=["ascii", "unicode-table"]
+)
 def test_read_pages_oversized_single_line_makes_progress(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, oversized_text: str
 ) -> None:
     workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text("x" * 30_000, encoding="utf-8")
+    (workspace / "input" / "trial" / "main.txt").write_text(oversized_text, encoding="utf-8")
     _call(
         workspace,
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    oversized_text = "x" * 30_000
 
     def fake_read_pages(
         _workspace_path: Path, _trial_id: str, _source_id: str, _pages: list[int]
@@ -2747,3 +3003,312 @@ def test_render_cache_returns_pixels_by_default_and_allows_metadata_only(
     )
     assert unavailable["outcome"] == "condition"
     assert "delivered ImageContent" in unavailable["condition"]["detail"]
+
+
+@pytest.mark.parametrize("tail", ["", "\nLater context."])
+@pytest.mark.parametrize("end_char", [0, 9])
+def test_read_pages_remainder_preserves_explicit_end_char_suffix(
+    tmp_path: Path, tail: str, end_char: int
+) -> None:
+    workspace = _workspace(tmp_path)
+    line = "Observed évents; exclusions remain unexplained."
+    (workspace / "input" / "trial" / "main.txt").write_text(line + tail, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    result = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 1,
+                    "end_char": end_char,
+                }
+            ],
+        },
+    )["data"]
+    page = result["pages"][0]
+    assert page["numbered_text"] == "1|" + line[:end_char]
+    assert page["truncated"] is False
+    assert page["next_start_line"] is None
+    assert result["remaining_windows"] == []
+    assert page["passage_ref"] is None
+    assert page["page_remainder"] == {
+        "source_id": source["id"],
+        "page": 1,
+        "start_line": 1,
+        "end_line": 2 if tail else 1,
+        "start_char": end_char,
+    }
+    recovered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [page["page_remainder"]],
+        },
+    )["data"]["pages"][0]
+    assert recovered["numbered_text"] == "1|" + line[end_char:] + (
+        "\n2|Later context." if tail else ""
+    )
+    assert recovered["page_remainder"] is None
+
+
+@pytest.mark.parametrize("start_char,end_char", [(9, 20), (9, 9)])
+def test_read_pages_deferred_window_preserves_character_bounds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, start_char: int, end_char: int
+) -> None:
+    workspace = _workspace(tmp_path)
+    line = "Observed évents; exclusions remain unexplained."
+    (workspace / "input" / "trial" / "main.txt").write_text(line, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    window = {
+        "source_id": source["id"],
+        "page": 1,
+        "start_line": 1,
+        "end_line": 1,
+        "start_char": start_char,
+        "end_char": end_char,
+    }
+    original = mcp_server._read_pages_transport_bytes
+
+    def one_page_budget(value: dict[str, Any], head: dict[str, Any]) -> int:
+        if len(value["pages"]) > 1:
+            return mcp_server._READ_PAGES_RESPONSE_BYTES + 1
+        return original(value, head)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(mcp_server, "_read_pages_transport_bytes", one_page_budget)
+        first = _call(
+            workspace,
+            "read_pages",
+            {
+                "trial_id": "trial",
+                "windows": [
+                    {"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1},
+                    window,
+                ],
+            },
+        )["data"]
+    assert len(first["pages"]) == 1
+    assert first["remaining_windows"] == [window]
+    resumed = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": first["remaining_windows"],
+        },
+    )["data"]
+    assert resumed["remaining_windows"] == []
+    assert resumed["pages"][0]["numbered_text"] == "1|" + line[start_char:end_char]
+    assert resumed["pages"][0]["passage_ref"] is None
+
+
+def test_historical_anchor_recipe_receipt_remains_verifiable(tmp_path: Path) -> None:
+    from rob2_kit.application.evidence import _session_candidates
+
+    workspace = _workspace(tmp_path)
+    text = "alpha\ncontext\ncontext\nbeta\n"
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 10},
+    )["data"]
+    current_receipt = _search_receipt(workspace, result["search_receipt"])
+    connection = sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3")
+    current_session = json.loads(
+        connection.execute(
+            "SELECT payload FROM search_sessions WHERE identity=?", (result["session_id"],)
+        ).fetchone()[0]
+    )
+    spec: dict[str, Any] = {
+        **current_session["spec"],
+        "candidate_version": "rob2-kit.search-candidates.v0.9",
+    }
+    identity = _identity(spec)
+    source_id = spec["sources"][0]["id"]
+    candidates = _session_candidates(
+        {source_id: (text,)},
+        "alpha beta",
+        "any",
+        [source_id],
+        [(source_id, 1)],
+        candidate_version="rob2-kit.search-candidates.v0.9",
+    )
+    session = {
+        **current_session,
+        "spec": spec,
+        "identity": identity,
+        "handle": "ss_" + identity.removeprefix("sha256:")[:16],
+        "candidate_count": 2,
+    }
+    receipt = {k: v for k, v in current_receipt.items() if k not in {"identity", "handle"}}
+    receipt.update(
+        session_id=identity,
+        session_handle=session["handle"],
+        candidate_count=2,
+        returned_rank_end=2,
+        returned_material=2,
+        hits=[{"source_id": source_id, "page": 1}] * 2,
+        returned_candidates=[
+            {k: c[k] for k in ("rank", "source_id", "page", "start_line", "end_line")}
+            for c in candidates
+        ],
+    )
+    receipt["identity"] = _identity(receipt)
+    handle = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
+    receipt["handle"] = handle
+    connection.execute(
+        "INSERT INTO search_sessions VALUES (?,?)", (identity, json.dumps(session).encode("utf-8"))
+    )
+    connection.executemany(
+        "INSERT INTO search_candidates VALUES (?,?,?)",
+        [(identity, c["rank"], json.dumps(c).encode("utf-8")) for c in candidates],
+    )
+    connection.execute(
+        "INSERT INTO search_receipts VALUES (?,?)",
+        (receipt["identity"], json.dumps(receipt).encode("utf-8")),
+    )
+    connection.commit()
+    connection.close()
+    assert _search_receipt(workspace, handle) == receipt
+    assert _search_receipt(workspace, result["search_receipt"]) == current_receipt
+
+    stale = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "alpha beta",
+            "mode": "any",
+            "limit": 1,
+            "cursor": "sc_" + identity.removeprefix("sha256:")[:16] + "_1",
+        },
+    )
+    assert stale["condition"]["code"] == "search_cursor_stale"
+    assert _search_receipt(workspace, handle) == receipt
+
+
+def test_pdf_bookmark_navigation_preserves_metadata_and_reading_boundaries(tmp_path: Path) -> None:
+    from rob2_kit.application.evidence import source_reading_status
+
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for page in range(15):
+        document.new_page().insert_text((48, 48), f"Body on physical page {page + 1}.")
+    outline = [
+        [1, "Cover metadata", 1],
+        [2, "Long authored label " + "x" * 600, 2],
+        [1, "Unmapped destination", -1],
+    ]
+    outline.extend([1, f"Section {page}", page] for page in range(3, 16))
+    document.set_toc(outline)
+    (workspace / "input" / "trial" / "protocol.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        s
+        for s in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if s["label"] == "protocol.pdf"
+    )
+    before = source_reading_status(workspace, "trial")
+    action = source["navigation_action"]
+    data = _call(
+        workspace, action["operation"], {k: v for k, v in action.items() if k != "operation"}
+    )["data"]["navigation"]
+    assert data["source_sha256"] == source["sha256"]
+    assert data["pdf_bookmark_count"] == 15
+    assert data["unmapped_pdf_bookmark_count"] == 1
+    assert data["returned_entries"] == 12
+    assert source_reading_status(workspace, "trial") == before
+    import base64
+
+    encoded = data["next_cursor"].split(".", 1)[1]
+    old_cursor = json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
+    old_cursor["version"] = "rob2-kit.source-navigation.v0.4"
+    old_cursor = "sn1." + base64.urlsafe_b64encode(json.dumps(old_cursor).encode()).decode().rstrip(
+        "="
+    )
+    stale = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"], "cursor": old_cursor},
+    )
+    assert stale["condition"]["code"] == "source_navigation_cursor_stale"
+    entries = list(data["entries"])
+    assert entries[0]["text"] == "Cover metadata"
+    assert entries[1]["outline_level"] == 2 and entries[1]["label_truncated"] is True
+    assert (
+        entries[1]["label_sha256"]
+        == "sha256:"
+        + hashlib.sha256(("Long authored label " + "x" * 600).encode("utf-8")).hexdigest()
+    )
+    cursor = data["next_cursor"]
+    while cursor:
+        data = _call(
+            workspace,
+            "list_sources",
+            {"trial_id": "trial", "source_id": source["id"], "cursor": cursor},
+        )["data"]["navigation"]
+        entries.extend(data["entries"])
+        cursor = data["next_cursor"]
+    bookmarks = [entry for entry in entries if entry["kind"] == "pdf_bookmark"]
+    assert [entry["outline_index"] for entry in bookmarks] == [0, 1, *range(3, 16)]
+    assert all("start_line" not in entry and "end_line" not in entry for entry in bookmarks)
+    assert all(len(entry["text"]) <= 512 for entry in entries)
+    assert source_reading_status(workspace, "trial") == before
+    read_action = bookmarks[1]["read_action"]
+    read = _call(
+        workspace,
+        read_action["operation"],
+        {k: v for k, v in read_action.items() if k != "operation"},
+    )["data"]
+    assert "Body on physical page 2" in read["pages"][0]["numbered_text"]
+    assert read["navigation_actions"][0]["source_id"] == source["id"]
+    assert source_reading_status(workspace, "trial") != before
+    assert _state(workspace)["revision"] == 1
+
+    internal_source = next(
+        s["id"]
+        for s in _state(workspace)["batch"]["trials"][0]["sources"]
+        if s["label"] == "protocol.pdf"
+    )
+    captured = workspace / ".rob2-kit" / "sources" / "trial" / f"{internal_source}.bin"
+    captured.write_bytes(captured.read_bytes() + b"changed bytes")
+    with pytest.raises(ToolError, match="internal_evidence_integrity_error"):
+        _call(workspace, "list_sources", {"trial_id": "trial", "source_id": source["id"]})
+
+
+def test_pdf_navigation_excludes_blank_labels_without_normalizing_authored_text(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    document.new_page().insert_text((48, 48), "Literal body.")
+    literal = "  Literal authored label  "
+    document.set_toc([[1, "", 1], [1, "   ", 1], [1, literal, 1]])
+    (workspace / "input" / "trial" / "protocol.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "protocol.pdf"
+    )
+    data = _call(workspace, "list_sources", {"trial_id": "trial", "source_id": source["id"]})[
+        "data"
+    ]["navigation"]
+    assert data["pdf_bookmark_count"] == 1
+    assert data["unmapped_pdf_bookmark_count"] == 2
+    bookmark = next(entry for entry in data["entries"] if entry["kind"] == "pdf_bookmark")
+    assert bookmark["outline_index"] == 2
+    assert bookmark["text"] == literal
+    assert bookmark["label_sha256"] == "sha256:" + hashlib.sha256(literal.encode()).hexdigest()

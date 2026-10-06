@@ -1,0 +1,87 @@
+{
+  "url": "https://www.cochrane.de/sites/cochrane.de/files/uploads/RoB_2.0_guidance_2019.pdf",
+  "version": "22 August 2019",
+  "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+  "license": "CC BY-NC-ND 4.0; unmodified wording, whitespace-normalized extraction",
+  "attribution": "Cochrane RoB2 Development Group; Higgins, Savovic, Page, Sterne (eds)",
+  "questions": [
+    {
+      "question_id": "sq:randomization:sequence",
+      "source_locator": "Full guidance p. 17, Box 4, signalling question 1.1",
+      "physical_page": 17,
+      "blocks": [
+        {
+          "rect": [
+            160.1999969482422,
+            76.78103637695312,
+            687.5631103515625,
+            126.82752227783203
+          ],
+          "text": "Answer ‘Yes’ if a random component was used in the sequence generation process. Examples include computer-generated \nrandom numbers; reference to a random number table; coin tossing; shuffling cards or envelopes; throwing dice; or drawing lots. \nMinimization is generally implemented with a random element (at least when the scores are equal), so an allocation sequence \nthat is generated using minimization should generally be considered to be random. \n"
+        },
+        {
+          "rect": [
+            160.1999969482422,
+            131.62103271484375,
+            679.17578125,
+            169.42752075195312
+          ],
+          "text": "Answer ‘No’ if no random element was used in generating the allocation sequence or the sequence is predictable. Examples \ninclude alternation; methods based on dates (of birth or admission); patient record numbers; allocation decisions made by \nclinicians or participants; allocation based on the availability of the intervention; or any other systematic or haphazard method. \n"
+        },
+        {
+          "rect": [
+            160.1999969482422,
+            174.34103393554688,
+            665.3712158203125,
+            187.66751098632812
+          ],
+          "text": "Answer ‘No information’ if the only information about randomization methods is a statement that the study is randomized.  \n"
+        },
+        {
+          "rect": [
+            160.1999969482422,
+            190.42105102539062,
+            688.1718139648438,
+            252.5875244140625
+          ],
+          "text": "In some situations a judgement may be made to answer ‘Probably no’ or ‘Probably yes’. For example, , in the context of a large \ntrial run by an experienced clinical trials unit, absence of specific information about generation of the randomization sequence, in \na paper published in a journal with rigorously enforced word count limits, is likely to result in a response of ‘Probably yes’ rather \nthan ‘No information’. Alternatively, if other (contemporary) trials by the same investigator team have clearly used non-random \nsequences, it might be reasonable to assume that the current study was done using similar methods.  \n"
+        }
+      ],
+      "normalized_excerpt": "Answer ‘Yes’ if a random component was used in the sequence generation process. Examples include computer-generated random numbers; reference to a random number table; coin tossing; shuffling cards or envelopes; throwing dice; or drawing lots. Minimization is generally implemented with a random element (at least when the scores are equal), so an allocation sequence that is generated using minimization should generally be considered to be random. Answer ‘No’ if no random element was used in generating the allocation sequence or the sequence is predictable. Examples include alternation; methods based on dates (of birth or admission); patient record numbers; allocation decisions made by clinicians or participants; allocation based on the availability of the intervention; or any other systematic or haphazard method. Answer ‘No information’ if the only information about randomization methods is a statement that the study is randomized. In some situations a judgement may be made to answer ‘Probably no’ or ‘Probably yes’. For example, , in the context of a large trial run by an experienced clinical trials unit, absence of specific information about generation of the randomization sequence, in a paper published in a journal with rigorously enforced word count limits, is likely to result in a response of ‘Probably yes’ rather than ‘No information’. Alternatively, if other (contemporary) trials by the same investigator team have clearly used non-random sequences, it might be reasonable to assume that the current study was done using similar methods."
+    },
+    {
+      "question_id": "sq:missing:evidence-unbiased",
+      "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+      "physical_page": 45,
+      "blocks": [
+        {
+          "rect": [
+            160.1999969482422,
+            214.42105102539062,
+            662.0270385742188,
+            276.5875244140625
+          ],
+          "text": "Evidence that the result was not biased by missing outcome data may come from: (1) analysis methods that correct for bias; \nor (2) sensitivity analyses showing that results are little changed under a range of plausible assumptions about the \nrelationship between missingness in the outcome and its true value. However, imputing the outcome variable, either \nthrough methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, \nshould not be assumed to correct for bias due to missing outcome data. \n"
+        }
+      ],
+      "normalized_excerpt": "Evidence that the result was not biased by missing outcome data may come from: (1) analysis methods that correct for bias; or (2) sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data."
+    },
+    {
+      "question_id": "sq:measurement:influence-possible",
+      "source_locator": "Full guidance p. 54, Box 10, signalling question 4.4",
+      "physical_page": 54,
+      "blocks": [
+        {
+          "rect": [
+            160.1999969482422,
+            328.06103515625,
+            647.6878051757812,
+            365.8675231933594
+          ],
+          "text": "Knowledge of the assigned intervention could influence participant-reported outcomes (such as level of pain), observer-\nreported outcomes involving some judgement, and intervention provider decision outcomes. They are unlikely to \ninfluence observer-reported outcomes that do not involve judgement, for example all-cause mortality. \n"
+        }
+      ],
+      "normalized_excerpt": "Knowledge of the assigned intervention could influence participant-reported outcomes (such as level of pain), observer- reported outcomes involving some judgement, and intervention provider decision outcomes. They are unlikely to influence observer-reported outcomes that do not involve judgement, for example all-cause mortality."
+    }
+  ]
+}

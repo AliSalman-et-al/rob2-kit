@@ -1,15 +1,28 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
+
+import pytest
 
 from scripts.run_latitude_d4_card_prompt_contrast import (
     LATITUDE_CASE,
     PRESERVATION_CASE,
     TESTED_D4_PROMPT_CANDIDATE,
     run_contrast,
+)
+
+pytestmark = pytest.mark.skipif(
+    subprocess.run(
+        ["git", "cat-file", "-e", "d5528044066bc0300bd96ea4e99c25a35d58f6b0^{commit}"],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+    ).returncode
+    != 0,
+    reason="Historical contrast requires the preserved d552804 commit, absent from this checkout.",
 )
 
 

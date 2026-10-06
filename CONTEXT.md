@@ -36,16 +36,52 @@ the fixed `input/{TRIAL NAME}/` layout. `prepare_batch` receives the requested
 outcome and optional exact Trial labels. The server discovers immediate
 non-hidden, non-link Trial directories, limits the Batch to named Trials when
 provided, and derives stable Trial IDs from their names. It captures all
-supported Sources in each selected directory. Intake records their content and
+supported Sources in each selected directory. The optional native
+`acquire_registry_documents` initial-intake argument overrides manifest document
+acquisition; true requires explicit Trial labels, false disables it, and omission
+preserves existing settings. Current registry-linked planning PDFs become distinct
+Sources with readable acquisition provenance. The choice binds the intake
+declaration and cannot refresh an existing Batch. Capture is not host reading or
+proof of prespecification; missing documents do not determine signaling answers. Intake records their content and
 projection identities and attempts registry resolution. A typed Intake condition
 remains visible to the model but does not create a researcher gate.
+
+An approved open Trial can use `acquire_companion_source` with one explicit
+Source/page/citation-bound public reference and the exact current revision. The
+bounded fetcher stages immutable candidate bytes and provenance without admitting
+or delivering Source pages. `admit_companion_source` explicitly appends that
+candidate PDF and provenance as Other Sources in the same workspace. It preserves
+prior Source bytes, IDs, projections and scientific records, creates an immutable
+Batch inventory version, and invalidates only the target Trial's review and
+search/context/working currency. Unaffected Trials retain their currency. Old
+page delivery remains bound to exact immutable Source coordinates; the new PDF
+requires `read_pages`. Both bundle verifiers authenticate the inventory lineage
+and historical search accounts against their original versions. Closed Trials
+cannot admit Sources. Acquisition dates and identifier mentions are not scientific
+authority. The approved Result remains fixed; material mapping changes require
+explicit researcher scope review, not an automatic rewrite (ADR0041/ADR0030).
+
+The optional native `request_companion_source` tool records a supplied Source/page-bound
+reference and returns an optional host acquisition handoff. It performs no network
+request, staging, Source admission or reading, and leaves the current workflow
+continuation intact. The host CLI `stage-companion` accepts native Source handles
+and fetches supported cited public PDFs or exact DOI metadata-advertised PDF links
+into a fresh workspace. It requires an explicit registry replay/refresh policy and
+reports input versions, omitted captured Sources and potential refreshes. Input
+copying is not necessarily captured-corpus preservation. Candidate/provenance are
+Other Sources after prospective intake and review; requested protocol/SAP role is
+a hint. Body identifiers are page-located observations, distinct from explicit
+front-matter registration claims and registry-link evidence. Applicability remains
+unverified. Original Sources, ledger and historical review bindings remain intact;
+no optional reference forces restart, NI or a scientific judgment.
 
 The closed workflow phases are `empty`, `proposal`, `assessment`,
 `ready_to_finalize`, and `finalized`.
 
 1. `prepare_batch` captures the Batch and advances to Proposal construction.
 2. The model completes the required bounded main-report text pass, selects
-   Evidence, submits complete cards and assessments through `validate_proposal`,
+   Evidence, submits one candidate with scope/population reasoning and citations per Trial
+   through `validate_proposal(selections, expected_revision)`,
    then saves the exact returned receipt for one complete Result proposal per Trial.
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
@@ -62,6 +98,24 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
    immutable and advances the Batch. `finalize_batch` packages only closed
    Trial records. Proposal Review remains the only researcher gate.
 
+For paginated Domain context, `head.next_action` carries the exact pending
+cursor and byte budget. `context_page.delivery_status` is `incomplete` until
+the last ordered page; `section: complete` names the header section only.
+Context delivery completion does not establish scientific sufficiency or
+Domain, Trial, or Batch completion. Status and rejected calls recover a pending
+page only while its Source, Result, pack, and Domain checkpoint basis remains current.
+
+Proposal validation, pending status and approval display a read-only `scope_review`
+of the exact target, reported endpoint/population and source-bound field paths.
+Reported timing and estimand are not separately represented in the Result type;
+their null projection calls for source interpretation, not an absence finding.
+Exactness is a host assertion about equivalent scope, not a consequence of known
+target metadata or bound numbers. Material conflict or uncertainty belongs in
+clarity and rationale; exact relation with a declared non-specified facet is
+repaired, while a supported non-exact candidate can proceed to researcher review.
+Alternate wording is not compared heuristically. Historical Result identities
+and approvals remain unchanged.
+
 An open Trial may have one replaceable **working checkpoint** containing
 source-located observations, interpretations, terminology, unread ranges, open
 questions, and unfinished drafts. It is bound to the Trial's captured Source
@@ -70,8 +124,8 @@ Evidence, a Domain answer, or Canonical state. `get_status` suppresses its
 contents after a Source or Result mismatch; absence or staleness calls for
 reorientation from the current Sources. Its source locators are host assertions;
 they do not establish that a passage was delivered or understood. Status reports
-the ranges actually returned by `read_pages` separately from Sources referenced
-in working notes.
+the ranges actually returned by `read_pages` or `primary_report` context pages
+separately from Sources referenced in working notes.
 
 Each text pass covers the same source-order prefix of the full captured Source,
 up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries. A
@@ -80,6 +134,27 @@ unread-range navigation. Relevant omitted passages remain subject to targeted
 discovery. Appended material remains part of the captured Source; the host does
 not select a report boundary. Coverage records prove delivery, not comprehension
 or retention in a later host context.
+
+`get_domain_context` keeps scientific guidance and selected Evidence separate from
+primary-report reading. Its `reading_recovery` points to exact unread `read_pages`
+windows; report text is not embedded in an immutable context snapshot. Only
+successfully returned source ranges enter delivery coverage. Verified receipts
+are reused across Domains; an existing Domain or cached text does not substitute
+for source delivery. A manageable report is read completely once. Longer reports
+retain the bounded prefix and exact unread-tail recovery. Source-wide coverage
+can report `read_complete` only when all projected lines have delivery receipts;
+selected quotes alone establish only partial coverage. A changed Result requires
+reassessing source relevance, not automatically rereading identical source text.
+Lost delivery receipts restore unread-window recovery. Identical accepted saves
+and source-bound working checkpoint semantics remain unchanged.
+
+D2/D3 context coverage exposes bounded, unread document-structure recovery for
+flow/disposition captions and outcome/follow-up headings in captured supplements.
+This reuses literal Source navigation and exact `read_pages` windows. It is not
+selected Evidence, extracted participant counts, a lexical absence receipt, or
+an automatic requirement to read every appendix page. A No information answer
+retains the host's bounded scientific stopping rationale; the server does not
+turn a navigation match into a signaling answer or risk label.
 
 Main-report identification is separate from reading coverage. A unique declared
 `main_article` role identifies the report. Inferred roles and fallback reading
@@ -139,6 +214,11 @@ changing its coordinates. Text selection names one inclusive, contiguous line
 range on one page; the server stores that exact projected text. Rebuilding the
 disposable FTS derivative must not change Source, projection, Evidence, or
 workflow identities. The immutable captured bytes remain available for audit.
+
+Routine `get_status` returns selected narrative Evidence identities and exact
+recovery coordinates without repeating quotes. `include_evidence_text=true`
+restores the bounded text for reorientation; omitted text is never a no-hit or
+evidence of absence.
 
 An **Evidence handle** is a short, Trial-scoped transport pointer to selected
 text or a selected visual region. Returned handles have a fixed compact form;
@@ -231,18 +311,23 @@ Result unavailable.
 ## Domain assessment and revision
 
 The scientific pack contains the fixed five RoB 2 Domains, deterministic question
-activation and judgment logic, the licensed official question guidance, and
-separately attributed rob2-kit operational guidance. The pack retains each
-question's full nested official and operational guidance for authoritative
-assessment and artifact/audit use. `get_domain_context` returns a compact typed
-question-card projection with the full official excerpt and locator plus the
-actionable operational fields needed to answer that question. The receipt's
+activation and judgment logic, and source-bound complete official guidance.
+`get_domain_context` delivers one paginated official core with full question
+elaborations, relevant background and scoped FAQ answers. Recover every page before
+assessment. Question cards provide wording, options, activation, source locators and
+retrieval suggestions; they do not duplicate scientific answering rules. The receipt's
 `pack` object names the exact pack ID, version, and content hash. Each card also
 contains a bounded, typed set of executable query suggestions with compact
 query text, explicit lexical mode, an optional recommended Source role, and purpose.
 Suggestions are maintained retrieval vocabulary and alternatives, not claims
-that a Source uses those words or a mandatory search sequence. Operational guidance
-supplements the official source; it never replaces or impersonates it. Cards
+that a Source uses those words or a mandatory search sequence. Navigation and
+workflow guidance do not impose additional scientific answer rules. In D3,
+outcome-driven rescue or switching does not establish that endpoint measurements
+were unavailable. Available outcomes excluded from the assignment analysis belong
+to D2; genuinely unobserved measurements require D3 appraisal. A scheduled visit
+proves neither collection nor non-observation. Preserve the unknown observation
+premise and compare the reported handling with the approved effect of interest;
+matching the endpoint and time alone does not establish the same estimand. Cards
 expose the official RoB 2 answer values allowed for each question. The caller
 submits the selected value as `answer`; the server checks it against that
 question's allowed values and the checkpoint retains the official answer. A
@@ -266,6 +351,11 @@ repair cycle.
 `search_sources` preserves the requested lexical mode and returns factual
 zero-hit feedback for that mode, including complete-query and bounded per-term
 page counts. Counts do not establish co-occurrence or scientific absence. A
+search scope containing unavailable captured bytes instead returns a typed
+condition naming unavailable Sources and Sources whose bytes remain present.
+It searches no text and issues no absence receipt. The host may search those
+other Sources explicitly; each scoped search still verifies bytes and projection
+integrity, and its receipt establishes only that narrower scope. A
 scoped miss can expose literal Source navigation; `list_sources` also returns
 the captured dossier inventory, intake conditions, declared omissions, and
 bounded heading/page excerpts when given a Source ID. `search_sources_batch`
@@ -312,6 +402,15 @@ known Result scope, Source provenance, passage groups, and compatible D3
 arithmetic. The host classifies causation, follow-up, censoring, and plan
 correspondence.
 
+Participant-flow rows keep study/follow-up completion (`completed`) separate
+from endpoint observation, analysis inclusion and imputation. Completion never
+enters missing-outcome arithmetic. Comparison projections retain the row's
+outcome-status and censoring semantics together with Result scope and source
+coordinates; they do not infer overlap or a signaling answer.
+Visual row bases retain their Source, render identity, image region, delivery
+receipt, host provenance and uncertainty in `figures`; extracted-text bases
+remain in `passages`. Neither projection verifies the host's interpretation.
+
 For Domain 4, the host's audit starts from the approved event and ascertainment
 method, then checks method suitability, between-group detection opportunities,
 assessor identity and awareness, and any influence mechanism in that order.
@@ -319,8 +418,16 @@ Awareness is separate from susceptibility to influence; mixed-outcome passages
 require an explicit premise link or a stated inference/unresolved link.
 
 A **Domain checkpoint** is an immutable, content-addressed record of the active
-answers, inactive questions, Evidence uses, search accounts, deterministic
-judgment, and evaluation trace. The first save has no revision basis.
+answers, inactive questions, Evidence uses, search accounts, proposed/adopted
+judgments, and the proposed algorithm evaluation trace. The first save has no revision basis.
+
+An optional explicit host adjudication under ADR 0040 binds an unchanged saved
+checkpoint, exact Result/Domain, scientific pack and its immutable answer Evidence.
+It records why the default misrepresents material bias, the adopted label, assessor
+attribution and source-linked counterevidence. Omission preserves the proposal.
+Answers and evaluator drivers remain unchanged; their trace is proposed-only.
+Changed answers require a new checkpoint and cannot inherit adjudication. Both
+verifiers check these bindings; structural validity does not prove the rationale.
 
 While the Trial remains open, the model may replace an active checkpoint only
 by naming its exact `supersedes` identity and one closed revision basis:
@@ -337,8 +444,11 @@ to coach an answer; disagreement requires discard and a fresh run.
 
 Five active Domain checkpoints produce an **AssessmentSnapshot** and make the
 Trial `reviewable`; the Trial is still correctable until closed. The server
-computes the overall judgment at the fifth checkpoint using the deterministic
-Cochrane rule; the model does not submit or override that aggregation.
+proposes the overall judgment at the fifth checkpoint from adopted Domain labels
+under ADR 0039. Multiple Some concerns escalate to High only with an explicit
+Result/checkpoint-bound cumulative-concerns assessment that concludes their
+combination substantially lowers confidence. Historical unmarked snapshots
+retain ADR 0035 semantics solely for verification.
 `review_trial` binds the approved Result and
 pack-ordered checkpoint identities to an assessed or typed terminal outcome.
 The server rejects closure when that review is stale. `close_trial` accepts only
@@ -362,6 +472,11 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
+Result semantics v0.9 allow an explicitly null group statistic when its meaning
+is not identified in the Source. Values, units, and endpoint identifiers remain
+source-bound, and unclear statistic meaning cannot be marked specified.
+Historical result semantics v0.8 continue to require nonblank statistic labels.
+
 Fresh v0.9 Proposals contain Result cards without caller-selected report scopes
 and require a source-bound reasoning assessment before the receipt-only save.
 Historical v0.5 through v0.8 bundles retain their recorded semantics for
@@ -375,14 +490,9 @@ records or scientific judgments.
 
 ## Public boundary
 
-The v0.10 FastMCP surface exposes exactly 18 strictly typed tools:
-
-`prepare_batch`, `get_status`, `save_working_checkpoint`, `list_sources`,
-`search_sources`, `search_sources_batch`, `read_pages`,
-`select_text_evidence`, `render_page`, `select_visual_evidence`,
-`validate_proposal`, `save_proposal`, `request_proposal_approval`,
-`get_domain_context`, `save_domain_judgment`,
-`review_trial`, `close_trial`, and `finalize_batch`.
+The current typed tool catalog is generated in `docs/release/public-contract.json`.
+It includes packaged guidance, optional arithmetic, immutable companion source acquisition
+and admission, source reading, proposal and assessment workflows.
 
 `validate_proposal` must validate the complete Proposal draft before
 `save_proposal` consumes its exact receipt. `save_domain_judgment` accepts a
@@ -408,8 +518,12 @@ schemas are generated from `src/rob2_kit/interfaces/mcp/server.py`; regenerate
 `docs/release/public-contract.json` to inspect them.
 
 Input and output schemas are closed Pydantic unions. Tool descriptions state the
-single operation, required caller inputs, and server-owned fields. The live
-`rob2://current-batch` resource is the restart-safe projection. The package ships
+single operation, required caller inputs, and server-owned fields.
+MCP input schemas inline their shared definitions so code-mode clients can expose
+the nested required fields instead of unknown argument objects. Output schemas
+retain shared definitions. Domain argument errors include a complete fictitious
+syntax example; neither schema delivery nor error formatting changes validation
+or the caller's scientific choices. The live `rob2://current-batch` resource is the restart-safe projection. The package ships
 one portable, progressive-disclosure `rob2-assess` skill shared by Codex and
 Claude Code.
 
@@ -417,3 +531,49 @@ The successor interaction and field ownership are recorded in ADR 0031. Its
 historical sections are superseded by the live contract above. Actual
 host delivery is tracked separately in `docs/acceptance/v0-4-host-matrix.md`;
 unrun or unobservable checks remain explicitly incomplete.
+
+Working observations may carry host-asserted Result/group/stage/window/population/method scope. Evidence bases accept a compact optional interpretation during ordinary Domain submission; the server captures the cited Evidence locator, retaining exact source material separately. No working-checkpoint ceremony is required. Existing unchanged checkpoint links remain valid for resumed work. Scope categories expose mismatch, partial overlap, unknown applicability, and shared trial context without deciding relevance or labels. Neither typing nor source binding certifies entailment. Legacy notes/bases omit these fields.
+
+Opt-in lean Domain drafting uses the existing bases list: compact selected handles or exact text source ranges assert supporting facts, normalized as indirect_support through the existing selector and canonical validator. Full citations preserve explicit roles and optional annotations. Counterpoints accept the same references. No extra drafting tool, ledger, source-fact duplication, scope inference or answer coercion is introduced; official guidance, active-path and uncertainty checks remain unchanged. Inline annotations omit redundant Domain/question copies supplied by their parent; historical note fields remain valid.
+
+Delivered visual references use the same opt-in Domain basis/counterpoint path:
+`{delivery_receipt, region, transcription, uncertainty?}` resolves through the
+existing visual selector. Source, page, render and PNG hash come from the authentic
+current-Trial image receipt; transcription and uncertainty remain host observations,
+not OCR truth or entailment certification. Explicit-role citations accept these
+references too. Text ranges retain narrative provenance and never cover graphical
+cells by attaching a rendered page. Proposal construction still uses selected visual
+Evidence; reusable selected handles remain available for long repeated transcriptions.
+
+Opt-in source checking projects existing selected-Trial review into a fresh factual
+context through the existing exporter. It withholds answer/judgment metadata,
+preserves full claims and claim-specific source bindings, and validates advisory
+locators against current captured Sources and immutable checkpoint identities.
+It certifies provenance only, never semantic support or reviewer correctness.
+There is no automatic application, new canonical ledger or finalization gate; the
+original assessor accepts/rejects findings through ordinary Domain submission.
+See `docs/source-checking.md`. No default paid reviewer stage is enabled.
+
+## Optional selected-Result reconstruction
+
+An open Trial's existing working checkpoint may use `result_account` instead of
+its overlapping observation/interpretation/premise/draft collections. Source-linked
+factual steps describe how the selected Result was produced, with counterevidence,
+uncertainty and optional existing participant-flow rows. These rows feed Domain
+context before judgments. Existing Evidence warrants can reference a step identity;
+its original observation and full step are snapshotted without changing source
+scope. Known scope differences require a rationale for the relevant use as context,
+contradiction or inference, preserving the original scope. Changed relied-on steps
+flag affected answers for reconsideration, never change labels. Historical
+checkpoints and bundles retain their original identities. The format is supported
+and optional;
+behavioral scientific improvement has not been demonstrated. See ADR0038 and the
+skill's selected-Result reconstruction reference for the host procedure.
+
+Native Trial review retains an Evidence basis's original source-bound working
+observation snapshot, including a linked Result-account step's inference,
+unknowns, counterevidence and count-Evidence bindings. It is the warrant's
+relied-on snapshot, not a current account revision or server-verified entailment.
+Existing bounded review detail recovery preserves this optional state without
+adding a consistency gate, scientific answer coercion or default account-first
+workflow. Proposed/adopted judgments remain separate and unchanged.

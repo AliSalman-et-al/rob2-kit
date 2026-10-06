@@ -1,0 +1,125 @@
+{
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "cases": [
+    {
+      "slug": "bendix-1996",
+      "actual_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "launch": {
+        "command": [
+          "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+          "exec",
+          "--strict-config",
+          "--ignore-rules",
+          "--skip-git-repo-check",
+          "-s",
+          "read-only",
+          "-m",
+          "gpt-6.1-sol",
+          "-c",
+          "model_reasoning_effort=\"medium\"",
+          "--json",
+          "-o",
+          "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/bendix-1996/proposal-final.txt",
+          "-"
+        ],
+        "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/bendix-1996/workspace-run",
+        "model": "gpt-6.1-sol",
+        "effort": "medium",
+        "config_sha256": "003db0bca787efbe0276532468ebd3e6f25edb64fddad13bc12ca10bed8de2c6",
+        "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+        "manifest_sha256": "453fbae3d260c5e59d0b979c62eb89bf337551c0debc203074cb2bb5e96a3af8",
+        "input_sha256": "d3779b1695f46fe18b8aa834c9077c205baa12c32c7bd43ed841053072a73401",
+        "environment_keys": [
+          "CODEX_HOME",
+          "HOME",
+          "LANG",
+          "LC_ALL",
+          "LC_CTYPE",
+          "LOGNAME",
+          "NO_COLOR",
+          "PATH",
+          "ROB2_WORKSPACE",
+          "SHELL",
+          "TEMP",
+          "TERM",
+          "TMP",
+          "TMPDIR",
+          "USER",
+          "XDG_RUNTIME_DIR"
+        ],
+        "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+        "started_at_utc": "2026-10-06T06:19:35.064909+00:00",
+        "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+        "authorized_new_sessions": 1
+      },
+      "supervisor_pid": 2750285
+    },
+    {
+      "slug": "testing",
+      "actual_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "launch": {
+        "command": [
+          "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+          "exec",
+          "--strict-config",
+          "--ignore-rules",
+          "--skip-git-repo-check",
+          "-s",
+          "read-only",
+          "-m",
+          "gpt-6.1-sol",
+          "-c",
+          "model_reasoning_effort=\"medium\"",
+          "--json",
+          "-o",
+          "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/testing/proposal-final.txt",
+          "-"
+        ],
+        "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/testing/workspace-run",
+        "model": "gpt-6.1-sol",
+        "effort": "medium",
+        "config_sha256": "d25bea2349cabcba00dd88d16ead47eb25c2613980fe792cc95438e0b71620bb",
+        "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+        "manifest_sha256": "8ef1fb9b25177c71abf52b2a1ea9216af3f57e2280fa7070912c6fc313f45972",
+        "input_sha256": "b290e053213819c6f3a95023990341528fc8b8cac95d3282f2e135298346ef8e",
+        "environment_keys": [
+          "CODEX_HOME",
+          "HOME",
+          "LANG",
+          "LC_ALL",
+          "LC_CTYPE",
+          "LOGNAME",
+          "NO_COLOR",
+          "PATH",
+          "ROB2_WORKSPACE",
+          "SHELL",
+          "TEMP",
+          "TERM",
+          "TMP",
+          "TMPDIR",
+          "USER",
+          "XDG_RUNTIME_DIR"
+        ],
+        "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+        "started_at_utc": "2026-10-06T06:19:34.865409+00:00",
+        "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+        "authorized_new_sessions": 1
+      },
+      "supervisor_pid": 2750286
+    }
+  ],
+  "concurrency": 2,
+  "remaining_fixed_order_unchanged": true,
+  "full_aggregate": "corrected 7d116f9 running; required before merge",
+  "scientific_results": "pending; no gain claimed"
+}

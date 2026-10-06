@@ -4,9 +4,11 @@ import pytest
 from support.rob2 import _assessment_workspace, _call
 
 from rob2_kit.application.evidence import (
+    _all_search_match_spans,
     _literal_match_spans,
     _native_fts_match_spans,
     _osa_distance,
+    _session_candidates,
     _source_navigation_entries,
 )
 
@@ -112,3 +114,85 @@ def test_search_provenance_history_keeps_unassigned_and_purposed_discoveries(
 
     assert ("", "") in purposes
     assert ("domain:randomization", "sq:randomization:sequence") in purposes
+
+
+def test_source_navigation_preserves_split_heading_coordinates() -> None:
+    page = (
+        "Header\n\n1.2\nIntroduction\nBody text.\n\n2.0\n11-Oct-2017\n\n3\n"
+        "This is a long prose sentence that should not become a heading candidate."
+    )
+    headings = [
+        item
+        for item in _source_navigation_entries((page,))
+        if item["kind"] == "heading_candidate" and item["start_line"] != item["end_line"]
+    ]
+    assert len(headings) == 1
+    assert headings[0]["text"] == "1.2\nIntroduction"
+    assert (headings[0]["page"], headings[0]["start_line"], headings[0]["end_line"]) == (1, 3, 4)
+
+
+def test_search_window_grouping_preserves_anchors_pages_and_source_versions() -> None:
+    text = "alpha\ncontext\ncontext\nbeta\n"
+    pages = {"protocol-v1": (text, text), "protocol-v2": (text,)}
+    pairs = [("protocol-v1", 1), ("protocol-v1", 2), ("protocol-v2", 1)]
+    current = _session_candidates(pages, "alpha beta", "any", list(pages), pairs)
+    legacy = _session_candidates(
+        pages,
+        "alpha beta",
+        "any",
+        list(pages),
+        pairs,
+        candidate_version="rob2-kit.search-candidates.v0.9",
+    )
+    assert len(legacy) == 6
+    assert len(current) == 3
+    assert [(c["source_id"], c["page"]) for c in current] == pairs
+    for c in current:
+        quote = pages[c["source_id"]][c["page"] - 1][c["start"] : c["end"]]
+        assert quote == text.rstrip("\n")
+        assert all(
+            c["start"] <= start < end <= c["end"]
+            for start, end in _all_search_match_spans(text, "alpha beta", "any")
+        )
+    with pytest.raises(ValueError, match="unsupported search candidate recipe"):
+        _session_candidates(pages, "alpha", "any", list(pages), pairs, candidate_version="unknown")
+
+
+@pytest.mark.parametrize(
+    ("first_window", "second_window", "text", "expected_count"),
+    [
+        ((1, 1001), (201, 1201), "a\n" * 1000, 1),  # exactly 80% overlap
+        ((1, 1001), (202, 1201), "a\n" * 1000, 2),  # below 80%
+        ((0, 1200), (165, 1365), "é\n" * 682 + "éx\n" + "é\n" * 1000, 1),
+        ((0, 1200), (165, 1366), "é\n" * 682 + "éx\n" + "é\n" * 1000, 2),
+    ],
+)
+def test_search_grouping_overlap_and_utf8_union_cap(
+    monkeypatch, first_window, second_window, text, expected_count
+) -> None:
+    from rob2_kit.application import evidence
+
+    # Control preview bounds to test coalescing at exact boundaries independently
+    # of the preview-expansion heuristic. The two match anchors remain distinct.
+    monkeypatch.setattr(
+        evidence, "_all_search_match_spans", lambda *a, **k: [(100, 101), (1000, 1001)]
+    )
+    monkeypatch.setattr(
+        evidence,
+        "_search_candidate_window",
+        lambda _text, spans: (
+            (*first_window, False) if spans[0][0] < 500 else (*second_window, False)
+        ),
+    )
+    candidates = evidence._session_candidates(
+        {"source": (text,)}, "target", "any", ["source"], [("source", 1)]
+    )
+    assert len(candidates) == expected_count
+    assert all(
+        any(c["start"] <= start < end <= c["end"] for c in candidates)
+        for start, end in [(100, 101), (1000, 1001)]
+    )
+    if first_window[0] == 0:
+        assert len(text[: second_window[1]].encode("utf-8")) == (
+            2048 if expected_count == 1 else 2049
+        )

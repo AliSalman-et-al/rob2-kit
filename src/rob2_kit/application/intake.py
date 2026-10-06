@@ -42,6 +42,8 @@ from ._state import (
     internal_path,
 )
 from .contracts import WorkflowConflict
+from .registry_documents import acquire_documents
+from .result_scope import result_scope_review
 from .status import _continuation
 
 
@@ -288,6 +290,7 @@ def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
                 "captured_at",
                 "sha256",
                 "provenance",
+                "acquire_documents",
             }
         )
         if unsupported:
@@ -434,8 +437,11 @@ def prepare_batch_for_outcome(
     requested_outcome: str,
     expected_revision: ExpectedRevision,
     trial_labels: list[str] | tuple[str, ...] | None = None,
+    acquire_registry_documents: bool | None = None,
 ) -> dict[str, Any]:
     """Discover selected Trial dossiers and prepare one Batch for one outcome."""
+    if acquire_registry_documents is True and trial_labels is None:
+        raise ValueError("registry document opt-in requires explicit trial_labels")
     requested_outcome = validate_requested_outcome(requested_outcome)
     root = _root(workspace)
     _ensure(root)
@@ -471,7 +477,7 @@ def prepare_batch_for_outcome(
                 requested_outcome=requested_outcome,
             )
         )
-    return prepare_batch(root, declarations, expected_revision)
+    return prepare_batch(root, declarations, expected_revision, acquire_registry_documents)
 
 
 def validate_requested_outcome(value: str) -> str:
@@ -490,11 +496,17 @@ def prepare_batch(
     workspace: str | Path,
     trials: list[TrialDeclaration] | tuple[TrialDeclaration, ...],
     expected_revision: ExpectedRevision,
+    acquire_registry_documents: bool | None = None,
 ) -> dict[str, Any]:
+    if acquire_registry_documents is not None and not isinstance(acquire_registry_documents, bool):
+        raise ValueError("acquire_registry_documents must be boolean or omitted")
     normalized_trials: list[dict[str, Any]] = []
     for item in trials:
         normalized_trials.append(item.model_dump(mode="json"))
-    declaration_identity = _identity({"trials": normalized_trials})
+    declaration = {"trials": normalized_trials}
+    if acquire_registry_documents is not None:
+        declaration["acquire_registry_documents"] = acquire_registry_documents
+    declaration_identity = _identity(declaration)
     root = _root(workspace)
     _ensure(root)
     current = _state(root)
@@ -505,7 +517,10 @@ def prepare_batch(
             return _result("success", current, batch=existing_batch, retry=True)
         if expected_revision != current.get("revision", 0):
             raise WorkflowConflict(expected_revision, int(current.get("revision", 0)))
-        raise ValueError("prepare_batch declarations differ from the existing batch")
+        raise ValueError(
+            "prepare_batch declarations or registry acquisition choice differ from the existing "
+            "batch; use a fresh prospective workspace"
+        )
     if expected_revision != current.get("revision", 0):
         raise WorkflowConflict(expected_revision, int(current.get("revision", 0)))
     if isinstance(existing_batch, dict):
@@ -597,6 +612,11 @@ def prepare_batch(
             for item in omissions
         ]
         nct = _manifest_registry_identifier(config)
+        acquire = (config.get("registry") or {}).get("acquire_documents", False)
+        if not isinstance(acquire, bool):
+            raise ValueError("registry.acquire_documents must be boolean")
+        if acquire_registry_documents is not None:
+            acquire = acquire_registry_documents
         registry_replay = _manifest_registry_replay(config)
         replay_relative = registry_replay["replay"] if registry_replay is not None else None
         replay_data: bytes | None = None
@@ -838,6 +858,91 @@ def prepare_batch(
             conditions.append(
                 {"code": "invalid_registry_identifier", "trial_id": trial_id, "value": str(nct)}
             )
+        if acquire:
+            # Explicitly opting into acquisition against a replay creates current
+            # sources; the archived registry bytes and assessment source remain intact.
+            document_capture = (
+                _registry_record(nct) if replay_data is not None else registry_capture
+            )
+            if (
+                document_capture.outcome.get("kind") == "matched"
+                and document_capture.content is not None
+            ):
+                documents, provenance = acquire_documents(str(nct), document_capture.content)
+            else:
+                documents, provenance = (
+                    [],
+                    {
+                        "status": "registry_unavailable_or_unmatched",
+                        "capture_kind": "new_public_capture_not_historical_replay",
+                        "registry_outcome": document_capture.outcome,
+                    },
+                )
+            provenance["acquisition_request"] = {
+                "source": "prepare_batch_argument"
+                if acquire_registry_documents is not None
+                else "sources.toml",
+                "explicit_override": acquire_registry_documents,
+                "effective_acquire_documents": acquire,
+            }
+            # This source itself makes unknown acquisition outcomes readable,
+            # without converting them into a workflow blocker or signalling answer.
+            metadata = json.dumps(provenance, indent=2, ensure_ascii=False).encode()
+            version = hashlib.sha256(metadata).hexdigest()[:16]
+            acquired = [
+                (f"registry_documents/{version}/{doc.filename}", doc.content, doc.role)
+                for doc in documents
+            ]
+            acquired.append((f"registry_documents/{version}/capture.json", metadata, "other"))
+            if replay_data is not None and document_capture.content is not None:
+                acquired.append(
+                    (
+                        f"registry_documents/{version}/current_registry.json",
+                        document_capture.content,
+                        "other",
+                    )
+                )
+            for relative, data, role in acquired:
+                digest = "sha256:" + hashlib.sha256(data).hexdigest()
+                source_id = _source_id(trial_id, relative, digest)
+                pages = _pages(Path(relative), data)
+                media_type = "application/pdf" if relative.endswith(".pdf") else "application/json"
+                target = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+                records.append(
+                    {
+                        "id": source_id,
+                        "trial_id": trial_id,
+                        "role": role,
+                        "label": (
+                            "Registry document discovery/provenance: new capture, "
+                            "not historical replay"
+                            if relative.endswith("/capture.json")
+                            else "Current registry response used for document discovery"
+                            if relative.endswith("/current_registry.json")
+                            else f"Current registry-linked {role}: {Path(relative).name}"
+                        ),
+                        "logical_path": relative,
+                        "sha256": digest,
+                        "media_type": media_type,
+                        "page_count": len(pages),
+                        "origin": "registry",
+                        "projection_hash": _projection_hash(digest, media_type, pages),
+                    }
+                )
+                with _db(root, "derivative.sqlite3") as derivative:
+                    derivative.executemany(
+                        "INSERT OR REPLACE INTO pages VALUES (?,?,?)",
+                        [(source_id, number, text) for number, text in enumerate(pages, 1)],
+                    )
+                    derivative.executemany(
+                        "INSERT INTO pages_fts VALUES (?,?,?,?)",
+                        [
+                            (source_id, number, *_search_derivative(text))
+                            for number, text in enumerate(pages, 1)
+                        ],
+                    )
         # A plain dossier has no registry claim to review.  A manifest that
         # declares an authoritative NCT or registry outcome does.
         if (nct is not None or "registry" in config) and registry_record.get("kind") != "matched":
@@ -1013,6 +1118,7 @@ def _clear_discarded_derivatives(root: Path) -> None:
 class ProposalApprovalContext:
     review: dict[str, Any] | None
     acknowledgment: dict[str, Any] | None
+    scope_review: tuple[dict[str, Any], ...] = ()
 
 
 def proposal_approval_context(workspace: str | Path) -> ProposalApprovalContext:
@@ -1021,9 +1127,12 @@ def proposal_approval_context(workspace: str | Path) -> ProposalApprovalContext:
     state = _state(root)
     review = state.get("review")
     acknowledgment = state.get("proposal_acknowledgment")
+    candidate = review.get("candidate", {}) if isinstance(review, dict) else {}
+    results = candidate.get("proposal", {}).get("results", [])
     return ProposalApprovalContext(
         review=review if isinstance(review, dict) and review.get("purpose") == "proposal" else None,
         acknowledgment=acknowledgment if isinstance(acknowledgment, dict) else None,
+        scope_review=tuple(result_scope_review(results)),
     )
 
 

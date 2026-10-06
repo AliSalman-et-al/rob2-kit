@@ -85,7 +85,7 @@ premise was not reported. `searched_no_match` remains a lexical fact and never
 supports a scientific absence claim. Render delivery records pixels only; it
 does not establish visual inspection or comprehension.
 `read_pages` likewise prepares a `passage_ref` for each non-empty window. After
-you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
+you inspect a complete passage, reuse that handle in Proposal `source_passages` or
 Domain `bases`; no separate text-selection call is required.
 If the serialized UTF-8 response bound splits one physical line, the returned
 fragment includes exact character offsets and `next_start_char` but has no
@@ -117,16 +117,31 @@ across Sources, use independent `windows`. A passage crossing a page boundary ne
 selection on each page.
 
 Use `select_text_evidence` after inspecting the source text when the prepared
-passage needs different boundaries. Select one contiguous inclusive line range containing
+passage needs narrower boundaries. Supply either `selected_text` (a unique
+contiguous unnumbered literal quote copied from `read_pages`) or both
+`start_line` and `end_line`, never both forms. Quote selection uses the known
+Source and physical page, presentation normalization and delivered reading
+coverage; it rejects absent, ambiguous or unread text. It cannot determine
+whether the passage entails your warrant. An unread-quote error names the
+page/line range to read before selecting again.
+
+Select one contiguous passage containing
 the complete premise and its needed header, list, cohort, denominator, unit, or
-footnote. A heading or list-introducing lead-in alone is incomplete.
+footnote. A heading or list-introducing lead-in alone is incomplete. If the text ends
+mid-sentence or mid-list, read the adjacent Source page before treating that
+premise as complete. Follow a named definition in the relevant supplement when
+its criteria are needed. Empty `remaining_windows` means the requested ranges
+were delivered; it does not establish that the definition is complete.
 
 ## Use visual Evidence for visual meaning
 
 Call `render_page` when layout, axes, columns, symbols, or footnotes affect the
-meaning. Inspect the returned pixels, then call `select_visual_evidence` with the
-`delivery_receipt` from the same response, a normalized region, and a literal,
-self-contained transcription. A receipt is issued only when the response includes
+meaning. Inspect the returned pixels, then use their `delivery_receipt`, a normalized
+region and a literal, self-contained transcription. During Domain submission, this
+reference may go directly in `bases` or `counterevidence[].evidence`; call
+`select_visual_evidence` first when a reusable selected handle is useful (or needed
+for Proposal construction). Both paths use the same visual selector. A receipt is
+issued only when the response includes
 an MCP `ImageContent` block; `inline=false` returns metadata without a receipt and
 cannot support visual Evidence. Include every applicable title, axis, series,
 label, value, unit, uncertainty, denominator, and footnote visible in the region.
@@ -136,15 +151,26 @@ It records that it returned the image block; the receipt does not establish that
 person or model inspected or understood it. The host supplies the transcription;
 `text_corroborated` means the complete-page transcription also occurs in extracted
 Source text, while `host_visual` means it is grounded in the delivered pixels.
-Host-visual Evidence can support only literal visible labels, endpoint text,
-values, axes, arm labels, and stated timing. Use narrative or text-corroborated
-Evidence for population, analysis or measurement methods, prespecification, and
-conduct. Put interpretation in the Result rationale or Domain justification,
-not in the transcription.
+Host-visual Evidence can support literal visible labels, endpoint text,
+values, axes, arm labels, stated timing, and procedure steps or decision criteria
+explicitly printed in a diagram. Transcribe branch labels and arrow connections
+with their prerequisites; do not turn a diagram into an invented patient scenario.
+Distinguish a planned or diagrammed procedure from a report of actual conduct.
+An inspected visible report passage may support what it reports, including
+conduct, population, analysis methods and prespecification, even when extracted
+text is unavailable. Preserve visual provenance and transcription uncertainty;
+OCR availability and crop size do not establish scientific sufficiency. Put
+interpretation in the Result rationale or Domain justification, not in the
+transcription.
+
+Keep each claim with the material that contains it. A caption or abbreviation
+legend does not support numerical values or routes found only in the image.
+Preserve which facts come from each inspected passage or visual region; a
+figure title and legend alone do not establish its visual contents.
 
 ## Ground a Result
 
-Use `passage_refs` for ordinary Result support and `applicability.evidence` for
+Use selection `source_passages` for ordinary Result support and `candidate.design_evidence` for
 design support. Do not place Evidence objects in `reported`. Use ordinary
 selected Evidence for a single passage; use `table_multispan` only when a table
 title or definition, header, quantitative row, unit, or footnote was selected
@@ -203,12 +229,111 @@ State inferred conclusions in the answer's `justification`, with the source
 facts and any unresolved link. The server checks Evidence identity and structure;
 you judge whether those facts support the answer.
 
+## Opt-in lean Domain drafting
+
+Use the existing `save_domain_judgment` action. `bases` may contain selected
+Evidence handle strings or exact text ranges from numbered `read_pages` output:
+
+```json
+{
+  "question_id": "sq:selection:prespecified-analysis",
+  "answer": "probably_yes",
+  "bases": [
+    "eh_0123456789abcdef",
+    {"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 5, "end_line": 9},
+    {"source_id": "sh_0123456789abcdef", "page": 2, "selected_text": "Literal contiguous text copied from read_pages."}
+  ],
+  "justification": "Explain the source-supported inference for this Result.",
+  "unknowns": ["State the material unresolved fact."],
+  "counterevidence": []
+}
+```
+
+This is syntax, not a recommended answer. Compact entries assert supporting facts;
+the server saves their scientific role as `indirect_support`, not proven direct
+entailment. It resolves text through the existing exact selector and reuses the
+Evidence content identity. No separate selection call, working observation or
+premise record is needed. Counterpoints may use the same references.
+Keep unknowns, limiting implications and any investigation stopping rationale
+explicit; all active questions and the normal validation rules still apply.
+
+For context, contradiction, an explicit support role or an annotation, retain the
+full `{evidence: reference, role, working_observation?}` citation. Its reference may
+also be a text range, copied quote or delivered visual reference. A copied quote
+uses `source_id`, physical `page` and `selected_text`, with no line fields. Copy
+the unnumbered literal from delivered `read_pages` text; the server requires a
+unique match on that page and complete delivered coverage. An ambiguous, wrong-page,
+undelivered or changed-value quote is rejected. This proves literal binding, not
+that the passage warrants the claim. No separate selection call is needed.
+
+A visual reference is:
+
+```json
+{
+  "delivery_receipt": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "region": [0.1, 0.2, 0.9, 0.8],
+  "transcription": "Literal labels, values, units and qualifications visible in this region.",
+  "uncertainty": "The exact value of one marker is unclear; no value is inferred."
+}
+```
+
+Copy an authentic receipt from the returned image; the example is syntax only.
+The server resolves Source, page, render and pixel hash from that receipt and retains
+your transcription and uncertainty as host observations. A text range never becomes
+visual Evidence and cannot substitute for graphical cells. Reuse selected handles
+when the same long transcription would otherwise be repeated across answers.
+The full official guidance and source reading/recovery workflow are
+unchanged. Neither a compact reference nor successful saving proves entailment.
+
+## Preserve working observation scope
+
+Working observations are host interpretations, not a second Evidence ledger.
+For a reusable source-specific interpretation beyond the answer warrant, optionally
+annotate an Evidence basis of `save_domain_judgment`:
+
+```json
+{
+  "evidence": "eh_0123456789abcdef",
+  "role": "context",
+  "working_observation": {
+    "text": "This passage describes trial-wide procedures; applicability to the selected outcome is unresolved.",
+    "scope": {"relation": "unknown", "meaning": "uncertain"}
+  }
+}
+```
+
+The server captures the cited Evidence locator and retains the interpretation in
+the warrant. No working checkpoint or coordinate copying is needed. Exact quotes
+and visual transcriptions retain their separate source/render provenance and
+uncertainty. The server does not infer semantic scope from the Result.
+
+Optional scope dimensions are `groups`, `stage`, `window`, `population`, and
+`method`; leave unknown dimensions unset. If providing scope, `relation` is
+`matched`, `mismatch`, `partial_overlap`, `unknown`, or `shared_trial_context`.
+Different scope is distinct from unresolved applicability. Shared trial context
+and cross-arm comparisons can legitimately inform a Result. `meaning` is
+`reported`, `inferred`, or `uncertain`; retain limits in `uncertainty`. Optional
+`result_identity` names a known Result; do not invent it. The saved Domain already
+binds its basis to a Result without filling this semantic field.
+
+Existing `{checkpoint_identity, observation}` links remain available for resumed
+work with unchanged source/Result-bound checkpoint notes. Their membership is
+checked and snapshots survive advisory-note replacement. Working checkpoints
+remain useful resumable memory, not a prerequisite for basis interpretations.
+
+Explain cross-scope reasoning in `justification` and limiting implications in
+`counterevidence`. Preserve contrary facts. Scope categories do not exclude
+Evidence, decide answers, or certify scientific entailment.
+
 ## Build a Domain answer
 
 Read this section before the first `save_domain_judgment` call. Submit
 one object for each question on the dependency-closed active path. The object
-needs `question_id`, the exact permitted `answer`, at least one `bases` item,
-`justification`, `unknowns`, and `counterevidence` for an active question.
+needs `question_id`, the exact permitted `answer`, `bases`, `justification`,
+`unknowns`, and `counterevidence` for an active question. Provide its material
+premises through Evidence bases, `absence_searches`, or `limitations`; `bases: []`
+is allowed when the other collections supply the premises. A scoped no-hit search
+records retrieval, not evidence that a scientific fact is absent.
 Use the question card's `options`; the example values are fictional.
 
 ```json
@@ -216,7 +341,7 @@ Use the question card's `options`; the example values are fictional.
 	"question_id": "sq:randomization:sequence",
 	"answer": "yes",
 	"bases": [
-		{"kind": "direct_support", "evidence": "eh_0123456789abcdef"}
+		{"role": "direct_support", "evidence": "eh_0123456789abcdef"}
 	],
 	"justification": "The inspected passage states that a computer generated random allocations.",
 	"unknowns": [],
@@ -224,24 +349,31 @@ Use the question card's `options`; the example values are fictional.
 }
 ```
 
-Use a limitation basis separately when the source leaves a premise unresolved.
-
-Use these exact shapes for the three basis forms:
+Keep inspected Evidence separate from unresolved information in the submission:
 
 ```json
-{"kind": "context", "evidence": "eh_0123456789abcdef"}
-{"kind": "absence", "search_receipt": "sr_0123456789abcdef"}
-{"kind": "limitation", "unresolved_premise": "The captured reports leave this premise unresolved.", "stopping_rationale": "Relevant retrieval was reviewed, but the premise remains unresolved.", "search_receipt": "sr_0123456789abcdef"}
-{"kind": "limitation", "unresolved_premise": "The captured reports leave this premise unresolved.", "stopping_rationale": "The relevant section was read, but the premise remains unresolved."}
+{
+  "bases": [{"role": "context", "evidence": "eh_0123456789abcdef"}],
+  "absence_searches": ["sr_0123456789abcdef"],
+  "limitations": [{
+    "premise": "The captured reports leave this premise unresolved.",
+    "stopping_rationale": "The relevant section was read, but the premise remains unresolved."
+  }]
+}
 ```
 
-`context`, `direct_support`, `indirect_support`, `contradiction`, and
-`inference` use a selected `evidence` handle. `absence` uses an untruncated
-zero-hit `search_receipt`. `limitation` uses an explicit `unresolved_premise`
-and `stopping_rationale`. Its current-Trial `search_receipt` is optional and
-may be truncated. When present, copy the actual receipt returned for the
-current Trial. A basis kind describes how the premise is used;
-it does not add facts to the cited passage.
+Use only the collections that apply. `bases` entries carry selected Evidence and
+an explicit scientific role; that role adds no facts. `absence_searches` accepts
+untruncated zero-hit receipts, not claims of scientific absence. A limitation
+can include a current-Trial `search_receipt` when useful; direct reads require
+none. The server derives the canonical absence/limitation tags. Do not nest a
+basis under `context` or `limitation`, or use those tags in the Evidence array.
+Counterevidence objects cite a nonempty `evidence` array of inspected handles and
+state their joint `implication`. Cite passages directly; do not calculate indexes
+or repeat a citation solely to make it indexable. Existing explicit citation roles
+are preserved. A counterpoint-only passage is retained as neutral context, never
+promoted to support. Every active answer requires justification, unknowns and
+counterevidence; explicitly use [] for the latter two when none remain.
 
 ## Recover an unresolved premise
 
@@ -315,3 +447,8 @@ scientific absence claim.
 
 Completion: each Source-owned assessable Result leaf has exact support, and each
 active Domain answer has a valid basis for its stated premise and uncertainty.
+
+The parallel-assignment submission contract has no `no_information` option for
+D3.2. Use the complete official elaboration and response semantics for the
+answer’s meaning. Keep source support, counterevidence, coverage limits and
+unknowns explicit; relationship labels do not impose answer-certainty rules.

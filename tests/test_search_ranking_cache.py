@@ -108,7 +108,11 @@ def test_literal_search_does_not_acquire_a_scoped_fts_resource(
 def test_cursor_continuation_and_restart_use_frozen_ranking(tmp_path: Path) -> None:
     workspace, _ = _workspace(
         tmp_path,
-        "alpha beta one\nunrelated\nalpha beta two\nunrelated\nalpha beta three\n",
+        "alpha beta one\n"
+        + "unrelated\n" * 100
+        + "alpha beta two\n"
+        + "unrelated\n" * 100
+        + "alpha beta three\n",
     )
     _reset_search_counters()
 
@@ -362,7 +366,7 @@ def test_search_releases_retired_corpus_after_ranking_returns(
 def test_domain_continuation_preserves_an_unambiguous_question_purpose(tmp_path: Path) -> None:
     workspace, _ = _workspace(
         tmp_path,
-        "alpha one\nnoise\nnoise\nalpha two\nnoise\nnoise\nalpha three\n",
+        "alpha one\n" + "noise\n" * 200 + "alpha two\n" + "noise\n" * 200 + "alpha three\n",
     )
     result = search_sources(
         workspace,

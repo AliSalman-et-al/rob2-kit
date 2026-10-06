@@ -60,7 +60,7 @@ The current skill is 27,201 bytes with SHA-256 `c67eaa47b2dbe70aeaa7d1882caffa22
 
 ### Later uncoached host observation
 
-The separate [ENZAMET workflow check](2026-09-27-human-like-luna-medium-r1.md)
+The separate [ENZAMET workflow check](https://github.com/AliSalman-et-al/rob2-kit/blob/800f4afaadc1b1bb913fa3414b7e91e3b49d33f6/docs/archive/evaluation/2026-09-27-human-like-luna-medium-r1.md)
 ran the same `gpt-6-luna` medium model with three short prompts and retained
 two JSONL phases per outcome. Its phase metadata pins build
 `475ef1e378b9f1c030a79e0b3f82aba0cf622ee5d7e383a237bbbbd139bd554d`,

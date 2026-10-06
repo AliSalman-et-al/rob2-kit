@@ -5,16 +5,28 @@ from typing import Any
 
 from ..models import canonical_json_bytes
 from ..workflow_models import (
+    WorkingAccountNote,
     WorkingCheckpoint,
     WorkingCheckpointDraft,
     WorkingDomainBinding,
+    WorkingNote,
+    WorkingResultStep,
     WorkingSourceBinding,
     WorkingSourceRange,
 )
 from ..workflow_models import (
     _identity as _with_identity,
 )
-from ._state import _db, _decode_object, _ensure, _result, _root, _state
+from ._state import (
+    _db,
+    _decode_object,
+    _ensure,
+    _reading_batch_basis,
+    _result,
+    _root,
+    _state,
+    _trial_inventory_basis,
+)
 from ._state import _identity as _digest
 from .source_handles import source_handle, source_handle_map
 
@@ -131,6 +143,12 @@ def _ranges(draft: WorkingCheckpointDraft) -> tuple[WorkingSourceRange, ...]:
             values.extend(item.sources)
     for item in draft.terminology:
         values.extend(item.sources)
+    for step in draft.result_account or ():
+        for note in (step.observation, *step.counterevidence):
+            for source in note.sources:
+                if not isinstance(source, WorkingSourceRange):
+                    raise ValueError("working_checkpoint_reference_not_resolved")
+                values.append(source)
     for premise in draft.premise_records:
         for item in (*premise.observations, *premise.counterevidence):
             values.extend(item.sources)
@@ -189,7 +207,7 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
     state = _state(root)
     batch = state.get("batch")
     trial_id = draft.trial_id
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     dispositions = state.get("trial_dispositions", {})
     disposition = dispositions.get(trial_id) if isinstance(dispositions, dict) else None
     if not isinstance(batch_id, str) or disposition not in {"pending", "reviewable"}:
@@ -232,8 +250,79 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
                 "detail": "The Trial is not part of the active Batch.",
             },
         )
+    if draft.result_account is not None:
+        from .evidence import _evidence_for_handles, source_reference_resolver
+
+        resolve = source_reference_resolver(root, trial_id)
+
+        def note_locations(note: WorkingAccountNote) -> WorkingNote:
+            references = tuple(
+                reference
+                if isinstance(reference, WorkingSourceRange) and reference.start_line == 0
+                else resolve(reference)
+                for reference in note.sources
+            )
+            selected = _evidence_for_handles(
+                root,
+                {reference for reference in references if isinstance(reference, str)},
+                trial_id,
+            )
+            by_handle = {item["handle"]: item for item in selected.values()}
+            locations = []
+            for reference in references:
+                if isinstance(reference, WorkingSourceRange):
+                    locations.append(reference)
+                    continue
+                item = by_handle[reference]
+                locations.append(
+                    WorkingSourceRange(
+                        source_id=source_handle(item["source_id"]),
+                        page=item["render"]["page"] if item["kind"] == "figure" else item["page"],
+                        start_line=item.get("start_line", 0),
+                        end_line=item.get("end_line", 0),
+                    )
+                )
+            return WorkingNote.model_validate({**note.model_dump(), "sources": locations})
+
+        normalized = tuple(
+            WorkingResultStep.model_validate(
+                {
+                    **step.model_dump(),
+                    "observation": note_locations(step.observation),
+                    "counterevidence": tuple(note_locations(note) for note in step.counterevidence),
+                }
+            )
+            for step in draft.result_account
+        )
+        draft = draft.model_copy(update={"result_account": normalized})
     source_scope = _source_scope(state, trial_id)
-    if "main_report_source_id" not in draft.model_fields_set:
+    if draft.result_account is not None:
+        result_identity = _result_identity(state, trial_id)
+        if result_identity is None:
+            raise ValueError("Result account requires a selected Result")
+        from .evidence import _evidence_for_handles
+
+        steps = []
+        for step in draft.result_account:
+            counts = []
+            for row in step.counts:
+                if not row.basis:
+                    raise ValueError("Account count rows require explicit current-Trial Evidence")
+                _evidence_for_handles(root, set(row.basis), trial_id)
+                if row.result_identity not in {None, result_identity}:
+                    raise ValueError("Account count row belongs to a different Result")
+                counts.append(row.model_copy(update={"result_identity": result_identity}))
+            # Changes receive a new content identity; a host step name stays stable.
+            updated = step.model_copy(update={"counts": tuple(counts), "identity": None})
+            steps.append(_with_identity(updated, None))
+        draft = draft.model_copy(update={"result_account": tuple(steps)})
+        if "main_report_source_id" not in draft.model_fields_set:
+            previous = _stored_checkpoint(root, state, trial_id)
+            if previous is not None and previous.source_scope == source_scope:
+                draft = draft.model_copy(
+                    update={"main_report_source_id": previous.main_report_source_id}
+                )
+    if draft.result_account is None and "main_report_source_id" not in draft.model_fields_set:
         previous = _stored_checkpoint(root, state, trial_id)
         if previous is not None and previous.source_scope == source_scope:
             selected = previous.main_report_source_id
@@ -268,12 +357,15 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
                         "observations": tuple(observations),
                     }
                 )
-    if draft.main_report_source_id == "missing" and not draft.observations and sources:
+    account_observations = tuple(step.observation for step in draft.result_account or ())
+    observations = (*draft.observations, *account_observations)
+    if draft.main_report_source_id == "missing" and not observations and sources:
         raise ValueError("working_checkpoint_main_report_missing_requires_observation")
     if isinstance(draft.main_report_source_id, str) and draft.main_report_source_id != "missing":
         if not any(
-            note_range.source_id == draft.main_report_source_id
-            for observation in draft.observations
+            isinstance(note_range, WorkingSourceRange)
+            and note_range.source_id == draft.main_report_source_id
+            for observation in observations
             for note_range in observation.sources
         ):
             raise ValueError("working_checkpoint_main_report_source_requires_observation")
@@ -306,7 +398,7 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
 
     current = _state(root)
     if (
-        current.get("batch", {}).get("identity") != batch_id
+        _trial_inventory_basis(current, trial_id) != batch_id
         or _result_identity(current, trial_id) != checkpoint.result_identity
         or _source_scope(current, trial_id) != checkpoint.source_scope
     ):
@@ -373,7 +465,10 @@ def main_report_identity(root: Path, state: dict[str, Any], trial_id: str) -> di
             "text": note.text,
             "sources": tuple(source.model_dump(mode="json") for source in note.sources),
         }
-        for note in checkpoint.observations
+        for note in (
+            *checkpoint.observations,
+            *(step.observation for step in checkpoint.result_account or ()),
+        )
     )
     selected = checkpoint.main_report_source_id
     if selected == "missing" and (observations or not sources):
@@ -416,8 +511,7 @@ def main_report_identity(root: Path, state: dict[str, Any], trial_id: str) -> di
 def _stored_checkpoint(
     root: Path, state: dict[str, Any], trial_id: str
 ) -> WorkingCheckpoint | None:
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         return None
     with _db(root, "working.sqlite3") as connection:
@@ -464,8 +558,7 @@ def _delivery_projection(
 ) -> dict[str, Any]:
     """Report text ranges returned by read_pages separately from host note references."""
 
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _reading_batch_basis(state)
     source_ids = tuple(item.source_id for item in sources)
     handles = {item.source_id: source_handle(item.source_id) for item in sources}
     if not isinstance(batch_id, str) or not source_ids:
@@ -490,17 +583,31 @@ def _delivery_projection(
             source_ids,
         ).fetchall()
 
-    ranges = [
-        {
+    ranges: list[dict[str, Any]] = []
+    # Coverage is a union of delivered lines, not a history of read attempts.
+    # Keep phases separate and retain gaps and the empty-page sentinel. The
+    # original receipts remain in page_reads; compact before the preview limit.
+    for row in rows:
+        if str(row["source_id"]) not in handles:
+            continue
+        current = {
             "source_id": handles[str(row["source_id"])],
             "page": int(row["page"]),
             "start_line": int(row["start_line"]),
             "end_line": int(row["end_line"]),
             "phase": str(row["phase"]),
         }
-        for row in rows
-        if str(row["source_id"]) in handles
-    ]
+        previous = ranges[-1] if ranges else None
+        if (
+            previous is not None
+            and all(previous[key] == current[key] for key in ("source_id", "page", "phase"))
+            and previous["start_line"] > 0
+            and current["start_line"] > 0
+            and current["start_line"] <= previous["end_line"] + 1
+        ):
+            previous["end_line"] = max(previous["end_line"], current["end_line"])
+        else:
+            ranges.append(current)
     ranges_by_page: dict[tuple[str, int], list[tuple[int, int]]] = {}
     for row in rows:
         source_id = str(row["source_id"])
@@ -588,8 +695,6 @@ def investigation_projection(
         return None
     checkpoint = _stored_checkpoint(root, state, trial_id)
     if checkpoint is None:
-        from ..packs import SCIENTIFIC_PACK
-
         permission = workflow_permission or {
             "permitted": True,
             "operation": "save_working_checkpoint",
@@ -599,18 +704,9 @@ def investigation_projection(
                 "assessment state."
             ),
         }
-        question = next(
-            (
-                item
-                for item in SCIENTIFIC_PACK.questions
-                if domain_id is not None and item.domain_id == domain_id
-            ),
-            None,
-        )
         proposition = (
-            question.wording
-            if question is not None
-            else "No source-grounded premise has been recorded yet."
+            "Reconstruct selected-Result production: assignment, outcome collection, "
+            "analysis and reporting."
         )
         source_bindings = _source_scope(state, trial_id)
         source_scope = tuple(source_handle(item.source_id) for item in source_bindings)
@@ -702,7 +798,12 @@ def investigation_projection(
     if premise is None:
         # A legacy/general checkpoint may still contain useful observations even
         # before a Domain-specific proposition has been written.
-        proposition = "No Domain-specific premise has been recorded yet."
+        proposition = (
+            "Apply the selected-Result reconstruction to this Domain's independent official "
+            "propositions. Recover the complete account from working_checkpoint."
+            if checkpoint.result_account is not None
+            else "No Domain-specific premise has been recorded yet."
+        )
     else:
         proposition = str(premise["proposition"])
     current_sources = _source_scope(state, trial_id)
@@ -765,7 +866,11 @@ def investigation_projection(
         )
 
     observations = tuple(
-        item.model_dump(mode="json", exclude_none=True) for item in checkpoint.observations
+        item.model_dump(mode="json", exclude_none=True)
+        for item in (
+            *checkpoint.observations,
+            *(step.observation for step in checkpoint.result_account or ()),
+        )
     )
     premise_observations = tuple(premise.get("observations", ())) if premise else ()
     all_premise_observations = tuple(
@@ -862,7 +967,7 @@ def investigation_projection(
             "unread_ranges": declared_unread_ranges,
             "observation_count": len(observations) + len(all_premise_observations),
         },
-        "observations": observations,
+        "observations": () if checkpoint.result_account is not None else observations,
         "support": support,
         "counterevidence": counterevidence,
         "unresolved": unresolved,
@@ -873,6 +978,30 @@ def investigation_projection(
         "legacy": "reorientation_required" if legacy else "supported",
         "premises": records,
     }
+
+
+def account_reconsideration(
+    checkpoint: WorkingCheckpoint, state: dict[str, Any]
+) -> list[dict[str, str]]:
+    current = {step.id: step.identity for step in checkpoint.result_account or ()}
+    affected = []
+    for key, record in (state.get("domain_records") or {}).items():
+        if not key.startswith(checkpoint.trial_id + ":"):
+            continue
+        for answer in record.get("answers", ()):
+            for basis in answer.get("bases", ()):
+                step = (basis.get("working_observation") or {}).get("result_step")
+                if isinstance(step, dict) and current.get(step["id"]) != step["identity"]:
+                    item = {
+                        "domain_id": record["domain_id"],
+                        "question_id": answer["question_id"],
+                        "step_id": step["id"],
+                        "step_identity": step["identity"],
+                        "reason": "changed" if step["id"] in current else "removed",
+                    }
+                    if item not in affected:
+                        affected.append(item)
+    return affected
 
 
 def working_checkpoint_status(
@@ -888,8 +1017,7 @@ def working_checkpoint_status(
             "checkpoint": None,
             "recovery": "reorient_from_sources",
         }
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         return {
             "status": "absent",
@@ -961,6 +1089,7 @@ def working_checkpoint_status(
             "checkpoint_identity": checkpoint.identity,
             "checkpoint": checkpoint.model_dump(mode="json", exclude_none=True),
             "stale_domains": stale_domains,
+            "reconsideration": account_reconsideration(checkpoint, state),
             "recovery": "resume_from_checkpoint",
         }
     if reason is not None:
@@ -980,5 +1109,6 @@ def working_checkpoint_status(
         "checkpoint_identity": checkpoint.identity,
         "checkpoint": checkpoint.model_dump(mode="json", exclude_none=True),
         "stale_domains": (),
+        "reconsideration": account_reconsideration(checkpoint, state),
         "recovery": "resume_from_checkpoint",
     }

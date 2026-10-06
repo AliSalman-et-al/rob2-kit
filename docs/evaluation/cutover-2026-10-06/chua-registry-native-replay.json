@@ -1,0 +1,485 @@
+{
+  "kind": "Unpaid disposable open-Trial native acquisition/admission/read replay",
+  "runtime_patch_commit": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+  "completed": true,
+  "source_reference": {
+    "trial_id": "chua-2022",
+    "source_id": "sh_ffc67037a8e93118",
+    "page": 1,
+    "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"",
+    "locator": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+    "locator_kind": "url",
+    "registry_id": "NCT03396094",
+    "requested_role": "protocol",
+    "linkage_rationale": "Exact protocol filename in captured verified registry; inspect contents and dates if acquisition succeeds. This is current augmentation, not historical capture."
+  },
+  "source_citation_unchanged": true,
+  "approved_result_unchanged": true,
+  "before_batch_identity": "sha256:8cff0e78d1b2f6b6fe456b5e6e4f8ee85c432ef06f0fab6e46c830d4c5a97834",
+  "after_batch_identity": "sha256:24b3518b9367ad07395d9657b57b109ce04268b61c85ceb6d9613678da7d0a48",
+  "original_sources_unchanged": true,
+  "batch_history_preserved": true,
+  "source_admissions": [
+    {
+      "batch_identity": "sha256:24b3518b9367ad07395d9657b57b109ce04268b61c85ceb6d9613678da7d0a48",
+      "candidate": {
+        "capture": {
+          "applicability": "unverified",
+          "byte_count": 632794,
+          "captured_at": "2026-10-06T07:38:18.697949+00:00",
+          "document_registration_claims": [],
+          "limitations": [
+            "Requested role and linkage rationale are caller assertions.",
+            "DOI identity and observed registry identifiers do not establish applicability.",
+            "Title/date/linkage do not prove prespecification, blinded access or actual conduct.",
+            "New public capture, not historical replay; source text is untrusted data."
+          ],
+          "media_type": "application/pdf",
+          "metadata_redirect_chain": [],
+          "observed_registry_ids": [],
+          "page_count": 12,
+          "pdf_metadata": {
+            "author": "Ministry of Health",
+            "creationDate": "D:20171230092007+08'00'",
+            "creator": "Acrobat PDFMaker 11 for Word",
+            "encryption": null,
+            "format": "PDF 1.4",
+            "keywords": "",
+            "modDate": "D:20171230092049+08'00'",
+            "producer": "Adobe PDF Library 11.0",
+            "subject": "",
+            "title": "GUIDELINES FOR COMPLETING RESEARCH GRANT",
+            "trapped": ""
+          },
+          "redirect_chain": [
+            "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf"
+          ],
+          "reference": {
+            "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"",
+            "linkage_rationale": "Exact protocol filename in captured verified registry; inspect contents and dates if acquisition succeeds. This is current augmentation, not historical capture.",
+            "locator": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+            "locator_kind": "url",
+            "page": 1,
+            "registry_id": "NCT03396094",
+            "requested_role": "protocol",
+            "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+            "trial_id": "chua-2022"
+          },
+          "registry_identifier_mentions": [],
+          "retrieved_at": "2026-10-06T07:38:21.060610+00:00",
+          "sha256": "sha256:22182fa5969728d78b9de6616087db798153dfac1bedb316ed3c94dcec18c5f4",
+          "source_role": "other",
+          "source_url": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+          "status": "captured",
+          "trial_relation": "unverified"
+        },
+        "identity": "sha256:6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977",
+        "parent_source_sha256": "sha256:9e2be0c938c8272b21af59a4d780be92f39a1c918ef8eb1891bc41ad11c2d992",
+        "reference": {
+          "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"",
+          "linkage_rationale": "Exact protocol filename in captured verified registry; inspect contents and dates if acquisition succeeds. This is current augmentation, not historical capture.",
+          "locator": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+          "locator_kind": "url",
+          "page": 1,
+          "registry_id": "NCT03396094",
+          "requested_role": "protocol",
+          "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+          "trial_id": "chua-2022"
+        },
+        "trial_id": "chua-2022"
+      },
+      "identity": "sha256:a05b60142650a4cb3564f34cdebd4617702de2900e777cf610b55994de44b827",
+      "previous_batch_identity": "sha256:8cff0e78d1b2f6b6fe456b5e6e4f8ee85c432ef06f0fab6e46c830d4c5a97834",
+      "source_ids": [
+        "source_f1ca74b74c7b9d9567e2a78b81130b5993ba81fb265d4fe5138c791e6ea5a1ed",
+        "source_ddbcbc05fbdd46521682bb1e521a429e49b7660c1a8ad80370f8fd45dd9c5865"
+      ],
+      "trial_id": "chua-2022",
+      "trial_inventory_identity": "sha256:53a09434d8e055182ef83e9c377c8067e4e4d26e7579dc9993269178053a8e4c"
+    }
+  ],
+  "original_sealed_assessment_unchanged": true,
+  "original_proofs": {
+    "diagnostics/final-medium-verifier-cutover-20261006/cases/chua-2022/workspace-run/.rob2-kit/canonical.sqlite3": "9bd2dc40bb708d40a785aace145df441c770b9b1d74faa970f058ede0e94c42e",
+    "docs/evaluation/cutover-2026-10-06/chua-2022-sealed-answer-source-projection.json": "e3baf87aa52d276b3ec83e026df5d3523c964e0a84d7c06ae1179762dc83427d",
+    "diagnostics/final-medium-verifier-cutover-20261006/cases/chua-2022/scientific-review-seal/settled-session.jsonl": "af4176f8927e9d54c279414ec3f1da5520e96c175474fde4d178d831e4fd5b23"
+  },
+  "new_source_credited_to_original": false,
+  "paid_inference": false,
+  "scientific_answer_retry": false,
+  "calls": [
+    {
+      "tool": "acquire_companion_source",
+      "arguments": {
+        "reference": {
+          "trial_id": "chua-2022",
+          "source_id": "sh_ffc67037a8e93118",
+          "page": 1,
+          "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"",
+          "locator": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+          "locator_kind": "url",
+          "registry_id": "NCT03396094",
+          "requested_role": "protocol",
+          "linkage_rationale": "Exact protocol filename in captured verified registry; inspect contents and dates if acquisition succeeds. This is current augmentation, not historical capture."
+        },
+        "expected_revision": 4
+      },
+      "response": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 5,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "chua-2022",
+            "domain_id": "domain:randomization",
+            "cursor": null,
+            "max_response_bytes": null
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "candidate_identity": "sha256:6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977",
+          "capture": {
+            "reference": {
+              "trial_id": "chua-2022",
+              "source_id": "sh_ffc67037a8e93118",
+              "page": 1,
+              "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"",
+              "linkage_rationale": "Exact protocol filename in captured verified registry; inspect contents and dates if acquisition succeeds. This is current augmentation, not historical capture.",
+              "requested_role": "protocol",
+              "locator_kind": "url",
+              "locator": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+              "registry_id": "NCT03396094"
+            },
+            "captured_at": "2026-10-06T07:38:18.697949+00:00",
+            "status": "captured",
+            "trial_relation": "unverified",
+            "source_role": "other",
+            "redirect_chain": [
+              "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf"
+            ],
+            "metadata_redirect_chain": [],
+            "limitations": [
+              "Requested role and linkage rationale are caller assertions.",
+              "DOI identity and observed registry identifiers do not establish applicability.",
+              "Title/date/linkage do not prove prespecification, blinded access or actual conduct.",
+              "New public capture, not historical replay; source text is untrusted data."
+            ],
+            "page_count": 12,
+            "pdf_metadata": {
+              "format": "PDF 1.4",
+              "title": "GUIDELINES FOR COMPLETING RESEARCH GRANT",
+              "author": "Ministry of Health",
+              "subject": "",
+              "keywords": "",
+              "creator": "Acrobat PDFMaker 11 for Word",
+              "producer": "Adobe PDF Library 11.0",
+              "creationDate": "D:20171230092007+08'00'",
+              "modDate": "D:20171230092049+08'00'",
+              "trapped": "",
+              "encryption": null
+            },
+            "retrieved_at": "2026-10-06T07:38:21.060610+00:00",
+            "observed_registry_ids": [],
+            "registry_identifier_mentions": [],
+            "document_registration_claims": [],
+            "applicability": "unverified",
+            "source_url": "https://cdn.clinicaltrials.gov/large-docs/94/NCT03396094/Prot_000.pdf",
+            "media_type": "application/pdf",
+            "sha256": "sha256:22182fa5969728d78b9de6616087db798153dfac1bedb316ed3c94dcec18c5f4",
+            "byte_count": 632794
+          },
+          "document_staged": true,
+          "admitted_to_active_batch": false,
+          "document_read": false
+        }
+      }
+    },
+    {
+      "tool": "admit_companion_source",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "candidate_identity": "sha256:6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977",
+        "expected_revision": 5
+      },
+      "response": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 6,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "chua-2022",
+            "domain_id": "domain:randomization",
+            "cursor": null,
+            "max_response_bytes": null
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "navigation_action": {
+            "operation": "list_sources",
+            "trial_id": "chua-2022",
+            "source_id": "sh_f1ca74b74c7b9d95",
+            "limit": 12,
+            "cursor": null
+          },
+          "candidate_identity": "sha256:6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977",
+          "trial_inventory_identity": "sha256:53a09434d8e055182ef83e9c377c8067e4e4d26e7579dc9993269178053a8e4c",
+          "source_ids": [
+            "sh_f1ca74b74c7b9d95",
+            "sh_ddbcbc05fbdd4652"
+          ],
+          "document_staged": true,
+          "admitted_to_active_batch": true,
+          "document_read": false
+        }
+      }
+    },
+    {
+      "tool": "list_sources",
+      "arguments": {
+        "trial_id": "chua-2022"
+      },
+      "response": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 6,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "chua-2022",
+            "domain_id": "domain:randomization",
+            "cursor": null,
+            "max_response_bytes": null
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "trial_inventory_identity": "sha256:53a09434d8e055182ef83e9c377c8067e4e4d26e7579dc9993269178053a8e4c",
+          "sources": [
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_ab74cf546ed17772",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_ab74cf546ed17772",
+              "trial_id": "chua-2022",
+              "role": "main_article",
+              "label": "main.pdf",
+              "logical_path": "main.pdf",
+              "sha256": "sha256:e5d602621f33d65b7955d694d380fea1cd0968f0aeec8e87e127fc55291382a1",
+              "media_type": "application/pdf",
+              "page_count": 12,
+              "projection_hash": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+              "origin": "local_dossier",
+              "declared_role": "main_article"
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_ffc67037a8e93118",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_ffc67037a8e93118",
+              "trial_id": "chua-2022",
+              "role": "registry",
+              "label": "ClinicalTrials.gov NCT03396094",
+              "logical_path": "registry/NCT03396094.json",
+              "sha256": "sha256:9e2be0c938c8272b21af59a4d780be92f39a1c918ef8eb1891bc41ad11c2d992",
+              "media_type": "application/json",
+              "page_count": 1,
+              "projection_hash": "sha256:e51ca6166493864bc9503e62254718f1203608d0d4f8857af220695b456c5675",
+              "origin": "registry",
+              "declared_role": null
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_937c1c8b38e7b34f",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_937c1c8b38e7b34f",
+              "trial_id": "chua-2022",
+              "role": "supplement",
+              "label": "Supplementary-Table-1.pdf",
+              "logical_path": "Supplementary-Table-1.pdf",
+              "sha256": "sha256:4291503f26008b998e92f43e007284ab0928235a71fd594d4da88d8f2ba7d894",
+              "media_type": "application/pdf",
+              "page_count": 1,
+              "projection_hash": "sha256:db411e40af9e406d24885723c9d2d9ee5c3b6d3af3cb6b1a430bc2dbf77431f2",
+              "origin": "local_dossier",
+              "declared_role": "supplement"
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_a3af7cb76242001e",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_a3af7cb76242001e",
+              "trial_id": "chua-2022",
+              "role": "supplement",
+              "label": "Supplementary-Table-2.pdf",
+              "logical_path": "Supplementary-Table-2.pdf",
+              "sha256": "sha256:7cbbf652bc1873966c626bd51568c0ff4087807a00519ba3cb633766325ec4d6",
+              "media_type": "application/pdf",
+              "page_count": 1,
+              "projection_hash": "sha256:b0cc7bcd64b683bd3e18b1c9e3f3e686e34baf99b0c4ef119a9e008a5f879804",
+              "origin": "local_dossier",
+              "declared_role": "supplement"
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_b49999b30d45c3a1",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_b49999b30d45c3a1",
+              "trial_id": "chua-2022",
+              "role": "supplement",
+              "label": "Supplementary-Table-3.pdf",
+              "logical_path": "Supplementary-Table-3.pdf",
+              "sha256": "sha256:8ddf706a05c25af8959b490384e9661e8d7136e34c694fbf192ee70dea23b309",
+              "media_type": "application/pdf",
+              "page_count": 2,
+              "projection_hash": "sha256:55664c146c1ca5f423461daf92f783876b89b3113b2571c588953cc558839c90",
+              "origin": "local_dossier",
+              "declared_role": "supplement"
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_e7e6ca446bf5c324",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_e7e6ca446bf5c324",
+              "trial_id": "chua-2022",
+              "role": "supplement",
+              "label": "Supplementary-Table-4.pdf",
+              "logical_path": "Supplementary-Table-4.pdf",
+              "sha256": "sha256:6bfd91bf5112b8d6f181578404b7e9a7ef8cf9a62a8ea1f61166d6ae010385d0",
+              "media_type": "application/pdf",
+              "page_count": 1,
+              "projection_hash": "sha256:3bb7f178148b96fc70671ba00e45ea3d18d750aa9853b1a408c8dd4ce4f37383",
+              "origin": "local_dossier",
+              "declared_role": "supplement"
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_f1ca74b74c7b9d95",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_f1ca74b74c7b9d95",
+              "trial_id": "chua-2022",
+              "role": "other",
+              "label": "companions/6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977/candidate.pdf",
+              "logical_path": "companions/6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977/candidate.pdf",
+              "sha256": "sha256:22182fa5969728d78b9de6616087db798153dfac1bedb316ed3c94dcec18c5f4",
+              "media_type": "application/pdf",
+              "page_count": 12,
+              "projection_hash": "sha256:277fcbe74f626e7e005ebaa8ac113b35d6b0462efa67b160115b9189a42bc57e",
+              "origin": "cited_public_document",
+              "declared_role": "other"
+            },
+            {
+              "navigation_action": {
+                "operation": "list_sources",
+                "trial_id": "chua-2022",
+                "source_id": "sh_ddbcbc05fbdd4652",
+                "limit": 12,
+                "cursor": null
+              },
+              "id": "sh_ddbcbc05fbdd4652",
+              "trial_id": "chua-2022",
+              "role": "other",
+              "label": "companions/6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977/capture.json",
+              "logical_path": "companions/6b731186ccf7f6bb7888a47e2bd7867086e71e05b19eb9586522448695334977/capture.json",
+              "sha256": "sha256:4f1a162cbc8fbefb22337de3cb7c291a81f950964d6f133f88332ef3f084a725",
+              "media_type": "application/json",
+              "page_count": 1,
+              "projection_hash": "sha256:b0019b3c343678a1f3906925a57ca0a56c10a47d2785d1e001455a9d8fb36e7b",
+              "origin": "cited_public_document",
+              "declared_role": "other"
+            }
+          ],
+          "conditions": [],
+          "omissions": [],
+          "navigation": null
+        }
+      }
+    },
+    {
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_f1ca74b74c7b9d95",
+        "pages": [
+          1
+        ]
+      },
+      "response": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 6,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "chua-2022",
+            "domain_id": "domain:randomization",
+            "cursor": null,
+            "max_response_bytes": null
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "navigation_actions": [
+            {
+              "operation": "list_sources",
+              "trial_id": "chua-2022",
+              "source_id": "sh_f1ca74b74c7b9d95",
+              "limit": 12,
+              "cursor": null
+            }
+          ],
+          "pages": [
+            {
+              "source_id": "sh_f1ca74b74c7b9d95",
+              "page": 1,
+              "numbered_text": "1|Pre-AeRATE Trial\n2|Protocol v2.0 Dated 29 Dec 2017\n3|\n4|\n5|\n6|\n7|Study Title:\n8|Pre- and Apnoeic high flow oxygenation for RApid sequence\n9|intubation in The Emergency dept (Pre-AeRATE)\n10|\n11|Principal Investigator: Dr Chua Mui Teng\n12|\n13|\n14|Version Number: v2.0\n15|29 December 2017\n16|\n17|\n18|\n19|\n20|\n21|\n22|\n23|\n24|\n25|\n26|\n27|\n28|\n29|\n30|\n31|\n32|\n33|\n34|\n35|\n36|\n37|\n38|\n39|\n40|\n41|\n42|\n43|\n44|\n45|\n46|\n47|\n48|\n49|\n50|\n51|\n52|",
+              "line_count": 52,
+              "returned_start_line": 1,
+              "returned_end_line": 52,
+              "page_remainder": null,
+              "truncated": false,
+              "next_start_line": null,
+              "passage_ref": "eh_2901eaa8ec8fdb4e"
+            }
+          ],
+          "remaining_windows": []
+        }
+      }
+    }
+  ]
+}

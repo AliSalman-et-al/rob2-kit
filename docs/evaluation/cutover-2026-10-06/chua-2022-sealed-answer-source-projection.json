@@ -1,0 +1,1761 @@
+{
+  "case": "chua-2022",
+  "purpose": "Sealed answers and selected evidence/source accesses for independent material-warrant review; adopted Domain/overall labels withheld. Structural verification is not scientific support certification.",
+  "artifact_sha256": "bd670eadd5c10fc56eb103576ada9f0a89c2f4f2995b923d737cce9d0368727f",
+  "session_sha256": "af4176f8927e9d54c279414ec3f1da5520e96c175474fde4d178d831e4fd5b23",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "runtime_strata": {
+    "initial_runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+    "freeze": "7355c4c original first two; 2a4f9fe amended remaining eight",
+    "host_recovery": false,
+    "same_session_idle_recovery": false,
+    "all_original_attempts_retained": true
+  },
+  "approved_result": {
+    "results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_64ecedc5690b0c19",
+            "eh_8fd08f159f7b2b5c"
+          ],
+          "rationale": "Adult patients individually randomized 1:1 to two parallel oxygenation strategies, stratified by study site using variable blocks and a web-based service."
+        },
+        "bindings": [
+          {
+            "evidence_index": 5,
+            "field": {
+              "path": "/reported/effect_measure"
+            },
+            "value_digest": "sha256:3eb894c4e9c76f20d32e79af4d6b22207f710885dab4d3e89d8df42e72bb6e2a"
+          },
+          {
+            "evidence_index": 5,
+            "field": {
+              "path": "/reported/estimate"
+            },
+            "value_digest": "sha256:98089e6d36f78e9766c9ea34d5acb3611f3a92cd81c5eb102095d924ffc7d08b"
+          },
+          {
+            "evidence_index": 5,
+            "field": {
+              "path": "/reported/precision"
+            },
+            "value_digest": "sha256:9f34a449a2b35e33175acb404c76c0dd7ca3892d6cd197f946cf2f9bd1f1cc99"
+          },
+          {
+            "evidence_index": 5,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:6d9ec99a2343c91ef5d3acc68e5d89b528bb3a845df34cb3d1019efbe3cec165"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "specified",
+          "comparison_groups": "specified",
+          "effect_measure": "specified",
+          "eligible_result_choice": "unclear",
+          "measurement": "specified",
+          "outcome_definition": "specified",
+          "source_table_meaning": "specified",
+          "time_point": "conflicting"
+        },
+        "evidence": [
+          {
+            "handle": "eh_3149d73c4b185a98",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_5ca7a1af9514212d",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_64ecedc5690b0c19",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_69bb977011b11f47",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_8fd08f159f7b2b5c",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_aa0959ca65cd511c",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_bceb9b3ce58a21ae",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_ea82a191035c8552",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:bdc1ae752de8a06784acacc7ddef3674a82db375ced5ed113f1a3571ec577a9f",
+            "handle": "eh_fc8fd85700cecbdf",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.075,
+              0.105,
+              0.925,
+              0.244
+            ],
+            "render_identity": "sha256:abc49beb56eb31ffd9a20a7e5f74884a41285af810666a060eed42c3c90bda8d",
+            "transcription": "Table 2. Study outcomes at intubation. Intention-to-treat analysis: Intervention (n=97), Control (n=93). Per-protocol analysis: Intervention (n=86), Control (n=91). Characteristic: Lowest SpO2 during first attempt, %. Median (Q1, Q3): ITT Intervention 100.0 (96.0, 100.0); ITT Control 100.0 (91.0, 100.0); PP Intervention 100.0 (99.0, 100.0); PP Control 100.0 (91.0, 100.0). Median diff (95% CI) [P value]: ITT 0 (0\u20134.0) [0.138 superscript a]; PP 0 (0\u20131.0) [0.061 superscript a]."
+          }
+        ],
+        "kind": "assessable",
+        "relation": "narrower",
+        "relation_rationale": "Select Table 2's reported ITT first-attempt lowest SpO2 median difference 0 (95% CI 0-4.0), P=0.138 from van Elteren test. Median (Q1,Q3) is 100.0 (96.0,100.0)% intervention and 100.0 (91.0,100.0)% control. Endpoint and comparison directly address the request; use the main-report first-attempt window. Relation is narrower because analysis excludes two randomized controls, not because of enrollment eligibility. Historical registry window equivalence and choice of analysis are not assumed. Current registry describes first insertion into oropharynx and paralytic-to-ETCO2 window up to 45 minutes, without main-report failed-attempt stopping rule. The PP first-attempt result (0, CI 0-1.0, P=0.061; n=86/91), all-attempt result (ITT 0, CI 0-4.0, P=0.072), and post hoc adjusted first-quartile contrast (5.5%, CI 1.5-9.5, P=0.007; abstract 5.46%, CI 1.48-9.45) are material alternatives, not the selected median contrast. No separate host-designated primary analysis was supplied; article and current registry call the endpoint primary, which does not establish historical prespecification.",
+        "reported": {
+          "analysis_population": "Reported intention-to-treat population: 97 intervention and 93 control patients, total 190, from 192 randomized (97 intervention, 95 control). Two randomized control patients excluded: one with do-not-resuscitate order established after randomization and one intubated in operating room. Table denominators do not independently establish full outcome ascertainment.",
+          "effect_measure": "Median diff",
+          "endpoint": {
+            "definition": null,
+            "name": "Lowest SpO2 during first attempt, %"
+          },
+          "estimate": "0",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "0-4.0"
+        },
+        "requested_outcome": "Lowest SpO2 during the first intubation attempt",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "HFNC at 60L/min, warm humidified oxygen at 37\u00b0C and FiO2 >0.90, for preoxygenation and apnoeic oxygenation.",
+              "id": "intervention"
+            },
+            {
+              "assignment": "Usual care: non-rebreather mask at flush rate for preoxygenation, then standard nasal cannula at least 15L/min non-heated, non-humidified oxygen for apnoeic oxygenation.",
+              "id": "control"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Median difference (intervention versus control)",
+          "measurement": {
+            "method": "Lowest oxygen saturation (SpO2, %) recorded with two upper-extremity pulse oximeters during the first intubation attempt.",
+            "metric": "Lowest SpO2 during the first intubation attempt"
+          },
+          "outcome_definition": "Lowest SpO2 during the first intubation attempt",
+          "time_point_or_window": {
+            "description": "From administration of the paralytic agent until quantitative ETCO2 detection after successful first-attempt intubation, or start of the second attempt if the first attempt fails (main-report definition).",
+            "kind": "described"
+          }
+        },
+        "trial_id": "chua-2022"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "label": "main.pdf",
+      "logical_path": "main.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 12,
+      "projection_hash": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "role": "main_article",
+      "sha256": "sha256:e5d602621f33d65b7955d694d380fea1cd0968f0aeec8e87e127fc55291382a1",
+      "trial_id": "chua-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_937c1c8b38e7b34f0cd79e24eef556374f39a6a212686bec76c02dbe615233a3",
+      "label": "Supplementary-Table-1.pdf",
+      "logical_path": "Supplementary-Table-1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:db411e40af9e406d24885723c9d2d9ee5c3b6d3af3cb6b1a430bc2dbf77431f2",
+      "role": "supplement",
+      "sha256": "sha256:4291503f26008b998e92f43e007284ab0928235a71fd594d4da88d8f2ba7d894",
+      "trial_id": "chua-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_a3af7cb76242001e4ceef561ecc71d69c7408b008293bd7baf6b0ae5f2dfa7b2",
+      "label": "Supplementary-Table-2.pdf",
+      "logical_path": "Supplementary-Table-2.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:b0cc7bcd64b683bd3e18b1c9e3f3e686e34baf99b0c4ef119a9e008a5f879804",
+      "role": "supplement",
+      "sha256": "sha256:7cbbf652bc1873966c626bd51568c0ff4087807a00519ba3cb633766325ec4d6",
+      "trial_id": "chua-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_b49999b30d45c3a147b1af1b2b13ab8102d485e14d4b9338ac64dcd0d0135336",
+      "label": "Supplementary-Table-3.pdf",
+      "logical_path": "Supplementary-Table-3.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 2,
+      "projection_hash": "sha256:55664c146c1ca5f423461daf92f783876b89b3113b2571c588953cc558839c90",
+      "role": "supplement",
+      "sha256": "sha256:8ddf706a05c25af8959b490384e9661e8d7136e34c694fbf192ee70dea23b309",
+      "trial_id": "chua-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_e7e6ca446bf5c3248974910bb969fc15a25d852940f052370683cfc62d33c5da",
+      "label": "Supplementary-Table-4.pdf",
+      "logical_path": "Supplementary-Table-4.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:3bb7f178148b96fc70671ba00e45ea3d18d750aa9853b1a408c8dd4ce4f37383",
+      "role": "supplement",
+      "sha256": "sha256:6bfd91bf5112b8d6f181578404b7e9a7ef8cf9a62a8ea1f61166d6ae010385d0",
+      "trial_id": "chua-2022"
+    },
+    {
+      "declared_role": null,
+      "id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+      "label": "ClinicalTrials.gov NCT03396094",
+      "logical_path": "registry/NCT03396094.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:e51ca6166493864bc9503e62254718f1203608d0d4f8857af220695b456c5675",
+      "role": "registry",
+      "sha256": "sha256:9e2be0c938c8272b21af59a4d780be92f39a1c918ef8eb1891bc41ad11c2d992",
+      "trial_id": "chua-2022"
+    }
+  ],
+  "questions": [
+    {
+      "domain_id": "domain:deviations",
+      "checkpoint_identity": "sha256:881b932d1bf9eacfc37a7c3a5fd94e4e2ee820fa6b5cd144ac8aa5631f54e838",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "The report explicitly says patient blinding was impossible and devices differed visibly during preoxygenation. Awareness is probable among conscious patients; depressed consciousness and later anesthesia preclude assuming every patient was aware.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [
+            "Individual awareness before induction."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:64ecedc5690b0c1974c302d56fa03f18109a0fb9934d49eebfe779b4ea4b9b1c",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:55283766dd04bcb2f2915affba40700b29501b36ffa54c3da37f103dbe8d9ed0",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "ED teams delivering visibly different oxygenation devices were explicitly unblinded. Blinding of admitting ICU teams occurred after the selected first-attempt window.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:176bdd9d0ae005e61cd65751b7a5227f7dd2a30e6d74bf88e524ec86e46bec3e",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Different oxygenation devices occurred in 6/97 versus 4/93 during preoxygenation and first attempt. Reasons and protocol consistency are not explained. HFNC obstruction of BVM ventilation is documented elsewhere in the procedure, suggesting some clinical rescue, but cannot account for every first-attempt change or establish its timing. Open-label conduct alone does not establish trial-context causation, and neither probable causal answer is justified.",
+          "question_id": "sq:deviations:context-deviations",
+          "unknowns": [
+            "Causes, timing and protocol consistency of first-attempt changes; whether they would occur outside a trial."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:17419a557eaa217f5898f4918ac4f2977063f8610fb2e3fba05c8113b8b4e1cc",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:f72575b4a34c623a98e8860a10db5692aa1137774e9903d27b7dae271d1c1b72",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Main-report intervention/analysis and supplemental preoxygenation/intubation sections were inspected. They record changes without individual causal details. Native acquisition rejected the explicit protocol DOI; current registry has no such conduct details.",
+              "unresolved_premise": "Whether first-attempt deviations arose because of the trial context is unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Reported ITT grouping and site stratification support analysis by assignment among retained patients, despite uncertainty over the two exclusions."
+            }
+          ],
+          "justification": "Selected analysis retains assigned groups despite device changes and is not the PP or as-treated analysis. However, two randomized controls were excluded for a DNR order established after randomization and operating-room intubation. The report does not establish that both were ineligible before assignment and that exclusion was independent of assignment; an appropriate all-assignment analysis is therefore probably not fully achieved.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [
+            "Pre-randomization eligibility and assignment independence of both exclusions; exact median estimator."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Exclusions are confined to controls and clinical reasons may be prognostic; small numbers alone do not prove absence of bias."
+            }
+          ],
+          "justification": "Only 2 of 192 randomized patients were excluded, both controls, with no reported regrouping of retained patients. More than half of each analyzed arm had lowest SpO2 at 100%; adding two control observations is unlikely to materially change the selected median contrast. This is a result-specific probable judgment, not a universal percentage threshold or proof that its CI/rank-test P value would be unchanged.",
+          "question_id": "sq:deviations:substantial-impact",
+          "unknowns": [
+            "Excluded outcomes and exact impact on rank test, CI and distribution."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:measurement",
+      "checkpoint_identity": "sha256:83c5f5160c5db3112582ff693e68b47a8d28bf3a82b0183e36829d359b022028",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "Two upper-extremity pulse oximeters directly measure the approved lowest saturation endpoint. Saturation ceiling and lack of PaO2 limit interpretation of oxygen reserve, not detection of desaturation.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [
+            "Artifact handling and reconciliation of discrepant readings are unreported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c846e002d44ceb42ca069618511ef4d609d84828072bf9fa868d71a89987abdc",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "The same two devices, recorder arrangement and first-attempt window are described for both arms. There is no evidence of unequal detection opportunity. The registry/report time-window conflict concerns historical scope, not arm-specific measurement.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [
+            "Arm-specific adherence to measurement procedures is undocumented."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Recorder blinding is not stated. Visibly different oxygen devices and explicitly unblinded ED care make allocation awareness probable, despite recording by someone not involved in intubation. Later ICU blinding does not apply to this endpoint.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [
+            "Individual recorders' awareness is not explicitly reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:64ecedc5690b0c1974c302d56fa03f18109a0fb9934d49eebfe779b4ea4b9b1c",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Unblinded ED care and manual recording could permit recording choices, but do not establish material susceptibility of the objective saturation reading."
+            },
+            {
+              "basis_index": 0,
+              "implication": "Unblinded ED care and manual recording could permit recording choices, but do not establish material susceptibility of the objective saturation reading."
+            }
+          ],
+          "justification": "Automated physiological readings, a defined observation window, separate recorder and two devices make material influence from allocation knowledge unlikely. Lowest saturation requires little subjective judgement. Manual recording and unknown artifact rules remain limitations, but do not establish a judgement-sensitive assessment.",
+          "question_id": "sq:measurement:influence-possible",
+          "unknowns": [
+            "Manual recording fidelity and artifact/discrepancy rules are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c846e002d44ceb42ca069618511ef4d609d84828072bf9fa868d71a89987abdc",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:64ecedc5690b0c1974c302d56fa03f18109a0fb9934d49eebfe779b4ea4b9b1c",
+              "kind": "context"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:d88bd5230192ea75f820997445c5c3db64cf51b8ec4cc72f65530657c45eaa6e",
+      "active_questions": [
+        "sq:missing:data-available"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Two randomized controls were excluded; availability is not confirmed for all participants."
+            }
+          ],
+          "justification": "Nearly complete availability is probable for this immediate continuous physiological endpoint: the report describes direct recording from two oximeters during each first attempt; flow accounts for all randomized patients except two control exclusions, and first-attempt summaries use the reported ITT arms without an endpoint-specific reduction or stated imputation. Supplement 2 explicitly distinguishes smaller baseline SpO2 counts from full end-preoxygenation counts, supporting attentive accounting. This is a combined inference from ascertainment and reporting, not conversion of analysis denominators into observed counts. Even treating the two excluded controls as unavailable, they are unlikely to importantly affect the median contrast given the reported ceiling in more than half of each arm.",
+          "missing_data": {
+            "conflicts": [],
+            "rows": [
+              {
+                "analyzed": 97,
+                "basis": [
+                  "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+                  "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+                  "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+                  "sha256:f72575b4a34c623a98e8860a10db5692aa1137774e9903d27b7dae271d1c1b72",
+                  "sha256:0b8d092c0833e5cf5cc0f68a99aecdb72c707d429c3f55206cdf0f8d9e7d7d2b"
+                ],
+                "eligible": null,
+                "event_count": null,
+                "excluded": 0,
+                "exclusions": [],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 97
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 97,
+                "result_identity": "sha256:1bf0cccd4b6a6ee27352a6bd7ae3326f703db29eba71ab8ba616c37e44c5f9ce",
+                "scope": {
+                  "arm": "intervention",
+                  "population": "All randomized participants in the trial",
+                  "time_point": "First intubation attempt",
+                  "unit": "participants"
+                },
+                "treated": null
+              },
+              {
+                "analyzed": 93,
+                "basis": [
+                  "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+                  "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+                  "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+                  "sha256:f72575b4a34c623a98e8860a10db5692aa1137774e9903d27b7dae271d1c1b72",
+                  "sha256:0b8d092c0833e5cf5cc0f68a99aecdb72c707d429c3f55206cdf0f8d9e7d7d2b"
+                ],
+                "eligible": null,
+                "event_count": null,
+                "excluded": 2,
+                "exclusions": [],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 95
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 95,
+                "result_identity": "sha256:1bf0cccd4b6a6ee27352a6bd7ae3326f703db29eba71ab8ba616c37e44c5f9ce",
+                "scope": {
+                  "arm": "control",
+                  "population": "All randomized participants in the trial",
+                  "time_point": "First intubation attempt",
+                  "unit": "participants"
+                },
+                "treated": null
+              }
+            ]
+          },
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Exact observed first-attempt counts, imputation status and artifact handling are not explicitly reported; whether outcomes were measured in excluded controls."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:f72575b4a34c623a98e8860a10db5692aa1137774e9903d27b7dae271d1c1b72",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0b8d092c0833e5cf5cc0f68a99aecdb72c707d429c3f55206cdf0f8d9e7d7d2b",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Outcome-collection methods, Table 2, flow diagram and supplemental oxygenation tables were inspected. These support probable nearly complete immediate ascertainment but do not establish exact observed counts; no imputed/observed number is invented.",
+              "unresolved_premise": "Exact participant-level first-attempt observed counts are not provided."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:randomization",
+      "checkpoint_identity": "sha256:a35115f0542bd8711a6926a887bb712bfc34d3f49efb72b6a5ad834458b22fe2",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Site-stratified variable blocks of 4 and 6 generated by an independent statistician and delivered through a web randomization service make a chance-based sequence probable. The exact random-number generator is not reported.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [
+            "Exact sequence-generation implementation."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:4aedccdedb4c57568325e5688016feafe35fbe56ccf678ac94df840cdeb7bb4e",
+              "kind": "inference"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The report describes web-based assignment generated independently and explicitly states concealment was maintained until randomization was complete. Subsequent open-label treatment does not negate concealment at enrollment.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:19dd18b0b20e389143443d2d3449b41bd021dce527923429f55c52e4f75bbf46",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Baseline Table 1 describes only the 190 analyzed participants (97/93), rather than all 192 randomized. Neurological indications, GCS and shock distributions differ, but there is no complete all-randomized baseline comparison; the official guidance specifies NI when only final-analysis baseline characteristics are reported. These differences do not alter the independent sequence or concealment answers.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [
+            "Baseline characteristics of the two excluded controls and full all-randomized comparison."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:55283766dd04bcb2f2915affba40700b29501b36ffa54c3da37f103dbe8d9ed0",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Main report baseline table and flow/exclusion text were inspected; supplied supplements use the same 97/93 analysis population. No individual data for the two excluded controls are reported.",
+              "unresolved_premise": "All-randomized baseline comparison is unavailable."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:selection",
+      "checkpoint_identity": "sha256:635d066f9394b7187a14d2fa894c3977aba79b6602ecb7781bae1fb713506102",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "The reported site-stratified ITT analysis and primary endpoint label identify what was done, but cannot establish pre-unblinding plan finalization or correspondence. The registry was retrieved in 2026; first posting and protocol metadata cannot date the unseen analysis content. No separately host-designated primary analysis was supplied. NI reflects unavailable intentions rather than proof of an unplanned analysis.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "Historical primary designation, applicable plan content, finalization, amendments and access to unblinded outcomes remain unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:64ecedc5690b0c1974c302d56fa03f18109a0fb9934d49eebfe779b4ea4b9b1c",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:8fd08f159f7b2b5c17601dd194da5199c0b6161f6d2b0fd888d5edddac7e4b99",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:fc8fd85700cecbdf6fa42722fb515c3d165fb2c88f72dc34c37b8993713efac7",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:397473263c91131a9bbd67111135995a190762997dddb7c9159b0cf75608bd9a",
+              "stopping_rationale": "The main report, all four supplied supplements and current registry were inspected. A bounded all-source analysis-plan search had no hits; that is only lexical absence. Native acquisition of the explicitly cited protocol DOI was rejected as invalid_request, so no protocol was staged or admitted. Registry filename/date metadata do not supply plan contents, and the dated 2026 capture is not historical registry bytes. Further repetition of the same failed acquisition cannot resolve the premise.",
+              "unresolved_premise": "Applicable pre-unblinding analysis intentions, amendments and finalization cannot be established."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Both first-attempt and all-attempt results are reported and a clinical rationale for the restriction is given; this weighs against inferring result-driven suppression, without establishing all historical intentions."
+            },
+            {
+              "basis_index": 0,
+              "implication": "Both first-attempt and all-attempt results are reported and a clinical rationale for the restriction is given; this weighs against inferring result-driven suppression, without establishing all historical intentions."
+            }
+          ],
+          "justification": "First-attempt and all-attempt saturation measurements are reported in Table 2. The main report explains restricting primary analysis to the first attempt because later clinical deviations may occur. However, historical intentions are unavailable and the current registry lacks the report's failed-first-attempt stopping rule. The approved first-attempt result is retained; no evidence establishes that the differing definition was selected because of results. Multiple possible definitions plus insufficient intended-measurement detail warrant NI under Box 11.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [
+            "Historical intended observation window and any eligible unreported measurements are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:460fbafaca9451614afb182b3435fbd1e15621b43026675067d7cd5ef78b5425",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:397473263c91131a9bbd67111135995a190762997dddb7c9159b0cf75608bd9a",
+              "stopping_rationale": "The main report, all four supplied supplements and current registry were inspected. A bounded all-source analysis-plan search had no hits; that is only lexical absence. Native acquisition of the explicitly cited protocol DOI was rejected as invalid_request, so no protocol was staged or admitted. Registry filename/date metadata do not supply plan contents, and the dated 2026 capture is not historical registry bytes. Further repetition of the same failed acquisition cannot resolve the premise.",
+              "unresolved_premise": "Applicable pre-unblinding analysis intentions, amendments and finalization cannot be established."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "The null median estimate, PP alternative and both nonsignificant unadjusted and significant adjusted quartile estimates are available; multiplicity or post hoc analysis alone does not prove bias in the approved median result."
+            },
+            {
+              "basis_index": 3,
+              "implication": "The null median estimate, PP alternative and both nonsignificant unadjusted and significant adjusted quartile estimates are available; multiplicity or post hoc analysis alone does not prove bias in the approved median result."
+            }
+          ],
+          "justification": "Table 2 retains the nonsignificant approved ITT median difference and separate PP estimates. Supplement 4 reports unadjusted and adjusted first-quartile analyses, explicitly post hoc in the methods. These alternatives do not replace the median result. Their reporting weighs against assuming selection of this median estimate for significance, but does not establish that all intended eligible analyses were reported. Analysis intentions are unavailable and multiple analytical choices exist, so NI is appropriate.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "Preplanned estimator/CI construction, eligible alternative analyses, adjustment choices and any unreported analyses are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:fc8fd85700cecbdf6fa42722fb515c3d165fb2c88f72dc34c37b8993713efac7",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:5ca7a1af9514212dee17bac50c2a4c03c1f882dc37a87184291a83d118405d6f",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:397473263c91131a9bbd67111135995a190762997dddb7c9159b0cf75608bd9a",
+              "stopping_rationale": "The main report, all four supplied supplements and current registry were inspected. A bounded all-source analysis-plan search had no hits; that is only lexical absence. Native acquisition of the explicitly cited protocol DOI was rejected as invalid_request, so no protocol was staged or admitted. Registry filename/date metadata do not supply plan contents, and the dated 2026 capture is not historical registry bytes. Further repetition of the same failed acquisition cannot resolve the premise.",
+              "unresolved_premise": "Applicable pre-unblinding analysis intentions, amendments and finalization cannot be established."
+            }
+          ]
+        }
+      ],
+      "search_accounts": [
+        {
+          "batch_identity": "sha256:8cff0e78d1b2f6b6fe456b5e6e4f8ee85c432ef06f0fab6e46c830d4c5a97834",
+          "candidate_count": 0,
+          "condition": "no_hits",
+          "exhausted": true,
+          "handle": "sr_397473263c91131a",
+          "hits": [],
+          "identity": "sha256:397473263c91131a9bbd67111135995a190762997dddb7c9159b0cf75608bd9a",
+          "limit": 10,
+          "matching_page_count": 0,
+          "mode": "phrase",
+          "next_cursor": null,
+          "normalized_query": "analysis plan",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:prespecified-analysis",
+          "query": "analysis plan",
+          "ranking_complete": true,
+          "returned_candidates": [],
+          "returned_material": 0,
+          "returned_rank_end": null,
+          "returned_rank_start": null,
+          "session_handle": "ss_fbbc7f975392308d",
+          "session_id": "sha256:fbbc7f975392308df3f4d496622626f8f06165cf21512b5d11068ca0e6ebde8b",
+          "sources": [
+            {
+              "id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+              "projection_hash": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747"
+            },
+            {
+              "id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+              "projection_hash": "sha256:e51ca6166493864bc9503e62254718f1203608d0d4f8857af220695b456c5675"
+            },
+            {
+              "id": "source_937c1c8b38e7b34f0cd79e24eef556374f39a6a212686bec76c02dbe615233a3",
+              "projection_hash": "sha256:db411e40af9e406d24885723c9d2d9ee5c3b6d3af3cb6b1a430bc2dbf77431f2"
+            },
+            {
+              "id": "source_a3af7cb76242001e4ceef561ecc71d69c7408b008293bd7baf6b0ae5f2dfa7b2",
+              "projection_hash": "sha256:b0cc7bcd64b683bd3e18b1c9e3f3e686e34baf99b0c4ef119a9e008a5f879804"
+            },
+            {
+              "id": "source_b49999b30d45c3a147b1af1b2b13ab8102d485e14d4b9338ac64dcd0d0135336",
+              "projection_hash": "sha256:55664c146c1ca5f423461daf92f783876b89b3113b2571c588953cc558839c90"
+            },
+            {
+              "id": "source_e7e6ca446bf5c3248974910bb969fc15a25d852940f052370683cfc62d33c5da",
+              "projection_hash": "sha256:3bb7f178148b96fc70671ba00e45ea3d18d750aa9853b1a408c8dd4ce4f37383"
+            }
+          ],
+          "total_matches": 0,
+          "trial_id": "chua-2022",
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "selected_evidence": {
+    "0b8d092c0833e5cf5cc0f68a99aecdb72c707d429c3f55206cdf0f8d9e7d7d2b": {
+      "delivery_receipt": "sha256:c85a5faae5142c3d86b618214c978880bb6540d10a46654e31713ac1a6e3a181",
+      "handle": "eh_0b8d092c0833e5cf",
+      "identity": "sha256:0b8d092c0833e5cf5cc0f68a99aecdb72c707d429c3f55206cdf0f8d9e7d7d2b",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.235,
+        0.107,
+        0.78,
+        0.405
+      ],
+      "render": {
+        "identity": "sha256:6aaa9fe20e8843904ffc2ed0426aed0bc36ab7344874024f9a22acfe437ff03b",
+        "page": 4,
+        "png_sha256": "sha256:1b41ea101d82ece06e70bee461153c48188af121f9c6285dc7d131314c8d8d08",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3"
+      },
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "transcription": "Figure 1 flowchart: Assessed for eligibility (n=518); NUH May 2018 to Dec 2019, NTFGH Aug 2018 to May 2019. Excluded (n=326): Crash tubes* (n=225); Exigencies in clinical care precludes randomisation (n=46); Met exclusion criteria (n=55). Randomised (n=192), branching to Allocated to INTERVENTION (n=97): Received study treatment (n=97), Did not receive study treatment (n=0); and Allocated to CONTROL (n=95): Received study treatment (n=93), Did not receive study treatment (n=2): 1 with do-not-resuscitate order, 1 intubated in operating theatre. Intervention next box: Oxygenation device different from allocated arm (n=9): 6 during preoxygenation; 9 during apnoeic oxygenation. Control next box: Oxygenation device different from allocated arm (n=12): 4 during preoxygenation; 11 during apnoeic oxygenation. Intervention: Analysed by ITT (n=97), Excluded from analysis (n=0). Control: Analysed by ITT (n=93), Excluded from analysis (n=2): 1 with do-not-resuscitate order; 1 intubated in operating theatre.",
+      "trial_id": "chua-2022",
+      "uncertainty": "Crash tubes asterisk footnote below region: patients unconscious and apnoeic. Apnoeic deviation counts are trial procedure counts, not necessarily first-attempt counts."
+    },
+    "17419a557eaa217f5898f4918ac4f2977063f8610fb2e3fba05c8113b8b4e1cc": {
+      "end": 1510,
+      "end_line": 144,
+      "handle": "eh_17419a557eaa217f",
+      "identity": "sha256:17419a557eaa217f5898f4918ac4f2977063f8610fb2e3fba05c8113b8b4e1cc",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "Pre- and apnoeic high-flow oxygenation for rapid sequence intubation in the emergency department\n(the Pre-AeRATE trial): A multicentre randomised controlled trial\n\nSupplementary Table 3. Apnoeic oxygenation and intubation\nCharacteristic\nIntervention\n(n=97)\nControl\n(n=93)\nTotal\n(N=190)\nInduction agent\n\n\n\nEtomidate\n44 (45.4)\n44 (47.3)\n88 (46.3)\nPropofol\n33 (34.0)\n23 (24.7)\n56 (29.5)\nKetamine\n17 (17.5)\n25 (26.9)\n42 (22.1)\nOthers\n4 (4.1)\n1 (1.1)\n5 (2.6)\n\n\n\n\nParalytic agent\n\n\n\nSuccinylcholine\n73 (75.3)\n74 (79.6)\n147 (77.4)\nRocuronium\n24 (24.7)\n19 (20.4)\n43 (22.6)\n\n\n\n\nTime from start of preoxygenation to\nadministration of paralytic agent (min),\nmean (SD)\n8.9 (5.2)\n13.2 (8.8)\n11.0 (7.5)\n\n\n\n\nReason for termination of HFNC\n\n\n\nSuccessful intubation\n87 (89.7)\n1 (1.1)\n88 (46.3)\nObstructing bag-valve-mask ventilation\n3 (3.1)\n0 (0.0)\n3 (1.6)\nOthers\n2 (2.1)\n0 (0.0)\n2 (1.1)\n\nAt first intubation attempt\n\n\n\nPosition during intubation\n\n\n\nCervical spine extension only\n7 (7.2)\n3 (3.2)\n10 (5.3)\nFull sniffing\n59 (60.8)\n73 (78.5)\n132 (69.5)\nNeutral cervical spine\n30 (30.9)\n15 (16.1)\n45 (23.7)\nSeated upright\n1 (1.0)\n2 (2.2)\n3 (1.6)\n\n\n\n\nOxygenation device different from allocated\ngroup\n6 (6.2)\n4 (4.3)\n10 (5.3)\n\n\n\n\nUse of adjunct device(s)a\n13 (13.4)\n8 (8.6)\n21 (11.1)\n\n\n\n\nIntubating proceduralist specialty\n\n\n\nEmergency medicine\n58 (59.8)\n61 (65.6)\n119 (62.6)\nNon-emergency medicine\n39 (40.2)\n32 (34.4)\n71 (37.4)\n\nAt subsequent intubation attempts\n\n\n\nPatients with more than one attempt\n17 (17.5)\n15 (16.1)\n32 (16.8)",
+      "source_id": "source_b49999b30d45c3a147b1af1b2b13ab8102d485e14d4b9338ac64dcd0d0135336",
+      "source_version": "sha256:55664c146c1ca5f423461daf92f783876b89b3113b2571c588953cc558839c90",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "176bdd9d0ae005e61cd65751b7a5227f7dd2a30e6d74bf88e524ec86e46bec3e": {
+      "end": 3984,
+      "end_line": 86,
+      "handle": "eh_176bdd9d0ae005e6",
+      "identity": "sha256:176bdd9d0ae005e61cd65751b7a5227f7dd2a30e6d74bf88e524ec86e46bec3e",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "Subjects were randomised at 1:1 ratio into intervention\nand control groups, stratified by study site, with variable\nblocks of 4 and 6 via a web-based randomisation service\ngenerated by an independent statistician. Allocation\nconcealment was maintained until completion of\nrandomisation. Blinding of the ED team and patient was\nnot possible due to the intervention. Clinicians in the\nadmitting ICUs were blinded to the study allocation. The\nfull protocol for this study was published elsewhere.27",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 3489,
+      "start_line": 78,
+      "trial_id": "chua-2022"
+    },
+    "19dd18b0b20e389143443d2d3449b41bd021dce527923429f55c52e4f75bbf46": {
+      "end": 3928,
+      "end_line": 85,
+      "handle": "eh_19dd18b0b20e3891",
+      "identity": "sha256:19dd18b0b20e389143443d2d3449b41bd021dce527923429f55c52e4f75bbf46",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "Subjects were randomised at 1:1 ratio into intervention\nand control groups, stratified by study site, with variable\nblocks of 4 and 6 via a web-based randomisation service\ngenerated by an independent statistician. Allocation\nconcealment was maintained until completion of\nrandomisation. Blinding of the ED team and patient was\nnot possible due to the intervention. Clinicians in the\nadmitting ICUs were blinded to the study allocation. The",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 3489,
+      "start_line": 78,
+      "trial_id": "chua-2022"
+    },
+    "3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3": {
+      "end": 4887,
+      "end_line": 99,
+      "handle": "eh_3149d73c4b185a98",
+      "identity": "sha256:3149d73c4b185a9833f2a6ae1d40585bd909ee0cab586172d3536f2facdbe4c3",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Ann Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\nThe Pre-AeRATE trial-Mui Teng Chua et al.\n151\nof inspired oxygen (FiO2) of more than 0.90 using the\nAIRVO 2 Humidifier with Integrated Flow Generator\n(Fisher & Paykel Healthcare Ltd, Auckland, New Zealand)\nduring preoxygenation and apnoeic oxygenation\nphases. Control group was managed with usual care by\npreoxygenating using only NRM at flush rate, and then\ngiven at least 15L/min of non-humidified and non-\nheated oxygen from wall supply via NC for apnoeic\noxygenation. Flush rate used for NRM preoxygenation\nreduces leak around the mask margins and is\nnon-inferior to BVM, which is the other recommended\nmodality.28\nAfter \u22653 minutes of preoxygenation, induction\nmedications were administered based on treating\nphysician's discretion, and apnoeic oxygenation\ncommenced as per allocation. Intubation was attempted\nafter 30-60 seconds, depending on the paralytic agent.\nEnd of intubation was defined as correct placement of\nendotracheal tube with confirmation using quantitative\nend-tidal carbon dioxide (ETCO2) monitoring.\nMeasurements and outcomes\nVital signs and airway features were assessed prior to\npreoxygenation. The primary endpoint was lowest SpO2\nduring the first intubation attempt, defined as time taken\nfrom administration of paralytic agent until quantitative\nETCO2 was detected post-intubation if successful, or\nuntil the start of the second attempt if failed. The primary\noutcome analysis was restricted to the first intubation\nattempt as clinicians may deviate from initial treatment\nallocation based on their discretion after the first\nattempt. SpO2 was measured using the pulse oximeters,\nPhilips Intellivue MP30 Patient Monitor (Royal Philips,\nAmsterdam, the Netherlands) and Zoll R Series\ndefibrillator (Zoll Medical Corporation, Chelmsford, US)\nat 2 different areas in the upper extremities. A research\ncoordinator, nurse or clinician not involved in the\nintubation recorded the lowest SpO2 and other variables\ncollected during the attempts. Patients were monitored\nfor peri-intubation adverse events (AEs) such as\naspiration, arrhythmia and cardiac arrest during\nintubation or within 5 minutes after intubation. Main\nsecondary outcomes were incidence of SpO2 falling\nbelow 90% and safe apnoea time during intubation\n(duration of apnoea where SpO2 remains \u226590% and\ncensored at the time of successful intubation). Other\nsecondary outcomes included number of intubation\nattempts, time (from induction) to successful intubation,\nperi-intubation AE, and various post-intubation clinical\noutcomes.\nSample size calculation\nBased on our preliminary data (unpublished) and a\nprevious study,24 we anticipated a standard deviation\nof 14% in the lowest SpO2. Enrolment of 184 patients\n(92 patients in each control and intervention groups)\nwould provide statistical power of 80% (two-sided \u03b1\nof 0.05) to detect a 6% difference in lowest SpO2,15\nallowing for a 5% dropout.\nData analyses\nAnalyses of baseline and efficacy data were performed\nwith the intention-to-treat (ITT) population, stratified or\nadjusted for study site for outcome variables. Supplementary\nanalyses of efficacy data were performed with the per-\nprotocol (PP) population, comprising randomised patients\nwho received FiO2 of at least 0.70 during preoxygenation\nand apnoeic oxygenation with no major protocol\ndeviation. This FiO2 value was chosen as it is the\nminimum acceptable level to be comparable with that\ndelivered by NRM.29 Frequency and proportion of\npatients with any peri-intubation AE were summarised\nin the \"as-treated\" population, that is, according to actual\napproaches of preoxygenation and apnoeic oxygenation\nreceived.\nSince distribution of lowest SpO2 was highly skewed as\nobserved in similar studies,15,24 a stratified Mann-Whitney\nU test (namely the van Elteren test) was used to compare\nlowest SpO2 between treatment groups. Post hoc analysis\nwith quantile regression of lowest SpO2 was performed\nwith adjustment for covariates, selected backward\nstepwise into the final adjusted model.30\nThe Cochran-Mantel-Haenszel test was used to\ncompare risk of SpO2 below 90% between groups.\nThe common relative risk (RR) was estimated with its\n95% confidence interval (CI) by the Mantel-Haenszel\nmethod. Safe apnoea time during intubation and time to\nsuccessful intubation were compared using the stratified\nlog-rank test. The hazard ratios (HR) of SpO2 falling\nbelow 90% and successful intubation were estimated\nfrom the Cox proportional hazards model. All analyses\nwere performed using SAS 9.4 (SAS Institute, Cary, US)\nand P<0.05 indicated statistical significance.\nRESULTS\nFrom May 2018 to December 2019, a total of 518\npatients were screened and 192 eligible patients were\nrandomised, with 97 assigned to intervention group and\n95 to control group. All intervention patients and 93\npatients in the control group were included in ITT",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "460fbafaca9451614afb182b3435fbd1e15621b43026675067d7cd5ef78b5425": {
+      "end": 15750,
+      "end_line": 135,
+      "handle": "eh_460fbafaca945161",
+      "identity": "sha256:460fbafaca9451614afb182b3435fbd1e15621b43026675067d7cd5ef78b5425",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.identificationModule.organization.fullName: \"National University Hospital, Singapore\"\nprotocolSection.ipdSharingStatementModule.ipdSharing: \"NO\"\nprotocolSection.outcomesModule.primaryOutcomes[0].description: \"Lowest SpO2 achieved during first intubation attempt which is defined as first attempt to insert endotracheal tube into oropharynx\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Lowest SpO2 achieved during first intubation attempt\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"From time of administration of paralytic agent until quantitative ETCO2 is detected post-intubation up to 45 minutes\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].description: \"Number of attempts until successful intubation as indicated by detection of quantitative ETCO2\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].measure: \"Number of attempts at intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].timeFrame: \"Number of attempts required until successful intubation up to 45 minutes or termination of procedure, whichever is earlier\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].description: \"Duration of apnoea where SpO2 remains \u2265 90%\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].measure: \"Safe apnoea time during intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].timeFrame: \"From start of paralysis to time when SpO2 drops to less than 90% up to 45 minutes\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].description: \"Incidence of SpO2 \\\\< 90% during apnoea\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].measure: \"Incidence of SpO2 < 90%\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].timeFrame: \"From start of paralysis to successful intubation up to 45 minutes\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].description: \"Peri-intubation adverse events defined as hypotension, hypertension, tachycardia, bradycardia, regurgitation, aspiration, cardiac arrhythmia, cardiac arrest during RSI, oropharynx or dental trauma\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].measure: \"Peri-intubation adverse events\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].timeFrame: \"From induction to 15 minutes after intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].description: \"Time taken from induction to successful intubation attempt\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].measure: \"Length of time to successful intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].timeFrame: \"From induction until successful intubation as confirmed by detection of quantitative ETCO2 up to 45 minutes\"\nprotocolSection.oversightModule.isFdaRegulatedDevice: false\nprotocolSection.oversightModule.isFdaRegulatedDrug: false\nprotocolSection.oversightModule.oversightHasDmc: true\nprotocolSection.referencesModule.references[0].citation: \"Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.\"\nprotocolSection.referencesModule.references[0].pmid: \"30947740\"\nprotocolSection.referencesModule.references[0].type: \"DERIVED\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[0].class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[0].name: \"Ng Teng Fong General Hospital\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[1].class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[1].name: \"Singapore Clinical Research Institute\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.name: \"National University Hospital, Singapore\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.type: \"SPONSOR\"\nprotocolSection.statusModule.completionDateStruct.date: \"2020-07-31\"\nprotocolSection.statusModule.completionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.expandedAccessInfo.hasExpandedAccess: false\nprotocolSection.statusModule.lastUpdatePostDateStruct.date: \"2021-03-03\"\nprotocolSection.statusModule.lastUpdatePostDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.lastUpdateSubmitDate: \"2021-03-02\"\nprotocolSection.statusModule.overallStatus: \"COMPLETED\"\nprotocolSection.statusModule.primaryCompletionDateStruct.date: \"2020-01-01\"\nprotocolSection.statusModule.primaryCompletionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.startDateStruct.date: \"2018-05-07\"\nprotocolSection.statusModule.startDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.statusVerifiedDate: \"2021-03\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2018-01-10\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2018-01-01\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2018-01-04\"",
+      "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+      "source_version": "sha256:e51ca6166493864bc9503e62254718f1203608d0d4f8857af220695b456c5675",
+      "start": 10763,
+      "start_line": 87,
+      "trial_id": "chua-2022"
+    },
+    "4aedccdedb4c57568325e5688016feafe35fbe56ccf678ac94df840cdeb7bb4e": {
+      "end": 3815,
+      "end_line": 83,
+      "handle": "eh_4aedccdedb4c5756",
+      "identity": "sha256:4aedccdedb4c57568325e5688016feafe35fbe56ccf678ac94df840cdeb7bb4e",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "Subjects were randomised at 1:1 ratio into intervention\nand control groups, stratified by study site, with variable\nblocks of 4 and 6 via a web-based randomisation service\ngenerated by an independent statistician. Allocation\nconcealment was maintained until completion of\nrandomisation. Blinding of the ED team and patient was",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 3489,
+      "start_line": 78,
+      "trial_id": "chua-2022"
+    },
+    "55283766dd04bcb2f2915affba40700b29501b36ffa54c3da37f103dbe8d9ed0": {
+      "end": 3285,
+      "end_line": 165,
+      "handle": "eh_55283766dd04bcb2",
+      "identity": "sha256:55283766dd04bcb2f2915affba40700b29501b36ffa54c3da37f103dbe8d9ed0",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "Ann Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\nThe Pre-AeRATE trial-Mui Teng Chua et al.\n153\nTable 1. Demographics, baseline characteristics and airway features\nIntervention\n(n=97)\nControl\n(n=93)\nTotal\n(N=190)\nDemographics and baseline characteristics\nAge, mean (SD), years\n60.4 (15.4)\n61.9 (14.7)\n61.1 (15.1)\nSex, male, no. (%)\n59 (60.8)\n65 (69.9)\n124 (65.3)\nBody mass index, mean (SD), kg/m2\n23.4 (4.0)\n24.5 (4.7)\n24.0 (4.4)\nIndication for intubation, no. (%)\nAsthma/COPD\n2 (2.1)\n1 (1.1)\n3 (1.6)\nFluid overload, cardiac/renal\n4 (4.1)\n5 (5.4)\n9 (4.7)\nGastrointestinal bleed\n6 (6.2)\n6 (6.5)\n12 (6.3)\nICH/SAH/SDH (non-traumatic)\n34 (35.1)\n23 (24.7)\n57 (30.0)\nPneumonia\n10 (10.3)\n7 (7.5)\n17 (8.9)\nShock states\nCardiogenic\n1 (1.0)\n6 (6.5)\n7 (3.7)\nSeptic\n6 (6.2)\n13 (14.0)\n19 (10.0)\nHypovolaemic\n0 (0)\n2 (2.2)\n2 (1.1)\nSeizures\n11 (11.3)\n12 (12.9)\n23 (12.1)\nTrauma\n7 (7.2)\n5 (5.4)\n12 (6.3)\nOthers\n16 (16.5)\n13 (14.0)\n29 (15.3)\nGlasgow Coma Scale, median (Q1, Q3)\n7 (6, 14)\n10 (6, 14)\n8 (6, 14)\nVasopressor use, no. (%)\n7 (7.2)\n13 (14.0)\n20 (10.5)\nAbnormal chest X-ray findings, no. (%)\n41 (42.3)\n42 (46.2)\n83 (44.1)\nAirway features\nPotential airway difficulty, no. (%)\nReduced neck mobility or in cervical collar\n11 (11.3)\n11 (11.8)\n22 (11.6)\nAirway obstruction\n2 (2.1)\n1 (1.1)\n3 (1.6)\nFacial trauma\n2 (2.1)\n1 (1.1)\n3 (1.6)\nBlood or vomitus in airway\n17 (17.5)\n13 (14.0)\n30 (15.8)\nOthers\n11 (11.3)\n12 (12.9)\n23 (12.1)\nNone\n61 (62.9)\n60 (64.5)\n121 (63.7)\nMallampati score, no. (%)\nClass 1\n9 (9.3)\n6 (6.5)\n15 (7.9)\nClass 2\n14 (14.4)\n14 (15.1)\n28 (14.7)\nClass 3\n11 (11.3)\n16 (17.2)\n27 (14.2)\nClass 4\n6 (6.2)\n6 (6.5)\n12 (6.3)\nNot assessed\n57 (58.8)\n51 (54.8)\n108 (56.8)\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|\n|---|---|---|---|\n|Demographics and baseline characteristics||||\n|Age, mean (SD), years 60.4 (15.4) 61.9 (14.7) 61.1 (15.1)||||\n|Sex, male, no. (%)|59 (60.8)|65 (69.9)|124 (65.3)|\n|Body mass index, mean (SD), kg/m2 23.4 (4.0) 24.5 (4.7) 24.0 (4.4)||||\n|Indication for intubation, no. (%)||||\n|Asthma/COPD 2 (2.1) 1 (1.1) 3 (1.6)||||\n|Fluid overload, cardiac/renal|4 (4.1)|5 (5.4)|9 (4.7)|\n|Gastrointestinal bleed 6 (6.2) 6 (6.5) 12 (6.3)||||\n|ICH/SAH/SDH (non-traumatic)|34 (35.1)|23 (24.7)|57 (30.0)|\n|Pneumonia 10 (10.3) 7 (7.5) 17 (8.9)||||\n|Shock states||||\n|Cardiogenic 1 (1.0) 6 (6.5) 7 (3.7)||||\n|Septic|6 (6.2)|13 (14.0)|19 (10.0)|\n|Hypovolaemic 0 (0) 2 (2.2) 2 (1.1)||||\n|Seizures|11 (11.3)|12 (12.9)|23 (12.1)|\n|Trauma 7 (7.2) 5 (5.4) 12 (6.3)||||\n|Others|16 (16.5)|13 (14.0)|29 (15.3)|\n|Glasgow Coma Scale, median (Q1, Q3) 7 (6, 14) 10 (6, 14) 8 (6, 14)||||\n|Vasopressor use, no. (%)|7 (7.2)|13 (14.0)|20 (10.5)|\n|Abnormal chest X-ray findings, no. (%) 41 (42.3) 42 (46.2) 83 (44.1)||||\n|Airway features||||\n|Potential airway difficulty, no. (%)||||\n|Reduced neck mobility or in cervical collar|11 (11.3)|11 (11.8)|22 (11.6)|\n|Airway obstruction 2 (2.1) 1 (1.1) 3 (1.6)||||\n|Facial trauma|2 (2.1)|1 (1.1)|3 (1.6)|\n|Blood or vomitus in airway 17 (17.5) 13 (14.0) 30 (15.8)||||\n|Others|11 (11.3)|12 (12.9)|23 (12.1)|\n|None 61 (62.9) 60 (64.5) 121 (63.7)||||\n|Mallampati score, no. (%)||||\n|Class 1 9 (9.3) 6 (6.5) 15 (7.9)||||\n|Class 2|14 (14.4)|14 (15.1)|28 (14.7)|\n|Class 3 11 (11.3) 16 (17.2) 27 (14.2)||||\n|Class 4|6 (6.2)|6 (6.5)|12 (6.3)|",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "5ca7a1af9514212dee17bac50c2a4c03c1f882dc37a87184291a83d118405d6f": {
+      "end": 1558,
+      "end_line": 82,
+      "handle": "eh_5ca7a1af9514212d",
+      "identity": "sha256:5ca7a1af9514212dee17bac50c2a4c03c1f882dc37a87184291a83d118405d6f",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "Pre- and apnoeic high-flow oxygenation for rapid sequence intubation in the emergency department\n(the Pre-AeRATE trial): A multicentre randomised controlled trial\n\n\nSupplementary Table 4. Regression analysis of the 1st quartile of lowest SpO2 (%) achieved during first\nintubation attempt\n\n Unadjusted Analysis\n\n Adjusted Analysis\n\nDiff (95% CI)\nP value\nDiff (95% CI)\nP value\nTreatment group (intervention versus control)\n5.0 (-0.8, 10.8)\n0.092\n\n5.5 (1.5, 9.5)\n0.007\n\n\n\n\n\n\nIndication for intubation (primary respiratory\nversus non-respiratory conditions)\n-16.0 (-27.3, -4.7)\n0.006\n\n-14.7 (-23.2, -6.1)\n<0.001\n\n\n\n\n\n\nPotential airway difficulty (present versus\nabsent)\n-6.0 (-13.4, 1.4)\n0.110\n\n-3.4 (-7.5, 0.7)\n0.099\n\n\n\n\n\n\nBaseline SpO2 (intervention versus control)\n0.8 (0.04, 1.5)\n0.039\n\n0.1 (-0.3, 0.5)\n0.732\n\n\n\n\n\n\nDiff (95% CI): difference and 95% confidence interval of the 1st quartile of lowest SpO2 achieved during\nfirst intubation attempt.\n\n[Extracted table 1]\n||Unadjusted Analysis|||Adjusted Analysis||\n|---|---|---|---|---|---|\n||Diff (95% CI)|P value||Diff (95% CI)|P value|\n|Treatment group (intervention versus control)|5.0 (-0.8, 10.8)|0.092||5.5 (1.5, 9.5)|0.007|\n|||||||\n|Indication for intubation (primary respiratory|-16.0 (-27.3, -4.7)|0.006||-14.7 (-23.2, -6.1)|<0.001|\n|versus non-respiratory conditions)||||||\n|||||||\n|Potential airway difficulty (present versus|-6.0 (-13.4, 1.4)|0.110||-3.4 (-7.5, 0.7)|0.099|\n|absent)||||||\n|||||||\n|Baseline SpO (intervention versus control)<br>2|0.8 (0.04, 1.5)|0.039||0.1 (-0.3, 0.5)|0.732|\n|||||||",
+      "source_id": "source_e7e6ca446bf5c3248974910bb969fc15a25d852940f052370683cfc62d33c5da",
+      "source_version": "sha256:3bb7f178148b96fc70671ba00e45ea3d18d750aa9853b1a408c8dd4ce4f37383",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "64ecedc5690b0c1974c302d56fa03f18109a0fb9934d49eebfe779b4ea4b9b1c": {
+      "end": 4547,
+      "end_line": 98,
+      "handle": "eh_64ecedc5690b0c19",
+      "identity": "sha256:64ecedc5690b0c1974c302d56fa03f18109a0fb9934d49eebfe779b4ea4b9b1c",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "The Pre-AeRATE trial-Mui Teng Chua et al.\nAnn Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\n150\nCLINICAL IMPACT\nWhat is New\n\u2022\nTo our knowledge, this is the first randomised\ncontrolled trial in the emergency department in\nSingapore evaluating high-flow nasal cannula\n(HFNC) oxygenation for preoxygenation and apnoeic\noxygenation in patients who required rapid sequence\nintubation.\n\u2022\nOur study showed that HFNC may prolong safe\napnoea time.\nClinical Implications\n\u2022\nPatients with challenging intubation may benefit\nfrom the longer safe apnoea time provided by HFNC\nduring preoxygenation and apnoeic oxygenation.\nthere is significant interest in prolonging safe apnoea\ntime without hypoxia or bag-valve-mask (BVM)\nventilation,4,5 as the latter may cause aspiration risk\nin unfasted ED patients, unlike for most patients in\nintensive care units (ICUs). Existing strategies for\npreoxygenation include the use of high-flow face mask\n(HFFM),6 such as the non-rebreather mask (NRM) or\nvia well-fitting BVM without additional positive\npressure for those with higher degree of respiratory\ncompromise. Apnoeic oxygenation is commonly\ndelivered through application of standard nasal cannula\n(NC) at 15L/min.7-10\nSystematic reviews of apnoeic oxygenation in both\nICU and ED settings suggest reduction in incidence\nof hypoxaemia.5,11 However, these reviews included\nheterogenous studies with different apnoeic oxygenation\nstrategies (high-flow nasal cannula [HFNC] versus\nstandard NC at 15L/min) and have differing controls (no\nintervention, BVM, non-invasive ventilation [NIV] or\nno control at all).5,11 Using HFNC for preoxygenation\nand apnoeic oxygenation in RSI may offer potential\nadvantages over standard NC. These include better\npatient tolerance and generation of small amounts of\npositive end-expiratory pressure.12 HFNC oxygenation\nduring intubation has been studied in randomised\ntrials,13,14 and observational studies in ICUs15,16 and\nEDs.17,18 However, its role and effectiveness are still\nactively debated,19-21 with inconsistent evidence regarding\nits efficacy compared to NIV,22,23 HFFM23,24 or BVM,14\nand whether it is best utilised in conjunction with\nNIV.25 Importantly, there has been no randomised\ncontrolled trial in the ED that evaluates the use of\nHFNC for preoxygenation and apnoeic oxygenation in\nRSI. Little is known about its efficacy in preventing\nhypoxia in ED patients during the peri-intubation period.\nIn our trial, we aimed to evaluate if HFNC use at\n60L/min for preoxygenation and apnoeic oxygenation\nwill maintain higher oxygen saturation (SpO2) for ED\npatients during RSI, compared to the usual care of\npreoxygenation with NRM and standard NC with at\nleast 15L/min of oxygen flow for apnoeic oxygenation.\nMETHODS\nStudy design and setting\nIn this Pre- and Apnoeic high flow oxygenation for\nRApid sequence intubation in The Emergency department\n(Pre-AeRATE) study, an open-label, randomised,\ncontrolled trial, we enrolled adult patients who required\nRSI in EDs of the National University Hospital and\nNg Teng Fong General Hospital in Singapore. Each ED\nreceives over 110,000 attendances annually and performs\n12-20 RSIs monthly. Pre-AeRATE was registered with\nClinicalTrials.gov (NCT03396094). Ethics approval for\nwaiver of consent at enrolment and delayed informed\nconsent was obtained from the institutional ethics\nreview board (DSRB reference number 2017/00348) in\naccordance with the Singapore regulations for clinical\ntrials under emergency situations.26\nSubjects were randomised at 1:1 ratio into intervention\nand control groups, stratified by study site, with variable\nblocks of 4 and 6 via a web-based randomisation service\ngenerated by an independent statistician. Allocation\nconcealment was maintained until completion of\nrandomisation. Blinding of the ED team and patient was\nnot possible due to the intervention. Clinicians in the\nadmitting ICUs were blinded to the study allocation. The\nfull protocol for this study was published elsewhere.27\nSelection of participants\nInclusion criteria were patients aged \u226521 years requiring\nRSI due to any condition. The following were excluded:\nactive \"do-not-resuscitate\" orders; crash, awake or\ndelayed sequence intubations; requiring non-invasive\npositive pressure ventilation; cardiac arrest; suspicion or\nconfirmed diagnosis of base of skull fractures or severe\nfacial trauma that precluded placement of NC; pregnant\nwomen; and those incarcerated.\nInterventions\nThe intervention group using HFNC received 60L/min\nof warm and humidified oxygen at 37\u00b0C and fraction",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e": {
+      "end": 1912,
+      "end_line": 38,
+      "handle": "eh_69bb977011b11f47",
+      "identity": "sha256:69bb977011b11f47c67f7dcdbe512af7d5ef999b7766e2828ba1c7a9bf7f5c7e",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "The Pre-AeRATE trial-Mui Teng Chua et al.\nAnn Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\n152\nanalysis (Fig. 1). In the control group, 2 patients\nwere excluded from data analysis as 1 had a \"do-not-\nresuscitate\" order established after randomisation and\nthe other was intubated in the operating room.\nCharacteristics of study subjects\nOverall, there was a predominance of males (124/190,\n65.3%) with a mean age of 61.1 years (standard\ndeviation [SD] 15.1) and mean estimated weight of\n64.6kg (SD 14.0) (Table 1 and online Supplementary\nTable 1). The top 3 indications for intubation were\nnon-traumatic intracranial, subarachnoid and subdural\nhaemorrhages (57/190, 30.0%); shock states (28/190,\n14.7%); and seizures (23/190, 12.1%).\nMost patients were assessed to have no potential\nairway difficulty (121/190, 63.7%). A great\nproportion (176/190, 92.6%) were intubated using\nthe C-MAC (Karl Storz, Tuttlingen, Germany) video\nlaryngoscope; 20 patients (10.6%) had Grade 3 or 4\nlaryngeal view by the Cormack-Lehane classification.\nMost received NRM before randomisation (intervention\n52/97 [53.6%] and control 44/93 [47.8%]; see online\nSupplementary Table 2) as part of prehospital care. Full\ndata relating to the study procedure and treatment are\nsummarised in the online Supplementary Tables 2 and 3.\nOutcomes\nLowest SpO2 was maintained at 100% during the first\nintubation attempt in more than half of the patients in\nboth groups. There was no statistical difference in\nthe lowest SpO2 recorded during the first intubation\nattempt between the intervention (median SpO2 100%,\ninterquartile range [IQR] 96.0-100) and control\ngroups (median SpO 2 100%, IQR 91.0-100)\nFig 1. Flowchart illustrating patient enrolment, randomisation and treatment allocation.\nITT: intention-to-treat; NUH: National University Hospital; NTFGH: Ng Teng Fong General Hospital\n*Refers to patients who were unconscious and apnoeic",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "8fd08f159f7b2b5c17601dd194da5199c0b6161f6d2b0fd888d5edddac7e4b99": {
+      "end": 15750,
+      "end_line": 135,
+      "handle": "eh_8fd08f159f7b2b5c",
+      "identity": "sha256:8fd08f159f7b2b5c17601dd194da5199c0b6161f6d2b0fd888d5edddac7e4b99",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "derivedSection.miscInfoModule.versionHolder: \"2026-10-05\"\ndocumentSection.largeDocumentModule.largeDocs[0].date: \"2017-12-29\"\ndocumentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"\ndocumentSection.largeDocumentModule.largeDocs[0].hasIcf: false\ndocumentSection.largeDocumentModule.largeDocs[0].hasProtocol: true\ndocumentSection.largeDocumentModule.largeDocs[0].hasSap: false\ndocumentSection.largeDocumentModule.largeDocs[0].label: \"Study Protocol\"\ndocumentSection.largeDocumentModule.largeDocs[0].size: 632794\ndocumentSection.largeDocumentModule.largeDocs[0].typeAbbrev: \"Prot\"\ndocumentSection.largeDocumentModule.largeDocs[0].uploadDate: \"2017-12-30T10:00\"\nhasResults: false\nprotocolSection.armsInterventionsModule.armGroups[0].description: \"High-flow nasal cannula oxygenation at 60L/min for pre-oxygenation and apnoeic oxygenation\"\nprotocolSection.armsInterventionsModule.armGroups[0].interventionNames[0]: \"Device: High-flow nasal cannulae (HFNC) oxygenation\"\nprotocolSection.armsInterventionsModule.armGroups[0].label: \"Intervention\"\nprotocolSection.armsInterventionsModule.armGroups[0].type: \"EXPERIMENTAL\"\nprotocolSection.armsInterventionsModule.armGroups[1].description: \"Pre-oxygenation using non-rebreather mask and apnoeic oxygenation via nasal cannulae at 15L/min\"\nprotocolSection.armsInterventionsModule.armGroups[1].interventionNames[0]: \"Device: Non-rebreather mask and standard nasal cannula\"\nprotocolSection.armsInterventionsModule.armGroups[1].label: \"Control\"\nprotocolSection.armsInterventionsModule.armGroups[1].type: \"ACTIVE_COMPARATOR\"\nprotocolSection.armsInterventionsModule.interventions[0].armGroupLabels[0]: \"Intervention\"\nprotocolSection.armsInterventionsModule.interventions[0].description: \"Delivery of 60L/min of supplemental oxygen for pre-oxygenation and apnoeic oxygenation during rapid sequence intubation using the AIRVOTM 2 Humidifier with Integrated Flow Generator (Fisher \\\\& Paykel Healthcare, Auckland, New Zealand)\"\nprotocolSection.armsInterventionsModule.interventions[0].name: \"High-flow nasal cannulae (HFNC) oxygenation\"\nprotocolSection.armsInterventionsModule.interventions[0].otherNames[0]: \"AIRVOTM 2 Humidifier with Integrated Flow Generator\"\nprotocolSection.armsInterventionsModule.interventions[0].type: \"DEVICE\"\nprotocolSection.armsInterventionsModule.interventions[1].armGroupLabels[0]: \"Control\"\nprotocolSection.armsInterventionsModule.interventions[1].description: \"Pre-oxygenation using non-rebreather mask and apnoeic oxygenation via nasal cannulae at 15L/min\"\nprotocolSection.armsInterventionsModule.interventions[1].name: \"Non-rebreather mask and standard nasal cannula\"\nprotocolSection.armsInterventionsModule.interventions[1].type: \"DEVICE\"\nprotocolSection.conditionsModule.conditions[0]: \"Intubation\"\nprotocolSection.conditionsModule.conditions[1]: \"Oxygen Inhalation Therapy\"\nprotocolSection.conditionsModule.keywords[0]: \"high flow oxygenation, rapid sequence intubation\"\nprotocolSection.contactsLocationsModule.locations[0].city: \"Singapore\"\nprotocolSection.contactsLocationsModule.locations[0].country: \"Singapore\"\nprotocolSection.contactsLocationsModule.locations[0].facility: \"National University Hospital\"\nprotocolSection.contactsLocationsModule.locations[0].geoPoint.lat: 1.28967\nprotocolSection.contactsLocationsModule.locations[0].geoPoint.lon: 103.85007\nprotocolSection.contactsLocationsModule.overallOfficials[0].affiliation: \"National University Hospital, Singapore\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].name: \"Mui Teng Chua, MBBS, MPH\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].role: \"PRINCIPAL_INVESTIGATOR\"\nprotocolSection.descriptionModule.briefSummary: \"Critically ill patients may need support for breathing by means of intubation, which is placement of a breathing tube into the windpipe. Rapid sequence intubation (RSI) is a method commonly used and is performed by administering medications to induce coma and muscle paralysis, followed by intubation to allow the ventilator to provide oxygen into the lungs. This procedure may be filled with potential complications.\"\nprotocolSection.descriptionModule.briefSummary: \"\"\nprotocolSection.descriptionModule.briefSummary: \"During RSI, the patient stops spontaneous breathing after medically induced muscle paralysis occurs. Adequate oxygenation before and during paralysis is crucial to increase the reserves and prolong the time that oxygen levels in the blood remain above 90%, called the safe apnoea period. If the oxygen reserves are insufficient, the blood oxygen level will drop and can lead to permanent brain damage or even death.\"\nprotocolSection.descriptionModule.briefSummary: \"\"\nprotocolSection.descriptionModule.briefSummary: \"This study aims to explore if delivering high-flow humidified oxygen at 60L/min via the nostrils would be superior to current methods of mask ventilation at 15L/min and nasal cannula at 15L/min, before and during paralysis respectively. If successful, this new method would allow for a longer safe apnoeic period and increase the chances for doctors to perform intubation successfully without the blood oxygen dropping below 90%.\"\nprotocolSection.descriptionModule.detailedDescription: \"Maintaining adequate oxygenation during rapid sequence intubation (RSI) is imperative to prevent peri-intubation adverse events that can lead to increased duration of hospital and intensive care unit stay, or prolonged vegetative state requiring long-term institutionalisation.\"\nprotocolSection.descriptionModule.detailedDescription: \"\"\nprotocolSection.descriptionModule.detailedDescription: \"Preliminary data from our emergency department (ED) airway registry revealed that 15% of patients experienced desaturation during intubation despite employing current best practices during RSI. In this multicentre randomised controlled trial in the ED, we aim to test the hypothesis that use of humidified high flow oxygenation via nasal cannula (HFNC) at 60L/min maintains higher oxygen saturation compared with current usual care using non-rebreather mask for preoxygenation and provides superior apnoeic oxygenation compared to the typical practice of 15L/min via standard nasal cannula.\"\nprotocolSection.descriptionModule.detailedDescription: \"\"\nprotocolSection.descriptionModule.detailedDescription: \"The main goal of the study would be to improve on the lowest oxygen saturation during intubation, and thereby increase the safe apnoeic time during RSI. We plan to enrol adult patients who require rapid sequence intubation due to medical, surgical or traumatic conditions in the EDs of National University Hospital and Ng Teng Fong General Hospital.\"\nprotocolSection.descriptionModule.detailedDescription: \"\"\nprotocolSection.descriptionModule.detailedDescription: \"Eligible patients will undergo block randomisation at equal ratio into 2 possible treatment combinations of pre-oxygenation and apnoeic oxygenation. The primary endpoint will be the lowest oxygen saturation achieved from time of administration of paralytic agent until quantitative end-tidal carbon dioxide is detected for the first intubation attempt.\"\nprotocolSection.descriptionModule.detailedDescription: \"\"\nprotocolSection.descriptionModule.detailedDescription: \"Higher failure rates for intubation in unfasted patients in the ED compared to fasted patients in elective settings increase the risk of aspiration if re-oxygenation is required with bag-valve-mask ventilation. Prolongation of safe apnoea time through maintenance of oxygen saturation above 90% using HFNC oxygenation during RSI could potentially change current clinical practice, improve standard of care and translate to better outcomes for patients.\"\nprotocolSection.designModule.designInfo.allocation: \"RANDOMIZED\"\nprotocolSection.designModule.designInfo.interventionModel: \"PARALLEL\"\nprotocolSection.designModule.designInfo.interventionModelDescription: \"This study consists of 2 arms (intervention and control) of parallel design. The intervention arm will receive high flow nasal cannula (HFNC) oxygenation at 60L/min for pre- and apnoeic oxygenation while the control arm will receive pre-oxygenation via non-rebreather mask and apnoeic oxygenation via nasal cannulae at 15L/min.\"\nprotocolSection.designModule.designInfo.maskingInfo.masking: \"NONE\"\nprotocolSection.designModule.designInfo.primaryPurpose: \"TREATMENT\"\nprotocolSection.designModule.enrollmentInfo.count: 192\nprotocolSection.designModule.enrollmentInfo.type: \"ACTUAL\"\nprotocolSection.designModule.phases[0]: \"NA\"\nprotocolSection.designModule.studyType: \"INTERVENTIONAL\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Inclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Adult patients aged 21 years and above, who require RSI due to medical, surgical and traumatic conditions, in the Emergency Departments of NUH and Ng Teng Fong General Hospital (NTFGH)\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Exclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients with \\\"do-not-resuscitate\\\" orders\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Crash, awake or delayed sequence intubations\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients requiring non-invasive positive pressure ventilation\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Cardiac arrest\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Clinical suspicion or confirmed diagnosis of base of skull fractures or severe facial trauma that precludes nasal cannula placement\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Vulnerable patient populations (e.g. pregnant women, prisoners)\"\nprotocolSection.eligibilityModule.healthyVolunteers: false\nprotocolSection.eligibilityModule.maximumAge: \"99 Years\"\nprotocolSection.eligibilityModule.minimumAge: \"21 Years\"\nprotocolSection.eligibilityModule.sex: \"ALL\"\nprotocolSection.eligibilityModule.stdAges[0]: \"ADULT\"\nprotocolSection.eligibilityModule.stdAges[1]: \"OLDER_ADULT\"\nprotocolSection.identificationModule.acronym: \"Pre-AeRATE\"\nprotocolSection.identificationModule.briefTitle: \"Pre- and Apnoeic Oxygenation for RSI in ED\"\nprotocolSection.identificationModule.nctId: \"NCT03396094\"\nprotocolSection.identificationModule.officialTitle: \"Pre- and Apnoeic High Flow Oxygenation for RApid Sequence Intubation in The Emergency Department (Pre-AeRATE): a Multicentre Randomised Controlled Trial\"\nprotocolSection.identificationModule.orgStudyIdInfo.id: \"CNIG17may007\"\nprotocolSection.identificationModule.organization.class: \"OTHER\"\nprotocolSection.identificationModule.organization.fullName: \"National University Hospital, Singapore\"\nprotocolSection.ipdSharingStatementModule.ipdSharing: \"NO\"\nprotocolSection.outcomesModule.primaryOutcomes[0].description: \"Lowest SpO2 achieved during first intubation attempt which is defined as first attempt to insert endotracheal tube into oropharynx\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Lowest SpO2 achieved during first intubation attempt\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"From time of administration of paralytic agent until quantitative ETCO2 is detected post-intubation up to 45 minutes\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].description: \"Number of attempts until successful intubation as indicated by detection of quantitative ETCO2\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].measure: \"Number of attempts at intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].timeFrame: \"Number of attempts required until successful intubation up to 45 minutes or termination of procedure, whichever is earlier\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].description: \"Duration of apnoea where SpO2 remains \u2265 90%\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].measure: \"Safe apnoea time during intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].timeFrame: \"From start of paralysis to time when SpO2 drops to less than 90% up to 45 minutes\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].description: \"Incidence of SpO2 \\\\< 90% during apnoea\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].measure: \"Incidence of SpO2 < 90%\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].timeFrame: \"From start of paralysis to successful intubation up to 45 minutes\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].description: \"Peri-intubation adverse events defined as hypotension, hypertension, tachycardia, bradycardia, regurgitation, aspiration, cardiac arrhythmia, cardiac arrest during RSI, oropharynx or dental trauma\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].measure: \"Peri-intubation adverse events\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].timeFrame: \"From induction to 15 minutes after intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].description: \"Time taken from induction to successful intubation attempt\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].measure: \"Length of time to successful intubation\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].timeFrame: \"From induction until successful intubation as confirmed by detection of quantitative ETCO2 up to 45 minutes\"\nprotocolSection.oversightModule.isFdaRegulatedDevice: false\nprotocolSection.oversightModule.isFdaRegulatedDrug: false\nprotocolSection.oversightModule.oversightHasDmc: true\nprotocolSection.referencesModule.references[0].citation: \"Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.\"\nprotocolSection.referencesModule.references[0].pmid: \"30947740\"\nprotocolSection.referencesModule.references[0].type: \"DERIVED\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[0].class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[0].name: \"Ng Teng Fong General Hospital\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[1].class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[1].name: \"Singapore Clinical Research Institute\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.name: \"National University Hospital, Singapore\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.type: \"SPONSOR\"\nprotocolSection.statusModule.completionDateStruct.date: \"2020-07-31\"\nprotocolSection.statusModule.completionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.expandedAccessInfo.hasExpandedAccess: false\nprotocolSection.statusModule.lastUpdatePostDateStruct.date: \"2021-03-03\"\nprotocolSection.statusModule.lastUpdatePostDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.lastUpdateSubmitDate: \"2021-03-02\"\nprotocolSection.statusModule.overallStatus: \"COMPLETED\"\nprotocolSection.statusModule.primaryCompletionDateStruct.date: \"2020-01-01\"\nprotocolSection.statusModule.primaryCompletionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.startDateStruct.date: \"2018-05-07\"\nprotocolSection.statusModule.startDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.statusVerifiedDate: \"2021-03\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2018-01-10\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2018-01-01\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2018-01-04\"",
+      "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+      "source_version": "sha256:e51ca6166493864bc9503e62254718f1203608d0d4f8857af220695b456c5675",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620": {
+      "end": 4317,
+      "end_line": 154,
+      "handle": "eh_aa0959ca65cd511c",
+      "identity": "sha256:aa0959ca65cd511cf917d715987f335642b40b26a3e6aca0b7a1a902cd3d8620",
+      "kind": "narrative",
+      "page": 8,
+      "quote": "The Pre-AeRATE trial-Mui Teng Chua et al.\nAnn Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\n156\nTable 2. Study outcomes at intubation\nIntention-to-treat analysis\nPer-protocol analysis\nCharacteristic\nIntervention\n(n=97)\nControl\n(n=93)\nIntervention\n(n=86)\nControl\n(n=91)\nLowest SpO2 during first attempt, %\nMedian (Q1, Q3)\n100.0 (96.0, 100.0)\n100.0 (91.0, 100.0)\n100.0 (99.0, 100.0)\n100.0 (91.0, 100.0)\nMedian diff (95% CI) [P value]\n0 (0-4.0) [0.138a]\n0 (0-1.0) [0.061a]\nLowest SpO2 during all intubation attempts, %\nMedian (Q1, Q3)\n100.0 (96.0, 100.0)\n100.0 (90.5, 100.0)\n100.0 (99.0, 100.0)\n100.0 (91.0, 100.0)\nMedian diff (95% CI) [P value]\n0 (0-4.0) [0.072a]\n0 (0-2.5) [0.029a]\nChange in SpO2 from baseline to end of preoxygenation, %\nMedian (Q1, Q3)\n0.5 (0, 3.5)\n1.0 (0, 5.0)\n0 (0, 3.0)\n1.0 (0, 5.0)\nMedian diff (95% CI) [P value]\n-0.5 (-2.0-1.0) [0.633a]\n-1.0 (-2.0-1.0) [0.500a]\nChange in SpO2 from end of preoxygenation to the lowest SpO2 during all intubation attempts, %\nMedian (Q1, Q3)\n0 (-2.0, 0)\n0 (-8.0, 0)\n0 (-1.0, 0)\n0 (-6.0, 0)\nMedian diff (95% CI) [P value]\n0 (0-1.0) [0.094a]\n0 (0-0.5) [0.029a]\nNumber of intubation attempts, no. (%)\n1\n80 (82.5)\n78 (83.9)\n72 (83.7)\n76 (83.5)\n2\n14 (14.4)\n9 (9.7)\n11 (12.8)\n9 (9.9)\n\u22653\n3 (3.1)\n6 (6.5)\n3 (3.5)\n6 (6.6)\nP value\n0.439b\n0.648b\nIncidence of SpO2 <90%, no. (%)\nAt first attempt\n15 (15.5)\n21 (22.6)\n10 (11.6)\n19 (20.9)\nAdj RR (95% CI) [P value]\n0.68 (0.37-1.25) [0.213]\n0.55 (0.27-1.10) [0.084]\nAt any attempt\n15 (15.5)\n22 (23.7)\n10 (11.6)\n20 (22.0)\nAdj RR (95% CI) [P value]\n0.65 (0.36-1.19) [0.156]\n0.52 (0.26-1.04) [0.057]\nSafe apnoea time, min\nMedian (95% CI)\n10.0 (8.0-U)\n7.0 (5.5-12.0)\n11.0 (8.0-U)\n7.0 (6.0-12.0)\nHR (95% CI)\n0.57 (0.28-1.12)\n0.48 (0.22-1.05)\nP value\n0.082c\n0.104d\n0.050c\n0.066d\nTime to successful intubation, min\nMedian (95% CI)\n3.0 (3.0-4.0)\n3.5 (3.0-4.0)\n3.0 (3.0-4.0)\n3.0 (3.0-4.0)\nHR (95% CI)\n0.98 (0.73-1.30)\n1.00 (0.74-1.34)\nP value\n0.842c\n0.866d\n0.940c\n0.983d\nAdj RR: adjusted relative risk; CI: confidence interval; HR: hazard ratio; Median diff: median difference; U: unable to be estimated; Q1: 25th percentile;\nQ3: 75th percentile; SD: standard deviation; SpO2: oxygen saturation\na P value from van Elteren test\nb P value from chi-square test or Fisher's Exact test if more appropriate\nc P value from stratified log-rank test\nd P value from chi-square test of hazard ratio\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|Column 5|Column 6|\n|---|---|---|---|---|---|\n|Lowest SpO during first attempt, %<br>2||||||\n|Median (Q1, Q3) 100.0 (96.0, 100.0) 100.0 (91.0, 100.0) 100.0 (99.0, 100.0) 100.0 (91.0, 100.0)||||||\n|Median diff (95% CI) [P value]|0 (0-4.0) [0.138a]|||0 (0-1.0) [0.061a]||\n|Lowest SpO during all intubation attempts, %<br>2||||||\n|Median (Q1, Q3)|100.0 (96.0, 100.0)|100.0 (90.5, 100.0)||100.0 (99.0, 100.0)|100.0 (91.0, 100.0)|\n|Median diff (95% CI) [P value] 0 (0-4.0) [0.072a] 0 (0-2.5) [0.029a]||||||\n|Change in SpO from baseline to end of preoxygenation, %<br>2||||||\n|Median (Q1, Q3) 0.5 (0, 3.5) 1.0 (0, 5.0) 0 (0, 3.0) 1.0 (0, 5.0)||||||\n|Median diff (95% CI) [P value]|-0.5 (-2.0-1.0) [0.633a]|||-1.0 (-2.0-1.0) [0.500a]||\n|Change in SpO from end of preoxygenation to the lowest SpO during all intubation attempts, %<br>2 2||||||\n|Median (Q1, Q3)|0 (-2.0, 0)|0 (-8.0, 0)||0 (-1.0, 0)|0 (-6.0, 0)|\n|Median diff (95% CI) [P value] 0 (0-1.0) [0.094a] 0 (0-0.5) [0.029a]||||||\n|Number of intubation attempts, no. (%)||||||\n|1 80 (82.5) 78 (83.9) 72 (83.7) 76 (83.5)||||||\n|2|14 (14.4)|9 (9.7)||11 (12.8)|9 (9.9)|\n|\u22653 3 (3.1) 6 (6.5) 3 (3.5) 6 (6.6)||||||\n|P value|0.439b|||0.648b||\n|Incidence of SpO <90%, no. (%)<br>2||||||\n|At first attempt|15 (15.5)|21 (22.6)||10 (11.6)|19 (20.9)|\n|Adj RR (95% CI) [P value] 0.68 (0.37-1.25) [0.213] 0.55 (0.27-1.10) [0.084]||||||\n|At any attempt|15 (15.5)|22 (23.7)||10 (11.6)|20 (22.0)|\n|Adj RR (95% CI) [P value] 0.65 (0.36-1.19) [0.156] 0.52 (0.26-1.04) [0.057]||||||\n|Safe apnoea time, min||||||\n|Median (95% CI) 10.0 (8.0-U) 7.0 (5.5-12.0) 11.0 (8.0-U) 7.0 (6.0-12.0)||||||\n|HR (95% CI)|0.57 (0.28-1.12)|||0.48 (0.22-1.05)||\n|P value 0.082c 0.104d 0.050c 0.066d||||||\n|Time to successful intubation, min||||||\n|Median (95% CI) 3.0 (3.0-4.0) 3.5 (3.0-4.0) 3.0 (3.0-4.0) 3.0 (3.0-4.0)||||||\n|HR (95% CI)|0.98 (0.73-1.30)|||1.00 (0.74-1.34)||",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "bceb9b3ce58a21ae14d9a14927331c67368b5f0f81ca68a06b6b22b08595af19": {
+      "end": 3821,
+      "end_line": 53,
+      "handle": "eh_bceb9b3ce58a21ae",
+      "identity": "sha256:bceb9b3ce58a21ae14d9a14927331c67368b5f0f81ca68a06b6b22b08595af19",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "Ann Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\nPre- and apnoeic high-flow oxygenation for rapid sequence intubation\nin the emergency department (the Pre-AeRATE trial): A multicentre\nrandomised controlled trial\nMui Teng Chua 1,2MPH, Wei Ming Ng 3,4MMed (EM), Qingshu Lu 5,6PhD, Matthew Jian Wen Low 1,2MBBS,\nAmila Punyadasa 2,7,8MMed (EM), Matthew Edward Cove 9,10MB ChB, Ying Wei Yau 1,2MCI,\nFaheem Ahmed Khan 3,11FFICM, Win Sen Kuan 1,2MCI\n1 Emergency Medicine Department, National University Hospital, Singapore\n2 Department of Surgery, Yong Loo Lin School of Medicine, National University of Singapore, Singapore\n3 Emergency Department, Ng Teng Fong General Hospital, Singapore\n4 Unit for Pre-hospital Emergency Care, Ministry of Health, Singapore\n5 Singapore Clinical Research Institute, Singapore\n6 Centre for Quantitative Medicine, Duke-NUS Medical School, Singapore\n7 Emergency Department, National Healthcare Group, Woodlands Health Campus, Singapore\n8 Lee Kong Chian School of Medicine, Nanyang Technological University, Singapore\n9 Division of Respiratory and Critical Care Medicine, Department of Medicine, National University Hospital, Singapore\n10 Department of Medicine, Yong Loo Lin School of Medicine, National University of Singapore, Singapore\n11 Department of Intensive Care Medicine, Ng Teng Fong General Hospital, Singapore\nCorrespondence: Dr Mui Teng Chua, Emergency Medicine Department, National University Hospital, 9 Lower Kent Ridge Road, Level 4, Singapore 119085.\nEmail: mui_teng_chua@nuhs.edu.sg\nORIGINAL ARTICLE\nABSTRACT\nIntroduction: Evidence regarding the efficacy of high-flow nasal cannula (HFNC) oxygenation for\npreoxygenation and apnoeic oxygenation is conflicting. Our objective is to evaluate whether HFNC\noxygenation for preoxygenation and apnoeic oxygenation maintains higher oxygen saturation (SpO2)\nduring rapid sequence intubation (RSI) in ED patients compared to usual care.\nMethods: This was a multicentre, open-label, randomised controlled trial in adult ED patients\nrequiring RSI. Patients were randomly assigned 1:1 to either intervention (HFNC oxygenation at\n60L/min) group or control (non-rebreather mask for preoxygenation and nasal prongs of at least 15L/\nmin oxygen flow for apnoeic oxygenation) group. Primary outcome was lowest SpO2 during the first\nintubation attempt. Secondary outcomes included incidence of SpO2 falling below 90% and safe\napnoea time.\nResults: One hundred and ninety patients were included, with 97 in the intervention and 93 in the\ncontrol group. Median lowest SpO2 during the first intubation attempt was 100% in both groups. Incidence\nof SpO2 falling below 90% was lower in the intervention group (15.5%) compared to the control group\n(22.6%) (adjusted relative risk=0.68, 95% confidence interval [CI] 0.37-1.25). Post hoc quantile\nregression analysis showed that the first quartile of lowest SpO2 during the first intubation attempt\nwas greater by 5.46% (95% CI 1.48-9.45, P=0.007) in the intervention group.\nConclusions: Use of HFNC for preoxygenation and apnoeic oxygenation, when compared to usual\ncare, did not improve lowest SpO2 during the first intubation attempt but may prolong safe apnoea time.\nAnn Acad Med Singap 2022;51:149-60\nKeywords: Airway management, apnoeic oxygenation, high-flow nasal oxygenation, preoxygenation,\nrapid sequence intubation\nAnn Acad Med Singap 2022;51:149-60\nhttps://doi.org/10.47102/annals-acadmedsg.2021407\nINTRODUCTION\nCritically ill patients in the emergency department (ED)\nhave shorter safe apnoea times due to physiological\ndistress from decreased cardiac output, increased\nshunting and reduced pulmonary reserves.1 Hypoxia is\na commonly encountered adverse event during rapid\nsequence intubation (RSI)2 and is associated with\ncardiac arrest, neurological injury and death.3 Therefore,",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "c846e002d44ceb42ca069618511ef4d609d84828072bf9fa868d71a89987abdc": {
+      "end": 5502,
+      "end_line": 105,
+      "handle": "eh_c846e002d44ceb42",
+      "identity": "sha256:c846e002d44ceb42ca069618511ef4d609d84828072bf9fa868d71a89987abdc",
+      "kind": "narrative",
+      "page": 10,
+      "quote": "The Pre-AeRATE trial-Mui Teng Chua et al.\nAnn Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\n158\nin improving lowest SpO2 during intubation.8,35 These\nnegative findings could be a result of study procedural\nlimitations. In both studies, oxygen flow at 15L/min was\ndelivered through standard NC that are not designed for\nsuch flows. Additionally, a flow of at least 30L/min is\nnecessary before positive airway pressures could be\ngenerated.36 By using an HFNC device that can deliver\nup to 60L/min of high-flow oxygenation and that is\nspecifically designed for this purpose, we were able to\novercome these limitations. We showed a lower risk of\nSpO2 falling below 90% in the intervention group at\nthe first and any attempt, and safe apnoea time was\nprolonged by at least 3 minutes (Table 1). Despite\nlack of statistical significance, this could be clinically\nsignificant for 2 reasons. First, an SpO2 of 90%\nrepresents the beginning of the steep down-sloping\ngradient of the oxygen dissociation curve, whereby\nsmall changes in the arterial partial pressure of oxygen\n(PaO2) result in large changes in haemoglobin oxygen\nbinding capacity.37 Second, an ill average-sized adult\ncould reach an SpO2 of less than 60% in under 2 minutes\nonce SpO2 drops to 90%.31 Hence, prolonging safe\napnoea time is of utmost importance.\nPre-AeRATE has several strengths. First, this is the\nonly randomised controlled trial to-date evaluating\nHFNC use for RSI in ED, in Singapore. Second, to our\nknowledge, this is also the largest trial (190 patients\nanalysed) comparing HFNC with standard oxygen\ntherapy during the peri-intubation period in any clinical\nsetting, in Singapore.13,14,24,38,39 Third, we conducted a\npost hoc analysis employing a quantile regression\nanalysis as an endpoint due to the skewed distribution\nin such studies and in our cohort (Fig. 2), where a\nminority would experience much greater desaturation.40\nThis allowed us to generate a hypothesis on the\nusefulness of HFNC on these patients in extremis. Despite\nsimilar decrease in median SpO2 between the interven-\ntion and control arms, safe apnoeic time was noted to\nbe prolonged by HFNC use. Fourth, this pragmatic trial\nreflects real-world conditions, and shows the plausibility\nof using HFNC for a time-sensitive procedure in ED\nand in patients with high aspiration risk, such as trauma\nwith bloody airways and depressed consciousness.\nLimitations\nThis trial has its limitations. First, the time-sensitive\nnature of RSI precluded measurements of PaO2 in our\nprotocol, thereby rendering stratification of severity\nbased on hypoxaemia impossible. SpO2 was used as\nan endpoint instead, as it is a ubiquitous non-invasive\nclinical parameter that allows better external validity.\nSecond, it was impracticable to blind patients and\nED clinical staff due to the nature of the intervention.\nHowever, objective measurements of SpO2 by 2 separate\ndevices and blinding of the ICU teams to study allocation\nmade biasing of results unlikely. Third, consecutive\nrecruitment was not possible due to clinicians focusing\non resuscitation in the fast-paced ED environment.\nFourth, although we included patients requiring RSI\ndue to any indication, our eventual cohort comprised\n42.1% of neurological conditions (intracranial\nhaemorrhage and seizures) and may under-represent\nthose with predominantly cardiorespiratory compromise,\nwho could provide greater physiological insight. As\nthis trial was designed to be pragmatic, we did not\nspecify strict inclusion criteria due to indications for\nintubation. The observation of more than 50% of\npatients in each treatment group maintaining SpO2\nat 100% during the first intubation attempt may be\nattributed to better cardiorespiratory reserves and low\nrisk of desaturation in patients with predominant\nneurological conditions. By performing post hoc\nregression analysis of the first quartile of lowest SpO2,\nwe were able to evaluate the treatment effect on patients\nin physiological extremis who had higher desaturation\nrisk (compared to the general study population).\nAlthough the intervention group comprised a slightly\nhigher proportion of neurological conditions by chance,\nthis difference was not statistically significant. Lastly,\ngiven our primary endpoint was to evaluate the lowest\nSpO2 achieved, the study was not powered to make\nmeaningful conclusions regarding patient-oriented\noutcomes such as mortality or length of ICU stay. Future\nstudies should focus on such endpoints, other long-term\noutcomes and evaluate the cost-effectiveness of using\nHFNC during the peri-intubation period.\nCONCLUSION\nWe found that HFNC use for preoxygenation and\napnoeic oxygenation, when compared to usual care, did\nnot show improvement in median lowest SpO2 achieved\nduring the first intubation attempt. However, such HFNC\nuse may prolong safe apnoea time. Our study showed\nthat patients without neurological indications for\nintubation were likely to desaturate faster, or have a\nmore challenging intubation, and may benefit from the\nlonger apnoea time that HFNC provides.\nDisclosure\nDr Mui Teng Chua received the Clinician Scientist Individual Research\nGrant, New Investigator Grant from National Medical Research Council,\nSingapore for the conduct of this investigator-initiated trial. The grant\nwas paid directly to the institution for conduct of this trial. The study\nfunder has no role or authority in study design; collection, management,\nanalysis, and interpretation of data; writing of the report; or the decision",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "ea82a191035c8552da505d5cad03c9f0573ecb55f4d12b0538c1f6760b9316b6": {
+      "end": 3908,
+      "end_line": 132,
+      "handle": "eh_ea82a191035c8552",
+      "identity": "sha256:ea82a191035c8552da505d5cad03c9f0573ecb55f4d12b0538c1f6760b9316b6",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "The Pre-AeRATE trial-Mui Teng Chua et al.\nAnn Acad Med Singap Vol 51 No 3 March 2022 | annals.edu.sg\n154\n(Table 2 and Fig. 2). Comparison of lowest SpO2\nbetween the 2 groups using the stratified Mann-\nWhitney U test provided P values of 0.138 and 0.061\nin ITT and PP populations, respectively (Table 2). A\npost hoc quantile regression analysis of the first quartile\nof lowest SpO2 (adjusted for indication for intubation,\npotential airway difficulty and baseline SpO2) estimated\na difference of 5.5% (95% CI 1.5-9.5, P=0.007)\nin first quartile between the 2 groups (online\nSupplementary Table 4). Outcomes were comparable\nbetween groups with respect to number of intubation\nattempts and time to successful intubation. Most\npatients were successfully intubated at first attempt\n(intervention group 80/97 [82.5%] versus control\ngroup 78/93 [83.9%]). Median time from induction to\nsuccessful intubation was 3.0 minutes in the intervention\ngroup and 3.5 minutes in the control group (Table 2).\nTreatment in intervention group reduced the risk of\nSpO2 falling below 90% by at least 30% during the\nfirst intubation attempt and any attempt (adjusted RRs\nTable 1. Demographics, baseline characteristics and airway features (Cont'd)\nIntervention\n(n=97)\nControl\n(n=93)\nTotal\n(N=190)\nMouth opening, no. (%)\nNormal (\u22653 fingerbreadths)\n45 (46.4)\n36 (38.7)\n81 (42.6)\nReduced (1 or 2 fingerbreadths)\n25 (25.8)\n32 (34.4)\n57 (30.0)\nNot assessed\n27 (27.8)\n25 (26.9)\n52 (27.4)\nThyromental distance (fingerbreadth), no. (%)\n1\n3 (3.1)\n1 (1.1)\n4 (2.1)\n2\n33 (34.0)\n37 (39.8)\n70 (36.8)\n3\n38 (39.2)\n41 (44.1)\n79 (41.6)\n\u22654\n2 (2.1)\n2 (2.2)\n4 (2.1)\nNot assessed\n21 (21.6)\n12 (12.9)\n33 (17.4)\nCormack-Lehane classification of laryngeal view, no. (%)\nGrade 1\n50 (51.5)\n52 (56.5)\n102 (54.0)\nGrade 2\n36 (37.1)\n31 (33.7)\n67 (35.4)\nGrade 3\n8 (8.2)\n9 (9.8)\n17 (9.0)\nGrade 4\n3 (3.1)\n0 (0)\n3 (1.6)\nType of laryngoscope, no. (%)\nDirect\n9 (9.3)\n5 (5.4)\n14 (7.4)\nVideo\n88 (90.7)\n88 (94.6)\n176 (92.6)\nCOPD: chronic obstructive pulmonary disease; ICH: intracranial haemorrhage; Q1: 25th percentile; Q3: 75th percentile; SAH: subarachnoid haemorrhage;\nSDH: subdural haemorrhage\nAdditional baseline demographics are presented in online Supplementary Table 1.\n0.55, P=0.084; 0.52, P=0.057 in first and any attempt in\nthe PP population; and adjusted RRs 0.68, P=0.213; 0.65,\nP=0.156 in first and any attempt in the ITT population).\nMedian safe apnoea time was prolonged by 3.0 minutes\nin the intervention group (10 minutes) compared to the\ncontrol group (7 minutes), with HR of SpO2 falling\nbelow 90% = 0.57 (95% CI 0.28-1.12, P=0.104).\nIncidences of ventilator-associated pneumonia and\naspiration pneumonia were comparable between both\ngroups (22.6% vs 22.7%). The treatment in the\nintervention group did not affect other clinical outcomes\n(Table 3). Seventeen (18.5%) patients in the intervention\ngroup and 13 (13.3%) patients in the control group\nexperienced peri-intubation AE (Table 3).\nDISCUSSION\nIn our cohort, SpO2 was maintained at 100% in more\nthan 50% of patients in both groups. Use of HFNC\ncompared with routine care did not show any statistically\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|\n|---|---|---|---|\n|Mouth opening, no. (%)||||\n|Normal (\u22653 fingerbreadths) 45 (46.4) 36 (38.7) 81 (42.6)||||\n|Reduced (1 or 2 fingerbreadths)|25 (25.8)|32 (34.4)|57 (30.0)|\n|Not assessed 27 (27.8) 25 (26.9) 52 (27.4)||||\n|Thyromental distance (fingerbreadth), no. (%)||||\n|1 3 (3.1) 1 (1.1) 4 (2.1)||||\n|2|33 (34.0)|37 (39.8)|70 (36.8)|\n|3 38 (39.2) 41 (44.1) 79 (41.6)||||\n|\u22654|2 (2.1)|2 (2.2)|4 (2.1)|\n|Not assessed 21 (21.6) 12 (12.9) 33 (17.4)||||\n|Cormack-Lehane classification of laryngeal view, no. (%)||||\n|Grade 1 50 (51.5) 52 (56.5) 102 (54.0)||||\n|Grade 2|36 (37.1)|31 (33.7)|67 (35.4)|\n|Grade 3 8 (8.2) 9 (9.8) 17 (9.0)||||\n|Grade 4|3 (3.1)|0 (0)|3 (1.6)|\n|Type of laryngoscope, no. (%)||||\n|Direct|9 (9.3)|5 (5.4)|14 (7.4)|",
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_version": "sha256:59bf333595cd895ed357b4ee48b3bb409aa6319a3299ab776f68df9156485747",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "chua-2022"
+    },
+    "f72575b4a34c623a98e8860a10db5692aa1137774e9903d27b7dae271d1c1b72": {
+      "end": 1467,
+      "end_line": 133,
+      "handle": "eh_f72575b4a34c623a",
+      "identity": "sha256:f72575b4a34c623a98e8860a10db5692aa1137774e9903d27b7dae271d1c1b72",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "FiO2 used, before randomisation\n\n\n\nMedian (Q1, Q3)\n0.70 (0.21, 0.70)\n0.51 (0.21, 0.70)\n0.70 (0.21, 0.70)\n\n\n\n\nOxygenation device before\npreoxygenation, n (%)\n\n\n\nRoom air\n28 (28.9)\n28 (30.4)\n56 (29.6)\nNasal prongs\n14 (14.4)\n10 (10.9)\n24 (12.7)\nFace mask\n0 (0.0)\n6 (6.5)\n6 (3.2)\nVenturi mask\n3 (3.1)\n4 (4.3)\n7 (3.7)\nNon-rebreather mask\n52 (53.6)\n44 (47.8)\n96 (50.8)\n\n\n\n\nOxygenation device different from\nallocated arm, n (%)\n6 (6.2)\n4 (4.3)\n10 (5.3)\n\n\n\n\nSpO2 before preoxygenation (%)\nn=96\nn=92\nn=188\nMedian (Q1, Q3)\n99.0 (95.5, 100.0)\n99.0 (95.0, 100.0)\n99.0 (95.0, 100.0)\n\n\n\n\nSpO2 at the end of preoxygenation (%)\nn=97\nn=93\nn=190\nMedian (Q1, Q3)\n100.0 (100.0, 100.0) 100.0 (100.0, 100.0) 100.0 (100.0, 100.0)\n\n\n\n\nFiO2: fraction of inspired oxygen; Q1: 25th percentile; Q3: 75th percentile.",
+      "source_id": "source_a3af7cb76242001e4ceef561ecc71d69c7408b008293bd7baf6b0ae5f2dfa7b2",
+      "source_version": "sha256:b0cc7bcd64b683bd3e18b1c9e3f3e686e34baf99b0c4ef119a9e008a5f879804",
+      "start": 679,
+      "start_line": 61,
+      "trial_id": "chua-2022"
+    },
+    "fc8fd85700cecbdf6fa42722fb515c3d165fb2c88f72dc34c37b8993713efac7": {
+      "delivery_receipt": "sha256:bdc1ae752de8a06784acacc7ddef3674a82db375ced5ed113f1a3571ec577a9f",
+      "handle": "eh_fc8fd85700cecbdf",
+      "identity": "sha256:fc8fd85700cecbdf6fa42722fb515c3d165fb2c88f72dc34c37b8993713efac7",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.075,
+        0.105,
+        0.925,
+        0.244
+      ],
+      "render": {
+        "identity": "sha256:abc49beb56eb31ffd9a20a7e5f74884a41285af810666a060eed42c3c90bda8d",
+        "page": 8,
+        "png_sha256": "sha256:bcf65f02251b2eba71eb30b3cfd079c891445c5e698b0c53a83c5272d5ded26f",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3"
+      },
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "transcription": "Table 2. Study outcomes at intubation. Intention-to-treat analysis: Intervention (n=97), Control (n=93). Per-protocol analysis: Intervention (n=86), Control (n=91). Characteristic: Lowest SpO2 during first attempt, %. Median (Q1, Q3): ITT Intervention 100.0 (96.0, 100.0); ITT Control 100.0 (91.0, 100.0); PP Intervention 100.0 (99.0, 100.0); PP Control 100.0 (91.0, 100.0). Median diff (95% CI) [P value]: ITT 0 (0\u20134.0) [0.138 superscript a]; PP 0 (0\u20131.0) [0.061 superscript a].",
+      "trial_id": "chua-2022",
+      "uncertainty": "Footnote a outside selected region is read separately on this page: P value from van Elteren test."
+    }
+  },
+  "source_and_guidance_access": [
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://guidance/SKILL"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          4,
+          5,
+          6
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          7,
+          8,
+          9
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          10,
+          11,
+          12
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "windows": [
+          {
+            "source_id": "sh_ffc67037a8e93118",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 250
+          },
+          {
+            "source_id": "sh_e7e6ca446bf5c324",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 200
+          },
+          {
+            "source_id": "sh_b49999b30d45c3a1",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 200
+          },
+          {
+            "source_id": "sh_b49999b30d45c3a1",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 200
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "windows": [
+          {
+            "source_id": "sh_b49999b30d45c3a1",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 49
+          },
+          {
+            "source_id": "sh_a3af7cb76242001e",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 220
+          },
+          {
+            "source_id": "sh_937c1c8b38e7b34f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 200
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "page": 8
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "page": 8
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          4,
+          5,
+          6
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          7,
+          8,
+          9
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "pages": [
+          10,
+          11,
+          12
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.19055d3e1ce0452f9a0993ab0ee3f3ff.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.19055d3e1ce0452f9a0993ab0ee3f3ff.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.19055d3e1ce0452f9a0993ab0ee3f3ff.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ffc67037a8e93118",
+        "pages": [
+          1
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "acquire_companion_source",
+      "arguments": {
+        "expected_revision": 4,
+        "reference": {
+          "trial_id": "chua-2022",
+          "source_id": "sh_ffc67037a8e93118",
+          "page": 1,
+          "citation": "protocolSection.referencesModule.references[0].citation: \"Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.\"",
+          "locator": "10.1186/s13063-019-3305-8",
+          "locator_kind": "doi",
+          "requested_role": "protocol",
+          "registry_id": "NCT03396094",
+          "linkage_rationale": "Protocol explicitly cited by registry and main report, potentially resolves endpoint and analysis history; match applicability and distinguish publication date from pre-unblinding finalization."
+        }
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.8cce8a6a0a624e098d930e6dc9d62471.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.8cce8a6a0a624e098d930e6dc9d62471.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.8cce8a6a0a624e098d930e6dc9d62471.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.8cce8a6a0a624e098d930e6dc9d62471.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.8cce8a6a0a624e098d930e6dc9d62471.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "windows": [
+          {
+            "source_id": "sh_b49999b30d45c3a1",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 144
+          },
+          {
+            "source_id": "sh_b49999b30d45c3a1",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 35
+          },
+          {
+            "source_id": "sh_a3af7cb76242001e",
+            "page": 1,
+            "start_line": 61,
+            "end_line": 133
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5d4a3ab4a11e4ecabce46612670a01fd.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5d4a3ab4a11e4ecabce46612670a01fd.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5d4a3ab4a11e4ecabce46612670a01fd.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5d4a3ab4a11e4ecabce46612670a01fd.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "source_id": "sh_ab74cf546ed17772",
+        "page": 4
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:measurement"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.a2934aecb7a84da99fbe58b2dd58c305.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.a2934aecb7a84da99fbe58b2dd58c305.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.a2934aecb7a84da99fbe58b2dd58c305.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.a2934aecb7a84da99fbe58b2dd58c305.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.698632d7195f4783911540d91c79109c.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.698632d7195f4783911540d91c79109c.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "query": "analysis plan",
+        "mode": "phrase",
+        "purpose_domain_id": "domain:selection",
+        "purpose_question_id": "sq:selection:prespecified-analysis"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.698632d7195f4783911540d91c79109c.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.698632d7195f4783911540d91c79109c.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "windows": [
+          {
+            "source_id": "sh_e7e6ca446bf5c324",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 82
+          },
+          {
+            "source_id": "sh_ffc67037a8e93118",
+            "page": 1,
+            "start_line": 87,
+            "end_line": 135
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.698632d7195f4783911540d91c79109c.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "chua-2022",
+        "windows": [
+          {
+            "source_id": "sh_ffc67037a8e93118",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 28
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "acquire_companion_source",
+      "arguments": {
+        "expected_revision": 9,
+        "reference": {
+          "trial_id": "chua-2022",
+          "source_id": "sh_ffc67037a8e93118",
+          "page": 1,
+          "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_000.pdf\"",
+          "locator": "Prot_000.pdf",
+          "locator_kind": "url",
+          "registry_id": "NCT03396094",
+          "requested_role": "protocol",
+          "linkage_rationale": "Exact protocol filename in captured verified registry; inspect contents and dates if acquisition succeeds. This is current augmentation, not historical capture."
+        }
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 65,
+    "tokens": {
+      "input_tokens": 7411367,
+      "cached_input_tokens": 7072640,
+      "output_tokens": 19004,
+      "reasoning_output_tokens": 1313
+    },
+    "dollars": null
+  },
+  "review_focus": "Assess exact target/result matching and source entailment, official interpretation, material mechanisms and warranted uncertainty. Identify material defects with locators; do not score preferred labels.",
+  "raw_seal": "diagnostics/final-medium-verifier-cutover-20261006/cases/chua-2022/scientific-review-seal"
+}

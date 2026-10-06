@@ -12,7 +12,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fastmcp import Client
 
@@ -35,6 +35,143 @@ def _proposal_receipt_key(workspace: Path, request: dict[str, object]) -> tuple[
     return str(workspace), json.dumps(request, sort_keys=True, default=str)
 
 
+def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
+    """Translate durable draft fixtures to the separated public submission shape."""
+    result = dict(arguments)
+    answers = []
+    for original in result["answers"]:
+        answer = dict(original)
+        bases = []
+        limitations = list(answer.get("limitations", []))
+        searches = list(answer.get("absence_searches", []))
+        for index, basis in enumerate(answer.get("bases", [])):
+            if not isinstance(basis, dict) or "source_id" in basis:
+                bases.append(basis)
+                continue
+            if basis.get("kind") == "limitation":
+                limitations.append(
+                    {
+                        ("premise" if key == "unresolved_premise" else key): value
+                        for key, value in basis.items()
+                        if key != "kind"
+                    }
+                )
+            elif basis.get("kind") == "absence":
+                searches.append(basis["search_receipt"])
+            else:
+                bases.append(
+                    {("role" if key == "kind" else key): value for key, value in basis.items()}
+                )
+        answer["bases"] = bases
+        if limitations:
+            answer["limitations"] = limitations
+        if searches:
+            answer["absence_searches"] = searches
+        if isinstance(answer.get("counterevidence"), list):
+            answer["counterevidence"] = [
+                {
+                    "evidence": [original["bases"][item["basis_index"]]["evidence"]],
+                    "implication": item["implication"],
+                }
+                if isinstance(item, dict) and "basis_index" in item
+                else item
+                for item in answer["counterevidence"]
+            ]
+        answers.append(answer)
+    result["answers"] = answers
+    return result
+
+
+def _public_result(result: dict[str, Any]) -> dict[str, Any]:
+    """Translate internal fixture cards to the public scientific-input contract."""
+    if result.get("kind") != "assessable":
+        return {key: value for key, value in result.items() if key != "kind"}
+    target, reported = result["target"], result["reported"]
+    design = result.get("applicability", {})
+    value = {
+        "trial_id": result["trial_id"],
+        "relation": result["relation"],
+        "relation_rationale": result["relation_rationale"],
+        "design": design.get("design", "unclear"),
+        "design_rationale": design.get("rationale", "Design unresolved"),
+        "design_evidence": design.get("evidence", []),
+        "target_measurement": target["measurement"]["method"],
+        "target_window": target["time_point_or_window"]["description"],
+        "comparison_groups": target["comparison_groups"],
+        "baseline_subgroup": target["baseline_subgroup"],
+        "intended_effect_measure": target["intended_effect_measure"],
+        "reported_outcome": reported["endpoint"]["name"],
+        "reported_definition": reported["endpoint"].get("definition"),
+        "analysis_population": reported["analysis_population"],
+    }
+    for key in ("clarity", "passage_refs"):
+        if key in result:
+            value[key] = result[key]
+    evidence = result.get("evidence", [])
+    simple = [item["handle"] for item in evidence if item["kind"] in {"narrative", "figure"}]
+    if simple:
+        value["passage_refs"] = list(dict.fromkeys([*value.get("passage_refs", []), *simple]))
+    advanced = [item for item in evidence if item["kind"] not in {"narrative", "figure"}]
+    if advanced:
+        value["evidence"] = advanced
+    for key in ("effect_measure", "estimate", "precision", "group_values"):
+        if key in reported:
+            value[key] = reported[key]
+    if reported["form"] == "single_group_category_profile":
+        value.update(
+            category_group_id=reported["group_id"],
+            category_denominator=reported["denominator_basis"],
+            category_axis_names=reported["category_axis_names"],
+            categories=reported["categories"],
+        )
+    if target["time_point_or_window"]["kind"] == "quantified":
+        value["target_time_value"] = target["time_point_or_window"]["value"]
+        value["target_time_unit"] = target["time_point_or_window"]["unit"]
+    return value
+
+
+def _public_proposal_records(
+    results: list[dict[str, Any]], assessments: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
+    """Translate internal test fixtures, never live model requests."""
+    assessments = _proposal_assessments(results) if assessments is None else assessments
+    by_trial = {item["trial_id"]: item for item in assessments}
+    selections = []
+    for result in results:
+        public = _public_result(result)
+        assessment = cast(dict[str, Any], by_trial.get(result["trial_id"], {}))
+        candidate = None if "missing_facts" in public else public
+        scope = (
+            public.get("relation_rationale")
+            or assessment.get("scope_justification")
+            or assessment.get("missing_fact_justification")
+            or "Missing Result facts"
+        )
+        passages = list(
+            dict.fromkeys([*public.get("passage_refs", []), *assessment.get("evidence_basis", [])])
+        )
+        if candidate is not None:
+            candidate = {
+                key: value
+                for key, value in candidate.items()
+                if key not in {"trial_id", "relation", "relation_rationale", "passage_refs"}
+            }
+        selections.append(
+            {
+                "trial_id": result["trial_id"],
+                "relation": public["relation"],
+                "candidate": candidate,
+                "scope_rationale": scope,
+                "population_rationale": assessment.get("population_justification"),
+                "source_passages": passages,
+                "missing_facts": public.get("missing_facts", []),
+                "unknowns": assessment.get("unknowns", []),
+                "counterevidence": assessment.get("counterevidence", []),
+            }
+        )
+    return {"selections": selections}
+
+
 def _call(
     workspace: Path,
     tool: str,
@@ -50,7 +187,9 @@ def _call(
                 and "cursor" not in arguments
                 and "max_response_bytes" not in arguments
             )
-            request = dict(arguments)
+            request: dict[str, Any] = (
+                _domain_submission(arguments) if tool == "save_domain_judgment" else dict(arguments)
+            )
             if not _raw and tool == "save_proposal" and "results" in request:
                 cache_key = _proposal_receipt_key(workspace, request)
                 cached = _PROPOSAL_RECEIPTS.get(cache_key)
@@ -58,8 +197,7 @@ def _call(
                     reasoned = await client.call_tool(
                         "validate_proposal",
                         {
-                            "results": request["results"],
-                            "assessments": _proposal_assessments(request["results"]),
+                            **_public_proposal_records(request["results"]),
                             "expected_revision": request["expected_revision"],
                         },
                     )
@@ -69,6 +207,11 @@ def _call(
                     cached = dict(reasoned_value["data"]["next_action"])
                     _PROPOSAL_RECEIPTS[cache_key] = cached
                 request = dict(cached)
+            if tool == "validate_proposal" and "results" in request:
+                request = {
+                    **_public_proposal_records(request["results"], request.get("assessments")),
+                    "expected_revision": request["expected_revision"],
+                }
             result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
             for _ in range(3):
@@ -117,6 +260,18 @@ def _call(
                         data[section] = [
                             item for page in pages for item in page["data"].get(section, [])
                         ]
+                    cores = [
+                        page["data"]["official_guidance"]
+                        for page in pages
+                        if page["data"].get("official_guidance")
+                    ]
+                    if cores:
+                        data["official_guidance"] = {
+                            "pack": cores[0]["pack"],
+                            "sections": [section for core in cores for section in core["sections"]],
+                            "complete": True,
+                            "next_cursor": None,
+                        }
                     data.pop("context_page", None)
                     merged["data"] = data
                     merged["head"] = pages[-1].get("head", merged.get("head"))

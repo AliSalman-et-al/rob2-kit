@@ -2,6 +2,8 @@ import sqlite3
 from pathlib import Path
 
 import pymupdf
+import pytest
+from fastmcp.exceptions import ToolError
 from support.rob2 import _call
 
 
@@ -87,3 +89,54 @@ def test_search_batch_preserves_unsearchable_item_and_successful_independent_que
     assert items[0]["result"]["condition"]["code"] == "no_searchable_sources"
     assert items[1]["result"]["outcome"] == "success"
     assert items[1]["result"]["data"]["total_matches"] == 1
+
+
+def test_unavailable_source_preserves_verified_search_of_other_sources(tmp_path: Path):
+    _prepare(tmp_path, article="Allocation was concealed.", image_only=True)
+    sources = _call(tmp_path, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    article = next(source for source in sources if source["logical_path"] == "main.txt")
+    scan = next(source for source in sources if source["logical_path"] == "scan.pdf")
+    capture = tmp_path / ".rob2-kit" / "sources" / "trial"
+    next(path for path in capture.iterdir() if path.read_bytes().startswith(b"%PDF")).unlink()
+
+    result = _search(tmp_path)
+    assert result["outcome"] == "condition"
+    assert result["condition"]["code"] == "captured_source_unavailable"
+    assert result["condition"]["unavailable_source_ids"] == [scan["id"]]
+    assert result["condition"]["available_source_ids"] == [article["id"]]
+    assert "no text was searched" in result["condition"]["detail"]
+    assert "data" not in result
+    with sqlite3.connect(tmp_path / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert connection.execute("SELECT count(*) FROM search_receipts").fetchone()[0] == 0
+    batch = _call(
+        tmp_path,
+        "search_sources_batch",
+        {
+            "requests": [
+                {"trial_id": "trial", "query": "allocation", "mode": "all"},
+                {
+                    "trial_id": "trial",
+                    "query": "allocation",
+                    "mode": "all",
+                    "source_id": article["id"],
+                },
+            ]
+        },
+    )["data"]["results"]
+    assert batch[0]["result"]["condition"] == result["condition"]
+    assert batch[1]["result"]["data"]["total_matches"] == 1
+    assert batch[1]["result"]["data"]["search_receipt"]
+
+    next(capture.iterdir()).write_bytes(b"Different captured content")
+    with pytest.raises(ToolError, match="internal_evidence_integrity_error"):
+        _search(tmp_path, source_id=article["id"])
+
+
+def test_search_scoped_to_unavailable_source_does_not_offer_other_scope(tmp_path: Path):
+    _prepare(tmp_path, article="Allocation was concealed.")
+    source = _call(tmp_path, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    next((tmp_path / ".rob2-kit" / "sources" / "trial").iterdir()).unlink()
+    result = _search(tmp_path, source_id=source["id"])
+    assert result["condition"]["unavailable_source_ids"] == [source["id"]]
+    assert result["condition"]["available_source_ids"] == []
+    assert "data" not in result

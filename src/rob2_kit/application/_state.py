@@ -281,7 +281,7 @@ def _ensure(root: Path) -> None:
     if legacy.exists():
         raise ValueError(
             "workspace_contract_unsupported: this active workspace uses a legacy contract; "
-            "start a new empty workspace to use v0.10.0. The existing workspace is left intact, "
+            "start a fresh workspace for this kit. The existing workspace is left intact, "
             "and finalized bundles remain independently verifiable."
         )
     canonical = internal_path(root, "canonical.sqlite3")
@@ -297,7 +297,7 @@ def _ensure(root: Path) -> None:
                 if "meta" not in tables:
                     raise ValueError(
                         "workspace_contract_unsupported: this active workspace has no supported "
-                        "contract marker; start a new empty workspace to use v0.10.0. The existing "
+                        "contract marker; start a fresh workspace for this kit. The existing "
                         "workspace is left intact, and finalized bundles remain independently "
                         "verifiable."
                     )
@@ -306,8 +306,8 @@ def _ensure(root: Path) -> None:
                     found = current[0] if current is not None else "an unmarked contract"
                     raise ValueError(
                         "workspace_contract_unsupported: this active workspace uses contract "
-                        f"{found}, while v0.10.0 requires {_WORKSPACE_CONTRACT_VERSION}; start a "
-                        "new empty workspace to use v0.10.0. The existing workspace is left "
+                        f"{found}, while this kit requires {_WORKSPACE_CONTRACT_VERSION}; start a "
+                        "fresh workspace for this kit. The existing workspace is left "
                         "intact, "
                         "and finalized bundles remain independently verifiable."
                     )
@@ -339,7 +339,7 @@ def _ensure(root: Path) -> None:
         elif current[0] != _WORKSPACE_CONTRACT_VERSION:
             raise ValueError(
                 "workspace_contract_unsupported: the active workspace contract changed while "
-                "opening it; start a new empty workspace to use v0.10.0. The existing workspace "
+                "opening it; start a fresh workspace for this kit. The existing workspace "
                 "is left intact, and finalized bundles remain independently verifiable."
             )
         page_recipe = connection.execute(
@@ -529,14 +529,25 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
         profile_row = connection.execute(
             "SELECT value FROM search_projection_meta WHERE name='profile'"
         ).fetchone()
+        inventory_row = connection.execute(
+            "SELECT value FROM search_projection_meta WHERE name='inventory'"
+        ).fetchone()
         fts_valid = (
             fts_columns == {"source_id", "page", "raw_text", "normalized_text"}
             and profile_row is not None
             and profile_row[0] == _SEARCH_PROFILE
         )
-    rebuild_pages = not existing
+    # Admission commits canonical inventory before its disposable cache transaction.
+    # A missing/old marker recovers that crash window from immutable captured bytes.
+    inventory_changed = bool(_state(root).get("source_admissions")) and (
+        inventory_row is None or inventory_row[0] != batch.get("identity")
+    )
+    rebuild_pages = not existing or inventory_changed
     rebuild_search = (
-        not fts_valid or version_row is None or version_row[0] != _SEARCH_DERIVATIVE_VERSION
+        inventory_changed
+        or not fts_valid
+        or version_row is None
+        or version_row[0] != _SEARCH_DERIVATIVE_VERSION
     )
     if existing and indexed and not rebuild_search:
         return
@@ -630,6 +641,10 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
             "VALUES (?,?,?,?)",
             sources,
         )
+        connection.execute(
+            "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES ('inventory',?)",
+            (batch_identity,),
+        )
 
 
 def _read(root: Path, name: str) -> dict[str, Any] | None:
@@ -715,17 +730,31 @@ def _verify_canonical_payload(
         raise ValueError("canonical record integrity check failed")
 
 
-def _write(root: Path, values: dict[str, dict[str, Any]]) -> None:
-    with _db(root, "canonical.sqlite3") as connection:
-        for name, value in values.items():
-            connection.execute(
-                "INSERT OR REPLACE INTO records VALUES (?,?)", (name, canonical_json_bytes(value))
-            )
-            COUNTERS["serialized_bytes"] += len(canonical_json_bytes(value))
-
-
 def _state(root: Path) -> dict[str, Any]:
     return _read(root, "state") or {"phase": "empty", "revision": 0, "trial_dispositions": {}}
+
+
+def _trial_inventory_basis(state: dict[str, Any], trial_id: str) -> str | None:
+    """Keep the original receipt basis until this Trial's immutable inventory changes."""
+    versions = [*state.get("batch_history", []), state.get("batch")]
+    basis = None
+    previous_trial = None
+    for batch in versions:
+        if not isinstance(batch, dict):
+            continue
+        trial = next((item for item in batch.get("trials", []) if item.get("id") == trial_id), None)
+        if trial is None:
+            return None
+        if trial != previous_trial:
+            basis = batch.get("identity")
+        previous_trial = trial
+    return basis
+
+
+def _reading_batch_basis(state: dict[str, Any]) -> str | None:
+    """Delivered immutable Source coordinates survive append-only admissions."""
+    batch = (state.get("batch_history", []) or [state.get("batch")])[0]
+    return batch.get("identity") if isinstance(batch, dict) else None
 
 
 def _commit(root: Path, state: dict[str, Any], expected: int | None) -> dict[str, Any]:

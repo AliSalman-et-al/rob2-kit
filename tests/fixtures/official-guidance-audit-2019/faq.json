@@ -1,0 +1,26 @@
+{
+  "text_offsets": [
+    64357,
+    64750,
+    66083
+  ],
+  "sections": [
+    {
+      "domain_id": "domain:missing",
+      "source_url": "https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2",
+      "version": "Undated page; retrieved 4 October 2026",
+      "source_sha256": "060C4F0AA70573BB5D07257EB3D7B1DFFF07C4373DE1907E0C1055ADDBA4F8CD",
+      "source_locator": "Official RoB 2 FAQ, Domain 3, SQ 3.1: unknown extent of missing data",
+      "source_excerpt": "Signalling question 3.1: How do you answer this question if you don’t know the extent of missing data (for example, if an effect estimate, but not the number of participants is reported? Answer: It will be necessary to look at other sources of information to determine the answer, for example, the trial CONSORT diagram. A ‘Probably yes’ or ‘Probably no’ response may be the most appropriate."
+    },
+    {
+      "domain_id": "domain:missing",
+      "source_url": "https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2",
+      "version": "Undated page; retrieved 4 October 2026",
+      "source_sha256": "060C4F0AA70573BB5D07257EB3D7B1DFFF07C4373DE1907E0C1055ADDBA4F8CD",
+      "source_locator": "Official RoB 2 FAQ, Domain 3, SQ 3.2: methods and plausible missing outcomes",
+      "source_excerpt": "Signalling question 3.2: Do you have lists of 1) analysis methods that correct for bias and 2) types of sensitivity analyses adequate to show that there is no relation between missingness in the outcomes and its true value? Answer: It is not helpful to focus on methods per se. The important thing is to ensure that the sensitivity analysis entertains the full plausible range of outcomes that the missing participants could have experienced. This will always require judgement. There is no list of “analysis methods that correct for bias” since we cannot know if the analyses conducted will achieve this. There are a few that in general will not correct for bias (for example, last observation carried forward, and most multiple imputation approaches). The trick is not to worry too much about the statistical methods used by the trialists – rather to focus on phrases like ‘we assumed that’ to see what assumptions they have made about people who were missing. You must be sure that they have looked at the sort of outcomes people might have had if they weren’t missing. This is where your knowledge of the area under review will be important: the trialists should tell you what assumptions they made about those people in a way that means something to you, even if you are not familiar with the statistical methods that are used."
+    }
+  ],
+  "capture_note": "Original HTML capture retained privately and verified against the recorded SHA256."
+}

@@ -13,20 +13,73 @@ from pydantic import ValidationError
 from support.rob2 import (
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
+    _public_proposal_records,
     _read_required_main_reports,
     _result,
     _review,
     _workspace,
 )
 
-from rob2_kit.application._state import _state
+from rob2_kit.application._state import _db, _ensure, _root, _state
 from rob2_kit.application.status import _active_trial_and_domain
+from rob2_kit.application.working import _delivery_projection
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.packs.scientific import SCIENTIFIC_PACK
-from rob2_kit.workflow_models import WorkingCheckpoint, WorkingPremiseRecord
+from rob2_kit.workflow_models import WorkingCheckpoint, WorkingPremiseRecord, WorkingSourceBinding
+
+
+def test_delivery_coverage_unions_overlaps_without_erasing_gaps_or_scope(tmp_path: Path) -> None:
+    _ensure(_root(tmp_path))
+    source, empty, older = ("source_" + c * 64 for c in "abc")
+    bindings = tuple(
+        WorkingSourceBinding(source_id=s, projection_hash="sha256:" + "d" * 64)
+        for s in (source, empty)
+    )
+    state = {"batch": {"identity": "batch"}}
+    rows = [("batch", "assessment", "trial", source, 1, n, n + 1) for n in range(1, 130)] + [
+        ("batch", "assessment", "trial", source, 1, 141, 200),
+        ("batch", "proposal", "trial", source, 1, 1, 5),
+        ("batch", "assessment", "trial", source, 2, 1, 3),
+        ("batch", "assessment", "trial", empty, 1, 0, 0),
+        ("batch", "assessment", "trial", older, 1, 1, 260),
+        ("other-batch", "assessment", "trial", source, 1, 1, 260),
+    ]
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        connection.executemany("INSERT INTO page_reads VALUES (?,?,?,?,?,?,?)", rows)
+        connection.executemany(
+            "INSERT INTO pages VALUES (?,?,?)",
+            [(source, 1, "line\n" * 260), (source, 2, "line\n" * 3), (empty, 1, "")],
+        )
+    coverage = _delivery_projection(tmp_path, state, "trial", bindings)
+    assert coverage["state"] == "partial"
+    assert not coverage["ranges_truncated"]
+    assert coverage["range_count"] == 5
+    assert [
+        (r["page"], r["phase"], r["start_line"], r["end_line"]) for r in coverage["ranges"]
+    ] == [
+        (1, "assessment", 1, 130),
+        (1, "assessment", 141, 200),
+        (1, "proposal", 1, 5),
+        (2, "assessment", 1, 3),
+        (1, "assessment", 0, 0),
+    ]
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        assert connection.execute("SELECT COUNT(*) FROM page_reads").fetchone()[0] == len(rows)
+        connection.executemany(
+            "INSERT INTO page_reads VALUES (?,?,?,?,?,?,?)",
+            [
+                ("batch", "assessment", "trial", source, 1, 131, 140),
+                ("batch", "assessment", "trial", source, 1, 201, 260),
+            ],
+        )
+    completed = _delivery_projection(tmp_path, state, "trial", bindings)
+    assert completed["state"] == "delivered"
+    assert completed["range_count"] == 4
+    assert completed["ranges"][0]["end_line"] == 260
 
 
 def _checkpoint(source_id: str, text: str = "Allocation concealment is not yet clear.") -> dict:
@@ -105,7 +158,10 @@ def _public_call(
         try:
             options = {"elicitation_handler": elicit} if approve else {}
             async with Client(mcp, **options) as client:
-                result = await client.call_tool(tool, arguments)
+                result = await client.call_tool(
+                    tool,
+                    _domain_submission(arguments) if tool == "save_domain_judgment" else arguments,
+                )
                 return dict(result.structured_content or {})
         finally:
             if previous_workspace is None:
@@ -250,9 +306,10 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
         reads: list[dict[str, int | bool]] = []
         repairs = 0
         after_approval = False
+        inline_report_bytes = 0
 
         def call(tool: str, arguments: dict, *, approve: bool = False) -> dict:
-            nonlocal repairs
+            nonlocal repairs, inline_report_bytes
             receipt = _public_call(workspace, calls, tool, arguments, approve=approve)
             if receipt.get("outcome") == "repair":
                 repairs += 1
@@ -267,6 +324,12 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
                             for line in str(page.get("numbered_text", "")).splitlines()
                         ),
                     }
+                )
+            if tool == "get_domain_context" and after_approval:
+                inline_report_bytes += sum(
+                    len(line.partition("|")[2].encode("utf-8"))
+                    for page in receipt.get("data", {}).get("primary_report", [])
+                    for line in str(page.get("numbered_text", "")).splitlines()
                 )
             return receipt
 
@@ -308,21 +371,19 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
         validation = call(
             "validate_proposal",
             {
-                "results": [result],
-                "assessments": [
-                    {
-                        "trial_id": "trial",
-                        "evidence_basis": [evidence["handle"]],
-                        "scope_justification": (
-                            "The selected endpoint and follow-up match the captured passage."
-                        ),
-                        "population_justification": (
-                            "The randomized population is the reported analysis population."
-                        ),
-                        "unknowns": [],
-                        "counterevidence": [],
-                    }
-                ],
+                **_public_proposal_records(
+                    [result],
+                    [
+                        {
+                            "trial_id": "trial",
+                            "evidence_basis": [evidence["handle"]],
+                            "scope_justification": "The reported endpoint matches the target.",
+                            "population_justification": "Analysis retains randomized participants.",
+                            "unknowns": [],
+                            "counterevidence": [],
+                        }
+                    ],
+                ),
                 "expected_revision": revision,
             },
         )
@@ -360,7 +421,7 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
             {
                 "trial_id": "trial",
                 "domain_id": "domain:randomization",
-                "max_response_bytes": 16_384,
+                "max_response_bytes": 24_000,
             },
         )
         assert context["outcome"] == "success", context
@@ -379,27 +440,25 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
             assert context["outcome"] == "success", context
             context_page = context["data"]["context_page"]
         if rebind_notes:
-            assert recovery is None
             assert investigation["status"] == "unresolved"
             assert investigation["proposition"] == (
                 "The allocation sequence was generated unpredictably."
             )
             assert investigation["stale"] == []
+            # Reading recovery reports phase-local delivery gaps even when a
+            # result-bound checkpoint supplies the authorized handoff.
+            assert recovery["status"] == "required"
             saved = call("save_domain_judgment", draft)
             assert saved["outcome"] == "success", saved
         else:
-            blocked = call("save_domain_judgment", draft)
-            assert blocked["outcome"] == "repair", blocked
-            assert any(
-                item["code"] == "post_approval_main_report_reading_required"
-                for item in blocked["repairs"]
-            )
             assert recovery["status"] == "required"
-            reread = call(
-                "read_pages",
-                {"trial_id": "trial", "windows": recovery["windows"]},
+            rejected = call("save_domain_judgment", draft)
+            assert rejected["outcome"] == "repair", rejected
+            assert any(
+                r["code"] == "post_approval_main_report_reading_required"
+                for r in rejected["repairs"]
             )
-            assert reread["outcome"] == "success", reread
+            call("read_pages", {"trial_id": "trial", "source_id": source["id"], "pages": [1]})
             saved = call("save_domain_judgment", draft)
             assert saved["outcome"] == "success", saved
 
@@ -408,6 +467,7 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
         assert calls.count("save_domain_judgment") == (1 if rebind_notes else 2)
         return {
             "repairs": repairs,
+            "inline_report_bytes": inline_report_bytes,
             "reads": reads,
             "repeated_source_bytes": sum(
                 int(item["bytes"]) for item in reads if item["postapproval"]
@@ -418,6 +478,8 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
     without_rebind = run_handoff_case(tmp_path / "without-rebind", rebind_notes=False)
     with_rebind = run_handoff_case(tmp_path / "with-rebind", rebind_notes=True)
 
+    assert without_rebind["inline_report_bytes"] == 0
+    assert with_rebind["inline_report_bytes"] == 0
     assert without_rebind["postapproval_read_calls"] == 1
     assert with_rebind["postapproval_read_calls"] == 0
     assert without_rebind["repeated_source_bytes"] > 0
@@ -699,7 +761,8 @@ def test_editing_advisory_notes_preserves_a_valid_domain_context_cursor(
         {
             "trial_id": "trial",
             "domain_id": "domain:randomization",
-            "max_response_bytes": 16_384,
+            # Fit the complete official elaboration while retaining pagination.
+            "max_response_bytes": 18_432,
         },
     )
     assert first["outcome"] == "success", first
@@ -1006,15 +1069,23 @@ def test_public_domain_context_foregrounds_active_unresolved_premise(
     }
 
 
-def test_trial_review_retains_source_observations_after_domain_commits(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("premise_status", "source_scope_matches"),
+    [("bounded", True), ("support", True), ("support", False)],
+)
+def test_trial_review_retains_source_observations_after_domain_commits(
+    tmp_path: Path, premise_status: str, source_scope_matches: bool
+) -> None:
     workspace = _workspace(tmp_path)
     evidence = _proposal_waiting_for_review(workspace)
     checkpoint = _checkpoint(evidence["source_id"])
     checkpoint["premise_records"] = [
         {
             "proposition": "Allocation remained concealed until assignment.",
-            "status": "bounded",
+            "status": premise_status,
             "observations": checkpoint["observations"],
+            "inference": "The host tentatively regarded concealment as adequate.",
+            "counterevidence": checkpoint["observations"],
             "unresolved_component": "The concealment procedure is not reported.",
             "stopping_rationale": "The captured report leaves the procedure unresolved.",
             "domain_id": "domain:randomization",
@@ -1025,7 +1096,14 @@ def test_trial_review_retains_source_observations_after_domain_commits(tmp_path:
     saved = _call(workspace, "save_working_checkpoint", {"checkpoint": checkpoint})
     assert saved["outcome"] == "success", saved
 
+    database = workspace / ".rob2-kit" / "working.sqlite3"
+    with sqlite3.connect(database) as connection:
+        original_payload = connection.execute("SELECT payload FROM working_checkpoints").fetchone()[
+            0
+        ]
+
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(
         _call(
             workspace,
@@ -1042,21 +1120,93 @@ def test_trial_review_retains_source_observations_after_domain_commits(tmp_path:
         assert saved_domain["outcome"] == "success", saved_domain
         revision = int(saved_domain["head"]["state_revision"])
 
+    with sqlite3.connect(database) as connection:
+        assert connection.execute("SELECT payload FROM working_checkpoints").fetchone()[0] == (
+            original_payload
+        )
+        if not source_scope_matches:
+            payload = json.loads(original_payload)
+            payload["source_scope"][0]["projection_hash"] = "sha256:" + "f" * 64
+            payload["identity"] = None
+            stale = WorkingCheckpoint.model_validate(payload)
+            connection.execute(
+                "UPDATE working_checkpoints SET identity=?,payload=?",
+                (
+                    stale.identity,
+                    canonical_json_bytes(stale.model_dump(mode="json", exclude_none=True)),
+                ),
+            )
+
     review = _call(
         workspace,
         "review_trial",
         {"trial_id": "trial", "expected_revision": revision},
     )
     assert review["outcome"] == "success", review
-    randomization = next(
-        item
-        for item in review["data"]["domain_findings"]
-        if item["domain_id"] == "domain:randomization"
+    assert review["data"]["review_page"]["counts"]["premise_records"] == (
+        1 if source_scope_matches else 0
     )
+    if not source_scope_matches:
+        assert "premise_records" not in review["data"]["review_page"]["deferred_fields"]
+        return
+    assert "premise_records" in review["data"]["review_page"]["deferred_fields"]
+    recovered = _call(
+        workspace,
+        "review_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": review["head"]["state_revision"],
+            "domain_id": "domain:randomization",
+        },
+    )
+    assert recovered["outcome"] == "success", recovered
+    assert recovered["data"]["review_page"]["complete"] is True
+    randomization = recovered["data"]["domain_findings"][0]
     assert randomization["premise_records"][0]["observations"]
+    assert randomization["premise_records"][0]["observations"] == checkpoint["observations"]
+    retained = randomization["premise_records"][0]
+    assert retained["counterevidence"] == checkpoint["observations"]
+    assert retained["status"] == "unresolved"
+    assert retained.get("inference") is None
+    assert retained.get("stopping_rationale") is None
+    assert randomization["premise_checkpoint_identity"] is not None
     concealment = next(
         item
         for item in randomization["answers"]
         if item["question_id"] == "sq:randomization:concealment"
     )
     assert concealment["uninvestigated_routes"]
+
+
+def test_earlier_domain_checkpoint_does_not_hide_missing_report_delivery(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    marker = "Participants stopped because the assigned regimen was too intense."
+    report = workspace / "input" / "trial" / "main.txt"
+    report.write_text(report.read_text() + marker + "\n")
+    evidence = _proposal_waiting_for_review(workspace)
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    revision = _call(workspace, "get_domain_context", {"domain_id": "domain:randomization"})[
+        "head"
+    ]["state_revision"]
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+    original = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    # Delivery state is disposable; a retained scientific checkpoint is not
+    # evidence that this restored host received the report's remaining text.
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        connection.execute("DELETE FROM page_reads WHERE phase='assessment'")
+    context = _call(workspace, "get_domain_context", {"domain_id": "domain:deviations"})
+    recovery = context["data"]["reading_recovery"]
+    assert recovery is not None
+    delivered = _call(
+        workspace, "read_pages", {"trial_id": "trial", "windows": recovery["windows"]}
+    )
+    assert marker in json.dumps(delivered)
+    resumed = _call(workspace, "get_domain_context", {"domain_id": "domain:deviations"})
+    assert resumed["data"]["reading_recovery"] is None
+    assert _state(workspace)["domain_records"]["trial:domain:randomization"] == original

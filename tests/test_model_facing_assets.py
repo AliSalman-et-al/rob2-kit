@@ -5,10 +5,9 @@ import re
 from pathlib import Path
 
 from rob2_kit.workflow_models import (
-    DescribedTiming,
-    DomainAnswer,
-    DomainLimitationBasis,
-    ProposalReasoningDraft,
+    DomainInformationLimit,
+    DomainSaveAnswer,
+    ProposalSelection,
     TrialClosureRequest,
     TrialReviewRequest,
 )
@@ -81,23 +80,12 @@ def test_evidence_reference_contains_closed_limitation_example() -> None:
         encoding="utf-8"
     )
     examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
-    limitations = [
-        json.loads(line)
-        for example in examples
-        for line in example.splitlines()
-        if '"kind":"limitation"' in line or '"kind": "limitation"' in line
-    ]
-    assert len(limitations) >= 2
-    assert {"search_receipt" in limitation for limitation in limitations} >= {True, False}
+    objects = [json.loads(example) for example in examples]
+    limitations = [limit for item in objects for limit in item.get("limitations", [])]
+    assert limitations
     for limitation in limitations:
-        assert set(limitation) <= {
-            "kind",
-            "unresolved_premise",
-            "stopping_rationale",
-            "search_receipt",
-        }
-        DomainLimitationBasis.model_validate(limitation)
-    assert "actual receipt returned" in reference
+        DomainInformationLimit.model_validate(limitation)
+    assert "untruncated zero-hit receipts" in reference
 
 
 def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> None:
@@ -110,20 +98,17 @@ def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> 
     examples = re.findall(r"```json\s*(.*?)\s*```", section, flags=re.DOTALL)
     assert len(examples) == 2
     answer = json.loads(examples[0])
-    DomainAnswer.model_validate(answer)
-    assert {item["kind"] for item in answer["bases"]} == {"direct_support"}
+    DomainSaveAnswer.model_validate(answer)
+    assert {item["role"] for item in answer["bases"]} == {"direct_support"}
     assert answer["unknowns"] == []
     assert answer["counterevidence"] == []
-    basis_shapes = [json.loads(line) for line in examples[1].splitlines()]
-    assert {item["kind"] for item in basis_shapes} == {"context", "absence", "limitation"}
-    for item in basis_shapes:
-        DomainAnswer.model_validate(
-            {
-                **answer,
-                "bases": [item],
-                "counterevidence": [],
-            }
-        )
+    alternative = json.loads(examples[1])
+    parsed = DomainSaveAnswer.model_validate({**answer, **alternative})
+    assert {item["kind"] for item in parsed.canonical_payload()["bases"]} == {
+        "context",
+        "absence",
+        "limitation",
+    }
 
 
 def test_read_pages_reference_contains_both_callable_request_forms() -> None:
@@ -173,118 +158,53 @@ def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> Non
     examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
 
     assert len(examples) >= 3
-    draft = ProposalReasoningDraft.model_validate_json(examples[0])
-    assert (
-        draft.assessments[0].counterevidence[0].evidence != draft.assessments[0].evidence_basis[0]
-    )
+    draft = ProposalSelection.model_validate(json.loads(examples[0])["selections"][0])
+    assert draft.counterevidence[0].evidence != draft.source_passages[0]
     receipt = json.loads(examples[1])
     assert receipt == {"expected_revision": 8}
-    described = re.search(r"`(\{\"kind\": \"described\".*?\})`", reference)
-    assert described is not None
-    DescribedTiming.model_validate_json(described.group(1))
+    assert draft.candidate is not None
+    assert draft.candidate.target_window == "15 days after randomization"
 
 
 def test_skill_requires_complete_proposal_construction_before_validation() -> None:
     skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
 
-    assert "Construct the complete request before calling `validate_proposal`" in skill
-    assert "placeholder strings" in skill
-    assert "typed objects rather than prose shortcuts" in skill
+    assert "Construct the complete request before calling" in skill
+    assert "placeholders" in skill
+    assert "one complete Trial selection" in skill
 
 
-def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
+def test_measurement_reference_uses_official_science_and_source_reconstruction() -> None:
     normalized = " ".join(
-        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md")
-        .read_text(encoding="utf-8")
-        .split()
+        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text().split()
     )
-    markers = list(re.finditer(r"(?<!\w)([1-9])\.\s+", normalized))
-    start = next(
-        index
-        for index in range(len(markers) - 8)
-        if [int(marker.group(1)) for marker in markers[index : index + 9]] == list(range(1, 10))
-    )
-    markers = markers[start : start + 9]
-    items = {
-        number: normalized[
-            marker.end() : markers[index + 1].start()
-            if index + 1 < len(markers)
-            else len(normalized)
-        ]
-        for index, marker in enumerate(markers[:9])
-        for number in [int(marker.group(1))]
-    }
-    semantic_items = (
-        "approved Result's event definition and ascertainment method",
-        "measurement method is appropriate and valid for that approved event",
-        "methods, thresholds, schedules, and detection opportunities between randomized groups",
-        "who determines whether that event occurred",
-        "assessor awareness separately from susceptibility to influence",
-        "influence is possible or likely, explain the mechanism",
-        "all-cause mortality, distinguish establishing death from judging progression, "
-        "symptoms, or cause of death",
-        "composite outcomes, consider every component that can determine the event",
-        "passage discusses several outcomes, use only the premise that applies to the "
-        "approved outcome and state any inference or unresolved link",
-    )
-    assert all(semantic in items[index + 1] for index, semantic in enumerate(semantic_items))
+    for marker in (
+        "complete official Box 10 elaborations",
+        "section 7.1 background",
+        "assessor identity",
+        "component contributions",
+        "exact approved Result",
+        "independent question dependencies",
+        "actor, arm, period and endpoint",
+        "visible report material",
+        "counterevidence",
+    ):
+        assert marker in normalized
+    assert "OCR availability, metadata and arithmetic are not scientific authority" in normalized
+    assert "preserve unknown contributions and source conflicts" in normalized
 
 
-def test_missing_reference_and_skill_share_the_availability_audit() -> None:
+def test_missing_reference_and_skill_use_official_science_and_preserve_recovery() -> None:
     reference = Path("src/rob2_kit/skills/rob2-assess/references/missing.md").read_text(
         encoding="utf-8"
     )
-    reference_lines = reference.splitlines()
-    start = reference_lines.index("## Availability audit") + 1
-    end = next(
-        index
-        for index in range(start, len(reference_lines))
-        if reference_lines[index].startswith("## ")
-    )
-    bullets: list[str] = []
-    continuation = False
-    for line in reference_lines[start:end]:
-        if line.startswith("- "):
-            bullets.append(line.removeprefix("- ").strip())
-            continuation = True
-        elif not line.strip():
-            continuation = False
-        elif continuation:
-            bullets[-1] = f"{bullets[-1]} {line.strip()}"
-    normalized_bullets = [item.casefold() for item in bullets]
-    assert any(
-        "observed-outcome counts" in item and "randomized" in item for item in normalized_bullets
-    )
-    assert any(
-        "loss-to-follow-up" in item and "censoring" in item and "accounting" in item
-        for item in normalized_bullets
-    )
-    assert any("complete or nearly complete" in item for item in normalized_bullets)
-    shortcut_requirements = (
-        ("analysis denominators", "itt membership"),
-        ("planned", "scheduled", "follow-up"),
-        ("treatment continuation", "discontinuation"),
-        ("generic censoring rule", "actual rates", "follow-up accounting"),
-    )
-    assert all(
-        any(all(term in item for term in requirement) for item in normalized_bullets)
-        for requirement in shortcut_requirements
-    )
-
     skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
-    skill_lines = skill.splitlines()
-    skill_start = skill_lines.index("### 6. Audit and commit the Domain once") + 1
-    skill_end = next(
-        index
-        for index in range(skill_start, len(skill_lines))
-        if skill_lines[index].startswith("### ")
-    )
-    audit = " ".join(line.strip() for line in skill_lines[skill_start:skill_end]).casefold()
-    assert audit.count("availability audit") == 1
-    assert "yes/probably yes needs evidence of all or nearly-all availability" in audit
-    assert "no/probably no needs evidence of materially incomplete availability" in audit
-    assert "if the extent remains unknown, use no information" in audit
-    assert "analysis membership" in audit
-    assert "planned follow-up" in audit
-    assert "treatment status" in audit
-    assert "generic censoring rule alone establish neither direction" in audit
+    for asset in (reference, skill):
+        assert "official" in asset
+        assert "official_d3_prototype" not in asset
+        assert "counterevidence" in asset
+        assert "missing_data" in asset
+    assert "## Availability audit" not in reference
+    assert "For D3.1, run the **availability audit**" not in skill
+    for term in ("unopened supplements", "read_pages", "basis", "randomized - observed", "scoped"):
+        assert term in reference, term

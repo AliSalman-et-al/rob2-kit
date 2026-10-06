@@ -1,0 +1,51 @@
+[
+  {
+    "case": "testing",
+    "artifact_sha256": "986c821234d74363c636c2bca58d5db12a38275f363573b07244a974f8bb7136",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "stop-igan",
+    "artifact_sha256": "bc939a164ef532327d428dffe41e2c1862c9ca02a63ae610bb6e3b38e00c0812",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "bendix-1996",
+    "artifact_sha256": "d25fdb8754e3398a4bdaf91d075b323f7885a370f63bf090489333af27f54965",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "monaleesa-2",
+    "artifact_sha256": "3444868e6ec54786ecf55ed0a33813eab1742143a5fbcb3b11cd7b73e10cafca",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "beerendonk-1999",
+    "artifact_sha256": "2d649844d5701f11431661dadc4b23cbf0f75a5df30e8053e140746c0dfc0903",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "fr-as-2018",
+    "artifact_sha256": "315cb3ce3f8331b243673b97a679bdd70b20bcdb5e625e82fcfdb5ba6377010e",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "chua-2022",
+    "artifact_sha256": "bd670eadd5c10fc56eb103576ada9f0a89c2f4f2995b923d737cce9d0368727f",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "sanctuary",
+    "artifact_sha256": "aa54e1d3e3077002a36bf7207cb0c4d8db16141197174093997198a5aaae8d41",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "albert-2013",
+    "receipt_bytes_match": true
+  },
+  {
+    "case": "sustain-6",
+    "artifact_sha256": "785a22d2cd0645c52157ce4cd776a9762b49fc34320b0c6bc5cbf715af4ef5e1",
+    "receipt_bytes_match": true
+  }
+]

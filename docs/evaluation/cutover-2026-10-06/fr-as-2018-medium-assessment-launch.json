@@ -1,0 +1,428 @@
+{
+  "case": "fr-as-2018",
+  "scope_only_approval": {
+    "authority": "Existing user-authorized host scope review only",
+    "review_reference": "sha256:22b6e305cb9c207521331f6403a17dd5abc0d19561d2d8d709e9b5ff1b56971c",
+    "proposed_results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_a7b08acba3ffb4a1"
+          ],
+          "rationale": "Eligible participants were individually randomly allocated to six parallel treatment groups through an interactive web response system, stratified by baseline HbA1c, metformin use and BMI (main article page 3)."
+        },
+        "bindings": [
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:649a257aa32ada799377efc936c78866edad741f875256c1b8c396051becd8f8"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/0/statistic"
+            },
+            "value_digest": "sha256:7d77d84b9ee3a067de35d397f89ef12e13dffca3b4908acf4112ee224f0d8449"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/0/value"
+            },
+            "value_digest": "sha256:1538fad89b69530daf9e7522e4a67000d7e1ddacf751266e6ca3bbe6dcdc358f"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/0/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/1/statistic"
+            },
+            "value_digest": "sha256:7d77d84b9ee3a067de35d397f89ef12e13dffca3b4908acf4112ee224f0d8449"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/1/value"
+            },
+            "value_digest": "sha256:9aff7c73ef0f7b94fce36e7e10610f14f600b1533467c76863e60c4e7adb9844"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/1/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/2/statistic"
+            },
+            "value_digest": "sha256:7d77d84b9ee3a067de35d397f89ef12e13dffca3b4908acf4112ee224f0d8449"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/2/value"
+            },
+            "value_digest": "sha256:7dd934372b3e866b8cd547e10073487f6fa835c45f00c980b393a4f41fafeb52"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/2/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/3/statistic"
+            },
+            "value_digest": "sha256:7d77d84b9ee3a067de35d397f89ef12e13dffca3b4908acf4112ee224f0d8449"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/3/value"
+            },
+            "value_digest": "sha256:ac93854cf4e1e737d6b1f9688d55593b294e82def587a657fe840e5e7b6642c9"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/3/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/4/statistic"
+            },
+            "value_digest": "sha256:7d77d84b9ee3a067de35d397f89ef12e13dffca3b4908acf4112ee224f0d8449"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/4/value"
+            },
+            "value_digest": "sha256:ce06206c21c27882d6222291b30caac592e3d831958ff5d1cc978f8e3814dd9b"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/4/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/5/statistic"
+            },
+            "value_digest": "sha256:7d77d84b9ee3a067de35d397f89ef12e13dffca3b4908acf4112ee224f0d8449"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/5/value"
+            },
+            "value_digest": "sha256:cbef5d69ff08b1699a6635b7102c746d86a273c24be046b38c61b306ee8f6bfa"
+          },
+          {
+            "evidence_index": 7,
+            "field": {
+              "path": "/reported/group_values/5/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "conflicting",
+          "comparison_groups": "specified",
+          "effect_measure": "specified",
+          "eligible_result_choice": "specified",
+          "measurement": "specified",
+          "outcome_definition": "specified",
+          "source_table_meaning": "specified",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_0ea05b9973d48934",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_10cf0a502a809f46",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_13720874ef3743a4",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_21a505b5ceefe727",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_2220702e54d9fb5a",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_2bbd0b8ebaac8308",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_314975e711bea1b6",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_34b86ba4ee7ba26e",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_5d3a9f1bb9d217d6",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_7348dc8e748580d5",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_752971ac82e801ca",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_7c0634cbbc103b54",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_98e61730b06765e7",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_9f0af2dc895dcb93",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_a7b08acba3ffb4a1",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_dac8cde3bd515677",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_db92f28f437d40de",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_dd91bcae7c672e10",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:eede1040fa2157e3c6abf58aa14c36d863d2b245638d00ea06df6ff93ba2f4bd",
+            "handle": "eh_ffdeb8754256623c",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.085,
+              0.155,
+              0.985,
+              0.382
+            ],
+            "render_identity": "sha256:680267870028fb803d0b80b15b5dc28bcda93653920c9b22a2df03154b4f296c",
+            "transcription": "Supplemental Table 1. Study outcomes by treatment. Columns: Placebo (n=51), LY 1 mg (n=52), LY 5 mg (n=55), LY 10 mg (n=51), LY 15 mg (n=53), DU 1\u00b75 mg (n=54); each has Baseline and CFB. Glycaemia outcomes (Change from baseline at 26 weeks); Mean HbA1c (%). MMRM (mITT on treatment), LS means (SE), baseline/CFB respectively: Placebo 8\u00b70 (0\u00b714)/0\u00b71 (0\u00b716); LY 1 mg 8\u00b72 (0\u00b713)/-0\u00b77 (0\u00b716)**; LY 5 mg 8\u00b72 (0\u00b713)/-1\u00b76 (0\u00b715)**#; LY 10 mg 8\u00b72 (0\u00b714)/-2\u00b70 (0\u00b716)**##; LY 15 mg 8\u00b71 (0\u00b713)/-2\u00b74 (0\u00b717)**##; DU 1\u00b75 mg 8\u00b71 (0\u00b713)/-1\u00b71 (0\u00b715)**. p-values (vs. placebo; vs. DU): Placebo -; LY 1 mg (0\u00b70004; 0\u00b70581); LY 5 mg (<0\u00b70001; 0\u00b70152); LY 10 mg (<0\u00b70001; 0\u00b70001); LY 15 mg (<0\u00b70001; <0\u00b70001); DU 1\u00b75 mg (<0\u00b70001; -); baseline p-value cells are -. Bayesian (mITT on treatment)\u00b9, baseline/CFB: Placebo 8\u00b704 (0\u00b786)/-0\u00b710 (0\u00b713); LY 1 mg 8\u00b721 (0\u00b790)/-0\u00b787 (0\u00b709); LY 5 mg 8\u00b718 (0\u00b798)/-1\u00b784 (0\u00b708)^$; LY 10 mg 8\u00b717 (1\u00b707)/-2\u00b718 (0\u00b708)^$; LY 15 mg 8\u00b714 (1\u00b705)/-2\u00b732 (0\u00b710)^$; DU 1\u00b75 mg 8\u00b713 (0\u00b795)/-1\u00b725 (0\u00b714). Bayesian (mITT without postrescue)\u00b9, baseline/CFB: Placebo 8\u00b704 (0\u00b786)/-0\u00b706 (0\u00b714); LY 1 mg 8\u00b721 (0\u00b790)/-1\u00b706 (0\u00b711); LY 5 mg 8\u00b718 (0\u00b798)/-1\u00b773 (0\u00b708)^$; LY 10 mg 8\u00b717 (1\u00b707)/-1\u00b789 (0\u00b708)^$; LY 15 mg 8\u00b714 (1\u00b705)/-1\u00b794 (0\u00b709)^$; DU 1\u00b75 mg 8\u00b713 (0\u00b795)/-1\u00b721 (0\u00b714)."
+          }
+        ],
+        "kind": "assessable",
+        "relation": "narrower",
+        "relation_rationale": "Select the joint six-arm Bayesian mITT without postrescue Result at 26 weeks, directly matching the requested outcome, time and all eight LY3298176-versus-placebo/dulaglutide contrasts. The saved group-bound form retains all six reported posterior means; the article's reported posterior mean differences (80% credible sets), in dose order 1/5/10/15 mg, are versus placebo: -1\u221900% [-1\u221922 to -0\u221979], -1\u221967% [-1\u221988 to -1\u221946], -1\u221983% [-2\u221904 to -1\u221961], -1\u221989% [-2\u221911 to -1\u221967]; versus dulaglutide: 0\u221915% (-0\u221908 to 0\u221938), -0\u221952% (-0\u221972 to -0\u221931), -0\u221967% (-0\u221989 to -0\u221946), -0\u221973% (-0\u221995 to -0\u221952) (main article pages 1 and 6). Source % values describe absolute HbA1c concentration changes/differences, not relative percentage reduction. Scope is narrower than the tool's all-randomized assignment target because of mITT exclusions and removal of postrescue data, although it matches the researcher's requested mITT report. It is not an unrestricted ITT treatment-policy effect. Bayesian mITT on-treatment and MMRM mITT on-treatment are competing analysis candidates with different numerical values and discontinuation handling; 12-week and HbA1c-threshold endpoints differ in time or outcome. The supplement explicitly identifies the selected dataset and confirms the main-article means. The article and embedded protocol designate 26-week HbA1c change as primary; the protocol treats Bayesian comparison with dulaglutide as secondary. A blanket absence of designated primary outcome is unsupported by these inspected Sources. Historical registry primary designation and timely final SAP availability are unverified. The registry version holder dated 2026-10-05 is current augmentation, not replayed historical registry bytes.",
+        "reported": {
+          "analysis_population": "Reported Bayesian mITT without postrescue dataset: all participants taking at least one study-drug dose and with at least one postbaseline measurement of any outcome (316 of 318 randomized; one untreated participant in each of the 1 mg and 10 mg groups excluded). Includes data irrespective of adherence and after treatment discontinuation, excludes efficacy data after rescue initiation. Missing HbA1c responses imputed by longitudinal integrated two-component prediction model, with titration model for 10 and 15 mg. LY3298176/placebo fitted by hierarchical logistic dose-response model; dulaglutide independently modeled. mITT arm totals are 52,55,51,53,51,54 for LY1,LY5,LY10,LY15,placebo,DU; these are not established week-26 observed counts.",
+          "endpoint": {
+            "definition": null,
+            "name": "change in HbA1c from baseline to 26 weeks"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "ly1",
+              "statistic": "posterior mean",
+              "unit": "%",
+              "value": "-1\u221906"
+            },
+            {
+              "group_id": "ly5",
+              "statistic": "posterior mean",
+              "unit": "%",
+              "value": "-1\u221973"
+            },
+            {
+              "group_id": "ly10",
+              "statistic": "posterior mean",
+              "unit": "%",
+              "value": "-1\u221989"
+            },
+            {
+              "group_id": "ly15",
+              "statistic": "posterior mean",
+              "unit": "%",
+              "value": "-1\u221994"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "posterior mean",
+              "unit": "%",
+              "value": "-0\u221906"
+            },
+            {
+              "group_id": "du",
+              "statistic": "posterior mean",
+              "unit": "%",
+              "value": "-1\u221921"
+            }
+          ]
+        },
+        "requested_outcome": "Change in HbA1c from baseline to 26 weeks (modified intention-to-treat), LY3298176 doses vs placebo and vs dulaglutide",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Once-weekly subcutaneous LY3298176 1 mg",
+              "id": "ly1"
+            },
+            {
+              "assignment": "Once-weekly subcutaneous LY3298176 5 mg",
+              "id": "ly5"
+            },
+            {
+              "assignment": "Once-weekly subcutaneous LY3298176 10 mg; 5 mg for first 2 weeks then 10 mg",
+              "id": "ly10"
+            },
+            {
+              "assignment": "Once-weekly subcutaneous LY3298176 15 mg; 5 mg for first 2 weeks, 10 mg for next 4 weeks then 15 mg",
+              "id": "ly15"
+            },
+            {
+              "assignment": "Once-weekly subcutaneous placebo",
+              "id": "placebo"
+            },
+            {
+              "assignment": "Once-weekly subcutaneous dulaglutide 1\u00b75 mg",
+              "id": "du"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Posterior mean differences in change from baseline for each LY3298176 dose versus placebo and versus dulaglutide 1\u00b75 mg",
+          "measurement": {
+            "method": "Change in glycated haemoglobin A1c (HbA1c) concentration from baseline, in percentage points; the embedded protocol specifies central-laboratory HbA1c.",
+            "metric": "Change in HbA1c from baseline to 26 weeks (modified intention-to-treat), LY3298176 doses vs placebo and vs dulaglutide"
+          },
+          "outcome_definition": "Change in HbA1c from baseline to 26 weeks (modified intention-to-treat), LY3298176 doses vs placebo and vs dulaglutide",
+          "time_point_or_window": {
+            "description": "Change from baseline to 26 weeks in the blinded treatment period",
+            "kind": "quantified",
+            "unit": "weeks",
+            "value": "26"
+          }
+        },
+        "trial_id": "fr-as-2018"
+      }
+    ],
+    "no_domain_feedback": true,
+    "no_source_or_result_rewrite": true,
+    "source_review": [
+      "Original main physical pages1/4/6: primary26-week HbA1c mITT without postrescue analysis; Bayesian dose-response means -1.06,-1.73,-1.89,-1.94,-.06,-1.21; eight dose-versus-placebo/dulaglutide contrasts and credible sets source reported. HbA1c absolute concentration percentage changes, not relative reductions.",
+      "Rendered original supplement physical page10 Table1 confirms selected Bayesian mITT without postrescue row and competing Bayesian on-treatment / MMRM on-treatment rows; all six arms retained. Supplement pages7\u20138 gives primary dataset and integrated two-component missing-response model.",
+      "Original protocol embedded supplement pages59/61/75\u201377 checked: plans mITT, postrescue censoring, Bayesian placebo comparisons primary and dulaglutide comparisons secondary, other analysis/data-discontinuation plans. Article treatment-discontinuation data retained in selected analysis differs from protocol text; no proof of final SAP or implementation from plans. mITT316 versus318 random not asserted as316 observed outcomes. No blanket absence of primary designation."
+    ]
+  },
+  "continuation_freeze": {
+    "same_session": "01a11023-5cab-71f1-b633-750c9d051f19",
+    "scope_only_approval": true,
+    "no_science_feedback": true,
+    "coverage": {
+      "passed": true,
+      "manifest_sha256": "24ee0c3daaf95d0f6e4dc4acd59f67d8023b595eb8032db78c228594f7c965ae",
+      "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+      "evidence_bundle_sha256": "eb9d9208f2789356d274cc91ca65155e9a5fc1da0182f85652f2c3b09bef7db2",
+      "required_window_count": 123,
+      "supplied_window_count": 123,
+      "required_image_count": 0,
+      "supplied_image_count": 0,
+      "scope": "declared research-design coverage only; no semantic sufficiency claim"
+    },
+    "files": {
+      "scope-approval.json": "e44b1b0336c0e0176ba7b2e90f33b097461c4fb078cde3d2f3ec4ff2a92054eb",
+      "approved-seed-state.json": "36766cf5f4c57f117c83f8707e24b0260f1c34fe132e40c82217d2b4f82f8188",
+      "assessment-prompt.txt": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+      "assessment-evidence-manifest.json": "24ee0c3daaf95d0f6e4dc4acd59f67d8023b595eb8032db78c228594f7c965ae",
+      "assessment-native-evidence.bundle": "eb9d9208f2789356d274cc91ca65155e9a5fc1da0182f85652f2c3b09bef7db2",
+      "assessment-empty-text-recovery.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "run_stage.py": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+      "home/config.toml": "53f8ff358ffedb444309fa2ce992c19b908ee0a512a0c77fe81885159521505b"
+    }
+  },
+  "launch": {
+    "command": [
+      "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+      "exec",
+      "resume",
+      "01a11023-5cab-71f1-b633-750c9d051f19",
+      "--strict-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "-m",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"medium\"",
+      "--json",
+      "-o",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/fr-as-2018/assessment-final.txt",
+      "-"
+    ],
+    "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/fr-as-2018/workspace-run",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "config_sha256": "53f8ff358ffedb444309fa2ce992c19b908ee0a512a0c77fe81885159521505b",
+    "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+    "manifest_sha256": "24ee0c3daaf95d0f6e4dc4acd59f67d8023b595eb8032db78c228594f7c965ae",
+    "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+    "environment_keys": [
+      "CODEX_HOME",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "LOGNAME",
+      "NO_COLOR",
+      "PATH",
+      "ROB2_WORKSPACE",
+      "SHELL",
+      "TEMP",
+      "TERM",
+      "TMP",
+      "TMPDIR",
+      "USER",
+      "XDG_RUNTIME_DIR"
+    ],
+    "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+    "started_at_utc": "2026-10-06T07:42:43.564227+00:00",
+    "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+    "authorized_new_sessions": 1
+  },
+  "runtime_stratum": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "no_source_or_result_rewrite": true,
+  "no_domain_feedback_provided": true
+}

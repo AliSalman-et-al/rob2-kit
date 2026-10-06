@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+import pytest
 from support.rob2 import _assessment_workspace, _call, _domain_draft
 
 from rob2_kit.application.domains import _comparison_cards, reconcile_missing_data
@@ -77,7 +79,7 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
         for passage in group["passages"]
     )
     assert all(group["source_role"] for group in first_card["passage_groups"])
-    assert "do not infer causation" in first_card["prompt"]
+    assert "use the complete official guidance" in first_card["prompt"]
 
 
 def test_missing_data_card_marks_conflicting_typed_counts(tmp_path: Path) -> None:
@@ -160,6 +162,74 @@ def test_selection_card_exposes_result_but_not_plan_correspondence(tmp_path: Pat
     assert slots["correspondence"]["status"] == "unknown"
 
 
+@pytest.mark.parametrize(
+    "case",
+    json.loads(
+        Path("eval/d5-correspondence-presentation-controls.json").read_text(encoding="utf-8")
+    )["cases"],
+    ids=lambda case: case["id"],
+)
+def test_selection_comparison_preserves_neutral_method_change_evidence(
+    case: dict[str, Any],
+) -> None:
+    source_id = "source_" + "a" * 64
+    catalog = {
+        "sha256:" + str(index) * 64: {
+            "identity": "sha256:" + str(index) * 64,
+            "handle": "eh_" + str(index) * 16,
+            "kind": "narrative",
+            "source_id": source_id,
+            "page": index,
+            "start_line": 1,
+            "end_line": 3,
+            "quote": case[key],
+        }
+        for index, key in enumerate(("reported", "planned", "change"), start=1)
+    }
+    evidence = catalog["sha256:" + "1" * 64]
+    result = {
+        "kind": "assessable",
+        "target": {},
+        "reported": {
+            "form": "comparative_effect",
+            "endpoint": {"name": "Fixed endpoint"},
+            "analysis_population": "All randomized participants",
+            "effect_measure": "Ratio",
+            "estimate": "0.8",
+            "precision": "95% CI 0.6 to 1.1",
+            "group_values": [],
+        },
+        "evidence": [{"handle": evidence["handle"], "identity": evidence["identity"]}],
+        "bindings": [{"field": {"path": "/reported"}, "evidence_index": 0}],
+    }
+    checkpoint = [
+        {"question_id": "sq:selection:prespecified-analysis", "unknowns": case["unknowns"]}
+    ]
+    sources = [{"id": source_id, "role": "protocol", "label": "combined.pdf"}]
+    inputs = deepcopy((result, catalog, checkpoint, sources))
+    card = _comparison_cards("domain:selection", result, catalog, checkpoint, sources)[0]
+
+    assert (result, catalog, checkpoint, sources) == inputs
+    assert card["reported_result"] == result["reported"]
+    assert [slot["name"] for slot in card["slots"]] == [
+        "reported_result",
+        "analysis_plan",
+        "correspondence",
+        "amendment",
+        "unblinded_access",
+    ]
+    assert card["slots"][0]["passages"][0]["handle"] == evidence["handle"]
+    assert all(slot["status"] == "unknown" for slot in card["slots"][1:])
+    assert {ref["handle"] for ref in card["passage_groups"][0]["passages"]} == {
+        value["handle"] for value in catalog.values()
+    }
+    assert (
+        not {"answers", "judgment", "expected_answer", "expected_judgment", "propositions"}
+        & card.keys()
+    )
+    assert "source conflicts" in card["prompt"]
+
+
 def test_result_slot_uses_only_field_bound_passages() -> None:
     source_a = "source_" + "a" * 64
     source_b = "source_" + "b" * 64
@@ -210,6 +280,45 @@ def test_result_slot_uses_only_field_bound_passages() -> None:
     assert [item["handle"] for item in slot["passages"]] == [evidence_b["handle"]]
 
 
+def test_card_keeps_reported_completers_distinct_from_randomized_target() -> None:
+    result = {
+        "kind": "assessable",
+        "relation": "narrower",
+        "target": {
+            "outcome_definition": "Disability at one year",
+            "measurement": {"method": "Disability questionnaire"},
+            "time_point_or_window": {"description": "One year"},
+            "intended_analysis_population": "All randomized participants",
+            "intended_effect_measure": "Between-group comparison",
+            "comparison_groups": [
+                {"id": "a", "assignment": "Intervention"},
+                {"id": "b", "assignment": "Placebo"},
+            ],
+        },
+        "reported": {
+            "form": "group_bound_values",
+            "endpoint": {"name": "Disability score"},
+            "analysis_population": "One-year completers: 144 of 162 randomized participants",
+            "group_values": [
+                {"group_id": "a", "statistic": "median", "value": "7", "unit": "points"},
+                {"group_id": "b", "statistic": "median", "value": "14", "unit": "points"},
+            ],
+        },
+        "evidence": [],
+    }
+
+    for domain in ("domain:deviations", "domain:missing", "domain:selection"):
+        card = _comparison_cards(domain, result, {}, [], [])[0]
+        assert card["result_scope"]["scope_basis"] == "assessment_target"
+        assert card["result_scope"]["population"] == "All randomized participants"
+        assert card["reported_result"] == result["reported"]
+        assert card["target_relation"] == "narrower"
+        assert "definition" not in card["reported_result"]["endpoint"]
+        assert "effect_measure" not in card["reported_result"]
+        assert "propositions" not in card
+        assert card["participant_flow"] == []
+
+
 def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigable() -> None:
     def source(source_id: str, role: str, logical_path: str) -> dict[str, object]:
         return {
@@ -242,7 +351,9 @@ def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigabl
     assert all(not item["passages"] for item in groups.values())
     # The inventory adds bounded metadata, not captured source text.
     serialized = json.dumps(card, ensure_ascii=False, separators=(",", ":"))
-    assert len(serialized) < 6_200
+    baseline = _comparison_cards("domain:selection", {}, {}, [], [])[0]
+    baseline_size = len(json.dumps(baseline, ensure_ascii=False, separators=(",", ":")))
+    assert 0 < len(serialized) - baseline_size < 2_000
 
 
 def test_unopened_irrelevant_source_is_a_control_not_evidence() -> None:
@@ -323,56 +434,142 @@ def test_contrast_fixture_is_paired_traceable_and_development_only() -> None:
             )
 
 
-def test_public_domain_cards_pair_endpoint_specific_scientific_contrasts() -> None:
-    pairs_by_domain = {
-        domain_id: {
-            item["pair_id"]: item
-            for item in _comparison_cards(domain_id, {}, {}, [], [])[0]["paired_examples"]
-        }
-        for domain_id in (
-            "domain:deviations",
-            "domain:missing",
-            "domain:measurement",
-            "domain:selection",
-        )
+def test_comparison_navigation_does_not_add_scientific_dependencies() -> None:
+    from rob2_kit.application.domains import _official_guidance_recovery
+    from rob2_kit.interfaces.mcp.contracts import ComparisonCard
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    questions = {q.id: q for q in SCIENTIFIC_PACK.questions}
+    for domain in ("deviations", "missing", "measurement", "selection"):
+        card = _comparison_cards("domain:" + domain, {}, {}, [], [])[0]
+        ComparisonCard.model_validate(card)
+        assert card["slots"]
+        assert not {"propositions", "paired_examples", "answers", "judgment"} & card.keys()
+        core = _official_guidance_recovery("domain:" + domain)
+        assert core["complete"]
+        assert core["sections"]
+    # D5 selection questions stay independent of plan availability; D2 impact
+    # stays conditional on an inappropriate or unknown assignment analysis.
+    for qid in ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"):
+        assert questions[qid].activation.model_dump(mode="json") == {"kind": "always"}
+    assert questions["sq:deviations:substantial-impact"].activation.model_dump(mode="json") != {
+        "kind": "always"
     }
-    expected_pairs = (
-        ("domain:deviations", "d2-exclusion-before-versus-after-outcome"),
-        ("domain:missing", "d3-treatment-stop-with-followup-versus-loss"),
-        ("domain:measurement", "d4-toxicity-visits-by-endpoint"),
-        ("domain:measurement", "d4-safety-window-evidence"),
-        ("domain:selection", "d5-amendment-versus-unblinded-access"),
-        ("domain:selection", "d5-embedded-versus-separate-sap"),
+
+
+def test_native_completion_preview_and_save_preserve_unknown_observation(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain in ("domain:randomization", "domain:deviations"):
+        revision = _save_domain(workspace, domain, revision, evidence)
+    row = {
+        "arm": "intervention",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "week 12",
+        "randomized": 100,
+        "completed": 95,
+        "analyzed": 100,
+        "basis": [evidence["handle"]],
+        "semantics": {
+            "population_role": "follow_up",
+            "outcome_status": "unknown",
+            "censoring": {"kind": "administrative", "timing": "common cutoff"},
+        },
+    }
+    before = _call(workspace, "get_status", {})["head"]["state_revision"]
+    preview = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "domain_id": "domain:missing",
+            "missing_data": [row],
+        },
     )
-    for domain_id, pair_id in expected_pairs:
-        pair = pairs_by_domain[domain_id][pair_id]
-        left = set(pair["left_facts"])
-        right = set(pair["right_facts"])
-        assert len(left ^ right) == 2, pair_id
-        assert pair["changed_premise"]
-        assert pair["reasoning_focus"]
-        assert not {"expected_answer_path", "expected_judgment", "severity"} & pair.keys()
+    assert preview["outcome"] == "success", preview
+    assert _call(workspace, "get_status", {})["head"]["state_revision"] == before
+    card = preview["data"]["comparison_cards"][0]
+    flow = {item["kind"]: item for item in card["participant_flow"]}
+    assert flow["completed"]["value"] == 95
+    assert flow["observed"]["value"] is None and flow["observed"]["status"] == "unknown"
+    assert flow["completed"]["result_identity"] == card["result_identity"]
+    assert flow["completed"]["scope"]["arm"] == "intervention"
+    assert flow["completed"]["passages"]
+    assert flow["completed"]["semantics"]["censoring"]["kind"] == "administrative"
+    assert card["missing_data"]["rows"][0]["missing"] is None
 
-    d4_by_id = pairs_by_domain["domain:measurement"]
-    mortality_pair = d4_by_id["d4-toxicity-visits-by-endpoint"]
-    mortality = " ".join(mortality_pair["left_facts"]).casefold()
-    toxicity = " ".join(mortality_pair["right_facts"]).casefold()
-    for phrase in ("same complete follow-up method", "extra visits"):
-        assert phrase in mortality and phrase in toxicity
-    assert "all-cause mortality" in mortality
-    assert "lab-defined toxicity" in toxicity
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    next(a for a in draft["answers"] if a["question_id"] == "sq:missing:data-available")[
+        "missing_data"
+    ] = [row]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    restored = _call(workspace, "get_domain_context", {"domain_id": "domain:missing"})
+    persisted = restored["data"]["comparison_cards"][0]["missing_data"]["rows"][0]
+    assert persisted["completed"] == 95 and persisted["observed"] is None
+    assert persisted["result_identity"] == card["result_identity"]
 
-    safety_window = d4_by_id["d4-safety-window-evidence"]
-    for facts in (safety_window["left_facts"], safety_window["right_facts"]):
-        joined = " ".join(facts).casefold()
-        assert "median treatment duration" in joined
-        assert "progression-free survival" in joined
 
-    d5_by_id = pairs_by_domain["domain:selection"]
-    amendment = d5_by_id["d5-amendment-versus-unblinded-access"]
-    assert "june 15" in " ".join(amendment["left_facts"]).casefold()
-    assert "july 15" in " ".join(amendment["left_facts"]).casefold()
-    assert "may 15" in " ".join(amendment["right_facts"]).casefold()
-    packaging = d5_by_id["d5-embedded-versus-separate-sap"]
-    assert "appendix 2" in " ".join(packaging["left_facts"]).casefold()
-    assert "separate repository pdf" in " ".join(packaging["right_facts"]).casefold()
+@pytest.mark.parametrize("domain_id", ["domain:deviations", "domain:missing"])
+def test_flow_card_retains_visual_basis_and_uncertainty(domain_id: str) -> None:
+    from rob2_kit.interfaces.mcp.contracts import ParticipantFlowProjection
+
+    identity = "sha256:" + "a" * 64
+    figure = {
+        "kind": "figure",
+        "identity": identity,
+        "handle": "eh_" + "a" * 16,
+        "source_id": "sh_" + "b" * 16,
+        "render": {
+            "identity": "sha256:" + "c" * 64,
+            "source_id": "sh_" + "b" * 16,
+            "page": 2,
+            "png_sha256": "sha256:" + "d" * 64,
+            "recipe": "pymupdf-1.5",
+        },
+        "delivery_receipt": "sha256:" + "e" * 64,
+        "region": [0.1, 0.2, 0.8, 0.9],
+        "provenance": "host_visual",
+        "uncertainty": "The completion label is legible; endpoint ascertainment is unresolved.",
+        "transcription": "Completed follow-up: 90.",
+    }
+    flow = reconcile_missing_data(
+        [
+            {
+                "arm": "A",
+                "population": "randomized participants",
+                "unit": "participants",
+                "time_point": "final follow-up",
+                "randomized": 100,
+                "completed": 90,
+                "basis": [identity],
+            }
+        ]
+    )
+    card = _comparison_cards(domain_id, {}, {identity: figure}, [], [], participant_flow_data=flow)[
+        0
+    ]
+    completed = next(row for row in card["participant_flow"] if row["kind"] == "completed")
+    projected = ParticipantFlowProjection.model_validate(completed).model_dump(mode="json")
+    assert projected["passages"] == []
+    assert projected["figures"] == [
+        {
+            key: value
+            for key, value in figure.items()
+            if key
+            in {
+                "handle",
+                "source_id",
+                "render",
+                "delivery_receipt",
+                "region",
+                "provenance",
+                "uncertainty",
+            }
+        }
+    ]
+    assert projected["value"] == 90
+    observed = next(row for row in card["participant_flow"] if row["kind"] == "observed")
+    assert observed["value"] is None
+    assert observed["status"] == "unknown"
+    assert flow["rows"][0]["missing"] is None
+    assert flow["rows"][0]["imputed"] is None

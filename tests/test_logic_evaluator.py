@@ -23,7 +23,7 @@ def test_pack_ids_wording_provenance_and_hashes():
     ) == ("sha256:96ff2d1a649d6b40f40fe7fa73c3127c5eb1725e8392b8728f9d25f951338425")
     assert SCIENTIFIC_PACK.questions[16].wording.startswith("If N/PN/NI to 4.1 and 4.2")
     assert SCIENTIFIC_PACK.content_hash == (
-        "sha256:ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"
+        "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"
     )
     assert "not attributed to Cochrane" in MAINTAINER_POLICY_PACK.attribution
     assert MAINTAINER_POLICY_PACK.id != SCIENTIFIC_PACK.id
@@ -67,7 +67,7 @@ def test_all_overall_combinations_against_independent_oracle():
     domain_ids = tuple(QIDS)
     for values in product(("low", "some_concerns", "high"), repeat=5):
         judgments = dict(zip(domain_ids, values, strict=True))
-        if "high" in values or values.count("some_concerns") >= 2:
+        if "high" in values:
             expected = "high"
         elif "some_concerns" in values:
             expected = "some_concerns"
@@ -337,6 +337,23 @@ def test_assignment_analysis_quality_is_separate_from_potential_impact():
     assert evaluate_domain("domain:deviations", excluded).judgment is Judgment.SOME_CONCERNS
     excluded["sq:deviations:substantial-impact"] = "yes"
     assert evaluate_domain("domain:deviations", excluded).judgment is Judgment.HIGH
+
+
+@pytest.mark.parametrize("impact", ["yes", "probably_yes", "no", "probably_no", "no_information"])
+def test_uncertain_assignment_analysis_keeps_potential_impact_active(impact: str) -> None:
+    answers = {
+        "sq:deviations:participants-aware": "no",
+        "sq:deviations:personnel-aware": "no",
+        "sq:deviations:appropriate-analysis": "no_information",
+    }
+    assert "sq:deviations:substantial-impact" in active_questions(answers)
+    answers["sq:deviations:substantial-impact"] = impact
+    expected = (
+        Judgment.HIGH
+        if impact in {"yes", "probably_yes", "no_information"}
+        else Judgment.SOME_CONCERNS
+    )
+    assert evaluate_domain("domain:deviations", answers).judgment is expected
 
 
 def test_measurement_evaluation_keeps_awareness_possible_and_likely_influence_distinct():

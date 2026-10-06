@@ -1,59 +1,27 @@
 # Assess deviations from intended interventions
 
-Use this reference for Domain 2, which assesses the effect of assignment to
-intervention. The returned question cards are authoritative.
+Use this reference for Domain 2 of the effect-of-assignment assessment. Read the
+complete official Box 6 elaborations, shared response semantics, section 5.1 and
+Box 5 examples in `get_domain_context`. They supply scientific interpretation;
+this reference supplies source and tool mechanics.
 
-For active conduct questions, build the chain in order:
+Reconstruct the selected Result’s assignment and intervention course using
+source-located observations. Keep actors, assigned groups, periods, reported
+plans, actual conduct, outcome availability and analysis membership identifiable.
+The optional Result account may feed the existing participant-flow projection
+before any Domain is saved; ordinary working notes remain supported.
 
-1. What intervention was intended in each randomized group?
-2. What change, non-adherence, or additional intervention occurred?
-3. Did the trial context cause that change?
-4. Could it affect the outcome, and was it balanced between groups?
+Inspect the comparison card’s passage groups, slots and quantities alongside
+their original passages. Preserve distinctions and unresolved links instead of
+relabeling a count or copying a conclusion from another arm or window. Navigation
+fields and search hints do not supply signalling answers.
 
-For 2.3, a negative answer covers no relevant deviation as well as changes that
-were protocol-consistent or could occur outside the trial context. An affirmative
-answer needs evidence or strong reason linking a protocol-inconsistent deviation
-to the trial context. State that link when it is an inference.
-Do not treat subsequent treatment after progression, rescue treatment, or
-cross-over as a 2.3 deviation merely because its use differed between randomized
-groups or could affect the outcome. For the effect of assignment, first establish
-that the subsequent treatment was prohibited or otherwise inconsistent with the
-trial protocol and that the trial context caused it. Protocol-permitted subsequent
-care, including ordinary treatment after progression, supports `no` or
-`probably_no` for 2.3.
-A protocol establishes the plan, not conduct. Different assigned treatments or
-visible schedules do not by themselves prove that participants or carers knew
-the assignment.
+If arithmetic helps explain a premise, use `calculate_arithmetic` optionally.
+Keep source-supported inputs, affected arms, denominators, units and assumptions
+explicit. Scratch calculations do not create Evidence or validate their scientific
+application. Conditional calculations remain conditional.
 
-For 2.6, assess the analysis separately. Compare randomized assignment with the analyzed
-population, exclusions, reassignment, and reasons. An ITT label is not proof
-that all randomized participants were analyzed as assigned. Excluding only
-participants with missing outcome data is not automatically the same as an
-inappropriate assignment-effect analysis; keep that issue distinct for Domain
-3. If an analysis defect activates the impact question, consider outcome rarity
-and prognostic exclusions as well as the percentage affected.
-
-An eligible participant excluded from the assignment-effect analysis after
-randomization is an analysis exclusion whether the exclusion occurred before
-the approved endpoint was measured or after an outcome value was recorded.
-Record whether the endpoint was unavailable or was observed and then omitted.
-The first may also require D3 missing-outcome reasoning; the second does not
-become missing outcome data merely because the analysis left it out. For 2.7,
-assess the excluded participants and their reasons against this endpoint. Do not
-use timing or a fixed percentage as a substitute for impact reasoning.
-
-Support each conduct-chain proposition with source facts and any stated
-inference. A passage supporting one proposition does not settle the others.
-
-## Paired premise check
-
-Use the comparison card's neutral pair as a reasoning control. In the permitted
-care case, rescue or crossover is allowed by the protocol and is ordinary later
-care; in the changed case, the same treatment change is prohibited and caused
-by trial participation or trial staff. Change the 2.3 reasoning only when both
-protocol inconsistency and a trial-context cause change. A second contrast keeps
-the excluded participants and reasons fixed while moving exclusion from before
-to after endpoint ascertainment. The 2.6 exclusion premise remains; the timing
-changes whether outcomes were unavailable or observed and then omitted, and
-therefore whether D3 also needs missing-outcome reasoning. Do not import an
-expected answer or risk label from either pair.
+Submit the active question path using
+[Build a Domain answer](evidence.md#build-a-domain-answer). Retain counterevidence,
+unknowns and the rationale for any inference or relevant scope transfer. Inspect
+the proposed label and use source-bound adjudication when justified.

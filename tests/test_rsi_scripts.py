@@ -120,7 +120,7 @@ def test_private_codex_config_requires_the_preflighted_rob2_server(tmp_path: Pat
 
     assert config["mcp_servers"]["rob2"] == {
         "command": r"C:\rob2.exe",
-        "args": ["mcp"],
+        "args": ["mcp-codex"],
         "env": {"ROB2_WORKSPACE": str(tmp_path.resolve())},
         "required": True,
         "default_tools_approval_mode": "approve",
@@ -617,7 +617,10 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
         ),
         encoding="utf-8",
     )
-    workspace = (tmp_path / "run" / "workspace").resolve()
+    # Keep parent creation/resolution outside the controlled ownership race.
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    workspace = (run_dir / "workspace").resolve()
     barrier = threading.Barrier(2)
     original_mkdir = Path.mkdir
 
@@ -627,8 +630,9 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
         parents: bool = False,
         exist_ok: bool = False,
     ) -> None:
-        if path == workspace:
-            barrier.wait(timeout=5)
+        # Synchronize the exclusive ownership claim, not recursive parent creation.
+        if path == workspace and not parents and not exist_ok:
+            barrier.wait(timeout=30)
         original_mkdir(path, mode=mode, parents=parents, exist_ok=exist_ok)
 
     monkeypatch.setattr(Path, "mkdir", synchronized_mkdir)
@@ -638,7 +642,7 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
         failures = []
         for future in futures:
             try:
-                results.append(future.result(timeout=10))
+                results.append(future.result(timeout=45))
             except ValueError as error:
                 failures.append(str(error))
 

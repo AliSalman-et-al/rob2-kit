@@ -1,0 +1,526 @@
+{
+  "freeze_commit": "7355c4ce5e3ac5f377cfb8a0fb861605575ea7c4",
+  "cases": [
+    {
+      "slug": "albert-2013",
+      "proposal_terminal": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10f9c-ca9d-7d71-9800-a71d9f9d3418",
+        "elapsed_seconds": 151.2353849480278,
+        "finalized_batch_observed": false,
+        "initial_sessions": 1,
+        "continuations": 0,
+        "no_operator_science_feedback": true
+      },
+      "proposal_usage": {
+        "response_count": 15,
+        "usage": {
+          "input_tokens": 1024556,
+          "cached_input_tokens": 912000,
+          "output_tokens": 4347,
+          "reasoning_output_tokens": 211
+        },
+        "uncached_input_tokens": 112556,
+        "profiles": [
+          {
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          }
+        ],
+        "cost_usd": null
+      },
+      "scope_review": {
+        "authority": "Existing user-authorized host scope review only",
+        "review_reference": "sha256:9081e7a118f0a0a27cda61a616248b67e395c34513374908b37eff156a654cd5",
+        "proposed_results": [
+          {
+            "applicability": {
+              "design": "individual_parallel",
+              "evidence": [
+                "eh_af2f0bc26a980daf",
+                "eh_450f7edbcaaded61"
+              ],
+              "rationale": "Individual patients were randomized to four concurrent dose groups (A/C antibiotics, B/D placebo), pooled for the main two-group comparison; no crossover or cluster allocation is described. The registry SINGLE_GROUP metadata conflicts with its own four-arm narrative and the report."
+            },
+            "bindings": [
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/endpoint/name"
+                },
+                "value_digest": "sha256:6d59f3bcb3dd05cc6dde4296f1b4b6d590dbbf1459e1dbd7432fa4b23ac7b4e9"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/group_values/0/statistic"
+                },
+                "value_digest": "sha256:0edfcef01f88f5c3e54ab4b13e668968c43d9811fc2f5216e238256f29fd3a74"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/group_values/0/value"
+                },
+                "value_digest": "sha256:5f7b9b51467bf417e5d4c6703b2de9c18328a69761e595c165b58af6500da73a"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/group_values/0/unit"
+                },
+                "value_digest": "sha256:1cd18334ad4fe687ead044649f243aac5b2aba7ac16f15860c8de82f80b90dfa"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/group_values/1/statistic"
+                },
+                "value_digest": "sha256:0edfcef01f88f5c3e54ab4b13e668968c43d9811fc2f5216e238256f29fd3a74"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/group_values/1/value"
+                },
+                "value_digest": "sha256:5935bc30bbc1c76e69d4c791c64dff50b58bb99ced15a7080b018388844bb5a4"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/group_values/1/unit"
+                },
+                "value_digest": "sha256:1cd18334ad4fe687ead044649f243aac5b2aba7ac16f15860c8de82f80b90dfa"
+              }
+            ],
+            "clarity": {
+              "analysis_population": "specified",
+              "comparison_groups": "specified",
+              "effect_measure": "unclear",
+              "eligible_result_choice": "conflicting",
+              "measurement": "specified",
+              "outcome_definition": "specified",
+              "source_table_meaning": "conflicting",
+              "time_point": "specified"
+            },
+            "evidence": [
+              {
+                "handle": "eh_045e822a138b4c8a",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_1f7809d427d16100",
+                "kind": "narrative"
+              },
+              {
+                "delivery_receipt": "sha256:09a731ba8e1e7c70e78d65f2a85dc4862c1d4cba56f949a71b2717715517d868",
+                "handle": "eh_26c5a6118a8ac392",
+                "kind": "figure",
+                "provenance": "host_visual",
+                "region": [
+                  0.12,
+                  0.075,
+                  0.27,
+                  0.92
+                ],
+                "render_identity": "sha256:8378d42fbef87897c062ec940232690a4a1513a5159e59309009a4254dc434f4",
+                "transcription": "Table 3 Outcome measures at baseline, 100 days follow-up and 1-year follow-up. Disease-specific disability-RMDQ, Median [lower; upper quartile]. Antibiotic baseline n = 90: 15.0 [11; 18]; Antibiotic 100 days n = 76: 11.5 [7; 14]; Antibiotic 1-year follow-up n = 77: 7.0 [4; 11]; Placebo baseline n = 72: 15.0 [12; 18]; Placebo 100 days n = 67: 14.0 [11; 18]; Placebo 1-year follow-up n = 67: 14.0 [8; 18]. p value for difference between placebo and antibiotic groups at 1-year follow-up: 0.0001."
+              },
+              {
+                "delivery_receipt": "sha256:fe478db8ccc88174128a66b45a256ca807baf256905a72e7355246c6ff6c1f1d",
+                "handle": "eh_450f7edbcaaded61",
+                "kind": "figure",
+                "provenance": "host_visual",
+                "region": [
+                  0.18,
+                  0.07,
+                  0.82,
+                  0.56
+                ],
+                "render_identity": "sha256:655227949c9705707db8e89ad892a98d56696c0cafd6ab77b8d1c2f6c098b344",
+                "transcription": "Fig. 1 Study flow chart. 347 patients with a 6-24 months old MRI confirming a lumbar disc herniation and pain in the lumbar region. 178 were excluded, because the new MRI revealed no new Modic changes or Modic type 2 changes only. 7 = refused participation, 3 wished to become pregnant and were advised against participation, 4 did not like the idea of long-term antibiotics. 162 patients were randomised: 45 took single dose antibiotics; 45 took double dose antibiotics; 36 took single dose placebo; 36 took double dose placebo. Both antibiotic arms join the antibiotic follow-up path: Drop outs = 13: 4 - side effects; 3 - new disc herniation; 1 - no show at follow-up; 2 - > 65 year of age; 1 - Modic 2; 2 - new cancer. 77 (85.6%) participated in 1 year follow-up. Both placebo arms join the placebo follow-up path: Drop outs = 5: 3 - new disc herniation; 2 - no show at follow up. 67 (93.1%) participated in 1 year follow-up."
+              },
+              {
+                "handle": "eh_69749090d4a24726",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_af2f0bc26a980daf",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_bc15f0aef1a3a215",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_da065b49b6d10a34",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_ef2825a3434d7e4e",
+                "kind": "narrative"
+              }
+            ],
+            "kind": "assessable",
+            "relation": "narrower",
+            "relation_rationale": "Select Table 3's continuous RMDQ endpoint at one year, pooled antibiotics versus pooled placebo, because it directly measures the requested disability construct and reports a complete main-comparison pair. RMDQ is first-named of two article primary measures (the other lumbar pain); no single designated primary outcome or hierarchy between these measures and timepoints is established by the original report. One year is the principal reported between-group comparison and current registry window. Table 3 reports medians 7.0 [4;11] versus 14.0 [8;18], p=0.0001; quartiles are not confidence intervals. No between-group effect estimate or CI is invented. This is narrower than the all-randomized assignment target because analysis is confined to one-year attendees. The 100-day RMDQ medians 11.5 versus 14.0 are an earlier competing window, and dose-specific 30% responder NNTs (4.0 and 3.0) change both endpoint and contrast and are not selected. Abstract 5.7 at one year and 11 at 100 days conflict with Table 3's 7.0 and 11.5; the abstract's statistic is not specified. Unknown which of crude t-test, age/sex-adjusted comparison or Mann-Whitney test produced the selected p-value. Registry currently labels a single conflated 'Low Back Pain Roland Morris Questionaire', not the article's two co-primary measures; it is dated augmentation, not historical registry bytes.",
+            "reported": {
+              "analysis_population": "Participants attending the 1-year follow-up, analyzed in assigned groups regardless of medication compliance: antibiotics n=77/90, placebo n=67/72. The report calls this intention to treat but excludes 18 randomized participants; RMDQ-specific item completeness is not independently tabulated.",
+              "endpoint": {
+                "definition": null,
+                "name": "Disease-specific disability-RMDQ"
+              },
+              "form": "group_bound_values",
+              "group_values": [
+                {
+                  "group_id": "antibiotics",
+                  "statistic": "Median",
+                  "unit": "RMDQ",
+                  "value": "7.0"
+                },
+                {
+                  "group_id": "placebo",
+                  "statistic": "Median",
+                  "unit": "RMDQ",
+                  "value": "14.0"
+                }
+              ]
+            },
+            "requested_outcome": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)",
+            "target": {
+              "comparison_groups": [
+                {
+                  "assignment": "Pooled single- and double-dose Bioclavid (amoxicillin-clavulanate 500 mg/125 mg, one or two tablets three times daily for 100 days), groups A+C, randomized n=90",
+                  "id": "antibiotics"
+                },
+                {
+                  "assignment": "Pooled matching single- and double-dose placebo, groups B+D, randomized n=72",
+                  "id": "placebo"
+                }
+              ],
+              "effect_of_interest": "assignment",
+              "intended_analysis_population": "All randomized participants in the comparison groups",
+              "intended_effect_measure": "Between-group comparison of RMDQ scores at 1-year follow-up (reported group medians)",
+              "measurement": {
+                "method": "Disease-specific disability measured by the 23-item Roland Morris Disability Questionnaire (RMDQ), scale 0-23, higher scores worse",
+                "metric": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)"
+              },
+              "outcome_definition": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)",
+              "time_point_or_window": {
+                "description": "1-year (12-month) follow-up after treatment assignment/start; not one year after completion of the 100-day course",
+                "kind": "quantified",
+                "unit": "year",
+                "value": "1"
+              }
+            },
+            "trial_id": "albert-2013"
+          }
+        ],
+        "no_domain_feedback": true,
+        "no_source_or_result_rewrite": true,
+        "source_review": [
+          {
+            "source_sha256": "e1812023fb5425786e80c2cb4c03d2abd9a401008d70e83934909eec24a0dcff",
+            "pages": [
+              1,
+              3,
+              4,
+              7
+            ],
+            "checked": "Original requested RMDQ construct retained. Article p3: two primary measures, 23-item0\u201323 scale, pooled main antibiotics/placebo comparison and12-month participation. P4: one-year attendees in assigned groups despite ITT wording. P7 Table3 inspected as native PNG and text: median7.0[4;11] versus14.0[8;18],77/90 versus67/72, p0.0001. No effect estimate or confidence interval invented. P1 abstract5.7 discrepancy remains explicitly qualified. Current registry disagreement is dated augmentation, not historic prespecification. Operational one-year window is supported; exact randomization/start-day equivalence not independently established. Narrower mapping and unresolved source/analysis selection remain retained; no exact reference-label alignment claim."
+          }
+        ]
+      },
+      "continuation": {
+        "same_session": "01a10f9c-ca9d-7d71-9800-a71d9f9d3418",
+        "scope_only_approval": true,
+        "no_science_feedback": true,
+        "coverage": {
+          "passed": true,
+          "manifest_sha256": "f77c958f564fdd6a6b011e8da955325ced8c08fc180b719ff9b53172152ada8b",
+          "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+          "evidence_bundle_sha256": "41e6e9c3c7ae0d76966d17e78c8875e1baa9f9d27a89b1ed2c3cc66042cf841e",
+          "required_window_count": 12,
+          "supplied_window_count": 12,
+          "required_image_count": 0,
+          "supplied_image_count": 0,
+          "scope": "declared research-design coverage only; no semantic sufficiency claim"
+        },
+        "files": {
+          "scope-approval.json": "c7e93fac790671cb4fcab816853d9cf4dfa9488595fe869c687fa567c650e2b9",
+          "approved-seed-state.json": "99d933b97b13a94866951d2c20645febcf674a2ea332ead8a34550bff0057fe2",
+          "assessment-prompt.txt": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+          "assessment-evidence-manifest.json": "f77c958f564fdd6a6b011e8da955325ced8c08fc180b719ff9b53172152ada8b",
+          "assessment-native-evidence.bundle": "41e6e9c3c7ae0d76966d17e78c8875e1baa9f9d27a89b1ed2c3cc66042cf841e",
+          "assessment-empty-text-recovery.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "run_stage.py": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+          "home/config.toml": "576f83a49ffdcc4da2eb64c4acb425b04758011a78f930ff3e6836ac55b7d39b"
+        }
+      },
+      "current_stage": "same-session assessment running",
+      "proposal_terminal_state_sha256": "9e29b4fa85f7636526b2a8b5b9e5032eb7000c4e29f4560676bb65dd7c3b96e2",
+      "initial_outputs_freeze_sha256": "9e345cd6adfe7d2bc211ab911f813ad0457f4c9c49bcd52ef0af52950d15d2aa",
+      "sealed_sqlite_state": {
+        "working.sqlite3": "b67eef82c8401f3c463e25fc8ae07755e07152e388e3e3f51ae8b41dfe7121be",
+        "canonical.sqlite3": "015ac0af55a87d581c6f4a1dd42d66566de72c756ee2fd61dfe345c5d61a4d51",
+        "derivative.sqlite3": "19471c1169f65c3e04a1ac448f3b442ca88debe40b7e3ec8203b187a251ac7e9"
+      }
+    },
+    {
+      "slug": "sustain-6",
+      "proposal_terminal": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10f9c-cfe4-7060-87e7-ae82e62f7ef6",
+        "elapsed_seconds": 270.4463832390029,
+        "finalized_batch_observed": false,
+        "initial_sessions": 1,
+        "continuations": 0,
+        "no_operator_science_feedback": true
+      },
+      "proposal_usage": {
+        "response_count": 27,
+        "usage": {
+          "input_tokens": 2291046,
+          "cached_input_tokens": 2148224,
+          "output_tokens": 5461,
+          "reasoning_output_tokens": 697
+        },
+        "uncached_input_tokens": 142822,
+        "profiles": [
+          {
+            "model": "gpt-6.1-sol",
+            "effort": "medium"
+          }
+        ],
+        "cost_usd": null
+      },
+      "scope_review": {
+        "authority": "Existing user-authorized host scope review only",
+        "review_reference": "sha256:aa9d9c0a6a7ceae83aa89f40d5befcfbe3deb74be26a2d21cc4b9620534a8c1b",
+        "proposed_results": [
+          {
+            "applicability": {
+              "design": "individual_parallel",
+              "evidence": [
+                "eh_bb906e77fdb826f9"
+              ],
+              "rationale": "Patients were individually randomized in a 1:1:1:1 ratio to four parallel dose/volume-matched groups; the selected contrast pools the two semaglutide doses against the two placebo groups."
+            },
+            "bindings": [
+              {
+                "evidence_index": 10,
+                "field": {
+                  "path": "/reported/effect_measure"
+                },
+                "value_digest": "sha256:91a90102e1ed0dbf08b1185f3059e0a27ae0befc7fc2fc2ce9949102b805854a"
+              },
+              {
+                "evidence_index": 10,
+                "field": {
+                  "path": "/reported/estimate"
+                },
+                "value_digest": "sha256:2e960ac3615c526721705c4513ef1179c796cc3ece5108d60fa3c2a1427283ab"
+              },
+              {
+                "evidence_index": 10,
+                "field": {
+                  "path": "/reported/precision"
+                },
+                "value_digest": "sha256:16d44968f4eb0cb8c6cb0c2b9f1f81795c84ceb8fdd5671344bb51871bb2be97"
+              },
+              {
+                "evidence_index": 10,
+                "field": {
+                  "path": "/reported/endpoint/name"
+                },
+                "value_digest": "sha256:6d4339dcb569d6c938517045acfd3b592c62e3e2c948e64413a62d8aeefd98e8"
+              }
+            ],
+            "clarity": {
+              "analysis_population": "specified",
+              "comparison_groups": "unclear",
+              "effect_measure": "specified",
+              "eligible_result_choice": "unclear",
+              "measurement": "specified",
+              "outcome_definition": "specified",
+              "source_table_meaning": "specified",
+              "time_point": "unclear"
+            },
+            "evidence": [
+              {
+                "handle": "eh_0faa478470f4380a",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_10c531b712fcfecd",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_1df57956ebff06fd",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_21ea889e069a9c9f",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_2362dbd597656da7",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_3c0303c776dd612a",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_4c7c377aaf239741",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_5a796526204b408e",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_6a89f0b087734a01",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_90caae9dbd88c730",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_98bc1b2acffde8aa",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_bb906e77fdb826f9",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_cdc265298383c5d3",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_ff87704d2ed5727d",
+                "kind": "narrative"
+              }
+            ],
+            "kind": "assessable",
+            "relation": "related",
+            "relation_rationale": "The reported three-component first-event endpoint directly matches the requested clinical construct; the report explicitly includes silent MI. The proposed Result is the main reported stratified Cox hazard ratio, pooled semaglutide versus pooled placebo, on all randomized patients using the in-trial window planned through week 109, rather than a week-104 risk, on-treatment/per-protocol estimate, individual-dose comparison or programme-wide meta-analysis. The request specifies neither contrast, duration, analysis nor a designated primary result, so relation is related with unresolved scope facets pending approval rather than claiming all requested facets are known. Source-designated primary status is explicit in the report, final protocol, SAP and current registry; absence of a requester-designated primary result is not absence of source designation. Competing expanded composite adds revascularization and hospitalization (HR 0.74; 95% CI 0.62-0.89), while the all-cause-death composite changes the death component (HR 0.77; 95% CI 0.61-0.97); neither substitutes for the requested event set. The same numerical HR for the expanded endpoint and MI component does not establish equivalence. The selected HR derives from a stratified Cox model with pooled treatment fixed factor and randomization strata. P<0.001 concerns noninferiority with margin 1.8; the reported superiority P=0.02 was not prespecified or multiplicity adjusted.",
+            "reported": {
+              "analysis_population": "Full analysis set: all 3297 randomized patients analyzed as randomized (1648 pooled semaglutide; 1649 pooled placebo), using in-trial data irrespective of treatment discontinuation. This does not imply complete event ascertainment: observation ends at withdrawal or last contact for loss to follow-up.",
+              "effect_measure": "hazard ratio",
+              "endpoint": {
+                "definition": null,
+                "name": "composite primary outcome"
+              },
+              "estimate": "0.74",
+              "form": "comparative_effect",
+              "group_values": [],
+              "precision": "95% confidence interval [CI], 0.58 to 0.95"
+            },
+            "requested_outcome": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event)",
+            "target": {
+              "comparison_groups": [
+                {
+                  "assignment": "Once-weekly subcutaneous semaglutide 0.5 mg or 1.0 mg, pooled, added to standard care",
+                  "id": "semaglutide"
+                },
+                {
+                  "assignment": "Once-weekly volume-matched placebo for 0.5 mg or 1.0 mg, pooled, added to standard care",
+                  "id": "placebo"
+                }
+              ],
+              "effect_of_interest": "assignment",
+              "intended_analysis_population": "All randomized participants in the comparison groups",
+              "intended_effect_measure": "Hazard ratio (semaglutide/placebo)",
+              "measurement": {
+                "method": "Time from randomization to first independently adjudicated cardiovascular death, nonfatal myocardial infarction (including silent MI), or nonfatal stroke.",
+                "metric": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event)"
+              },
+              "outcome_definition": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event)",
+              "time_point_or_window": {
+                "description": "In-trial observation from randomization to patient-specific end of follow-up, planned at week 109 (104 weeks treatment plus 5 weeks follow-up); median observation 2.1 years. Earlier withdrawal/loss to follow-up ends observation and yields censoring.",
+                "kind": "described"
+              }
+            },
+            "trial_id": "sustain-6"
+          }
+        ],
+        "no_domain_feedback": true,
+        "no_source_or_result_rewrite": true,
+        "source_review": [
+          {
+            "source_sha256": "b3bb207c4dbbb5c15a782357bedda120a34b685c03c1a660cd56a54b46a2a5de",
+            "pages": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "checked": "Main report confirms first three-component CV composite including silent MI, pooled0.5/1.0mg semaglutide versus pooled volume-matched placebo, all3297 randomized1648/1649, stratified Cox HR0.74 CI0.58\u20130.95 and events108/146. P2 andFig1p6 confirm planned109-week observation (104 treatment+5followup), not a104-week risk. P4median2.1years. Original request does not fix contrast/window; approve this main reported related mapping with uncertainty flags retained. Source-prespecified noninferiority and non-prespecified superiority distinguished."
+          },
+          {
+            "source": "Captured supplement appendix",
+            "pages": [
+              101
+            ],
+            "checked": "In-trial analyses censor non-event patients at end-of-trial visit scheduledWeek109, death or last directpatient/sitecontact, whicheverfirst. All randomized analyzed is not asserted to mean complete composite ascertainment."
+          },
+          {
+            "source": "Captured combined protocol/SAP",
+            "pages": [
+              268
+            ],
+            "checked": "Original versus final plan distinctions and unknown timing remain in saved scope; no historical registry bytes replayed, no uncertainty or data rewritten."
+          }
+        ]
+      },
+      "continuation": {
+        "same_session": "01a10f9c-cfe4-7060-87e7-ae82e62f7ef6",
+        "scope_only_approval": true,
+        "no_science_feedback": true,
+        "coverage": {
+          "passed": true,
+          "manifest_sha256": "0bc2b2c9dab00ce888f7ba72d4690a592d563f0dde2628d39bcfaa3093d74815",
+          "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+          "evidence_bundle_sha256": "635b58cf4e2498ab998033b7cbeec031d713acdb1ac0a4497d62245bf18693c2",
+          "required_window_count": 474,
+          "supplied_window_count": 474,
+          "required_image_count": 0,
+          "supplied_image_count": 0,
+          "scope": "declared research-design coverage only; no semantic sufficiency claim"
+        },
+        "files": {
+          "scope-approval.json": "a717fe44f8b1c5b5a26d3d81c453f96b965f02ca690e819ca898a7050c6e925e",
+          "approved-seed-state.json": "1402f8d4a060dce0310b2fdfa6ae751f27f92984dc978ef9c410d78f1f52667c",
+          "assessment-prompt.txt": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+          "assessment-evidence-manifest.json": "0bc2b2c9dab00ce888f7ba72d4690a592d563f0dde2628d39bcfaa3093d74815",
+          "assessment-native-evidence.bundle": "635b58cf4e2498ab998033b7cbeec031d713acdb1ac0a4497d62245bf18693c2",
+          "assessment-empty-text-recovery.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "run_stage.py": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+          "home/config.toml": "44d3faef2e92446fe165ed6c8463365885ca7b297adf65616f24d659ff6f490a"
+        }
+      },
+      "current_stage": "same-session assessment running",
+      "proposal_terminal_state_sha256": "24ce189f1be5b462db2e98f0abbd2d0d50e1c30c5a21e94a36451f7f97ebe7e2",
+      "initial_outputs_freeze_sha256": "9c6a24bf7265782f831d2a4b6fc5900a0c1598a40f06333eeb7eab865a2bd279",
+      "sealed_sqlite_state": {
+        "working.sqlite3": "0e274c8994c9f6077a948495ee7feec82e63e0d904c9c796b67d2b605cb79e52",
+        "canonical.sqlite3": "a104e24a0af30a1c8b93a55d7bee1fcec1af45d49f1070b82d31f06a3d7dc810",
+        "derivative.sqlite3": "3b310b419a45935ab3d70755571110d048e97b48759f457920e6124dd54aaa7d"
+      }
+    }
+  ],
+  "active_workflows": 2,
+  "completed_finalized_workflows": 0,
+  "original_results_and_failed_strata_preserved": true,
+  "no_domain_answers_or_reference_labels_supplied": true,
+  "clean_full_suite": "One durable exact0dc9002 aggregate ongoing, passed47% without failure markers; no final green claim",
+  "ci": "Last immediate snapshots queued; no CI pass claim",
+  "pr": "483 draft; full aggregate plus fixedten outcomes/audits required before readiness"
+}

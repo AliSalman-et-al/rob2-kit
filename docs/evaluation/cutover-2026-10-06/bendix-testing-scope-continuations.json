@@ -1,0 +1,121 @@
+{
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "cases": [
+    {
+      "slug": "bendix-1996",
+      "proposal_terminal": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10fde-1951-7273-ad35-4196f0fb0b49",
+        "elapsed_seconds": 196.46168700797716,
+        "finalized_batch_observed": false,
+        "initial_sessions": 1,
+        "continuations": 0,
+        "no_operator_science_feedback": true
+      },
+      "review_reference": "sha256:91ea96271798b82fdd257c8ae19e32f5579befd8fb7394d1f91ed5d8b0dbbda6",
+      "relation": "narrower",
+      "source_review": {
+        "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+        "raw_sha256": "9366df364ca7d144ca7f7be4d88c863d8f8097fd916dd3722470c17f79ef4458",
+        "inspected": "Original report pages1-6 source-bound captured text, especially methods page2, dropout narrative page3/6, comparator page4 and result/timing page5.",
+        "matching_result": "29/45 vs14/49 able to work, defined as job/school/seeking work; first Monday after122days after graduation with control interval matched; no designated primary outcome.",
+        "retained_qualifiers": [
+          "Abstract29% versus body28% control percentage with identical14/49 counts.",
+          "Reported completer/returner analysis45/49 narrower than all randomized55/51; excluded nonstarters/dropouts not silently treated as unobserved outcomes.",
+          "No calculated effect or invented confidence interval; precise test allocation and ascertainment details remain unclear.",
+          "Actual full-time employment17vs10, change from baseline and sick-leave outcomes are distinct Results."
+        ]
+      },
+      "scope_approval_sha256": "edf3568b6beebc7c010e11346c1b9128d8b662408d6a8fcc6622a10a1d9b1725",
+      "continuation_freeze_sha256": "c676c2bd5de44ff27446f010239c92ec9106a9c25d404fcd64dbc2b3f5848487",
+      "proposal_session_seal": {
+        "rollout-2026-10-06T11-19-36-01a10fde-1951-7273-ad35-4196f0fb0b49.jsonl": "0060fb27e54aef3f0359ab604e2012775eac7e639acedafd3990a6b43f1803d6"
+      },
+      "actual_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "assessment_running": true,
+      "domain_feedback": false
+    },
+    {
+      "slug": "testing",
+      "proposal_terminal": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10fde-1906-7c63-8609-fa0456dc97aa",
+        "elapsed_seconds": 248.6580813600449,
+        "finalized_batch_observed": false,
+        "initial_sessions": 1,
+        "continuations": 0,
+        "no_operator_science_feedback": true
+      },
+      "review_reference": "sha256:d3bef33a9d5fb8188490e89cd9aec6fcc9f29c54e2fcabd621c23ccb49836d8c",
+      "relation": "related",
+      "source_review": [
+        {
+          "source_sha256": "c538b35da8618888311a5f6944d40439e9e7da71bf59d8991c460172a3538c21",
+          "pages": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "checked": "Original article outcome definition and all-randomized methods, flow257/246 and20 nonrecipients, overallTable2 HR0.53CI0.39\u20130.72 and74/106 events, mean4.2/median3.5variable follow-up and Figure2 at-least-one-dose caption conflict checked. Preserve conflicting reported-analysis descriptions; no assertion of complete composite observation from vital status."
+        },
+        {
+          "source_sha256": "6ae3c04b9c92493bf6739cc4f57eb6c07997c1c49dcf978111e44822b7985f7f",
+          "pages": [
+            1,
+            9,
+            97,
+            282,
+            288,
+            293,
+            294
+          ],
+          "checked": "Original50% vs2015revised40%, finalSAP overall composite vs low-dose-specific primary outcomes, persistence/finalvisit detail, non-dialysis/refusal kidney failure criteria and region fixed-covariate plan differ from article site-random-effect model; these remain qualified. SAP embedded20/21July2021 dates not proof of chronology before unblinding."
+        },
+        {
+          "source_sha256": "c24822f974edae1e5ed08dd0f9c6f5f515afa16f002343654ee16def2bc126f2",
+          "pages": [
+            2
+          ],
+          "checked": "Timeline confirms2015endpoint modification. Current registry remains dated augmentation; actual performance and result-driven selection not adjudicated in scope review."
+        }
+      ],
+      "scope_approval_sha256": "cfd0ce891603e0e18b1a53767494ec85cd5d2db81968486548c507bf2c41d9b5",
+      "continuation_freeze_sha256": "1699faaf1472001582677c9ed0c770f9d5a6a9d84a27cc07fba6c75bb79eef2a",
+      "proposal_session_seal": {
+        "rollout-2026-10-06T11-19-36-01a10fde-1906-7c63-8609-fa0456dc97aa.jsonl": "ff8d59fbac4ffd70e47ce3780d4376312571503ae0ae0b24cf413bb519bfccc8"
+      },
+      "actual_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "medium"
+        }
+      ],
+      "assessment_running": true,
+      "domain_feedback": false
+    }
+  ],
+  "operator_helper": {
+    "sha256": "c988a4a367179ada8e1a75eaffcf8eec334c8d2542c70bc7124d07aaf0f5e308",
+    "only_change": "Base directory relocated; validation, approval and continuation evidence-freeze logic identical.",
+    "first_wrong_base_attempt": "Failed before mutation reading absent original-case proposal-exit; script and log preserved; corrected before host approval."
+  },
+  "scientific_results": "Pending, no accuracy gain claim."
+}

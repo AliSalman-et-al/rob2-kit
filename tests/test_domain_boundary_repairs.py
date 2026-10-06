@@ -14,6 +14,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -128,37 +129,28 @@ def test_public_d2_and_d3_contexts_share_result_bound_source_flow(tmp_path: Path
             assert len(card["missing_data"]["rows"]) == 2
 
 
-def test_public_cards_expose_neutral_paired_contrasts_without_answers(tmp_path: Path) -> None:
+def test_public_comparisons_keep_reconstruction_separate_from_official_questions(
+    tmp_path: Path,
+) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    expected_pairs = {
-        "domain:deviations": {
-            "d2-protocol-status-same-trial-context",
-            "d2-cause-same-protocol-inconsistency",
-        },
-        "domain:missing": {
-            "d3-complete-versus-unresolved-availability",
-            "d3-mitigation-evidence",
-            "d3-possible-versus-likely-dependence",
-        },
-        "domain:measurement": {
-            "d4-objective-versus-judgment-dependent",
-            "d4-equal-versus-differential-detection",
-            "d4-assessor-awareness",
-            "d4-possible-versus-likely-influence",
-        },
-    }
-    for domain_id, required_pairs in expected_pairs.items():
+    for domain_id in (
+        "domain:deviations",
+        "domain:missing",
+        "domain:measurement",
+        "domain:selection",
+    ):
         context = _call(
-            workspace,
-            "get_domain_context",
-            {"trial_id": "trial", "domain_id": domain_id},
+            workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
         )
         assert context["outcome"] == "success", context
-        card = context["data"]["comparison_cards"][0]
-        pairs = card["paired_examples"]
-        assert required_pairs <= {item["pair_id"] for item in pairs}
-        assert not any("answer" in item for item in pairs)
-        assert all(item["status"] == "unknown" for item in card["propositions"])
+        data = context["data"]
+        card = data["comparison_cards"][0]
+        assert card["slots"]
+        assert not {"propositions", "paired_examples", "answers", "judgment"} & card.keys()
+        official = {section["excerpt"] for section in data["official_guidance"]["sections"]}
+        for question in SCIENTIFIC_PACK.questions:
+            if question.domain_id == domain_id:
+                assert question.guidance.official.source_excerpt in official
 
 
 def test_blinded_trial_d2_6_can_carry_flow_without_activating_d2_3(tmp_path: Path) -> None:
@@ -261,7 +253,9 @@ def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
                     for answer in arguments["answers"]
                 ],
             }
-            result = await client.call_tool("save_domain_judgment", reasoning, raise_on_error=False)
+            result = await client.call_tool(
+                "save_domain_judgment", _domain_submission(reasoning), raise_on_error=False
+            )
             return dict(result.structured_content or {})
 
     return asyncio.run(invoke())
@@ -273,10 +267,12 @@ def _stored_checkpoint(workspace: Path, domain_id: str = "domain:randomization")
 
 def _assert_repairs(receipt: dict[str, Any]) -> None:
     assert receipt["outcome"] == "repair"
-    assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+    assert all(
+        set(item) == {"path", "code", "detail", "answer_path"} for item in receipt["repairs"]
+    )
 
 
-def test_domain_public_shape_is_flat_and_closed() -> None:
+def test_domain_public_shape_is_closed_with_optional_observation_link() -> None:
     async def inspect() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(
@@ -298,42 +294,44 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "missing_data",
         "unknowns",
         "counterevidence",
+        "limitations",
+        "absence_searches",
     }
-    bases = [
-        _resolve_local(draft, item) for item in answer["properties"]["bases"]["items"]["oneOf"]
-    ]
-    kinds = {
-        item["properties"]["kind"].get("const") or item["properties"]["kind"]["enum"][0]
-        for item in bases
+    base_variants = answer["properties"]["bases"]["items"]["anyOf"]
+    assert base_variants[1]["type"] == "string"
+    direct = _resolve_local(draft, base_variants[0])
+    assert set(direct["properties"]) == {"role", "evidence", "working_observation"}
+    assert set(direct["required"]) == {"role", "evidence"}
+    variants = direct["properties"]["working_observation"]["anyOf"]
+    compact = variants[0]
+    assert compact["additionalProperties"] is False
+    assert set(compact["properties"]) == {"text", "scope"}
+    assert compact["required"] == ["text"]
+    link = variants[1]
+    assert link["additionalProperties"] is False
+    assert set(link["properties"]) == {
+        "checkpoint_identity",
+        "observation",
+        "result_step",
+        "transfer",
+        "count_evidence",
     }
-    assert kinds == {
+    assert "oneOf" not in answer["properties"]["bases"]["items"]
+    assert direct["properties"]["role"]["enum"] == [
         "direct_support",
-        "absence",
-        "limitation",
-    }
-    assert all("question_id" not in item["properties"] for item in bases)
-    direct = next(
-        item
-        for item in bases
-        if item["properties"]["kind"].get("enum")
-        == ["direct_support", "indirect_support", "contradiction", "context", "inference"]
-    )
-    assert set(direct["properties"]) == {"kind", "evidence"}
-    absence = next(item for item in bases if item["properties"]["kind"].get("const") == "absence")
-    assert absence["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{8,64}$"
-    limitation = next(
-        item for item in bases if item["properties"]["kind"].get("const") == "limitation"
-    )
-    assert set(limitation["properties"]) == {
-        "kind",
-        "unresolved_premise",
+        "indirect_support",
+        "contradiction",
+        "context",
+        "inference",
+    ]
+    limit = _resolve_local(draft, answer["properties"]["limitations"]["items"])
+    assert set(limit["properties"]) == {
+        "premise",
         "stopping_rationale",
         "search_receipt",
     }
-    receipt_schema = limitation["properties"]["search_receipt"]
-    receipt_options = receipt_schema.get("anyOf", [receipt_schema])
-    assert any(option.get("pattern") == r"^sr_[0-9a-f]{8,64}$" for option in receipt_options)
-    assert "search_receipt" not in limitation.get("required", [])
+    assert "kind" not in limit["properties"]
+    assert answer["properties"]["absence_searches"]["items"]["pattern"] == (r"^sr_[0-9a-f]{8,64}$")
     missing_row = _resolve_local(draft, answer["properties"]["missing_data"]["anyOf"][0]["items"])
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{8,64}$"
 
@@ -650,8 +648,10 @@ def test_domain_context_recovers_uncommitted_trial_evidence(tmp_path: Path) -> N
     assert recovered[domain_evidence["handle"]]["inclusion_reason"] == "explicit_carry_forward"
 
 
+@pytest.mark.parametrize("counter_kind", ["direct_support", "context"])
 def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     tmp_path: Path,
+    counter_kind: str,
 ) -> None:
     workspace = _workspace(tmp_path)
     main = workspace / "input" / "trial" / "main.txt"
@@ -679,11 +679,18 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
         },
     )["data"]["evidence"]
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence=domain_evidence),
-    )
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence=domain_evidence)
+    counter_index = 1 if counter_kind == "context" else 0
+    for answer in draft["answers"]:
+        if counter_kind == "context":
+            answer["bases"].append({"kind": counter_kind, "evidence": domain_evidence["handle"]})
+        answer["counterevidence"] = [
+            {
+                "basis_index": counter_index,
+                "implication": "This passage limits certainty in the answer.",
+            }
+        ]
+    saved = _call(workspace, "save_domain_judgment", draft)
     assert saved["outcome"] == "success", saved
     (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
 
@@ -694,12 +701,35 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     context = _call(
         workspace,
         "get_domain_context",
-        {"domain_id": "domain:randomization", "include_candidates": True},
+        {"domain_id": "domain:randomization"},
     )["data"]
 
     recovered = {item["identity"]: item for item in context["evidence"]}
     assert recovered[domain_evidence["identity"]]["handle"] == domain_evidence["handle"]
     assert recovered[domain_evidence["identity"]]["quote"] == domain_evidence["quote"]
+
+    for answer in context["answers"]:
+        assert answer["counterevidence"] == [
+            {
+                "basis_index": index,
+                "implication": "This passage limits certainty in the answer.",
+            }
+            for index in range(counter_index + 1)
+        ]
+        assert answer["bases"][counter_index]["kind"] == counter_kind
+        assert answer["bases"][counter_index]["evidence"] == domain_evidence["identity"]
+    passage = recovered[domain_evidence["identity"]]
+    reread = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {key: passage[key] for key in ("source_id", "page", "start_line", "end_line")}
+            ],
+        },
+    )["data"]["pages"][0]["numbered_text"]
+    assert domain_evidence["quote"] in reread
 
 
 def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: Path) -> None:
@@ -1270,11 +1300,9 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     assert set(result["evidence"][0]) == {"kind", "handle", "identity"}
     assert "alternatives" not in result
     assert (
-        "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
-        "discovery" in data["completion_rule"]
+        "Ground each active proposition and uncertainty in inspected Evidence, scoped search "
+        "receipts, or an explicit scientific limitation" in data["completion_rule"]
     )
-    assert any("protocol or SAP" in item for item in data["guidance"])
-    assert any("does not by itself prove" in item for item in data["traps"])
     question_card = data["questions"][0]
     assert set(question_card) == {
         "id",
@@ -1282,48 +1310,20 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "options",
         "activation_status",
         "activation",
-        "official_guidance",
-        "source_locator",
-        "bias_construct",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "answer_anchors",
-        "considerations",
-        "invalid_shortcuts",
+        "guidance_locator",
         "query_suggestions",
     }
-    assert question_card["official_guidance"]
-    assert question_card["source_locator"].startswith("Full guidance ")
-    pack_question = next(
-        item for item in SCIENTIFIC_PACK.questions if item.id == question_card["id"]
-    )
-    assert set(pack_question.guidance.model_dump(mode="json")) == {"official", "operational"}
-    assert set(pack_question.guidance.official.model_dump(mode="json")) == {
-        "version",
-        "source_locator",
-        "source_sha256",
-        "source_excerpt",
+    pack_question = next(q for q in SCIENTIFIC_PACK.questions if q.id == question_card["id"])
+    assert pack_question.guidance.official.source_locator == question_card["guidance_locator"]
+    assert pack_question.guidance.official.source_excerpt in {
+        section["excerpt"] for section in data["official_guidance"]["sections"]
     }
     assert set(pack_question.guidance.operational.model_dump(mode="json")) == {
         "id",
         "version",
         "attribution",
-        "bias_construct",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "answer_anchors",
-        "considerations",
-        "invalid_shortcuts",
         "query_suggestions",
     }
-    assert pack_question.guidance.official.source_excerpt == question_card["official_guidance"]
-    assert pack_question.guidance.official.source_locator == question_card["source_locator"]
-    assert pack_question.guidance.operational.decision_rule == question_card["decision_rule"]
-    assert pack_question.guidance.operational.considerations == tuple(
-        question_card["considerations"]
-    )
     assert {item["id"] for item in data["questions"]} == {
         item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == data["domain_id"]
     }
@@ -1377,7 +1377,7 @@ def test_domain_source_is_derived_from_selected_evidence(tmp_path: Path) -> None
     ],
 )
 @pytest.mark.parametrize("firm_answer", ["yes", "no"])
-def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence(
+def test_answer_certainty_is_not_rewritten_from_basis_roles(
     tmp_path: Path,
     probable_answer: str,
     circumstance: str,
@@ -1407,14 +1407,10 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
         search_receipt=receipt,
     )
     firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
-    repaired = _call_raw(workspace, firm)
-    _assert_repairs(repaired)
-    repair = next(
-        item for item in repaired["repairs"] if item["code"] == "answer_requires_direct_basis"
-    )
-    assert "question 'sq:deviations:participants-aware'" in repair["detail"]
-    assert f"'{firm_answer}'" in repair["detail"]
-    assert "probably_yes/probably_no" not in repair["detail"]
+    accepted_firm = _call_raw(workspace, firm)
+    assert accepted_firm["outcome"] == "success", accepted_firm
+    record = _state(workspace)["domain_records"]["trial:domain:deviations"]
+    assert record["answers"][0]["answer"] == firm_answer
 
 
 @pytest.mark.parametrize("appropriate_answer", ["yes", "probably_yes"])
@@ -1789,3 +1785,84 @@ def test_domain_duplicate_nested_basis_is_repaired_without_mutating_state(tmp_pa
     _assert_repairs(receipt)
     assert any(item["code"] == "duplicate_answer_basis" for item in receipt["repairs"])
     assert receipt["head"]["state_revision"] == revision
+
+
+def test_native_flow_preview_and_saved_context_preserve_visual_provenance(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    with pymupdf.open() as document:
+        page = document.new_page()
+        page.insert_text((48, 48), "Completed follow-up: 90. Outcome availability not specified.")
+        document.save(trial / "flow.pdf")
+    workspace, _evidence, revision = _assessment_workspace(tmp_path)
+    source = next(
+        source
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if source["label"] == "flow.pdf"
+    )
+    rendered = _call(
+        workspace,
+        "render_page",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+        },
+    )["data"]
+    visual = _call(
+        workspace,
+        "select_visual_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "delivery_receipt": rendered["delivery_receipt"],
+            "region": [0.0, 0.0, 1.0, 1.0],
+            "transcription": "Completion is reported as 90; endpoint observation is unspecified.",
+            "uncertainty": "Completion does not establish endpoint ascertainment.",
+        },
+    )["data"]["evidence"]
+    row = {
+        "arm": "A",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "final follow-up",
+        "completed": 90,
+        "basis": [visual["handle"]],
+    }
+    preview = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "missing_data": [row],
+        },
+    )
+    assert preview["outcome"] == "success", preview
+    draft = _domain_draft("trial", "domain:missing", revision, visual)
+    draft["answers"][0]["missing_data"] = [row]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    restored = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+        },
+    )
+    for response in (preview, restored):
+        flow = response["data"]["comparison_cards"][0]["participant_flow"]
+        completed = next(item for item in flow if item["kind"] == "completed")
+        figure = completed["figures"][0]
+        assert completed["passages"] == []
+        assert figure["handle"] == visual["handle"]
+        assert figure["render"] == visual["render"]
+        assert figure["source_id"] == visual["source_id"]
+        assert figure["delivery_receipt"] == visual["delivery_receipt"]
+        assert figure["region"] == visual["region"]
+        assert figure["provenance"] == "host_visual"
+        assert figure["uncertainty"] == visual["uncertainty"]
+        observed = next(item for item in flow if item["kind"] == "observed")
+        assert observed["value"] is None
+        assert observed["status"] == "unknown"

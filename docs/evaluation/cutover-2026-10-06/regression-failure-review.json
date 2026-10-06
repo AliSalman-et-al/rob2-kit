@@ -1,0 +1,163 @@
+{
+  "tested_candidate_sha": "f4912d81008f10ee8cd0082fd77d5a3df71fdcde",
+  "result": {
+    "failed": 14,
+    "passed": 1629,
+    "skipped": 8,
+    "elapsed_seconds": 2776.92,
+    "exit_status": 1
+  },
+  "artifacts": {
+    "clean-regression-f4912d8.log": {
+      "sha256": "4df3bee8b9f4a9f21e07de59a455a9cb5c900c5e0ae64ec282a1e853d930b4db",
+      "bytes": 47476
+    },
+    "clean-regression-f4912d8.xml": {
+      "sha256": "865f3c0d0a142dd36e11fee78dd522563e279efdef2cd14ab344ddb69f0d4d10",
+      "bytes": 320429
+    },
+    "clean-regression-f4912d8.exit": {
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    }
+  },
+  "failures": [
+    {
+      "test": "tests.test_contract_surface_budget::test_public_output_surface_is_closed_and_within_budget",
+      "classification": "retired_prose_assertion",
+      "cause": "Literal assertion expected removed competing rule/numbered local audit or active-only wording.",
+      "fix": "Check official-core authority, retained source reconstruction and accepted/ignored inactive answers; retain substantive budget/completion guards.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_domain_probe_controls::test_recorded_context_replays_losslessly_with_bounded_pages",
+      "classification": "consumer_reconstruction",
+      "cause": "Consumer did not reconstruct paginated official_guidance; offline replay treated its object as a list.",
+      "fix": "Use lossless shared reconstruction of stable header, array sections and official core; preserve exact equality, scope, cursor, byte-bound and structure assertions.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_bounded_domain_context::test_domain_context_pages_retain_scope_and_all_conditional_questions",
+      "classification": "consumer_reconstruction",
+      "cause": "Consumer did not reconstruct paginated official_guidance; offline replay treated its object as a list.",
+      "fix": "Use lossless shared reconstruction of stable header, array sections and official core; preserve exact equality, scope, cursor, byte-bound and structure assertions.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_bounded_domain_context::test_empty_delta_arrays_are_omittable_without_changing_reconstructed_context",
+      "classification": "consumer_reconstruction",
+      "cause": "Consumer did not reconstruct paginated official_guidance; offline replay treated its object as a list.",
+      "fix": "Use lossless shared reconstruction of stable header, array sections and official core; preserve exact equality, scope, cursor, byte-bound and structure assertions.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_bounded_domain_context::test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence",
+      "classification": "consumer_reconstruction",
+      "cause": "Consumer did not reconstruct paginated official_guidance; offline replay treated its object as a list.",
+      "fix": "Use lossless shared reconstruction of stable header, array sections and official core; preserve exact equality, scope, cursor, byte-bound and structure assertions.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_bounded_domain_context::test_domain_context_cursor_survives_unrelated_domain_commit",
+      "classification": "consumer_reconstruction",
+      "cause": "Consumer did not reconstruct paginated official_guidance; offline replay treated its object as a list.",
+      "fix": "Use lossless shared reconstruction of stable header, array sections and official core; preserve exact equality, scope, cursor, byte-bound and structure assertions.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_intake_contract::test_assessment_skill_preserves_result_choice_and_completion_guards",
+      "classification": "retired_prose_assertion",
+      "cause": "Literal assertion expected removed competing rule/numbered local audit or active-only wording.",
+      "fix": "Check official-core authority, retained source reconstruction and accepted/ignored inactive answers; retain substantive budget/completion guards.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_lean_domain_submission::test_complete_lean_d2_d3_d5_preserves_sources_uncertainty_and_native_labels[probably_yes-low]",
+      "classification": "retired_contract_assertion",
+      "cause": "Expected per-card official_guidance or the removed definitive-answer limitation gate.",
+      "fix": "Check complete core excerpts; preserve expected native labels, source identities and uncertainty. Missing active answer still rejects; host answer and limitation now both survive storage.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_lean_domain_submission::test_complete_lean_d2_d3_d5_preserves_sources_uncertainty_and_native_labels[no_information-some_concerns]",
+      "classification": "retired_contract_assertion",
+      "cause": "Expected per-card official_guidance or the removed definitive-answer limitation gate.",
+      "fix": "Check complete core excerpts; preserve expected native labels, source identities and uncertainty. Missing active answer still rejects; host answer and limitation now both survive storage.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_model_facing_assets::test_measurement_reference_keeps_ordered_outcome_specific_audit",
+      "classification": "retired_prose_assertion",
+      "cause": "Literal assertion expected removed competing rule/numbered local audit or active-only wording.",
+      "fix": "Check official-core authority, retained source reconstruction and accepted/ignored inactive answers; retain substantive budget/completion guards.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_lean_domain_submission::test_lean_keeps_canonical_active_path_and_uncertainty_checks[unresolved_definitive_claim]",
+      "classification": "retired_contract_assertion",
+      "cause": "Expected per-card official_guidance or the removed definitive-answer limitation gate.",
+      "fix": "Check complete core excerpts; preserve expected native labels, source identities and uncertainty. Missing active answer still rejects; host answer and limitation now both survive storage.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_result_delivery::test_structured_consumer_receives_the_complete_workflow_result",
+      "classification": "consumer_reconstruction",
+      "cause": "Consumer did not reconstruct paginated official_guidance; offline replay treated its object as a list.",
+      "fix": "Use lossless shared reconstruction of stable header, array sections and official core; preserve exact equality, scope, cursor, byte-bound and structure assertions.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_workspace_contract::test_legacy_active_batch_workspace_is_rejected_without_modification",
+      "classification": "retired_error_wording",
+      "cause": "Regex expected new empty workspace, while reviewed recovery says fresh workspace.",
+      "fix": "Match current actionable wording; retain unchanged database bytes and rejection behavior.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    },
+    {
+      "test": "tests.test_workspace_contract::test_v0_8_workspace_is_rejected_without_modification",
+      "classification": "retired_error_wording",
+      "cause": "Regex expected new empty workspace, while reviewed recovery says fresh workspace.",
+      "fix": "Match current actionable wording; retain unchanged database bytes and rejection behavior.",
+      "runtime_change_required_by_trace": false,
+      "focused_followup": "passed; see retained followup strata"
+    }
+  ],
+  "review_status": "All14traces individually inspected. Runtime/scientific content/release verifier unchanged. Diagnostic replay and consumer/test assumptions corrected; focused followups pending.",
+  "scope": "No skipped tests added, no case/sample replacement, no paid inference. This failed run is retained and not called green.",
+  "followup_strata": [
+    {
+      "log": "full-regression-failure-followup.log",
+      "result": "2 failed, 13 passed; two stale assertions subsequently refined",
+      "sha256": "52cbe8b9a3a66bfb2f99fef845a2aa2746d4c9f091dda638059a4fc738109bb2"
+    },
+    {
+      "log": "full-regression-failure-refined.log",
+      "result": "1 failed, 2 passed; exact official concealment wording subsequently corrected",
+      "sha256": "1ca89a358918c38d928c57d9dc75a6f95d0fb990f61eb35d6190a43bb2762423"
+    },
+    {
+      "log": "full-regression-final-wording.log",
+      "result": "1 failed; edit command unavailable, preserved technical attempt",
+      "sha256": "80f5ff069890e2498c839bda39a8a1f507f3798b2b4857d88d21c2eb08430337"
+    },
+    {
+      "log": "full-regression-final-wording-refined.log",
+      "result": "1 passed in 3.61s",
+      "sha256": "ef305d1aea37d97835af7e32f2d8b736c69b414049470c5048d108dff94ee78a"
+    }
+  ],
+  "conclusion": "All 14 original failures have focused passing followups. No single full-suite green result claimed; no production runtime/scientific asset change required."
+}

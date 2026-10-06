@@ -48,6 +48,8 @@ def normalize_missing_data_row(row: MissingDataRow | Mapping[str, Any]) -> dict[
     normalized["scope"] = {key: payload[key] for key in ("arm", "population", "unit", "time_point")}
     normalized["exclusions"] = payload.get("exclusions", [])
     normalized["basis"] = list(basis)
+    if "completed" in payload:
+        normalized["completed"] = payload["completed"]
     for key in ("result_identity", "endpoint", "severity", "window", "event_definition"):
         if key in payload:
             normalized[key] = payload[key]
@@ -114,6 +116,7 @@ def reconcile_missing_data(
             "randomized",
             "eligible",
             "treated",
+            "completed",
             "observed",
             "analyzed",
             "imputed",

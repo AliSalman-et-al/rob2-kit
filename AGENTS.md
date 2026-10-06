@@ -43,3 +43,17 @@ When triaging an issue, use the five-role vocabulary in `docs/agents/triage-labe
 ### Domain docs
 
 When a task changes domain terminology or decisions, follow `docs/agents/domain.md`.
+
+### Scientific diagnostics
+
+Before any future paid short scientific diagnostic, freeze its research question,
+criteria, model input and evidence manifest. Declare the exact source identities
+and page/line windows needed to test the question, including needed uncited
+passages; copying current citations alone does not establish completeness.
+Use `scripts/diagnostic_evidence_preflight.py:launch_checked` as the process launch
+point. It must pass before inference and record manifest/input hashes. Keep the
+private research requirements out of model input; include only source evidence
+and generic task instructions. The checker verifies declared coverage, not
+semantic support or correctness of the research design. Preserve failed checks
+and runs. A repeat still requires authorization; existing usage/tool/time guards
+remain necessary. This is a diagnostic protocol, not a production assessment gate.

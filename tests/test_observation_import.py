@@ -341,6 +341,8 @@ def test_frozen_live_transcript_preserves_original_event_positions() -> None:
         / "CHAARTED"
         / "phase-2.jsonl"
     )
+    if not path.is_file():
+        pytest.skip("Optional live CHAARTED transcript is not distributed with the repository.")
     raw = path.read_bytes()
     manifest = _manifest()
     manifest["transcripts"][0]["path"] = path.relative_to(Path(__file__).parents[1]).as_posix()

@@ -1,0 +1,2662 @@
+{
+  "case": "testing",
+  "purpose": "Sealed answers and selected evidence/source accesses for independent material-warrant review; adopted Domain/overall labels withheld. Structural verification is not scientific support certification.",
+  "artifact_sha256": "986c821234d74363c636c2bca58d5db12a38275f363573b07244a974f8bb7136",
+  "session_sha256": "30807c699a57f653aac1d16f34b8476189cd00b225004f9c64c8e693a4800eb2",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "runtime_strata": {
+    "initial_runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+    "freeze": "7355c4c original first two; 2a4f9fe amended remaining eight",
+    "host_recovery": false,
+    "same_session_idle_recovery": false,
+    "all_original_attempts_retained": true
+  },
+  "approved_result": {
+    "results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_9e93cc82a951bd92",
+            "eh_1560947b8d2dd551"
+          ],
+          "rationale": "Participants were centrally randomized individually 1:1 to oral methylprednisolone or matching placebo, in parallel groups; full-dose and reduced-dose recruitment cohorts were pooled."
+        },
+        "bindings": [
+          {
+            "evidence_index": 9,
+            "field": {
+              "path": "/reported/effect_measure"
+            },
+            "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+          },
+          {
+            "evidence_index": 9,
+            "field": {
+              "path": "/reported/estimate"
+            },
+            "value_digest": "sha256:f837ba6ce19c151e055f33bf96ee8ae2884597bfa620ad67884ed304945b73fe"
+          },
+          {
+            "evidence_index": 9,
+            "field": {
+              "path": "/reported/precision"
+            },
+            "value_digest": "sha256:e67b7018c1498a816413645acf1e127950ba2007f575eac07465dece7b8697f0"
+          },
+          {
+            "evidence_index": 9,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:c2b5dd748355187fad294873bc6b71f371b2715d6c29803fe65b13bd4691e13d"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "conflicting",
+          "comparison_groups": "specified",
+          "effect_measure": "specified",
+          "eligible_result_choice": "unclear",
+          "measurement": "conflicting",
+          "outcome_definition": "conflicting",
+          "source_table_meaning": "specified",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_0503aa61a5e5592f",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_0f1b32d8f8d83821",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_1560947b8d2dd551",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_183f48e6c4c771d9",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_1ed3a33a3011c7d2",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_27178ea729aed4ec",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_2d1e0eca8685e16b",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_4c60ce615d2a3bb9",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_6c1e2e1173dbd68f",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_97b4f195ac1ce4c3",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_9e93cc82a951bd92",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_a3dd658bffa0ac43",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_a42e1c01b2cfa5bd",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_aa43dfaacc316b0d",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_adceb11a4ec37741",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_b7ea3d5cb63afecd",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_ea1509835cd0d440",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_fee108ec711b3123",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "related",
+        "relation_rationale": "Non-exact related mapping; correspondence is ambiguous, not a demonstrated superset or subset. Propose the overall Table 2 reported composite and adjusted Cox HR 0.53 (95% CI, 0.39-0.72), methylprednisolone versus placebo over all reported follow-up from randomization, pooling both dose cohorts. It directly covers the requested event family and is closer than the all-cause-death composite (HR 0.56), kidney-failure component (HR 0.59), dose-specific HRs (0.58 and 0.27), or post hoc flexible-model HR 0.54. The user specifies no contrast, fixed time, analysis model or uniquely designated primary Result; these are proposed for approval. The article calls this endpoint primary, but that does not establish a unique primary designation across all sources or the original dossier's history: the original 2011 protocol used 50%, revised to 40% in May 2015, and the later SAP/current registry also designate low-dose-specific proteinuria/eGFR outcomes as primary. Exact correspondence remains ambiguous because persistence/final-measurement criteria add detail to the requested 40% decline, the detailed SAP kidney-failure definition also includes no-dialysis/refusal criteria, and analysis-population/model descriptions conflict. The article reports site random effect plus three stratification fixed effects; final SAP specifies region and other stratification fixed covariates and Figure 2 also names ethnicity. Preserve these without asserting performed analysis from plans. Current registry capture is dated augmentation, not replayed historical registry evidence; embedded plan dates do not prove prespecification before unblinding.",
+        "reported": {
+          "analysis_population": "Reported overall analysis of 503 randomized participants (257 methylprednisolone, 246 placebo), pooling both dose cohorts. Methods and flow report all randomized participants regardless of treatment receipt/adherence; Figure 2 legend instead states randomized participants receiving at least one dose. Actual restriction remains unresolved; 20 received no randomized therapy. Censoring at non-kidney death, loss to follow-up, withdrawal or trial end; 493 had vital status available at completion, which does not establish complete composite ascertainment.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "40% eGFR reduction, kidney failure, or death due to kidney disease"
+          },
+          "estimate": "0.53",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.39-0.72"
+        },
+        "requested_outcome": "Composite of 40% decline in eGFR, kidney failure (dialysis or transplant), or death due to kidney disease",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Assignment to oral methylprednisolone, pooling original full-dose and subsequent reduced-dose regimens, with background optimized care and antibiotic prophylaxis in the reduced-dose cohort.",
+              "id": "methylprednisolone"
+            },
+            {
+              "assignment": "Assignment to matching placebo in both contemporaneous dose cohorts, with background optimized care and antibiotic prophylaxis in the reduced-dose cohort.",
+              "id": "placebo"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Hazard ratio",
+          "measurement": {
+            "method": "First occurrence of 40% decline in eGFR, kidney failure requiring maintenance dialysis or kidney transplant, or death due to kidney disease; proposed report uses sustained eGFR decline confirmed at least 30 days later or occurring at the final available measurement.",
+            "metric": "Composite of 40% decline in eGFR, kidney failure (dialysis or transplant), or death due to kidney disease"
+          },
+          "outcome_definition": "Composite of 40% decline in eGFR, kidney failure (dialysis or transplant), or death due to kidney disease",
+          "time_point_or_window": {
+            "description": "Time from randomization to first qualifying event during trial follow-up through June 2021; mean follow-up 4.2 years, median 3.5 years; variable follow-up, not a fixed 4.2-year risk.",
+            "kind": "described"
+          }
+        },
+        "trial_id": "testing"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "label": "jama_lv_2022_oi_220041.pdf",
+      "logical_path": "jama_lv_2022_oi_220041.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 11,
+      "projection_hash": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "role": "main_article",
+      "sha256": "sha256:c538b35da8618888311a5f6944d40439e9e7da71bf59d8991c460172a3538c21",
+      "trial_id": "testing"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "label": "joi220041supp1_prod.pdf",
+      "logical_path": "joi220041supp1_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 334,
+      "projection_hash": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "role": "supplement",
+      "sha256": "sha256:6ae3c04b9c92493bf6739cc4f57eb6c07997c1c49dcf978111e44822b7985f7f",
+      "trial_id": "testing"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_ae5710389c3b23b14de5899d7313fde9a4aa44abf8d54375e4c2b79ba1e66fe5",
+      "label": "joi220041supp2_prod.pdf",
+      "logical_path": "joi220041supp2_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 14,
+      "projection_hash": "sha256:dc7c09252a7474cf40401abda0805620e777f7e2a093dceb8366941ca0d2b16a",
+      "role": "supplement",
+      "sha256": "sha256:c24822f974edae1e5ed08dd0f9c6f5f515afa16f002343654ee16def2bc126f2",
+      "trial_id": "testing"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_e3fd74cc498385083245335689abe6d86e70a86aebc3b15a75f4c104770efff5",
+      "label": "joi220041supp3_prod.pdf",
+      "logical_path": "joi220041supp3_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 25,
+      "projection_hash": "sha256:7d591b4e61a8928f1be8b406b2c8abc805e0a36c1addd7044cebc9b70263fc4c",
+      "role": "supplement",
+      "sha256": "sha256:9fbdcb7118d9321d118050b9176334d9255929a26bac4a1d18987c72de7ab7c3",
+      "trial_id": "testing"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_535f935a9c9b2e8d811393370c5a0c70e49cd89f270e761d91dcd7270be54164",
+      "label": "joi220041supp4_prod.pdf",
+      "logical_path": "joi220041supp4_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:a9b2d2531e094f1a32405a237f9856ad298fb1dfb670a1d85321128f46bcaf97",
+      "role": "supplement",
+      "sha256": "sha256:6792ccad981f36d816f787967bff8ba107a49279dcaf1b1587d3786690b198d6",
+      "trial_id": "testing"
+    },
+    {
+      "declared_role": null,
+      "id": "source_a6c2c02c8d1f671f03728ea247975ee4447bca6cb76498ed0e61d93abc8582b6",
+      "label": "ClinicalTrials.gov NCT01560052",
+      "logical_path": "registry/NCT01560052.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:d60ff08cabb9977901eeb7175908b937207e9ec00dc33c7188325e8698097c6e",
+      "role": "registry",
+      "sha256": "sha256:d99167c41de544b44de5838f7b88e2b3b773277e4e5506149cec0eb37ce50561",
+      "trial_id": "testing"
+    }
+  ],
+  "questions": [
+    {
+      "domain_id": "domain:deviations",
+      "checkpoint_identity": "sha256:b31161aba790ca850ce5d5009274664227aecbb9f208d6417649e1632eb44748",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ],
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "Participants initially received masked active drug or matching placebo, but the report explicitly states the recruited full-dose cohort was later unblinded. The selected overall Result includes their subsequent follow-up, so awareness occurred during the relevant trial window.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [
+            "Individual awareness timing before the cohort unblinding is not reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:1560947b8d2dd551cb16ff20ebdb6df01d77b1c9c0eab890bd77f9cedcaa87a1",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "Initially masked investigators and site staff were informed at the safety halt and the original cohort was subsequently unblinded. This establishes later awareness for the full-dose phase despite masking in the reduced-dose cohort.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:1560947b8d2dd551cb16ff20ebdb6df01d77b1c9c0eab890bd77f9cedcaa87a1",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "The reported changes are safety-directed treatment cessation, adverse-event withdrawals and later protocol dose reduction/prophylaxis in both arms. Toxicity-related cessation is consistent with the intended treatment strategy under official guidance, not by itself a trial-context deviation. Participant choices and nonreceipt lack evidence of trial-induced compensatory treatment; probably no qualifying deviation is reasonable, while post-unblinding cointerventions remain incompletely reported.",
+          "question_id": "sq:deviations:context-deviations",
+          "unknowns": [
+            "Arm-specific nonprotocol cointerventions after unblinding and reasons for all nonreceipt are not reported in the inspected conduct/flow sections."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0f1b32d8f8d83821528f3c1b28a2bdfdc48df6a0bf019f0b7a5b72de33227657",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:f80aee395fd4f24ab929e60382b8aa83a2f74d967e432e5644b370c7a106fa43",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:1a13b8f3eb54cf8c588b4f2b6be48dd843d909b3fd2702fdf29b5d46dc5074e6",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Reviewed report intervention course and flow, supplement contents and immunosuppression hits, and protocol concomitant-treatment sections. These describe plans, baseline treatment and safety changes, not a complete conduct inventory; no qualifying mechanism is established.",
+              "unresolved_premise": "Post-unblinding nonprotocol treatment use and trial-context motives remain incompletely described."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "Legend contradicts all-randomized methods and denominators; cannot certify a complete ITT analysis from its label."
+            }
+          ],
+          "justification": "Methods explicitly report all randomized patients analyzed as assigned, and flow/Table 2 use 257/246; the SAP plans the same. However Figure 2's legend explicitly limits analysis to participants receiving at least one dose. A treatment-receipt exclusion would be inappropriate for assignment effects. The conflicting statements do not establish the actual selected HR population, so it remains unresolved.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [
+            "Whether the at-least-one-dose statement applies to the selected Table 2 HR or is a legend error."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:1560947b8d2dd551cb16ff20ebdb6df01d77b1c9c0eab890bd77f9cedcaa87a1",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:4c60ce615d2a3bb9bafdd21a1daa61e29636175a8742da15080f2c14cd07cf33",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Reviewed methods, flow, Table 2, Figure 2 legend and SAP ITT/subject-disposition sections. SAP disposition tables are unfilled templates, not performed-analysis confirmation.",
+              "unresolved_premise": "Actual analysis restriction is unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "The stated receipt restriction could introduce post-randomization selection; similar numbers alone do not rule it out."
+            }
+          ],
+          "justification": "If the legend restriction was implemented, it would exclude 9 methylprednisolone and 11 placebo participants among 503. The composite is common (74 versus 106 events) and the reported HR is 0.53. This small, roughly balanced potential exclusion is unlikely to substantially alter the reported benefit, although its effect cannot be quantified and prognosis is unknown. This is a probable judgment, not a 5% cutoff or proof of harmless exclusion.",
+          "question_id": "sq:deviations:substantial-impact",
+          "unknowns": [
+            "Reasons/prognosis/outcomes of nonreceivers and whether they were actually excluded are unavailable."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:0f1b32d8f8d83821528f3c1b28a2bdfdc48df6a0bf019f0b7a5b72de33227657",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Inspected reported nonreceipt counts, event counts and analysis sections; no nonreceiver-specific outcomes or analysis reconciliation are supplied.",
+              "unresolved_premise": "Exact exclusion effect cannot be reconstructed."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:measurement",
+      "checkpoint_identity": "sha256:a0a9363437ea61c5ec46888a1edfa06ccc7a2149885c3cc7f2586dabdab6f5b9",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "SAP uses 4-week confirmation and detailed no-dialysis/refusal criteria beyond the report summary; exact implementation is unresolved."
+            },
+            {
+              "basis_index": 3,
+              "implication": "SAP uses 4-week confirmation and detailed no-dialysis/refusal criteria beyond the report summary; exact implementation is unresolved."
+            }
+          ],
+          "justification": "Serial creatinine-derived sustained eGFR decline and recorded maintenance dialysis/transplant are appropriate measures of the approved event family. Protocol describes calibrated creatinine and confirmatory measurements, a plan rather than a laboratory audit. SAP/report definition differences and the final-measurement exception are retained, but do not demonstrate an invalid measuring instrument.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [
+            "Actual calibration compliance and implementation of differing detailed definitions."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:991778f34d1f0989b7f986224ecd611b0fe35be126d0e3cb28d35cf396cede0d",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:1ed3a33a3011c7d2cbbb6a898bf6788cdb00642c591d5b1a72b3ec83f0fe59ed",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Safety events and full-dose unblinding create potential extra contacts and awareness, without establishing systematic arm-specific ascertainment."
+            },
+            {
+              "basis_index": 3,
+              "implication": "Safety events and full-dose unblinding create potential extra contacts and awareness, without establishing systematic arm-specific ascertainment."
+            }
+          ],
+          "justification": "Report gives a common visit/contact schedule and common composite thresholds, with initially masked contemporaneous placebo comparisons. Regional laboratory methods apply by site rather than assignment. No reported arm-specific surveillance difference is established. Toxicity and unblinding could change unscheduled contacts; actual differential testing is unknown, so this is probable rather than definite.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [
+            "Arm-specific unscheduled testing and completion of repeat measurements."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:991778f34d1f0989b7f986224ecd611b0fe35be126d0e3cb28d35cf396cede0d",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Reviewed report ascertainment, blinding and component counts plus protocol laboratory/confirmation procedures and detailed SAP definitions. These bound the concern but do not supply an actual decision audit or first-event decomposition.",
+              "unresolved_premise": "Actual arm-specific laboratory attendance, dialysis decision-making and first-event component contributions after full-dose unblinding are unavailable."
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Initial masking and blinded independent kidney-failure adjudication protect other stages; they do not blind earlier provider decisions after unblinding."
+            }
+          ],
+          "justification": "Original full-dose participants and investigators were informed and later unblinded during the selected pooled follow-up. Clinical providers making dialysis decisions are assessors for that component, even though a separate independent committee adjudicated kidney failure blinded. Awareness therefore existed for part of this Result's window.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [
+            "Awareness of each individual clinical decision maker and laboratory operator."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Blinded adjudication, sustained biochemical decline and detailed clinical criteria limit discretion, but do not eliminate earlier decision influence."
+            },
+            {
+              "basis_index": 3,
+              "implication": "Blinded adjudication, sustained biochemical decline and detailed clinical criteria limit discretion, but do not eliminate earlier decision influence."
+            }
+          ],
+          "justification": "Dialysis initiation is a provider decision that could be influenced by assignment knowledge; subsequent blinded classification cannot undo a decision to initiate or defer dialysis. Kidney-failure events are numerous (50/67) relative to 74/106 composite events, although overlap and first-event contributions are unknown. eGFR is substantially more objective, but cannot be assumed to make the decision component immaterial.",
+          "question_id": "sq:measurement:influence-possible",
+          "unknowns": [
+            "Number of composite first events caused by dialysis decisions rather than earlier eGFR decline."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:ee78c7dd09ae63c8f80cd2282308e5c34c030df2256520804da2bdb4dd331d89",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Reviewed report ascertainment, blinding and component counts plus protocol laboratory/confirmation procedures and detailed SAP definitions. These bound the concern but do not supply an actual decision audit or first-event decomposition.",
+              "unresolved_premise": "Actual arm-specific laboratory attendance, dialysis decision-making and first-event component contributions after full-dose unblinding are unavailable."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Published interim benefit, full-cohort unblinding and substantial kidney-failure counts could strengthen provider expectations; no decision audit resolves this."
+            },
+            {
+              "basis_index": 3,
+              "implication": "Published interim benefit, full-cohort unblinding and substantial kidney-failure counts could strengthen provider expectations; no decision audit resolves this."
+            },
+            {
+              "basis_index": 4,
+              "implication": "Published interim benefit, full-cohort unblinding and substantial kidney-failure counts could strengthen provider expectations; no decision audit resolves this."
+            }
+          ],
+          "justification": "Serial objective renal-function measurements, maintenance-treatment requirements and blinded kidney-failure adjudication reduce the chance of assignment-driven classification materially altering the composite. There is no inspected evidence of actual differential dialysis initiation. Nevertheless the important decision component and post-unblinding interim benefit knowledge leave a possibility warranting some concerns rather than a claim of complete protection.",
+          "question_id": "sq:measurement:influence-likely",
+          "unknowns": [
+            "Actual dialysis timing, clinicians' beliefs and component first-event contributions after unblinding."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:1a13b8f3eb54cf8c588b4f2b6be48dd843d909b3fd2702fdf29b5d46dc5074e6",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ee78c7dd09ae63c8f80cd2282308e5c34c030df2256520804da2bdb4dd331d89",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Reviewed report ascertainment, blinding and component counts plus protocol laboratory/confirmation procedures and detailed SAP definitions. These bound the concern but do not supply an actual decision audit or first-event decomposition.",
+              "unresolved_premise": "Actual arm-specific laboratory attendance, dialysis decision-making and first-event component contributions after full-dose unblinding are unavailable."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:2f64d71d979ce96161559df631057185e4df8d3265c60b419a30c52da8620c9c",
+      "active_questions": [
+        "sq:missing:data-available"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "493 at completion specifically denotes vital status; it is not a measured composite denominator."
+            }
+          ],
+          "justification": "The report explicitly says almost all participants were followed to trial end with negligible missing data, and scheduled endpoint ascertainment continued after treatment cessation. Ten participants withdrew or were lost, compared with 180 observed composite events and HR 0.53. Together these support probable near-complete first-event ascertainment and little potential for important missing-data bias. The 493 with vital status and 503 analyzed are not treated as observed composite counts. The receipt-based exclusion conflict concerns D2 and does not establish measurements were unobtained. A dated first qualifying event needs no later complete follow-up for this first-event Result.",
+          "missing_data": {
+            "conflicts": [],
+            "rows": [
+              {
+                "analyzed": 257,
+                "basis": [
+                  "sha256:0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c",
+                  "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+                  "sha256:fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12"
+                ],
+                "eligible": null,
+                "endpoint": "40% eGFR reduction, kidney failure, or death due to kidney disease",
+                "event_count": 74,
+                "event_definition": "First reported composite event",
+                "excluded": null,
+                "exclusions": [
+                  "Reported 257 included, but Figure 2 conflicts by requiring at least one dose; actual receipt-based exclusion unresolved."
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 257
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 257,
+                "result_identity": "sha256:df877517969701e225117778ac003bb6758714ba4c5701bc34e6038b5f04e704",
+                "scope": {
+                  "arm": "methylprednisolone",
+                  "population": "All randomized methylprednisolone participants, pooling dose cohorts",
+                  "time_point": "Randomization through trial follow-up to June 2021",
+                  "unit": "participants"
+                },
+                "treated": null
+              },
+              {
+                "analyzed": 246,
+                "basis": [
+                  "sha256:0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c",
+                  "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+                  "sha256:fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12"
+                ],
+                "eligible": null,
+                "endpoint": "40% eGFR reduction, kidney failure, or death due to kidney disease",
+                "event_count": 106,
+                "event_definition": "First reported composite event",
+                "excluded": null,
+                "exclusions": [
+                  "Reported 246 included, but Figure 2 conflicts by requiring at least one dose; actual receipt-based exclusion unresolved."
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 246
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 246,
+                "result_identity": "sha256:df877517969701e225117778ac003bb6758714ba4c5701bc34e6038b5f04e704",
+                "scope": {
+                  "arm": "placebo",
+                  "population": "All randomized placebo participants, pooling dose cohorts",
+                  "time_point": "Randomization through trial follow-up to June 2021",
+                  "unit": "participants"
+                },
+                "treated": null
+              }
+            ]
+          },
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Exact arm-specific observed-composite counts and missed creatinine visits are not supplied.",
+            "Overlap of loss/withdrawal with already-observed composite events is unknown.",
+            "Vital-status completeness alone cannot establish the nonfatal composite's ascertainment."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:0f1b32d8f8d83821528f3c1b28a2bdfdc48df6a0bf019f0b7a5b72de33227657",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:00d4e2ec4981270bae11161c2e2307c6ffd26f32082b7170dfe33644df25b6da",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Reviewed report follow-up statement, flow and ascertainment schedule; SAP subject-disposition tables are proposed templates and missing-data methods describe censoring rather than conduct. Supplemental contents route to timelines, baseline/safety and longitudinal figures, not a completed missing-composite inventory. A probable judgment remains supported by reported near-complete follow-up; no exact observed count is invented.",
+              "unresolved_premise": "Exact component-specific availability cannot be reconstructed."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:randomization",
+      "checkpoint_identity": "sha256:7b8abf81fc1eb894ccf35eecf04df71573ddcf45bf7c0d20c05c31ff3654ad54",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The report states centrally generated minimization using four prognostic stratification variables. Official guidance generally treats minimization as random; absence of an explicit probability specification does not negate that reported procedure.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [
+            "The minimization random-component probability is not explicitly reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:1560947b8d2dd551cb16ff20ebdb6df01d77b1c9c0eab890bd77f9cedcaa87a1",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:7ffee71b26e943c7ddfb8630443c98ef3683cf095fe323bc37b893a3bc2eb1b9",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Reported central allocation after run-in eligibility, supported by the planned password-protected web allocation and restricted master list at the George Institute, probably prevented enrolling staff from knowing forthcoming assignments. The protocol supplies procedural context rather than independent proof of implementation; later full-dose unblinding concerns post-assignment processes.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [
+            "No implementation audit of recruiter access is available in these allocation sections."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:7ffee71b26e943c7ddfb8630443c98ef3683cf095fe323bc37b893a3bc2eb1b9",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:1ad924e09fa5307998b58a0d9140dd62d9770c4b4f55929787209324d5892625",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "All-randomized Table 1 and group sizes 257 versus 246 show broadly comparable baseline eGFR, proteinuria, age and blood pressure. Some histology and other differences are compatible with chance; no pattern suggests manipulated randomization. Differences between recruitment dose cohorts are not randomized-arm imbalance.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:183f48e6c4c771d9b4880b0173328780f17bf328044d72497d54128c66445454",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c",
+              "kind": "context"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:selection",
+      "checkpoint_identity": "sha256:b869c6b8be75d2141b2fc40a0befdbccda7468cbce25080e23a033a4c1379fb4",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 4,
+              "implication": "40% endpoint existedMay2015 and 2016 SAP intended ITT/Cox and analyst masking until signoff; these earlier intentions do not establish exact pooled analysis compliance."
+            },
+            {
+              "basis_index": 5,
+              "implication": "40% endpoint existedMay2015 and 2016 SAP intended ITT/Cox and analyst masking until signoff; these earlier intentions do not establish exact pooled analysis compliance."
+            }
+          ],
+          "justification": "Final pooled SAP was drafted2020 and finalizedJuly2021 after known unblinded full-dose outcomes published2017, which it explicitly acknowledges. Report site-random Cox differs from SAP region-fixed model; legend population/ethnicity also conflict. Exact reported HR is probably not in accordance with a fully finalized pre-unblinding plan. This does not prove result-driven selection or date reduced-dose unblinding.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "Reduced-dose lock/unblinding dates, actual model/population, whether earlier intentions fixed performed analysis."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8d15b12a542f3a65f197deed8d07b44a7f1fc5080bee9d60c60856032108c18f",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:bdd12f8bac1a5bdebdc91fb5350b078f85a469a45ed6a5669ef67075a97b8502",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:a3dd658bffa0ac43ed6a4225fbd0ecafec5f7a3cc90df7a728650cbdaee35743",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:21a592215ca6afb5bc57e650c1221dcefe9a01caf2fb67a00fd34987fc25db2a",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Compared original/May2015 definitions, 2016 transitional plan and blinding principles, finalSAP revision history and definitions/models, timeline, report methods/legend and actual alternative estimates. No reconciled historical analysis audit is supplied; current registry cannot recreate historical intent.",
+              "unresolved_premise": "Exact final definition, population and covariate finalization and the reason for discrepancies remain unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 5,
+              "implication": "Early40% intentions and actual reporting of threshold/composite alternatives argue against assuming selection solely from multiplicity."
+            },
+            {
+              "basis_index": 1,
+              "implication": "Early40% intentions and actual reporting of threshold/composite alternatives argue against assuming selection solely from multiplicity."
+            }
+          ],
+          "justification": "Approved40%/kidney-disease-death Result remains fixed; reported30%/50% and all-cause composites are separate competitors. Repeat/final-reading and no-dialysis kidneyfailure definition differences allow close alternative implementations. May2015 change predates reportedNovember safety pause, but rationale and prior outcome knowledge are unknown. Insufficiently reconciled intentions/conduct prevent judging result-based measurement selection. No user-designated primary hierarchy exists; report primary wording does not settle all versions.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [
+            "Actual implementation, whether close alternatives were calculated and chosen on results, rationale for50-to40 change."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:6c1e2e1173dbd68f60cb397df70c8d9332d90c29d573c6b93ebbdd3b3303f62c",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:a3dd658bffa0ac43ed6a4225fbd0ecafec5f7a3cc90df7a728650cbdaee35743",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:29bdc0094bc43aa1ffd9a42a2f21ef9860b142f9c03ed50fa16cd3d345c4c006",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:1ed3a33a3011c7d2cbbb6a898bf6788cdb00642c591d5b1a72b3ec83f0fe59ed",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Compared original/May2015 definitions, 2016 transitional plan and blinding principles, finalSAP revision history and definitions/models, timeline, report methods/legend and actual alternative estimates. No reconciled historical analysis audit is supplied; current registry cannot recreate historical intent.",
+              "unresolved_premise": "Exact final definition, population and covariate finalization and the reason for discrepancies remain unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Figure2legend >=1dose and additional ethnicity factor contradict methods/planned all-randomized covariates; this conflicts rather than proves that the selected Table2HR used the legend analysis."
+            },
+            {
+              "basis_index": 5,
+              "implication": "Earlier ITT/Cox intentions and actual close flexible sensitivity result protect against assuming favourable-model selection but do not reconcile differences."
+            },
+            {
+              "basis_index": 4,
+              "implication": "Earlier ITT/Cox intentions and actual close flexible sensitivity result protect against assuming favourable-model selection but do not reconcile differences."
+            }
+          ],
+          "justification": "Eligible pooled-HR alternatives include randomized versus >=1dose populations and different covariate models; original user request did not select a model. Planned all-randomized analysis conflicts with legend, and SAPregion-fixed/reportsite-random/legendethnicity models remain unreconciled. Actual flexible sensitivityHR0.54 is reported alongsideCox0.53, so multiple models alone do not prove withholding. Insufficient detail establishes neither complete analyses nor whether0.53 was selected on results.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "Performed denominator/covariates, other fitted alternatives and reasons for discrepancies."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12",
+              "kind": "contradiction"
+            },
+            {
+              "evidence": "sha256:4c60ce615d2a3bb9bafdd21a1daa61e29636175a8742da15080f2c14cd07cf33",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:21a592215ca6afb5bc57e650c1221dcefe9a01caf2fb67a00fd34987fc25db2a",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Compared original/May2015 definitions, 2016 transitional plan and blinding principles, finalSAP revision history and definitions/models, timeline, report methods/legend and actual alternative estimates. No reconciled historical analysis audit is supplied; current registry cannot recreate historical intent.",
+              "unresolved_premise": "Exact final definition, population and covariate finalization and the reason for discrepancies remain unresolved."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    }
+  ],
+  "selected_evidence": {
+    "00d4e2ec4981270bae11161c2e2307c6ffd26f32082b7170dfe33644df25b6da": {
+      "end": 1805,
+      "end_line": 32,
+      "handle": "eh_00d4e2ec4981270b",
+      "identity": "sha256:00d4e2ec4981270bae11161c2e2307c6ffd26f32082b7170dfe33644df25b6da",
+      "kind": "narrative",
+      "page": 141,
+      "quote": "\n7.17 Early Withdrawal from the Trial\nPatients who discontinue study drug or withdraw early from this study should return for\nthe assessments regularly as indicated by Table 7. If they refuse to return for these\nassessments or are unable to do so, every effort should be made to contact them or a\nknowledgeable informant by telephone to ask if any of the primary or secondary\nendpoints have occurred, at the foreseen visit dates, for the remaining duration of the\nstudy.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 1335,
+      "start_line": 25,
+      "trial_id": "testing"
+    },
+    "0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c": {
+      "end": 2872,
+      "end_line": 65,
+      "handle": "eh_0503aa61a5e5592f",
+      "identity": "sha256:0503aa61a5e5592fe125e5b950db18e85ebbc2ff36c475a5ef0df11d7d84222c",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "findings for analyses of secondary end points should be\ninterpreted as exploratory.\nAlmost all participants were followed up until the end of\nthe trial, thus resulting in negligible missing data. All analy-\nses were conducted by including all available data points. For\ntime-to-event analyses, participants were censored when they\nwere last known to be free of the event.\nThe homogeneity of the treatment effects on the primary\noutcome across specified subgroups was tested by adding\ninteraction terms to the Cox models, with predefined sub-\ngroups including methylprednisolone dosage regimen (full or\nreduced dose, each compared with the participants random-\nized to receive placebo during that trial period), baseline\nproteinuria (<3.0 g/d vs \u22653.0 g/d), baseline estimated GFR\n(<50 mL/min/1.73 m2 vs \u226550 mL/min/1.73 m2), endocapillary\nhypercellularity on histological scoring (yes [E1] vs no [E0]),\nself-reported ethnicity (Chinese vs other), and time between\nbiopsy and randomization. All P values were 2-sided, and\nP values less than .05 were considered to indicate statistical\nsignificance. All analyses were performed using SAS soft-\nware, version 9.4 (SAS Institute). Further details are included\nin the statistical analysis plan (Supplement 1).13\nResults\nEnrollment and Follow-up\nBetween May 2012 and November 2019, a total of 950 poten-\ntially eligible patients were screened at 67 sites from Australia\n(6 sites), Canada (8 sites), China (41 sites), India (6 sites), and\nMalaysia (6 sites). Overall, 503 participants were randomized\n(257 to the methylprednisolone group and 246 to the placebo\ngroup), including 262 based on the original full-dose protocol\nand 241 based on the reduced-dose protocol (Figure 1). Re-\ncruitment began earlier in China and Australia and continued\nthroughout the trial in these countries, whereas in Canada,\nIndia, and Malaysia, recruitment commenced only after re-\ncruitment to the full-dose protocol had been stopped.\nFigure 1. Flow of Participants in a Study of the Effect of Oral Methylprednisolone on Kidney Function Decline\nin Patients With IgA Nephropathy\n257 Included in the primary analysis\n246 Included in the primary analysis\n950 Adults with kidney biopsy that demonstrated\nIgA nephropathy screened\n447 Excluded\n249 Proteinuria <1 g/d\n104 Participant decision\n38 eGFR <20 (full-dose regimen), <30 (low-dose\nregimen), or >120 mL/min/1.73 m2\n12 Investigator decision\n12 Trial stopped recruitment\n8 Patient not contactable\n6 Positive hepatitis B surface antigen test\n4 Positive tuberculosis test\n4 Not adherent with run-in procedure\n10 Other\n503 Randomized\n7 Lost to follow-upd\n5 Lost contact\n2 Withdrew consent\n3 Lost to follow-upd\n2 Lost contact\n1 Withdrew consent\n257 Randomized to receive methylprednisolonea\n131 Received assigned intervention on\nfull-dose regimen\n117 Received assigned intervention on\nreduced-dose regimen",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "0f1b32d8f8d83821528f3c1b28a2bdfdc48df6a0bf019f0b7a5b72de33227657": {
+      "end": 4982,
+      "end_line": 134,
+      "handle": "eh_0f1b32d8f8d83821",
+      "identity": "sha256:0f1b32d8f8d83821528f3c1b28a2bdfdc48df6a0bf019f0b7a5b72de33227657",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "9 Did not receive assigned intervention\n246 Randomized to receive placebob\n122 Received assigned intervention on\nfull-dose regimen\n113 Received assigned intervention on\nreduced-dose regimen\n11 Did not receive assigned intervention\n215 Completed 6 to 9 mo of intervention\n33 Discontinued intervention\n9 Did not receive assigned intervention\n12 Independent data monitoring\ncommittee advicec\n10 Serious adverse event/adverse event\n8 Participant decision\n2 Incomplete information\n1 Investigator decision\n216 Completed 6 to 9 mo of intervention\n19 Discontinued intervention\n11 Did not receive assigned intervention\n11 Independent data monitoring\ncommittee advicec\n3 Serious adverse event/adverse event\n4 Participant decision\n1 Investigator decision\neGFR indicates estimated glomerular\nfiltration rate.\na Dosing of methylprednisolone\nstarting at 0.6-0.8 mg/kg per day\n(maximum, 48 mg/d) was reduced\nto a starting dose of 0.4 mg/kg per\nday (maximum, 32 mg/d) after an\ninterim analysis demonstrated a\nhigh rate of adverse events in the\nintervention group.\nbA total of 126 participants were\nrandomized to receive placebo\nduring the period when full-dose\nmethylprednisolone was being used\nfor the intervention group and 120\nwere randomized to receive placebo\nduring the period when\nreduced-dose methylprednisolone\nwas being used.\nc A total of 23 participants were still\nreceiving full-dose\nmethylprednisolone or placebo in\n2015 when the excess serious\nadverse events were identified.\nBased on the advice from the\nindependent data safety monitoring\ncommittee, treatment was\ndiscontinued for these 23\nindividuals, but scheduled follow-up\nwas continued and they were\nincluded in the primary analysis.\ndPatients lost to follow-up may have\nreceived, completed, or\ndiscontinued the assigned\nintervention.\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\nOriginal Investigation Research\njama.com\n(Reprinted)\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n1891\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 2873,
+      "start_line": 66,
+      "trial_id": "testing"
+    },
+    "1560947b8d2dd551cb16ff20ebdb6df01d77b1c9c0eab890bd77f9cedcaa87a1": {
+      "end": 6477,
+      "end_line": 123,
+      "handle": "eh_1560947b8d2dd551",
+      "identity": "sha256:1560947b8d2dd551cb16ff20ebdb6df01d77b1c9c0eab890bd77f9cedcaa87a1",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "placebo, stratified by site, proteinuria (<3 g/d or \u22653 g/d),\neGFR (<50 mL/min/1.73 m2 or \u226550 mL/min/1.73 m2), and\nkidney biopsy findings (endocapillary proliferation status\naccording to the Oxford classification definitions at the time\nthe trial was designed: E1 or E0).15 Randomization was per-\nformed using a minimization algorithm based on the 4\nstratification variables; the algorithm was centrally gener-\nated and used by all centers to minimize any imbalances in\nkey variables. Patients, investigators, site staff, and spon-\nsors were masked to treatment assignment.\nIntervention\nParticipants were originally randomized to receive oral meth-\nylprednisolone, 0.6 to 0.8 mg/kg per day, for 2 months (maxi-\nmum,48mg/d),taperingby8mgperdayeachmonthforatotal\ntreatment period of 6 to 8 months or matching placebo. For\nparticipants randomized from 2017 onward (the reduced-\ndose cohort), a lower dose of methylprednisolone was used:\n0.4 mg/kg per day (maximum, 32 mg/d) for 2 months fol-\nlowed by dose tapering by 4 mg per day each month, or match-\ning placebo, for a total of 6 to 9 months. Antibiotic prophy-\nlaxis for pneumocystis pneumonia (a single-strength tablet\ndaily or half of a double-strength tablet daily) was also added\nduring the first 12 weeks of the treatment period for all par-\nticipants randomized to the reduced-dose cohort.\nStudy visits occurred monthly for 3 months, then every 3\nmonths until month 12, and then annually until the end of the\nstudy. Additional study visits (either telephone or face-to-\nface at the choice of the investigator) were conducted every 3\nmonths after the first year to ascertain kidney end points and\nadverse events.\nOutcomes\nThe primary end point was the composite of the first occur-\nrence of a sustained 40% decrease in eGFR, the develop-\nment of kidney failure (defined as a need for maintenance\ndialysis or kidney transplant and adjudicated by a blinded,\nindependent committee), or death due to kidney disease\n(defined as death due to kidney failure that required dialysis\nand that could be avoided by timely dialysis). Occurrences\nof 40% eGFR reduction were included as end points if they\nwere sustained on a repeated serum creatinine test at least\n30 days after the first occurrence or if they occurred at the\nfinal available measurement.\nSecondary end points were sustained decreases in eGFR\n(of 30%, 40%, and 50%) combined with kidney failure and\nall-cause death; the separate individual components of the\ncomposite primary and secondary outcomes; proteinuria\nreduction evaluated by time-averaged mean proteinuria;\nand eGFR slope, using all eGFR values or those excluding\neGFR at the time of high-dose treatment exposure.\nPredefined adverse event outcomes were total serious\nadverse events, serious infections needing hospitalization,\nnew-onset diabetes, gastrointestinal hemorrhage, fracture\nor osteonecrosis, and cardiovascular events. Serious ad-\nverse events were defined according to the International\nConference on Harmonization Guideline for Clinical Safety\nData Management.\nSample Size\nThe trial was event-driven, requiring at least 160 primary\noutcome events to provide 90% power (\u03b1 = .05) to detect a\n40% overall reduction in the hazard for the methylpredniso-\nlone group. This, in turn, required the enrollment of at\nleast 500 patients across the trial (pooling the original and\nreduced-dose cohorts). The trial had been designed with\n90% power to detect a 30% risk reduction (sample size\nof 750) based on a balance between what was clinically\nimportant to detect and what was feasible, but was mod-\nified for pragmatic and funding-related reasons after the\nserious infection-related pause. A meta-analysis of previous\ntrials8 suggested that glucocorticoids might have a relative\nrisk for the primary end point of 0.32 (95% CI, 0.15-0.67),\nbut had been considered likely to be an overestimate. When\nrecruitment of the full-dose cohort was stopped, feasibility\nwas affected, so the trial was powered to detect a still-\nconservative risk reduction of 40%.\nStatistical Analysis\nAll analyses were conducted by analyzing all patients\naccording to the group they were randomized to, regardless\nof treatment adherence or protocol violations. The effect of\ntreatment on the primary composite end point was esti-\nmated using an adjusted Cox model, with site as a random\neffect and the 3 other stratification variables (baseline pro-\nteinuria, baseline eGFR, and kidney biopsy findings) as\nfixed effects. Data for patients were censored at the date\nthey died (for causes other than kidney disease), were lost\nto follow-up, or withdrew from the study or at the end of\nthe trial assessment, whichever occurred first. Survival\ncurves were generated with the Kaplan-Meier method. The\nproportional hazards assumption was assessed graphically\nand checked using the Kolmogorov-type supremum test,\nand a post hoc sensitivity analysis using flexible parametric\nsurvival models with either constant or time-varying hazard\nratios (HRs) was performed.\nAll secondary outcomes of a time-to-event nature were\nanalyzed using the same approach as the primary outcome\n(using an adjusted Cox model). Decline in eGFR was ana-\nlyzed as the mean rate of decline and compared between\ngroups using a t test. Time-averaged mean proteinuria was\ncalculated for each participant and was also compared using\na t test. In addition, overall trajectories of eGFR and protein-\nuria over time were analyzed using longitudinal linear\nmixed models that included all postrandomization mea-\nsurements. For this analysis, proteinuria values were log-\ntransformed using the natural logarithmic function to\nremove skewness.\nAdjusted annual event rates and absolute risk differ-\nences with 95% CIs were estimated using a Poisson model\nadjusted by the stratification factors. Site was not included\nas a random effect due to convergence issues. CIs around\nadjusted risk differences were obtained using the nor-\nmal approximation and the standard error was obtained\nfrom the model. Secondary outcomes were considered sup-\nportive and were not adjusted for multiplicity. Because of\nthe potential for type I error due to multiple comparisons,\nResearch Original Investigation\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\n1890\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n(Reprinted)\njama.com\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "183f48e6c4c771d9b4880b0173328780f17bf328044d72497d54128c66445454": {
+      "end": 5025,
+      "end_line": 225,
+      "handle": "eh_183f48e6c4c771d9",
+      "identity": "sha256:183f48e6c4c771d9b4880b0173328780f17bf328044d72497d54128c66445454",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "The baseline characteristics of participants were similar\nacross randomized groups (Table 1). The mean age of partici-\npants was 38 years, 198 (39%) were women, the mean base-\nline eGFR was 61.5 mL/min/1.73 m2, and the mean 24-hour uri-\nnary protein was 2.46 g per day. Compared with those enrolled\nto the full-dose cohort, participants in the reduced-dose co-\nhort were less likely to be from China (95% vs 51%) and had a\nhigherbodymassindex,highereGFR,alongermeantimesince\ndiagnostic kidney biopsy, and less tubular atrophy and fibro-\nsis on that biopsy (eTable 3 in Supplement 2).\nParticipants were followed up for a mean of 4.2 years (5.7 y\nfor the full-dose vs 2.6 y for the reduced-dose cohort) and\na median of 3.5 years (6.1 y for the full-dose vs 2.5 y for the\nreduced-dose cohort). Among those randomized, 431 patients\nTable 1. Baseline Characteristics of Participants in a Study of the Effect\nof Oral Methylprednisolone on Kidney Function Decline in Patients\nWith IgA Nephropathy\nCharacteristics\nNo. (%)a\nMethylprednisolone\n(n = 257)\nPlacebo\n(n = 246)\nAge, median (IQR), y\n35.6 (29.4-46.3)\n36.6 (29.0-45.9)\nSex\nMen\n155 (60)\n150 (61)\nWomen\n102 (40)\n96 (39)\nRace/ethnicityb\nChinese\n195 (76)\n184 (75)\nJapanese\n0\n1 (0.4)\nMixed\n0\n1 (0.4)\nOther Eastern Asian\n1 (0.4)\n0\nSouth Asian\n30 (12)\n33 (13)\nSoutheast Asian\n18 (7)\n15 (6)\nWhite/European\n13 (5)\n12 (5)\nBMI, median (IQR)\n24.2 (21.6-26.7)\n24.7 (22.0-28.0)\nSmoking history\nPrevious\n39 (15)\n27 (11)\nCurrent\n19 (7)\n23 (9)\nMedical historyc\nHypertension\n128 (50)\n113 (46)\nMacrohematuria\n42 (16)\n38 (15)\nPrevious corticosteroids\n18 (7)\n10 (4)\nPrevious other\nimmunosuppressant\n17 (7)\n12 (5)\nDiabetes\n7 (3)\n10 (4)\nFamily history\nof IgA nephropathy\n3 (1)\n9 (4)\nTonsillectomy\n2 (0.8)\n1 (0.4)\nBlood pressure,\nmedian (IQR), mm Hg\nSystolic\n123.8 (115.0-132.5)\n125.0 (115.5-131.0)\nDiastolic\n80.0 (73.5-85.0)\n80.0 (74.0-86.0)\nLaboratory findings,\nmedian (IQR)\neGFR, mL/min\nper 1.73 m2d\n56.1 (43.2-75.0)\n59.0 (42.0-77.6)\nUrine protein, g/de\n1.99 (1.36-3.09)\n1.93 (1.38-2.88)\nTime since kidney biopsy,\nmedian (IQR), mo\n5 (4-11)\n5 (3-14)\nHistology on kidney biopsy,\nNo./total No. (%)f\nMesangial\nhypercellularity (M1)\n147/252 (58)\n148/241 (61)\nSegmental\nglomerulosclerosis (S1)\n172/252 (68)\n164/241 (68)\nEndocapillary\nhypercellularity (E1)\n72 (28)\n55 (22)\nTubular atrophy/\ninterstitial fibrosis (T)\nT0: 0%-25%\n123/252 (48.8)\n118/241 (49.0)\nT1: 26%-50%\n92/252 (36.5)\n95/241 (39.4)\nT2: >50%\n37/252 (14.7)\n28/241 (11.6)\nMedication\nACE inhibitors\n140 (54.5)\n128 (52.0)\nARBs\n119 (46.3)\n120 (48.8)\n(continued)\nTable 1. Baseline Characteristics of Participants in a Study of the Effect\nof Oral Methylprednisolone on Kidney Function Decline in Patients\nWith IgA Nephropathy (continued)\nCharacteristics\nNo. (%)a\nMethylprednisolone\n(n = 257)\nPlacebo\n(n = 246)\nDose of ACE inhibitor\nor ARB\nNo ACE or ARB received\n0\n1 (0.4)\n<50% of maximum\nlabeled doseg\n30 (11.7)\n35 (14.2)\n\u226550% of maximum\nlabeled doseg\n222 (86.4)\n201 (81.7)\nReceived but dose\nunknown\n5 (1.9)\n9 (3.7)\nCalcium channel blocker\nDihydropyridine\n44 (17.1)\n41 (16.7)\nNondihydropyridine\n13 (5.1)\n17 (6.9)\n\u03b2 and \u03b1 blocker\n21 (8.2)\n20 (8.1)\nDiuretic\n20 (7.8)\n21 (8.5)\nMineralocorticoid\nreceptor antagonist\n4 (1.6)\n11 (4.5)\nNitrates\n2 (0.8)\n0\nCentrally acting\n5 (1.9)\n2 (0.8)\nAbbreviations: ACE, angiotensin-converting enzyme; ARB, angiotensin II\nreceptor blocker; BMI, body mass index (calculated as weight in kilograms\ndivided by height in meters squared).\na Percentages may not total 100 because of rounding.\nbParticipant self-reported ethnicity was listed as 13 categories in the study case\nreport form. There were no participants of African, Australian (Aboriginal),\nArabic, Maori/Polynesian, Japanese, or North American Indian ancestry. South\nAsian refers to participants from India; Southeast Asian refers to participants\nfrom Malaysia. One participant reported as mixed race and 1 participant\nreported as Other Eastern Asian.\nc Medical history was reported by the patients.\ndEstimated glomerular filtration rate (eGFR) was calculated using the Chronic\nKidney Disease Epidemiology Collaboration formula; normal values were\n90 mL/min/1.73 m2 or greater.\ne Normal values of urine protein excretion were less than 0.2 g/d.\nf Histological findings were scored by Oxford Classification (MEST) and\nreviewed by each site. The median (IQR) time between biopsy and\nrandomization was 5 (4-13) months. T score relates to the proportion of the\nkidney biopsy affected by tubular atrophy/interstitial fibrosis and is divided\ninto 3 categories, as listed.\ng Maximum labeled dose is based on individual country local practice. All\nparticipants received stable maximum tolerated dose of ACE inhibitors or\nARBs for at least 12 weeks.\nResearch Original Investigation\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\n1892\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n(Reprinted)\njama.com\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "1a13b8f3eb54cf8c588b4f2b6be48dd843d909b3fd2702fdf29b5d46dc5074e6": {
+      "end": 1588,
+      "end_line": 25,
+      "handle": "eh_1a13b8f3eb54cf8c",
+      "identity": "sha256:1a13b8f3eb54cf8c588b4f2b6be48dd843d909b3fd2702fdf29b5d46dc5074e6",
+      "kind": "narrative",
+      "page": 290,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0 (final), 21JUL2021\nPage 9 of 53\nT:\\Statistics\\Projects\\TESTING\\Common\\Documentation\\SAP\\Final\\TESTING_SAP_final_analysis_v1.0 (Final) 2021-07-20.docx\nJirovecii pneumonia, but numerical imbalances in gastrointestinal bleeding, new diabetes and\nfracture were also observed.\nOf note, the TESTING study suggested that steroids are likely to have kidney protective effects with\nsubstantial reductions in proteinuria, slower rates of eGFR loss and a reduction in the risk of the\nprimary outcome (hazard ratio 0.37, p=0.019).\nBased on the advice of the TESTING DSMC after they had reviewed the interim results, the Steering\nCommittee decided to discontinue treatment with the dose of methylprednisolone being used at the\ntime due to the safety concerns and to analyse and report the results given their clinical importance\nto people being treated with steroids around the world. As possible significant kidney benefits were\nalso observed, a decision to recruit and randomise a second cohort of participants to a lower dose\nregimen was made with the expectation that the risks could be substantially reduced, with similar\nbenefits.\n2.6.2 Changes in Planned Analysis\nNot applicable.\n3 Statistical analysis\n3.1 Software\nAnalyses will be conducted primarily using SAS Enterprise Guide (version 7.1 or above) and R\n(version 4.0.0 or above).\n3.2 Interim analyses\nThe trial DSMC met regularly (approximately twice a year) to monitor safety data. No formal interim\nanalysis for efficacy was performed; however, interim results for the high-dose cohort were",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "1ad924e09fa5307998b58a0d9140dd62d9770c4b4f55929787209324d5892625": {
+      "end": 1449,
+      "end_line": 25,
+      "handle": "eh_1ad924e09fa53079",
+      "identity": "sha256:1ad924e09fa5307998b58a0d9140dd62d9770c4b4f55929787209324d5892625",
+      "kind": "narrative",
+      "page": 130,
+      "quote": "Clinical Protocol: TESTING Study\nVersion5.0\nProtocol GI-R-01-2011\n13May2015\nConfidential\nPage 41 of 92\nTesting Protocol version 5 _13May2015_final\nRandomisation will be stratified using a minimisation method according to\nparticipating region, proteinuria (<3g/day or \u22653g/day), estimated GFR\n(<50ml/min.per1.73m2 or \u226550ml/min. 1.73m2) and kidney biopsy findings\n(endocapillary proliferation according Oxford classification, E1 or E0).\n\nRandomization data are kept confidential until the time of unblinding, and will not be\naccessible by anyone else involved in the study with the exception of the members of\nthe DSMC and the independent biostatistician who will perform the interim analysis.\nUnblinding of participants should only be performed when knowledge of the treatment\nallocation will influence the participant's management in a significant fashion. The\nprecise reason for unblinding must always be provided, together with details of the\nname of the clinician making the decision, the date and time the decision was made\nand any supporting documentation that supports the decision (such as laboratory\nreports). In any case of unblinding, the follow-up schedule of data collection should be\nmaintained to enable full analysis of all patient data on an intention-to-treat basis.\n\nThe investigator will contact the coordinating centre if they consider there is a need for\nunblinding and this will be adjudicated by the Study Management Committee.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "1ed3a33a3011c7d2cbbb6a898bf6788cdb00642c591d5b1a72b3ec83f0fe59ed": {
+      "end": 2332,
+      "end_line": 32,
+      "handle": "eh_1ed3a33a3011c7d2",
+      "identity": "sha256:1ed3a33a3011c7d2cbbb6a898bf6788cdb00642c591d5b1a72b3ec83f0fe59ed",
+      "kind": "narrative",
+      "page": 293,
+      "quote": "3.10 Analysis of the Efficacy Outcomes\n3.10.1 Overall primary outcome\n3.10.1.1 Definition\nPersistent 40% decrease in eGFR:\nThe baseline eGFR is defined as the mean of the two eGFRs from Visit 3 (pre-randomisation visit) and Visit 4\n(randomisation visit), calculated by CKD-EPI formula (appendix A) from serum creatinine (mg/dl).\nThe follow-up eGFR values will be compared to the baseline eGFR to determine whether a 40% reduction\nrelative to the baseline eGFR has occurred. A \"persistent\" \u2265 40% eGFR reduction is established by the\noccurrence of 2 consecutive follow-up eGFR values which are at least 40% smaller than the baseline GFR,\nwhere the second value is obtained no less than 4 weeks after the initial decline or at the final available\nstudy visit\nEnd stage kidney disease:\nkidney failure is defined as the receipt of kidney transplantation, initiation of dialysis, the satisfaction of\ncertain criteria where dialysis is unavailable or been refused by the patient as described further below, or\nkidney death where criteria for kidney failure has not previously been met. kidney failure will be diagnosed if\ndialysis is performed for 30 days or more that is known not to recover.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 1146,
+      "start_line": 17,
+      "trial_id": "testing"
+    },
+    "21a592215ca6afb5bc57e650c1221dcefe9a01caf2fb67a00fd34987fc25db2a": {
+      "end": 2931,
+      "end_line": 48,
+      "handle": "eh_21a592215ca6afb5",
+      "identity": "sha256:21a592215ca6afb5bc57e650c1221dcefe9a01caf2fb67a00fd34987fc25db2a",
+      "kind": "narrative",
+      "page": 274,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0\n\n 4 March 2016\n\n\n\n\n\n10\n4. Analysis principles\n4.1 General principles\nComparison will be made for all of the outcomes by comparing all those allocated to\nmethylprednisolone versus all those allocated to the control arm on an intention to treat\n(ITT) basis. All randomized participants will be analysed in the group to which they were\nassigned regardless of protocol violations. Cox proportional hazards analysis and Kaplan-\nMeier plots will be used to compare time to events among the two groups. No adjustment\nwill be made for multiple testing across the primary endpoints. However the outcomes are\nclearly categorized by degree of importance (primary, main secondary and exploratory\nsecondary) and a limited number of subgroup analyses are pre-specified. All missing\ninformation will be treated as missing data without imputation. All statistical tests will be\ntwo-tailed and a 5% significance level maintained throughout the analyses. In case of\nborderline statistical significance for the primary endpoint (i.e. a p-value between 1.66% and\n5%), results will be interpreted with caution. Heterogeneity across subgroups will be tested\nby adding an interaction term to the appropriate statistical model. Summaries of continuous\nvariables which are normally distributed will be presented as means and standard deviations\nor medians and inter-quartiles for skewed data, while categorical variables will be presented\nas frequencies and percentages.\n4.2. Blinding\nThe current statistical analysis plan has been developed by a group nominated by the\nTESTING Steering Committee which includes statisticians and clinical researchers with\nnephrology expertise. The group will not be unblinded until after the SAP has been fully\nsigned off. The statistician(s) responsible for interim monitoring and liaising with the DSMB\nwill not provide input to the SAP. The results will be unblinded to the rest of the team once\nthe final statistical report has been completed.\n4.3 Patient deposition\nFlow of patients through the study will be displayed in a \"CONSORT\" diagram as in the\nappendix B. Numbers of patients who were registered, fulfilled eligibility criterion, together\nwith reasons for exclusion, and number randomised by study centre will be summarised.\n4.4. Patient follow up\nA separate figure (Appendix C) will summarise the follow up method for randomized\npatients indicating the numbers of patients who withdrew consent (with follow up) and\nthose true loss to follow up.\n4.5 Characteristics of patients and baseline comparisons\nDescription of the following baseline characteristics will be presented by treatment group.\nDiscrete variables will be summarized by frequencies and percentages. Percentages will be\ncalculated according to the number of patients for whom data are available. Where values\nare missing, the denominator (which will be less than the number of patients assigned to",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "27178ea729aed4ec39ecaa02b6ef58671db59ee97c87bc171fc0768b92c492bd": {
+      "end": 4778,
+      "end_line": 73,
+      "handle": "eh_27178ea729aed4ec",
+      "identity": "sha256:27178ea729aed4ec39ecaa02b6ef58671db59ee97c87bc171fc0768b92c492bd",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "Effect of Oral Methylprednisolone on Decline in Kidney Function\nor Kidney Failure in Patients With IgA Nephropathy\nThe TESTING Randomized Clinical Trial\nJicheng Lv, MD; Muh Geot Wong, PhD; Michelle A. Hladunewich, MD; Vivekanand Jha, MD; Lai Seong Hooi, MB, BChir; Helen Monaghan, BSc;\nMinghui Zhao, MD; Sean Barbour, MD, PhD; Meg J. Jardine, PhD; Heather N. Reich, MD; Daniel Cattran, MD; Richard Glassock, MD; Adeera Levin, MD;\nDavid C. Wheeler, MD; Mark Woodward, PhD; Laurent Billot, MSc, MRes; Sandrine Stepien, MSc; Kris Rogers, PhD; Tak Mao Chan, MD; Zhi-Hong Liu, MD;\nDavid W. Johnson, MBBS, PhD; Alan Cass, PhD; John Feehally, MD; J\u00fcrgen Floege, MD; Giuseppe Remuzzi, MD; Yangfeng Wu, MD; Rajiv Agarwal, MD;\nHong Zhang, MD, PhD; Vlado Perkovic, MBBS, PhD; for the TESTING Study Group\nIMPORTANCE The effect of glucocorticoids on major kidney outcomes and adverse events\nin IgA nephropathy has been uncertain.\nOBJECTIVE To evaluate the efficacy and adverse effects of methylprednisolone in patients\nwith IgA nephropathy at high risk of kidney function decline.\nDESIGN, SETTING, AND PARTICIPANTS An international, multicenter, double-blind, randomized\nclinical trial that enrolled 503 participants with IgA nephropathy, proteinuria greater than or\nequal to 1 g per day, and estimated glomerular filtration rate (eGFR) of 20 to 120 mL/min/1.73 m2\nafter at least 3 months of optimized background care from 67 centers in Australia, Canada, China,\nIndia, and Malaysia between May 2012 and November 2019, with follow-up until June 2021.\nINTERVENTIONS Participants were randomized in a 1:1 ratio to receive oral methylprednisolone\n(initially 0.6-0.8 mg/kg/d, maximum 48 mg/d, weaning by 8 mg/d/mo; n = 136) or placebo\n(n = 126). After 262 participants were randomized, an excess of serious infections was\nidentified, leading to dose reduction (0.4 mg/kg/d, maximum 32 mg/d, weaning by 4 mg/d/mo)\nand addition of antibiotic prophylaxis for pneumocystis pneumonia for subsequent participants\n(121 in the oral methylprednisolone group and 120 in the placebo group).\nMAIN OUTCOMES AND MEASURES The primary end point was a composite of 40% decline\nin eGFR, kidney failure (dialysis, transplant), or death due to kidney disease. There were 11\nsecondary outcomes, including kidney failure.\nRESULTS Among 503 randomized patients (mean age, 38 years; 198 [39%] women; mean\neGFR, 61.5 mL/min/1.73 m2; mean proteinuria, 2.46 g/d), 493 (98%) completed the trial. Over\na mean of 4.2 years of follow-up, the primary outcome occurred in 74 participants (28.8%) in\nthe methylprednisolone group compared with 106 (43.1%) in the placebo group (hazard ratio\n[HR], 0.53 [95% CI, 0.39-0.72]; P < .001; absolute annual event rate difference, -4.8% per year\n[95% CI, -8.0% to -1.6%]). The effect on the primary outcome was seen across each dose\ncompared with the relevant participants in the placebo group recruited to each regimen\n(P for heterogeneity = .11): full-dose HR, 0.58 (95% CI, 0.41-0.81); reduced-dose HR, 0.27\n(95% CI, 0.11-0.65). Of the 11 prespecified secondary end points, 9 showed significant\ndifferences in favor of the intervention, including kidney failure (50 [19.5%] vs 67 [27.2%]; HR,\n0.59 [95% CI, 0.40-0.87]; P = .008; annual event rate difference, -2.9% per year [95% CI,\n-5.4% to -0.3%]). Serious adverse events were more frequent with methylprednisolone vs\nplacebo (28 [10.9%] vs 7 [2.8%] patients with serious adverse events), primarily with full-dose\ntherapy compared with its matching placebo (22 [16.2%] vs 4 [3.2%]).\nCONCLUSIONS AND RELEVANCE Among patients with IgA nephropathy at high risk of\nprogression, treatment with oral methylprednisolone for 6 to 9 months, compared with\nplacebo, significantly reduced the risk of the composite outcome of kidney function decline,\nkidney failure, or death due to kidney disease. However, the incidence of serious adverse\nevents was increased with oral methylprednisolone, mainly with high-dose therapy.\nTRIAL REGISTRATION ClinicalTrials.gov Identifier: NCT01560052\nJAMA. 2022;327(19):1888-1898. doi:10.1001/jama.2022.5368\nVisual Abstract\nEditorial page 1872\nSupplemental content\nAuthor Affiliations: Author\naffiliations are listed at the end of this\narticle.\nGroup Information: The TESTING\nStudy Group collaborating\ninvestigators appear in Supplement 3.\nCorresponding Authors: Hong\nZhang, MD, PhD, Renal Division,\nDepartment of Medicine,\nPeking University First Hospital,\nBeijing 100034, China\n(hongzh@bjmu.edu.cn); Vlado\nPerkovic, MBBS, PhD, University of\nNew South Wales, Sydney,\nKensington, NSW 2052, Australia\n(vlado.perkovic@unsw.edu.au).\nResearch\nJAMA | Original Investigation\n1888\n(Reprinted)\njama.com\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "29bdc0094bc43aa1ffd9a42a2f21ef9860b142f9c03ed50fa16cd3d345c4c006": {
+      "end": 1247,
+      "end_line": 54,
+      "handle": "eh_29bdc0094bc43aa1",
+      "identity": "sha256:29bdc0094bc43aa1ffd9a42a2f21ef9860b142f9c03ed50fa16cd3d345c4c006",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "\u25aa\nChange to inclusion criteria\n\u25aa\nUpdated CKD-EPI formula\n\u25aa\nAdministrative clarifications and corrections\n7 April 2014\nTESTING Protocol V4.0 Amendment 3\n\u25aa\nRemoval of the requirement for renal biopsy to be within the last 3 years\n\u25aa\nInclusion criteria for eGFR revised from 20 to 90ml/min per 1.73m2 (inclusive) to\n20 to 120ml/min per 1.73m2 (inclusive)\n\u25aa\nAdministrative clarifications and corrections\n13 May 2015\nTESTING Protocol V5.0 Amendment 4\n\u25aa\nChanges to Steering Committee membership and affiliations\n\u25aa\nPrimary outcome modified from 50% eGFR reduction to 40% decrease in eGFR\n\u25aa\nSample size modified to 750\n\u25aa\nUpdated CKD-EPI formula",
+      "source_id": "source_ae5710389c3b23b14de5899d7313fde9a4aa44abf8d54375e4c2b79ba1e66fe5",
+      "source_version": "sha256:dc7c09252a7474cf40401abda0805620e777f7e2a093dceb8366941ca0d2b16a",
+      "start": 612,
+      "start_line": 30,
+      "trial_id": "testing"
+    },
+    "2d1e0eca8685e16be4fd6133ed6c32588d57d3d6aaea6be13e15afede9a3551a": {
+      "end": 57855,
+      "end_line": 651,
+      "handle": "eh_2d1e0eca8685e16b",
+      "identity": "sha256:2d1e0eca8685e16be4fd6133ed6c32588d57d3d6aaea6be13e15afede9a3551a",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * Active infection, including HBV infection or clinical evidence of latent or active tuberculosis (nodules, cavities, tuberculoma, etc)\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * Malignancy within the last 5 years, excluding treated non-melanoma skin cancers (ie. squamous or basal cell carcinoma)\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * Current or planned pregnancy or breastfeeding women of childbearing age who are not able or willing to use adequate contraception.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"3. Systemic immunosuppressive therapy in the previous year.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"4. Malignant /uncontrolled hypertension (\\\\>160mm systolic or 110mmHg diastolic)\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"5. Current unstable kidney function for other reasons, e.g. macrohaematuria induced acute kidney injury\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"6. Age \\\\<18 years old\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"7. Secondary IgA nephropathy: e.g. due to lupus, liver cirrhosis, Henoch- Schonlein purpura\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"8. Patients who are unlikely to comply with the study protocol in the view of the treating physician.\"\nprotocolSection.eligibilityModule.healthyVolunteers: false\nprotocolSection.eligibilityModule.minimumAge: \"18 Years\"\nprotocolSection.eligibilityModule.sex: \"ALL\"\nprotocolSection.eligibilityModule.stdAges[0]: \"ADULT\"\nprotocolSection.eligibilityModule.stdAges[1]: \"OLDER_ADULT\"\nprotocolSection.identificationModule.acronym: \"TESTING\"\nprotocolSection.identificationModule.briefTitle: \"Therapeutic Evaluation of Steroids in IgA Nephropathy Global Study (TESTING Low Dose Study)\"\nprotocolSection.identificationModule.nctId: \"NCT01560052\"\nprotocolSection.identificationModule.officialTitle: \"Therapeutic Evaluation of Steroids in IgA Nephropathy Global Study Low Dose Study\"\nprotocolSection.identificationModule.orgStudyIdInfo.id: \"GI-R-01-2011\"\nprotocolSection.identificationModule.organization.class: \"OTHER\"\nprotocolSection.identificationModule.organization.fullName: \"The George Institute\"\nprotocolSection.outcomesModule.primaryOutcomes[0].description: \"Progressive kidney failure, which is a composite of a 40% decrease in eGFR, the development of end stage kidney disease defined as a need for maintenance dialysis or kidney transplantation, and death due to kidney disease.\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Progressive kidney failure\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"1-6 years\"\nprotocolSection.outcomesModule.primaryOutcomes[1].description: \"Change in proteinuria from baseline at 6 and 12 months Mean change in eGFR at 6 and 12 months\"\nprotocolSection.outcomesModule.primaryOutcomes[1].measure: \"primary outcome for low dose cohort\"\nprotocolSection.outcomesModule.primaryOutcomes[1].timeFrame: \"1 year\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].measure: \"The composite of ESKD, 30% decrease in eGFR and all cause death\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].timeFrame: \"1-6 years\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].measure: \"The composite of ESKD 40% decrease in eGFR and all cause death\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].timeFrame: \"1-6 years\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].measure: \"The composite of ESKD 50% decrease in eGFR and all cause death\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].timeFrame: \"1-6 years\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].measure: \"Annual eGFR decline rate\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].timeFrame: \"1-6 years\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].measure: \"Each ESKD , death due to kidney disease and all cause death\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].timeFrame: \"1-6 years\"\nprotocolSection.outcomesModule.secondaryOutcomes[5].measure: \"Time averaged proteinuria post-randomisation\"\nprotocolSection.outcomesModule.secondaryOutcomes[5].timeFrame: \"1-6 years\"\nprotocolSection.oversightModule.oversightHasDmc: true\nprotocolSection.referencesModule.references[0].citation: \"Wang L, He Y, Tian W, Wang J, Shi S, Liu L, Monaghan H, Wong MG, Lv J, Chen Y, Zhang Y, Zhang H. Glucocorticoid-Modulated Molecular Signatures and Prediction of Treatment Efficacy in IgA Nephropathy. J Am Soc Nephrol. 2026 Jul 31. doi: 10.1681/ASN.0000001208. Online ahead of print.\"\nprotocolSection.referencesModule.references[0].pmid: \"42536435\"\nprotocolSection.referencesModule.references[0].type: \"DERIVED\"\nprotocolSection.referencesModule.references[1].citation: \"Xu LL, Zhou XJ, Bi W, Zhang P, Shi SF, Liu LJ, Lv JC, Zhang H. Genetic Determinants of Steroid Responsiveness in IgA Nephropathy. J Am Soc Nephrol. 2026 Jun 1;37(6):1248-1260. doi: 10.1681/ASN.0000000977. Epub 2025 Dec 11.\"\nprotocolSection.referencesModule.references[1].pmid: \"41563292\"\nprotocolSection.referencesModule.references[1].type: \"DERIVED\"\nprotocolSection.referencesModule.references[2].citation: \"Lv J, Wong MG, Hladunewich MA, Jha V, Hooi LS, Monaghan H, Zhao M, Barbour S, Jardine MJ, Reich HN, Cattran D, Glassock R, Levin A, Wheeler DC, Woodward M, Billot L, Stepien S, Rogers K, Chan TM, Liu ZH, Johnson DW, Cass A, Feehally J, Floege J, Remuzzi G, Wu Y, Agarwal R, Zhang H, Perkovic V; TESTING Study Group. Effect of Oral Methylprednisolone on Decline in Kidney Function or Kidney Failure in Patients With IgA Nephropathy: The TESTING Randomized Clinical Trial. JAMA. 2022 May 17;327(19):1888-1898. doi: 10.1001/jama.2022.5368.\"\nprotocolSection.referencesModule.references[2].pmid: \"35579642\"\nprotocolSection.referencesModule.references[2].type: \"DERIVED\"\nprotocolSection.referencesModule.references[3].citation: \"Lv J, Zhang H, Wong MG, Jardine MJ, Hladunewich M, Jha V, Monaghan H, Zhao M, Barbour S, Reich H, Cattran D, Glassock R, Levin A, Wheeler D, Woodward M, Billot L, Chan TM, Liu ZH, Johnson DW, Cass A, Feehally J, Floege J, Remuzzi G, Wu Y, Agarwal R, Wang HY, Perkovic V; TESTING Study Group. Effect of Oral Methylprednisolone on Clinical Outcomes in Patients With IgA Nephropathy: The TESTING Randomized Clinical Trial. JAMA. 2017 Aug 1;318(5):432-442. doi: 10.1001/jama.2017.9362.\"\nprotocolSection.referencesModule.references[3].pmid: \"28763548\"\nprotocolSection.referencesModule.references[3].type: \"DERIVED\"\nprotocolSection.referencesModule.references[4].citation: \"Yeo SC, Liew A, Barratt J. Emerging therapies in immunoglobulin A nephropathy. Nephrology (Carlton). 2015 Nov;20(11):788-800. doi: 10.1111/nep.12527.\"\nprotocolSection.referencesModule.references[4].pmid: \"26032537\"\nprotocolSection.referencesModule.references[4].type: \"DERIVED\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[0].class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.collaborators[0].name: \"Peking University First Hospital\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.name: \"The George Institute\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.type: \"SPONSOR\"\nprotocolSection.statusModule.completionDateStruct.date: \"2021-07-23\"\nprotocolSection.statusModule.completionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.expandedAccessInfo.hasExpandedAccess: false\nprotocolSection.statusModule.lastUpdatePostDateStruct.date: \"2021-09-23\"\nprotocolSection.statusModule.lastUpdatePostDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.lastUpdateSubmitDate: \"2021-09-21\"\nprotocolSection.statusModule.overallStatus: \"COMPLETED\"\nprotocolSection.statusModule.primaryCompletionDateStruct.date: \"2021-07-23\"\nprotocolSection.statusModule.primaryCompletionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.startDateStruct.date: \"2012-05-05\"\nprotocolSection.statusModule.startDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.statusVerifiedDate: \"2021-09\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2012-03-21\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2012-03-15\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2012-03-20\"",
+      "source_id": "source_a6c2c02c8d1f671f03728ea247975ee4447bca6cb76498ed0e61d93abc8582b6",
+      "source_version": "sha256:d60ff08cabb9977901eeb7175908b937207e9ec00dc33c7188325e8698097c6e",
+      "start": 49480,
+      "start_line": 575,
+      "trial_id": "testing"
+    },
+    "37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36": {
+      "end": 7774,
+      "end_line": 156,
+      "handle": "eh_37e80d3ba0884548",
+      "identity": "sha256:37e80d3ba088454880ec5e6179afdfc3a9465551468846c3bd420bd5d92b8f36",
+      "kind": "narrative",
+      "page": 9,
+      "quote": "contrast, the STOP-IgAN trial compared immunosuppression\nbased on corticosteroids with standard care, but did not find\nkidney benefits in either the original randomized trial10 or\nduring long-term follow-up,3 although higher rates of\nadverse events and infections were also seen. The reasons\nfor these discrepant findings are not clear, but may relate to\nthe slower rate of loss of kidney function observed among\nparticipants in that trial (including the control group), the\ndifferent interventions used, or other patient characteristics.\nAlthough our study included a large percentage of partici-\npants from China, for whom different prognosis and/or\ntherapeutic response have been proposed,16 there was no\nevidence of loss of efficacy in kidney benefit in non-Chinese\nparticipants.\nGlucocorticoids are nonspecific immunosuppressive\nagents and are likely to produce benefit through their effects\non the demonstrated autoimmune pathogenesis of IgA\nnephropathy.17 Glucocorticoids had also long been known to\nincrease the risk of infections, as was observed with the origi-\nnal full-dose protocol used in this trial. The increased risk\nwas able to be mitigated with a reduction in dosage and the\naddition of antibiotic prophylaxis with sulfamethoxazole-\ntrimethoprim, such that a lower incidence of serious adverse\nevents was observed in the reduced-dose groups after these\nchanges were made. Various more specific strategies for\nimmunomodulation have been proposed for people with IgA\nnephropathy, including systemic or intestinal B cell-focused\ninterventions, complement inhibitors, and others.18-20 These\ntherapies may have a superior risk-benefit profile, and this is\nbeing assessed in ongoing clinical trials.\nThis trial had a number of strengths. To our knowledge, it\nwas the largest trial in IgA nephropathy completed to date and\nit provided more precise evidence than previous trials about\nthe benefits and risks of this treatment. The double-blind na-\nture of the intervention as well as the long and rigorous\nfollow-up reduced the risk of bias, while the international mul-\nticenter involvement increased generalizability.\nLimitations\nThis trial had several limitations. First, the majority of partici-\npants were from China, although the prespecified subgroup\nanalyses found that the benefits were at least comparable in\nnon-Chinese participants. Second, the dose of methylpred-\nnisolone used in the original protocol increased the risk of ad-\nverse events so that the study treatment was stopped and the\ntrial was modified and transitioned to a lower-dose regimen,\nwith participants recruited to that point unblinded, and a tran-\nsitional analysis was published. The consistency in the find-\nings among these participants, and those subsequently ran-\ndomized to receive the lower-dose regimen, suggests that this\nprocess is unlikely to have meaningfully biased the results of\nthe trial. Third, although clear reductions in the risk of major\nkidney outcomes were identified, the reduction in protein-\nuria was no longer apparent by 36 months after randomiza-\ntion, and post hoc analyses suggest that the benefit on other\noutcomes may diminish over time. Furthermore, many par-\nticipants continued to lose kidney function over time, sug-\ngesting that additional longer-term therapies may also be re-\nquired to optimize kidney outcomes in IgA nephropathy.\nConclusions\nAmong patients with IgA nephropathy at high risk of progres-\nsion, treatment with oral methylprednisolone for 6 to 9\nmonths, compared with placebo, significantly reduced the risk\nof the composite outcome of kidney function decline, kidney\nfailure, or death due to kidney disease. However, the inci-\ndence of serious adverse events was increased with oral meth-\nylprednisolone, mainly with high-dose therapy.\nARTICLE INFORMATION\nAccepted for Publication: March 21, 2022.\nAuthor Affiliations: Renal Division, Department of\nMedicine, Peking University First Hospital, Beijing,\nChina (Lv, Zhao, Zhang); The George Institute for\nGlobal Health, University of New South Wales,\nSydney, Australia (Lv, Wong, Monaghan, Billot,\nStepien, Rogers, Cass, Perkovic); Department of\nRenal Medicine, Royal North Shore Hospital,\nAustralia (Wong); Sunnybrook Health Sciences\nCentre, University of Toronto, Toronto, Ontario,\nCanada (Hladunewich); The George Institute for\nGlobal Health India, UNSW, New Delhi, India (Jha);\nPrasanna School of Public Health, Manipal Academy\nof Higher Education, Manipal, India (Jha); The\nGeorge Institute for Global Health, School of Public\nHealth, Imperial College London, United Kingdom\n(Jha, Woodward); Sultanah Aminah Hospital, Johor\nBahru, Malaysia (Hooi); The University of British\nColumbia, Vancouver, British Columbia, Canada\n(Barbour, Levin); NHMRC Clinical Trials Centre,\nUniversity of Sydney, Australia (Jardine); University\nHealth Network, Toronto, Ontario, Canada (Reich,\nCattran); David Geffen School of Medicine,\nUniversity of California, Los Angeles (Glassock);\nDepartment of Renal Medicine, University College\nLondon, United Kingdom (Wheeler); Department of\nMedicine, The University of Hong Kong, Hong Kong,\nSAR of China (Chan); Research Institute of\nNephrology, Jinling Hospital, Nanjing, China (Liu);\nAustralasian Kidney Trials Network, University of\nQueensland, Brisbane, Australia (Johnson);\nMenzies School of Health Research, Charles Darwin\nUniversity, Darwin, Australia (Cass); University of\nLeicester, Leicester, United Kingdom (Feehally);\nDivision of Nephrology and Clinical Immunology,\nRWTH Aachen University, Aachen, Germany\n(Floege); Istituto di Ricerche Farmacologiche Mario\nNegri IRCCS, Bergamo, Italy (Remuzzi); Peking\nUniversity Clinical Research Institute, Beijing, China\n(Wu); Indiana University School of Medicine,\nIndianapolis (Agarwal).\nAuthor Contributions: Drs Perkovic and Zhang had\nfull access to all of the data in the study and take\nresponsibility for the integrity of the data and the\naccuracy of the data analysis. Drs Lv and Wong\ncontributed equally and Drs Zhang and Perkovic\ncontributed equally to this article.\nConcept and design: Lv, Wong, Hladunewich, Jha,\nMonaghan, Zhao, Barbour, Jardine, Reich, Cattran,\nGlassock, Wheeler, Chan, Liu, Johnson, Cass,\nFeehally, Floege, Agarwal, Zhang, Perkovic.\nAcquisition, analysis, or interpretation of data: Lv,\nWong, Hladunewich, Jha, Hooi, Barbour, Jardine,\nReich, Cattran, Glassock, Levin, Wheeler,\nWoodward, Billot, Stepien, Rogers, Chan, Liu,\nJohnson, Cass, Remuzzi, Wu, Zhang, Perkovic.\nDrafting of the manuscript: Lv, Wong, Monaghan,\nCattran, Wheeler, Zhang, Perkovic.\nCritical revision of the manuscript for important\nintellectual content: Lv, Wong, Hladunewich, Jha,\nHooi, Zhao, Barbour, Jardine, Reich, Cattran,\nGlassock, Levin, Wheeler, Woodward, Billot,\nStepien, Rogers, Chan, Liu, Johnson, Cass, Feehally,\nFloege, Remuzzi, Wu, Agarwal, Zhang, Perkovic.\nStatistical analysis: Wong, Woodward, Billot,\nStepien, Rogers, Chan, Liu.\nObtained funding: Lv, Hladunewich, Barbour, Reich,\nCattran, Levin, Johnson, Cass, Wu, Zhang, Perkovic.\nAdministrative, technical, or material support: Lv,\nWong, Hladunewich, Jha, Hooi, Monaghan,\nBarbour, Jardine, Reich, Cattran, Wu, Zhang,\nPerkovic.\nSupervision: Lv, Hladunewich, Jha, Zhao, Barbour,\nCattran, Glassock, Levin, Wheeler, Billot, Johnson,\nCass, Floege, Zhang, Perkovic.\nOther - chair the event adjudication committee:\nAgarwal.\nConflict of Interest Disclosures: Dr Lv reported\nreceiving grants from the China National Funds for\nResearch Original Investigation\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\n1896\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n(Reprinted)\njama.com\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "4c60ce615d2a3bb9bafdd21a1daa61e29636175a8742da15080f2c14cd07cf33": {
+      "end": 1710,
+      "end_line": 21,
+      "handle": "eh_4c60ce615d2a3bb9",
+      "identity": "sha256:4c60ce615d2a3bb9bafdd21a1daa61e29636175a8742da15080f2c14cd07cf33",
+      "kind": "narrative",
+      "page": 291,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0 (final), 21JUL2021\nPage 10 of 53\nT:\\Statistics\\Projects\\TESTING\\Common\\Documentation\\SAP\\Final\\TESTING_SAP_final_analysis_v1.0 (Final) 2021-07-20.docx\nAnalyses will be conducted on an intention-to-treat (ITT) basis. The ITT population is all patients\nrandomised regardless of whether they receive study treatment and includes patients for whom\nthere are no data available due to absence or revocation of consent. The ITT analyses consider all\npatients according to the group they were randomly allocated to and regardless of treatment\nadherence or protocol violations. The ITT analysis set will be used to assess both efficacy and safety.\n3.5 Analyses by dose cohort\nUnless otherwise specified, all analyses will be conducted on the overall trial population (both doses\ncombined) as well as separately for each dose cohort. In addition, for the analysis of the primary\nendpoint as well as for analyses of eGFR decline and time-average proteinuria, we will assess\ninteractions between the treatment effect and the dose (high vs lower). To do so, we will formally\ntest the significance of the treatment-by-dose interaction; however, given the limited power, priority\nwill be given to differences in effect size when assessing the potential clinical significance.\n3.6 Subject disposition\nThe flow of patients through the trial will be displayed in a CONSORT 1 (CONsolidated Standards of\nReporting Trials) diagram. The report will include the following: the number of screened patients\nwho met study inclusion criteria and the number of patients who were included; and reasons for\nexclusion of non-included patients and number randomised by centre will be summarised.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "6c1e2e1173dbd68f60cb397df70c8d9332d90c29d573c6b93ebbdd3b3303f62c": {
+      "end": 1002,
+      "end_line": 30,
+      "handle": "eh_6c1e2e1173dbd68f",
+      "identity": "sha256:6c1e2e1173dbd68f60cb397df70c8d9332d90c29d573c6b93ebbdd3b3303f62c",
+      "kind": "narrative",
+      "page": 9,
+      "quote": "Clinical Protocol: TESTING Study\nVersion 1.0\nProtocol GI-R-01-2011\n16 June 2011\nConfidential\nPage 8 of 88\nTesting Study Final Protocol_Version 1.0_Dated 16 June 2011\nOverview of the study\n1 Title of study:\nTESTING study- Therapeutic Evaluation of STeroids in IgA Nephropathy Global study\n2 Study purpose:\nThis study will evaluate the long-term efficacy and safety of oral methylprednisolone on a\nbackground of routine RAS inhibitor therapy, in preventing kidney events in patients with\nIgA nephropathy and features suggesting a high risk of progression\n\n3 Study outcomes\n3.1 Primary outcome\nProgressive kidney failure, which is a composite of a 50% decrease in eGFR , the\ndevelopment of end stage kidney disease defined as a need for maintenance dialysis or kidney\ntransplantation, and death due to kidney disease\n3.2 Secondary outcomes\n\n-\nThe composite of ESKD, 50% decrease in eGFR and all cause death\n-\nEach of ESKD, renal death and all cause death\n-\nannual eGFR decline rate\n-\nproteinuria remission",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "7ffee71b26e943c7ddfb8630443c98ef3683cf095fe323bc37b893a3bc2eb1b9": {
+      "end": 2056,
+      "end_line": 35,
+      "handle": "eh_7ffee71b26e943c7",
+      "identity": "sha256:7ffee71b26e943c7ddfb8630443c98ef3683cf095fe323bc37b893a3bc2eb1b9",
+      "kind": "narrative",
+      "page": 129,
+      "quote": "6.6 Randomisation Procedure / Code Break\nAll patients meeting inclusion and exclusion criteria and providing informed consent\nfor whom all baseline data has been collected will be randomised to either the\nmethylprednisolone group or matching placebo group in a 1:1 ratio using a web\nbased randomisation system developed and maintained by Data Management at The\nGeorge Institute for Global Health.Randomisation will be achieved using a\nminimisation algorithm via a password-protected encrypted website interface. The\nrandomisation schedule will be generated by the randomisation code administrator at\nThe George Institute for Global Health. This password-protected and/or encrypted\nelectronic Master Randomisation List is kept by Data Management in their secure\nsystem and is only accessible to the authorised senior staff.\n\nPatients should be randomised within 2 weeks after completion of the last evaluation.\n\nEvery patient who participates in any study related procedure will be assigned a\nunique patient number via the web-based randomisation system. This system will be\navailable 24 hours a day, 7 days a week.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 942,
+      "start_line": 19,
+      "trial_id": "testing"
+    },
+    "8d15b12a542f3a65f197deed8d07b44a7f1fc5080bee9d60c60856032108c18f": {
+      "end": 2233,
+      "end_line": 73,
+      "handle": "eh_8d15b12a542f3a65",
+      "identity": "sha256:8d15b12a542f3a65f197deed8d07b44a7f1fc5080bee9d60c60856032108c18f",
+      "kind": "narrative",
+      "page": 284,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0 (final), 21JUL2021\nPage 3 of 53\nT:\\Statistics\\Projects\\TESTING\\Common\\Documentation\\SAP\\Final\\TESTING_SAP_final_analysis_v1.0 (Final) 2021-07-20.docx\n1 Administrative information\n1.1 Study identifiers\n\u2022\nProtocol Number: GI-R-01-2011, Version: 9.0, Date: 27 January 2021\n\u2022\nClinicalTrials.gov register Identifier: NCT01560052\n1.2 Revision history\nVersion\nDate\nDetails\n0.1 (draft)\n22FEB2020\nFirst draft adapted from the transitional\nanalysis SAP\n0.2 (draft)\n02JUN2021\nFurther edits to SAP and mock tables\n0.3 (final draft)\n08JUL2021\nRevised after receiving first round of\ncomments from management committee\nmembers\n1.0 (final version)\n21JUL2021\nFinal version created after receiving further\ncomments from the management committee\n1.3 Contributors to the statistical analysis plan\n1.3.1 Roles and responsibilities\nName and ORCID\nAffiliation\nRole on study\nSAP contribution\nLaurent Billot\n\nThe George Institute for\nGlobal Health, UNSW Sydney\nStudy statistician\nPrepared first draft\nHelen Monaghan\nThe George Institute for\nGlobal Health, UNSW Sydney\nProject manager\nReviewed each draft\nMuh Geot Wong\nThe George Institute for\nGlobal Health, UNSW Sydney\nStudy director\nReviewed each draft\nVlado Perkovic\nUNSW Sydney\nChief\ninvestigator\nApproved final version\n\n[Extracted table 1]\n|Version|Date|Details|\n|---|---|---|\n|0.1 (draft)|22FEB2020|First draft adapted from the transitional<br>analysis SAP|\n|0.2 (draft)|02JUN2021|Further edits to SAP and mock tables|\n|0.3 (final draft)|08JUL2021|Revised after receiving first round of<br>comments from management committee<br>members|\n|1.0 (final version)|21JUL2021|Final version created after receiving further<br>comments from the management committee|\n\n[Extracted table 2]\n|Name and ORCID|Affiliation|Role on study|SAP contribution|\n|---|---|---|---|\n|Laurent Billot|The George Institute for<br>Global Health, UNSW Sydney|Study statistician|Prepared first draft|\n|Helen Monaghan|The George Institute for<br>Global Health, UNSW Sydney|Project manager|Reviewed each draft|\n|Muh Geot Wong|The George Institute for<br>Global Health, UNSW Sydney|Study director|Reviewed each draft|\n|Vlado Perkovic|UNSW Sydney|Chief<br>investigator|Approved final version|",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69": {
+      "end": 5476,
+      "end_line": 198,
+      "handle": "eh_97b4f195ac1ce4c3",
+      "identity": "sha256:97b4f195ac1ce4c334406a82a30d187f042fdc318bddaa2e0d4ee124825b4d69",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "(85.7%) completed the full treatment course, 20 (4.0%) did not\nreceive the randomized therapy, and 52 (10.3%) discontinued\nprematurely (including 23 randomized to the original full-\ndoseprotocolwhohadrandomizedtherapydiscontinuedwhen\ntheexcessofseriousinfectionswasidentified;Figure1).Atotal\nof 493 patients (98%) had vital status available at completion\nof the trial, with 3 (0.6%) who withdrew consent and 7 (1.4%)\nwho were lost to follow-up.\nEfficacy\nPrimary Outcome\nThe primary outcome occurred significantly less frequently\nin participants randomized to the methylprednisolone group\nthan the placebo group (74 [28.8%] vs 106 [43.1%]; HR, 0.53\n[95% CI, 0.39-0.72]; P < .001; annual event rate difference,\n-4.8% per year [95% CI, -8.0% to -1.6%]; Table 2 and\nFigure 2A). Graphical examination suggested the possibility\nof varying effects over time, so the proportional hazards\nassumption was checked using the Kolmogorov-type supre-\nmum test (P = .05). A post hoc sensitivity analysis using flex-\nible parametric survival models with either constant or time-\nvarying HRs was therefore performed. The flexible model\nwith constant HRs generated an estimated HR of 0.54 (95%\nCI, 0.39-0.74), which was very similar to that obtained using\nthe Cox model. There was some evidence that the time-\nvarying HR was a better fit to the study data than a constant\nHR (eFigure 2 in Supplement 2; P = .02 for model fit with\ntime-varying HR vs constant HR), but both consistently esti-\nmated a significant risk reduction with methylprednisolone.\nIn subgroup analyses in which each methylpredniso-\nlone dose group was compared with the participants in the\nplacebo group randomized at that time, the effect size\nshowed no significant difference across methylpredniso-\nlone dose regimens (full dose: HR, 0.58 [95% CI, 0.41-0.81];\nreduced dose: HR, 0.27 [95% CI, 0.11-0.65]; P for heteroge-\nneity = .11; Figure 2C and D) and most other prespecified\nsubgroups (Figure 3), except for significantly greater benefit\nin non-Chinese participants (HR, 0.24 [95% CI, 0.10-0.56])\nTable 2. Primary and Secondary Outcomes in a Study of the Effect of Oral Methylprednisolone on Kidney Function Decline\nin Patients With IgA Nephropathy\nOutcome\nMethylprednisolone\n(n = 257)a,b\nPlacebo (n = 246)a,b\nRate difference\n(95% CI), %b\nHazard ratio\n(95% CI)c\nP valuec\nNo. of\nevents\nAnnual event rate\n(95% CI), %\nNo. of\nevents\nAnnual event rate\n(95% CI), %\nPrimary\n40% eGFR reduction, kidney\nfailure, or death due to kidney\ndiseased,e\n74\n7.3 (5.7 to 9.4)\n106\n12.1 (9.7 to 15.1)\n-4.8 (-8.0 to -1.6)\n0.53 (0.39 to 0.72)\n<.001\nSecondary\n30% eGFR reduction, kidney\nfailure, or all-cause death\n86\n8.4 (6.7 to 10.6)\n113\n12.8 (10.3 to 15.8)\n-4.4 (-7.7 to -1.0)\n0.56 (0.42 to 0.75)\n<.001\n40% eGFR reduction, kidney\nfailure, or all-cause death\n78\n7.7 (6.1 to 9.8)\n106\n12.2 (9.8 to 15.2)\n-4.5 (-7.7 to -1.2)\n0.56 (0.42 to 0.76)\n<.001\n50% eGFR reduction, kidney\nfailure, or all-cause death\n71\n7.0 (5.5 to 9.1)\n94\n10.8 (8.6 to 13.7)\n-3.8 (-6.9 to -0.7)\n0.62 (0.46 to 0.85)\n.003\nKidney failure requiring\ndialysis/transplant\n50\n4.9 (3.7 to 6.6)\n67\n7.8 (5.9 to 10.2)\n-2.9 (-5.4 to -0.3)\n0.59 (0.40 to 0.87)\n.008\neGFR reduction\n30%\n67\n6.7 (5.2 to 8.7)\n98\n11.4 (9.1 to 14.3)\n-4.7 (-7.8 to -1.6)\n0.47 (0.34 to 0.65)\n<.001\n40%\n57\n5.8 (4.4 to 7.7)\n91\n10.9 (8.6 to 13.7)\n-5.0 (-8.0 to -2.0)\n0.44 (0.31 to 0.62)\n<.001\n50%\n49\n5.0 (3.7 to 6.7)\n76\n9.1 (7.0 to 11.7)\n-4.1 (-6.8 to -1.3)\n0.52 (0.36 to 0.74)\n<.001\nDeath due to kidney failuref\n1\n0\n1\n0\n0\nNA\nNA\nDeath due to any cause\n6\n0.5 (0.2 to 1.3)\n3\n0.3 (0.1 to 1.0)\n0.2 (-0.4 to 0.8)\n2.62 (0.53 to 13.05)\n.24\nRate of eGFR decline,\nmL/min/1.73 m2/y\nMean (95% CI)g\nMean difference (95% CI)g\nP valueg\nUsing all visits\n-2.50 (-3.56 to -1.44)\n-4.97 (-6.07 to -3.87)\n2.46 (0.94 to 3.99)\n.002\nExcluding values from those\nreceiving high-exposure\ntreatment\n-2.18 (-3.16 to -1.20)\n-4.94 (-6.01 to -3.87)\n2.76 (1.32 to 4.21)\n<.001\nExcluding values from those\nreceiving treatment\n-2.11 (-3.03 to -1.20)\n-4.76 (-5.81 to -3.72)\n2.65 (1.27 to 4.03)\n<.001\nTime-averaged proteinuria, g/d\n1.70 (1.54 to 1.86)\n2.39 (2.15 to 2.63)\n-0.69 (-0.98 to -0.41)\n<.001\na Median (IQR) follow-up was 3.5 (2.4-6.2) years.\nbYearly event rates (per 100 patients) and rate differences were obtained from\na Poisson model adjusted for the stratification factors as fixed effects but\nwithout site as a random effect.\nc Hazard ratios and corresponding P values were obtained from a Cox model\nadjusted for stratification factors as fixed effects and site as a random effect.\ndPersistent 40% estimated glomerular filtration rate (eGFR) reduction was\nconfirmed by a repeated reading at least 30 days later.\ne Kidney failure requiring maintenance dialysis or kidney transplant.\nf Too few events to derive CIs, estimates of effect, and P values.\ng Means, mean differences, and corresponding P values were obtained from a\nlinear model adjusted for stratification factors as fixed effects and site as a\nrandom effect. Yearly event rates (per 100 patients) and rate differences were\nobtained from a Poisson model adjusted for site as a random effect and\nproteinuria, eGFR, and kidney biopsy findings as fixed effects.\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\nOriginal Investigation Research\njama.com\n(Reprinted)\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n1893\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "991778f34d1f0989b7f986224ecd611b0fe35be126d0e3cb28d35cf396cede0d": {
+      "end": 3022,
+      "end_line": 48,
+      "handle": "eh_991778f34d1f0989",
+      "identity": "sha256:991778f34d1f0989b7f986224ecd611b0fe35be126d0e3cb28d35cf396cede0d",
+      "kind": "narrative",
+      "page": 223,
+      "quote": "TESTING Study Protocol GI-R-01-2011\nVersion 8.0 - 31 October 2018\n\nPage 42 of 82\n\n\uf0a7\nRenal endpoints that need to be determined by serum creatinine, including 40% decrease of\neGFR, 30% reduction in eGFR, 50% reduction in eGFR and ESKD have to be confirmed by two\nmeasurements at least 4-weeks apart. For this purpose, participants may need to attend an\nunscheduled visit one month after the study visit.\n\uf0a7\nLaboratory values that exceed the boundaries of a notable laboratory abnormality should be\nevaluated by the investigator and additional evaluations should be performed if judged appropriate\nby the investigator. If the laboratory abnormality is the primary reason for an unforeseen\nhospitalisation or otherwise fulfils the criteria for a Serious Adverse Event, then the procedure for\nnotification of serious adverse events must be followed. Likewise, if the laboratory abnormality\nleads to discontinuation from the study or from treatment, then the participant must be followed\nuntil the abnormality resolves or until it is judged to be permanent.\n\n7.6 Haematology\nHaemoglobin, white blood cell count, lymphocyte and platelet count will be measured at Visits 1, 4, 6,\n7, 8 (if a clinic visit), 9 and then at yearly intervals until the end of the study.\n\n7.7 Blood chemistry\nBlood chemistry: Blood Urea Nitrogen, creatinine, total bilirubin, SGPT, alkaline phosphatase,\nsodium, potassium, calcium, phosphorous, total protein, albumin, glucose and uric acid will be\nmeasured at Visits 1, 4, 6, 7, 8 (if a clinic visit), 9, and then at yearly intervals until the end of the\nstudy. Blood Urea Nitrogen, creatinine, sodium, potassium, and uric acid will be measured on Visit 2,\n3. Electrolyte measurement (sodium, potassium) as well as Blood Urea Nitrogen and creatinine\nvalues will be obtained from participants at every visit where a complete laboratory test is not done.\n\n7.8 Creatinine calibration\nIn China, a national central laboratory has been established at the Peking University First Hospital\nCentral Laboratory, where serum creatinine levels will be measured using enzymatic method in a\nsingle laboratory. For other countries, the serum creatinine will be measured in the local laboratory of\nthe study sites.\n\nAll the clinical laboratories will use a creatinine method that has calibration traceable to an IDMS\n(isotope dilution mass spectrometry) reference measurement procedure, according to the\nrecommendations of NKDEP's Laboratory Working Group in collaboration with the International\nFederation of Clinical Chemistry and Laboratory Medicine (IFCC) and the European Communities\nConfederation of Clinical Chemistry (now called the European Federation of Clinical Chemistry and\nLaboratory Medicine). Methods based on either enzymatic or Jaffe method principles should have\ncalibration traceable to IDMS.\n\n7.9 Urinary analysis\nA qualitative microscopic determination - white blood cells per high power field (WBCs/HPF) and red\nblood cells per high power field (RBCs/HPF) will be performed at each clinic visit.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a": {
+      "end": 6256,
+      "end_line": 120,
+      "handle": "eh_9e93cc82a951bd92",
+      "identity": "sha256:9e93cc82a951bd92b300847e69e74d3339fc9a007a9d9ba7a9ee7c5ad445457a",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "I\ngA nephropathy is the most common primary glomeru-\nlar disease. A systematic review published in 2011 esti-\nmated an incidence of 2.5 cases per 100 000 individuals\nper year.1 The incidence is likely underestimated due to\nvariability in kidney biopsy practice in different regions.2\nSeveral long-term studies have reported rates of kidney\nfailure of up to 25% at 10-year follow-up and up to 50% at\n30-year follow-up.3,4\nAlthough there have been advances in understanding the\npathogenesis of IgA nephropathy, highlighting its immuno-\nlogical basis, no disease-specific therapy has been proven to\nprevent kidney failure. Recent discovery of specific autoim-\nmunityagainstgalactose-deficientIgA1,immunecomplexdep-\nosition, and activation of the complement have strengthened\nthe rationale for immunomodulatory therapy.5,6\nAlthough glucocorticoid therapy has been variably used\nin IgA nephropathy, its role remains controversial based\non persistent uncertainty about the benefits and risks.7\nAlthough previous clinical trials collectively suggested poten-\ntial benefit for corticosteroids,8,9 the largest previous indi-\nvidual clinical trial found that the addition of immunosup-\npression to supportive care resulted in more adverse effects,\nbut had no effect on kidney function over the trial period or\nduring long-term follow-up.3,10 The latest Kidney Disease:\nImproving Global Outcomes guidelines in glomerulonephri-\ntis therefore suggest consideration of glucocorticoid therapy\n(evidence level 2B) in individuals with IgA nephropathy, but\nrecommend warning about glucocorticoid-related toxicity.11\nThe Therapeutic Effects of Steroids in IgA Nephropathy\nGlobal (TESTING) study was designed to determine the ef-\nfects of oral methylprednisolone on the risk of major kidney\noutcomes, as well as adverse effects, in people with IgA ne-\nphropathy and proteinuria.\nMethods\nStudy Design and Oversight\nThedetaileddesignofthisrandomized,double-blind,placebo-\ncontrolled, multicenter clinical trial has been described\npreviously.12 The study was approved by the ethics commit-\ntees of each of the participating sites, and all participants pro-\nvided written informed consent. The study was overseen by\na management committee, coordinated by The George Insti-\ntute for Global Health, and was designed to be conducted in\ncenters in China, Australia, India, Canada, and Malaysia. The\nstudy protocol and the statistical analysis plan are available\nin Supplement 1.13\nThe study started recruitment in May 2012 but was halted\non November 13, 2015, when 262 patients had been random-\nized, based on an excess of serious infections, 2 of which were\nfatal, in the corticosteroid group. All of the participants and\ninvestigators were informed; 23 participants who were still re-\nceiving methylprednisolone or placebo had treatment discon-\ntinued, while scheduled follow-up was continued, and were\nincluded in an interim analysis.14\nThe steering committee subsequently made the decision\nto revise the protocol to recruit 240 additional participants to\nreceive a reduced methylprednisolone dose regimen or match-\ning placebo (see below; summary of and timelines for the main\nchanges of the protocol are available in eTable 1 and eFigure 1\nin Supplement 2), with ongoing follow-up of all participants\n(including the original full-dose cohort) to a revised target total\nsample size of 500 participants, reduced from the 750 partici-\npants planned at the time this change was made. Recruit-\nment to the reduced-dose protocol was recommenced on\nMarch 21, 2017.\nParticipants\nEligibility required a diagnosis of primary IgA nephropathy\nproven on kidney biopsy (without time limits), an esti-\nmated glomerular filtration rate (eGFR) between 20 and\n120 mL/min/1.73 m2 (calculated using the Chronic Kidney\nDisease Epidemiology Collaboration formula; modified to\n30 to 120 mL/min/1.73 m2 for the reduced-dose cohort),\nand 24-hour urinary protein excretion greater than or equal\nto 1 g per day. Exclusion criteria included a strong indication\nfor, or contraindication to, glucocorticoid therapy based on\nthe judgement of the treating physician, or the use of sys-\ntemic immunosuppressive therapy in the past year. Full\ninclusion and exclusion criteria are described in eTable 2\nin Supplement 2. Because there are data suggesting differ-\nential disease prevalence and progression of IgA nephropa-\nthy in various regions being a more common cause of kid-\nney failure in East Asian countries than in European and\nNorth American countries, we collected participant self-\nreported race and ethnicity based on questionnaires with\nfixed categories.\nRandomization\nPotentially eligible participants entered a run-in period of\nup to 12 weeks, during which background therapy was opti-\nmized, including ensuring that maximal renin-angiotensin\nsystem inhibitor therapy was used for a minimum of 3\nmonths prior to randomization. Those who were adherent\nto treatment, with persistent proteinuria greater than 1 g per\nday during the run-in period, were centrally randomized in\na 1:1 ratio to receive oral methylprednisolone or matching\nKey Points\nQuestion What are the effects of oral glucocorticoids in patients\nwith IgA nephropathy and proteinuria of 1 g per day or greater\nreceiving optimal supportive therapy?\nFindings In this randomized clinical trial that included 503\nparticipants, a 6- to 9-month course of oral methylprednisolone,\ncompared with placebo, significantly reduced the risk of the\ncomposite outcome of kidney function decline, kidney failure, or\ndeath due to kidney disease (hazard ratio, 0.53), although the risk\nof serious adverse events was increased.\nMeaning Among patients with IgA nephropathy and proteinuria\ngreater than or equal to 1 g per day, oral methylprednisolone\nsignificantly reduced the risk of the composite outcome\nof kidney function decline, kidney failure, or death due to\nkidney disease, with an increased incidence of serious\nadverse events.\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\nOriginal Investigation Research\njama.com\n(Reprinted)\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n1889\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "a3dd658bffa0ac43ed6a4225fbd0ecafec5f7a3cc90df7a728650cbdaee35743": {
+      "end": 1039,
+      "end_line": 27,
+      "handle": "eh_a3dd658bffa0ac43",
+      "identity": "sha256:a3dd658bffa0ac43ed6a4225fbd0ecafec5f7a3cc90df7a728650cbdaee35743",
+      "kind": "narrative",
+      "page": 97,
+      "quote": "Clinical Protocol: TESTING Study\nVersion5.0\nProtocol GI-R-01-2011\n13May2015\nConfidential\nPage 8 of 92\nTesting Protocol version 5 _13May2015_final\n1. Overview of the study\n1.1 Title of study:\nTESTING study- Therapeutic Evaluation of STeroids in IgA Nephropathy Global study\n1.2 Study purpose:\nThis study will evaluate the long-term efficacy and safety of oral methylprednisolone compared\nto matching placebo, on a background of routine RAS inhibitor therapy, in preventing kidney\nevents in patients with IgA nephropathy and features suggesting a high risk of progression\n1.3 Study outcomes\n1.3.1 Primary outcome\nProgressive kidney failure, which is a composite of a 40% decrease in eGFR, the\ndevelopment of end stage kidney disease defined as a need for maintenance dialysis or\nkidney transplantation, and death due to kidney disease\n1.3.2 Secondary outcomes\n\uf0a7\nThe composite of ESKD, 40% decrease in eGFR and all cause death\n\uf0a7\nThe composite of ESKD, 50% decrease in eGFR and all cause death\n\uf0a7\nEach of ESKD, renal death and all cause death\n\uf0a7",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "a42e1c01b2cfa5bddd18970a4ed721c6cc3a122972548f2b43c679cd19b7b8a2": {
+      "end": 854,
+      "end_line": 26,
+      "handle": "eh_a42e1c01b2cfa5bd",
+      "identity": "sha256:a42e1c01b2cfa5bddd18970a4ed721c6cc3a122972548f2b43c679cd19b7b8a2",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "Supplementary Appendix - Protocol and SAP\nThis appendix has been provided by the authors to give readers additional information about\ntheir work.\n\nCONTENTS\nPage\nProtocol V1.0 16 June 2011\n2\nProtocol V5.0 13 May 2015 As included in JAMA. doi:10.1001/jama.2017.9362\n90\nProtocol V8.0 31 October 2018\n182\nStatistical Analysis Plan V1.0 4 March 2016\n264\nStatistical Analysis Plan Final 20 July 2021. Reprint available in\nhttps://doi.org/10.31219/osf.io/d7qrw\n282\n\n[Extracted table 1]\n||CONTENTS|||Page||\n|---|---|---|---|---|---|\n|Protocol V1.0 16 June 2011|||2|||\n|Protocol V5.0 13 May 2015 As included in JAMA. doi:10.1001/jama.2017.9362|||90|||\n|Protocol V8.0 31 October 2018|||182|||\n|Statistical Analysis Plan V1.0 4 March 2016|||264|||\n|Statistical Analysis Plan Final 20 July 2021. Reprint available in<br>https://doi.org/10.31219/osf.io/d7qrw|||282|||",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "aa43dfaacc316b0dd91ecb12d8bd34277b016d2549ff3ab3ab303ff32433f8ed": {
+      "end": 1956,
+      "end_line": 55,
+      "handle": "eh_aa43dfaacc316b0d",
+      "identity": "sha256:aa43dfaacc316b0dd91ecb12d8bd34277b016d2549ff3ab3ab303ff32433f8ed",
+      "kind": "narrative",
+      "page": 288,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0 (final), 21JUL2021\nPage 7 of 53\nT:\\Statistics\\Projects\\TESTING\\Common\\Documentation\\SAP\\Final\\TESTING_SAP_final_analysis_v1.0 (Final) 2021-07-20.docx\nmatching placebo, for 8 weeks (+/- 4 days) and then be tapered by 4 mg daily/month, for a total\ntreatment period of 6- 9 months.\n2.4 Outcomes\nThe overall outcomes described below combine TESTING and TESTING low-dose cohorts.\n2.4.1 Overall efficacy primary outcome\nThe primary outcome is progressive kidney failure, which is a composite of:\n-\nPersistent 40% decrease in eGFR: reduction of eGFR by 40% from the baseline value (pre-\nrandomisation) that is confirmed by a second value obtained at least 4 weeks after the initial\ndecline or until the final available study visit.\n-\nKidney failure: situations that need kidney replacement therapy including kidney\ntransplantation and maintenance dialysis therapy\n-\nDeath due to kidney disease: death due to kidney failure that needs dialysis and where the\ndeath could be avoided by timely dialysis\n2.4.2 Overall efficacy secondary outcomes\n-\nThe composite of kidney failure, persistent 30% decrease in eGFR and all cause death\n-\nThe composite of kidney failure, persistent 40% decrease in eGFR and all cause death\n-\nThe composite of kidney failure, persistent 50% decrease in eGFR and all cause death\n-\nPersistent 30% decrease in eGFR\n-\nPersistent 40% decrease in eGFR\n-\nPersistent 50% decrease in eGFR\n-\nKidney failure\n-\nDeath due to kidney disease\n-\nAll-cause death\n-\nAnnual eGFR decline rate\n-\nTime averaged proteinuria post-randomisation\n2.4.3 Primary efficacy outcome specifically for the low-dose cohort\n-\nChange in proteinuria from baseline at 6 and 12 months\n-\nMean change in eGFR at 6 and 12 months\n2.4.4 Exploratory efficacy outcomes\n-\nProportion of patients in complete proteinuria remission and stable kidney function\n-\nMean annual change of 1/creatinine concentration\n-\nDisappearance of microhaematuria",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "adceb11a4ec3774165d9ff2ffddab8cfb96335d52653e4e304d41af34844ec21": {
+      "end": 680,
+      "end_line": 19,
+      "handle": "eh_adceb11a4ec37741",
+      "identity": "sha256:adceb11a4ec3774165d9ff2ffddab8cfb96335d52653e4e304d41af34844ec21",
+      "kind": "narrative",
+      "page": 282,
+      "quote": "\n\nA multi-centre, double blinded, randomised, controlled trial to evaluate the long-\nterm efficacy and safety of oral methylprednisolone, on a background of routine\nrenin angiotensin system (RAS) inhibitor therapy, in preventing kidney events in\npatients with IgA nephropathy and features suggestive of a high risk of progression.\n\nStatistical Analysis Plan\nVersion: 1.0 (Final)\nDate: 21 July 2021\nAuthors:\nLaurent Billot\n, The George Institute, UNSW Sydney\nHelen Monaghan , The George Institute, UNSW Sydney\nMuh Geot Wong , The George Institute, UNSW Sydney\nVlado Perkovic , UNSW Sydney\nOn behalf of the TESTING steering committee\nStudy identifiers:\nProtocol Number: GI-R-01-2011",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "b7ea3d5cb63afecd102709856b7473fb8fea355c0bddd3b0ddaf29237ffc6b94": {
+      "end": 2781,
+      "end_line": 67,
+      "handle": "eh_b7ea3d5cb63afecd",
+      "identity": "sha256:b7ea3d5cb63afecd102709856b7473fb8fea355c0bddd3b0ddaf29237ffc6b94",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "eTable 1 - TESTING Timeline\nDate\nName of document / Event\nBrief summary of changes / notes\n16 June 2011\nTESTING Protocol V1.0\n\u25aa\nSample size - 1,300\n7 December 2011\nTESTING Protocol V2.0 Amendment 1\n\u25aa\nChanges to Steering Committee membership\n\u25aa\nInclusion of placebo\n\u25aa\nAddition of Hong Kong\n\u25aa\nAdministrative clarifications and corrections\n8 May 2012\n6 August 2012\nRecruitment\n\u25aa\nFirst participant screened at Peking University First Hospital, China\n\u25aa\nFirst participant randomised at Peking University First Hospital, China\n3 December 2012\nTESTING Protocol V3.0 Amendment 2\n\u25aa\nChanges to Steering Committee membership\n\u25aa\nChange to inclusion criteria\n\u25aa\nUpdated CKD-EPI formula\n\u25aa\nAdministrative clarifications and corrections\n7 April 2014\nTESTING Protocol V4.0 Amendment 3\n\u25aa\nRemoval of the requirement for renal biopsy to be within the last 3 years\n\u25aa\nInclusion criteria for eGFR revised from 20 to 90ml/min per 1.73m2 (inclusive) to\n20 to 120ml/min per 1.73m2 (inclusive)\n\u25aa\nAdministrative clarifications and corrections\n13 May 2015\nTESTING Protocol V5.0 Amendment 4\n\u25aa\nChanges to Steering Committee membership and affiliations\n\u25aa\nPrimary outcome modified from 50% eGFR reduction to 40% decrease in eGFR\n\u25aa\nSample size modified to 750\n\u25aa\nUpdated CKD-EPI formula\n\u25aa\nAdministrative clarifications and corrections\n\u00a9 2022 American Medical Association. All rights reserved.\n\n[Extracted table 1]\n||Date|||Name of document / Event|||Brief summary of changes / notes||\n|---|---|---|---|---|---|---|---|---|\n|16 June 2011|||TESTING Protocol V1.0|||\u25aa Sample size - 1,300|||\n|7 December 2011|||TESTING Protocol V2.0 Amendment 1|||\u25aa Changes to Steering Committee membership<br>\u25aa Inclusion of placebo<br>\u25aa Addition of Hong Kong<br>\u25aa Administrative clarifications and corrections|||\n|8 May 2012<br>6 August 2012|||Recruitment|||\u25aa First participant screened at Peking University First Hospital, China<br>\u25aa First participant randomised at Peking University First Hospital, China|||\n|3 December 2012|||TESTING Protocol V3.0 Amendment 2|||\u25aa Changes to Steering Committee membership<br>\u25aa Change to inclusion criteria<br>\u25aa Updated CKD-EPI formula<br>\u25aa Administrative clarifications and corrections|||\n|7 April 2014|||TESTING Protocol V4.0 Amendment 3|||\u25aa Removal of the requirement for renal biopsy to be within the last 3 years<br>\u25aa Inclusion criteria for eGFR revised from 20 to 90ml/min per 1.73m2 (inclusive) to<br>20 to 120ml/min per 1.73m2 (inclusive)<br>\u25aa Administrative clarifications and corrections|||\n|13 May 2015|||TESTING Protocol V5.0 Amendment 4|||\u25aa Changes to Steering Committee membership and affiliations<br>\u25aa Primary outcome modified from 50% eGFR reduction to 40% decrease in eGFR<br>\u25aa Sample size modified to 750<br>\u25aa Updated CKD-EPI formula<br>\u25aa Administrative clarifications and corrections|||",
+      "source_id": "source_ae5710389c3b23b14de5899d7313fde9a4aa44abf8d54375e4c2b79ba1e66fe5",
+      "source_version": "sha256:dc7c09252a7474cf40401abda0805620e777f7e2a093dceb8366941ca0d2b16a",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "bdd12f8bac1a5bdebdc91fb5350b078f85a469a45ed6a5669ef67075a97b8502": {
+      "end": 2018,
+      "end_line": 32,
+      "handle": "eh_bdd12f8bac1a5bde",
+      "identity": "sha256:bdd12f8bac1a5bdebdc91fb5350b078f85a469a45ed6a5669ef67075a97b8502",
+      "kind": "narrative",
+      "page": 290,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0 (final), 21JUL2021\nPage 9 of 53\nT:\\Statistics\\Projects\\TESTING\\Common\\Documentation\\SAP\\Final\\TESTING_SAP_final_analysis_v1.0 (Final) 2021-07-20.docx\nJirovecii pneumonia, but numerical imbalances in gastrointestinal bleeding, new diabetes and\nfracture were also observed.\nOf note, the TESTING study suggested that steroids are likely to have kidney protective effects with\nsubstantial reductions in proteinuria, slower rates of eGFR loss and a reduction in the risk of the\nprimary outcome (hazard ratio 0.37, p=0.019).\nBased on the advice of the TESTING DSMC after they had reviewed the interim results, the Steering\nCommittee decided to discontinue treatment with the dose of methylprednisolone being used at the\ntime due to the safety concerns and to analyse and report the results given their clinical importance\nto people being treated with steroids around the world. As possible significant kidney benefits were\nalso observed, a decision to recruit and randomise a second cohort of participants to a lower dose\nregimen was made with the expectation that the risks could be substantially reduced, with similar\nbenefits.\n2.6.2 Changes in Planned Analysis\nNot applicable.\n3 Statistical analysis\n3.1 Software\nAnalyses will be conducted primarily using SAS Enterprise Guide (version 7.1 or above) and R\n(version 4.0.0 or above).\n3.2 Interim analyses\nThe trial DSMC met regularly (approximately twice a year) to monitor safety data. No formal interim\nanalysis for efficacy was performed; however, interim results for the high-dose cohort were\nunblinded and published in 2017 (See Section 2.6.1)\n3.3 Multiplicity adjustment\nAll tests are to be two-sided with a nominal level of \uf061 set at 5%. Analyses of the primary outcome\nwill be unadjusted for multiplicity; however, the outcomes are clearly categorised by degree of\nimportance (primary, secondary and exploratory) and a limited number of subgroup analyses are\npre-specified (see Section 3.10.1.4).\n3.4 Data sets analysed",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5": {
+      "end": 2603,
+      "end_line": 42,
+      "handle": "eh_ea1509835cd0d440",
+      "identity": "sha256:ea1509835cd0d44016a656f5992a16b0b879204499a4a18b12312f9a6883e6b5",
+      "kind": "narrative",
+      "page": 294,
+      "quote": "Statistical Analysis Plan: TESTING\nVersion 1.0 (final), 21JUL2021\nPage 13 of 53\nT:\\Statistics\\Projects\\TESTING\\Common\\Documentation\\SAP\\Final\\TESTING_SAP_final_analysis_v1.0 (Final) 2021-07-20.docx\nWhen dialysis is not readily available in some parts of the world or the patient refused dialysis, the diagnosis\nof kidney failure will be the presence of either symptomatic or advanced asymptomatic uremia defined using\nthe following criteria:\n-\neGFR <15 mL/min/1.73 m2 on 2 blood tests at least 30 days apart and the presence of\nsymptoms ascribed to uraemia\n-\neGFR <8 mL/min/1.73 m2 on two blood tests at least 30 days apart which may be with or\nwithout the presence of symptoms ascribed to uraemia\nDeath due to kidney disease:\nPatients with eGFR<15mL/min/1.73m2 may die prior to initiating kidney replacement therapy. Such events will\nbe classified as kidney death when they satisfy the following 3 criteria\n1. The patient with eGFR<15mL/min/1.73m2 dies\nAND\n2. The patient has refused KRT or dialysis is not available\nAND\n3. The death cannot be attributed to a specific aetiology (e.g. cardiovascular death, stroke,\nprogression of cancer, violence)\n\nThe diagnosis of kidney death is not intended for subjects in whom dialysis is not offered or withdrawn because\nof advanced cancer, severe sepsis, advanced heart failure, or terminal organ failure. In such instances, the\nprimary diagnosis that led to withholding KRT will be designated the cause of death.\n3.10.1.2 Main analysis\nThe primary outcome is time from randomisation to the first instance of a confirmed 40% decline in eGFR,\nkidney failure or death due to kidney disease. Survival curves and estimated median survival times will be\ngenerated according to the Kaplan-Meier method, and compared using the log-rank test. Cox proportional\nhazards analysis will be performed to generate a hazard ratio between the two groups. Analyses will be\ncensored at the date when patients died (for causes other than kidney disease), were lost to follow up,\nwithdrew from study, or at the end of study visit, whichever occurred first. The model will include the\nstratification variables (region, proteinuria, eGFR and kidney biopsy findings) as fixed covariates.\n3.10.1.3 Adjusted analyses\nNo further adjustments are planned.\n3.10.1.4 Subgroup analyses\nThe following protocol-specified subgroups will be applied for the primary endpoint:\n1) Randomised steroid dose (full-dose versus lower-dose)\n2) Baseline proteinuria (<3.0g/day, \u22653.0g/day),\n3) Baseline kidney function (eGFR<50 versus \u226550mL/min per 1.73m2),\n4) Baseline histological lesion scoring (E1 vs E0)",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "ee78c7dd09ae63c8f80cd2282308e5c34c030df2256520804da2bdb4dd331d89": {
+      "end": 3154,
+      "end_line": 104,
+      "handle": "eh_ee78c7dd09ae63c8",
+      "identity": "sha256:ee78c7dd09ae63c8f80cd2282308e5c34c030df2256520804da2bdb4dd331d89",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "neity = .11; Figure 2C and D) and most other prespecified\nsubgroups (Figure 3), except for significantly greater benefit\nin non-Chinese participants (HR, 0.24 [95% CI, 0.10-0.56])\nTable 2. Primary and Secondary Outcomes in a Study of the Effect of Oral Methylprednisolone on Kidney Function Decline\nin Patients With IgA Nephropathy\nOutcome\nMethylprednisolone\n(n = 257)a,b\nPlacebo (n = 246)a,b\nRate difference\n(95% CI), %b\nHazard ratio\n(95% CI)c\nP valuec\nNo. of\nevents\nAnnual event rate\n(95% CI), %\nNo. of\nevents\nAnnual event rate\n(95% CI), %\nPrimary\n40% eGFR reduction, kidney\nfailure, or death due to kidney\ndiseased,e\n74\n7.3 (5.7 to 9.4)\n106\n12.1 (9.7 to 15.1)\n-4.8 (-8.0 to -1.6)\n0.53 (0.39 to 0.72)\n<.001\nSecondary\n30% eGFR reduction, kidney\nfailure, or all-cause death\n86\n8.4 (6.7 to 10.6)\n113\n12.8 (10.3 to 15.8)\n-4.4 (-7.7 to -1.0)\n0.56 (0.42 to 0.75)\n<.001\n40% eGFR reduction, kidney\nfailure, or all-cause death\n78\n7.7 (6.1 to 9.8)\n106\n12.2 (9.8 to 15.2)\n-4.5 (-7.7 to -1.2)\n0.56 (0.42 to 0.76)\n<.001\n50% eGFR reduction, kidney\nfailure, or all-cause death\n71\n7.0 (5.5 to 9.1)\n94\n10.8 (8.6 to 13.7)\n-3.8 (-6.9 to -0.7)\n0.62 (0.46 to 0.85)\n.003\nKidney failure requiring\ndialysis/transplant\n50\n4.9 (3.7 to 6.6)\n67\n7.8 (5.9 to 10.2)\n-2.9 (-5.4 to -0.3)\n0.59 (0.40 to 0.87)\n.008",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 1873,
+      "start_line": 35,
+      "trial_id": "testing"
+    },
+    "f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a": {
+      "end": 5000,
+      "end_line": 92,
+      "handle": "eh_f036366ed45e22e7",
+      "identity": "sha256:f036366ed45e22e76c3c01427d8e0114ab9b25553ebdac71f4f85e8b86e4023a",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "placebo, stratified by site, proteinuria (<3 g/d or \u22653 g/d),\neGFR (<50 mL/min/1.73 m2 or \u226550 mL/min/1.73 m2), and\nkidney biopsy findings (endocapillary proliferation status\naccording to the Oxford classification definitions at the time\nthe trial was designed: E1 or E0).15 Randomization was per-\nformed using a minimization algorithm based on the 4\nstratification variables; the algorithm was centrally gener-\nated and used by all centers to minimize any imbalances in\nkey variables. Patients, investigators, site staff, and spon-\nsors were masked to treatment assignment.\nIntervention\nParticipants were originally randomized to receive oral meth-\nylprednisolone, 0.6 to 0.8 mg/kg per day, for 2 months (maxi-\nmum,48mg/d),taperingby8mgperdayeachmonthforatotal\ntreatment period of 6 to 8 months or matching placebo. For\nparticipants randomized from 2017 onward (the reduced-\ndose cohort), a lower dose of methylprednisolone was used:\n0.4 mg/kg per day (maximum, 32 mg/d) for 2 months fol-\nlowed by dose tapering by 4 mg per day each month, or match-\ning placebo, for a total of 6 to 9 months. Antibiotic prophy-\nlaxis for pneumocystis pneumonia (a single-strength tablet\ndaily or half of a double-strength tablet daily) was also added\nduring the first 12 weeks of the treatment period for all par-\nticipants randomized to the reduced-dose cohort.\nStudy visits occurred monthly for 3 months, then every 3\nmonths until month 12, and then annually until the end of the\nstudy. Additional study visits (either telephone or face-to-\nface at the choice of the investigator) were conducted every 3\nmonths after the first year to ascertain kidney end points and\nadverse events.\nOutcomes\nThe primary end point was the composite of the first occur-\nrence of a sustained 40% decrease in eGFR, the develop-\nment of kidney failure (defined as a need for maintenance\ndialysis or kidney transplant and adjudicated by a blinded,\nindependent committee), or death due to kidney disease\n(defined as death due to kidney failure that required dialysis\nand that could be avoided by timely dialysis). Occurrences\nof 40% eGFR reduction were included as end points if they\nwere sustained on a repeated serum creatinine test at least\n30 days after the first occurrence or if they occurred at the\nfinal available measurement.\nSecondary end points were sustained decreases in eGFR\n(of 30%, 40%, and 50%) combined with kidney failure and\nall-cause death; the separate individual components of the\ncomposite primary and secondary outcomes; proteinuria\nreduction evaluated by time-averaged mean proteinuria;\nand eGFR slope, using all eGFR values or those excluding\neGFR at the time of high-dose treatment exposure.\nPredefined adverse event outcomes were total serious\nadverse events, serious infections needing hospitalization,\nnew-onset diabetes, gastrointestinal hemorrhage, fracture\nor osteonecrosis, and cardiovascular events. Serious ad-\nverse events were defined according to the International\nConference on Harmonization Guideline for Clinical Safety\nData Management.\nSample Size\nThe trial was event-driven, requiring at least 160 primary\noutcome events to provide 90% power (\u03b1 = .05) to detect a\n40% overall reduction in the hazard for the methylpredniso-\nlone group. This, in turn, required the enrollment of at\nleast 500 patients across the trial (pooling the original and\nreduced-dose cohorts). The trial had been designed with\n90% power to detect a 30% risk reduction (sample size\nof 750) based on a balance between what was clinically\nimportant to detect and what was feasible, but was mod-\nified for pragmatic and funding-related reasons after the\nserious infection-related pause. A meta-analysis of previous\ntrials8 suggested that glucocorticoids might have a relative\nrisk for the primary end point of 0.32 (95% CI, 0.15-0.67),\nbut had been considered likely to be an overestimate. When\nrecruitment of the full-dose cohort was stopped, feasibility\nwas affected, so the trial was powered to detect a still-\nconservative risk reduction of 40%.\nStatistical Analysis\nAll analyses were conducted by analyzing all patients\naccording to the group they were randomized to, regardless\nof treatment adherence or protocol violations. The effect of\ntreatment on the primary composite end point was esti-\nmated using an adjusted Cox model, with site as a random\neffect and the 3 other stratification variables (baseline pro-\nteinuria, baseline eGFR, and kidney biopsy findings) as\nfixed effects. Data for patients were censored at the date\nthey died (for causes other than kidney disease), were lost\nto follow-up, or withdrew from the study or at the end of\nthe trial assessment, whichever occurred first. Survival\ncurves were generated with the Kaplan-Meier method. The\nproportional hazards assumption was assessed graphically\nand checked using the Kolmogorov-type supremum test,\nand a post hoc sensitivity analysis using flexible parametric\nsurvival models with either constant or time-varying hazard\nratios (HRs) was performed.",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    },
+    "f80aee395fd4f24ab929e60382b8aa83a2f74d967e432e5644b370c7a106fa43": {
+      "end": 2006,
+      "end_line": 36,
+      "handle": "eh_f80aee395fd4f24a",
+      "identity": "sha256:f80aee395fd4f24ab929e60382b8aa83a2f74d967e432e5644b370c7a106fa43",
+      "kind": "narrative",
+      "page": 123,
+      "quote": "Permitted Concomitant Medications\n\nThe goal of blood pressure treatment in IgAN should be <130/80mmHg in patients with\nproteinuria. Any other antihypertensive medications, including diuretics, calcium channel\nblockers and beta-blockers can be used at any time point or can be added when\nmonotherapy with ACE inhibitors or ARBs is not adequate to achieve blood pressure\ntargets. Diuretics such as hydrochlorothiazide (Scr<1.5mg/day) or loop diuretics (Scr>\n1.5mg/day) will be recommended as second line therapy on top of ACE inhibitors or\nARBs given the benefits for the reduction of proteinuria and serum potassium. Other\ntherapies such as statins or aspirin will be recommended for people fulfilling the required\ncriteria according to local guidelines.\n\nChinese traditional medicine including Chinese herbs and acupuncture are a common\ntreatment in China. These treatments are permitted and will be recorded on the eCRF.\n\nProhibited Concomitant Medications\nAny other immunosuppressive therapies e.g. MycophenolateMofetil (MMF)\ncyclophosphamide (CYCLO) or azathioprine (AZA) are not permitted in this study,\nunless there are other definite indications for using these drugs.\nRifampin is also prohibited from this study as it interacts with methylprednisolone and\nmakes the study drug less effective. The investigator should consult the product\ninformation of Medrol (Methylprednisolone) in appendix 7 for other prohibited\nconcomitant medication.",
+      "source_id": "source_7bba7ac210eadd586c10b7f9b044dab3f3898a99e480021a71947f467b81ea58",
+      "source_version": "sha256:96f2db50592a69dd792a05a7b82a12836a6b569adee1d404ca673b4f5680533e",
+      "start": 561,
+      "start_line": 14,
+      "trial_id": "testing"
+    },
+    "fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12": {
+      "end": 4534,
+      "end_line": 198,
+      "handle": "eh_fee108ec711b3123",
+      "identity": "sha256:fee108ec711b3123a46e1890ed83fc3b0df21c32b314f5821342a084965ccb12",
+      "kind": "narrative",
+      "page": 7,
+      "quote": "compared with Chinese participants (HR, 0.61 [95% CI,\n0.44-0.84]) (P for heterogeneity = .046).\nSecondary Outcomes\nTheeffectoftheinterventiononsecondaryoutcomesisshown\nin Table 2. There was 1 death (0.4%) due to kidney failure in\neach group and 6 (2.3%) vs 3 (1.2%) deaths from any cause in\nthe methylprednisolone vs placebo groups (P = .24). The risk\nof kidney failure requiring dialysis or transplant was signifi-\ncantly lower in the methylprednisolone group than the pla-\ncebo group (50 [19.5%] vs 67 [27.2%]; HR, 0.59 [95% CI, 0.40-\n0.87]; P = .008; annual event rate difference, -2.9% per year\n[95% CI, -5.4% to -0.3%]; Table 2 and Figure 2B).\nTime-averaged mean 24-hour urine protein excretion\nwas significantly lower during follow-up in the methylpred-\nnisolone group vs the placebo group (1.70 g/d [95% CI,\n1.54-1.86] vs 2.39 g/d [95% CI, 2.15-2.63]; between-group\ndifference, -0.69 g/d [95% CI, -0.98 to -0.41]; P < .001)\n(eFigure 3A in Supplement 2). The difference was mostly\nseen relatively early and was no longer apparent by 3 years\nof follow-up. The results were similar for the full-dose pro-\ntocol (1.80 g/d [95% CI, 1.57-2.03] vs 2.38 g/d [95% CI, 2.07-\n2.68]; between-group difference, -0.58 g/d [95% CI, -0.96\nto -0.19]; P = .003) and the reduced-dose protocol (1.58 g/d\n[95% CI, 1.36-1.80] vs 2.41 g/d [95% CI, 2.04-2.78]; between-\ngroup difference, -0.83 g/d [95% CI, -1.25 to -0.40];\nP < .001), without evidence of heterogeneity between\nthe full-dose and reduced-dose protocols (P for heteroge-\nneity = .39).\nThe annual rate of loss of kidney function was 2.50 mL/\nmin/1.73 m2 per year in participants randomized to the meth-\nylprednisolone group compared with 4.97 mL/min/1.73 m2 per\nyear in the placebo group (mean difference, 2.46 mL/min/\n1.73 m2 per year [ 95% CI, 0.94-3.99]; P = .002; eFigure 3B in\nFigure 2. Time From Randomization to First Outcome in a Study of the Effect of Oral Methylprednisolone on Kidney Function Decline\nin Patients With IgA Nephropathy\n80\n60\n40\n20\n0\nCumulative incidence of 40% eGFR\nreduction, kidney failure, or death\ndue to kidney disease, %\nTime to event, y\nPrimary outcome in all patients\nA\n0\n246\n257\n1\n234\n250\n2\n188\n215\n3\n127\n161\n4\n76\n105\n5\n66\n92\n6\n44\n66\nNo. of patients at risk\nMethylprednisolone\nMethylprednisolone\nPlacebo\nPlacebo\n80\n60\n40\n20\n0\nCumulative incidence of kidney\nfailure requiring dialysis or\ntransplant, %\nTime to event, y\nKidney failure requiring dialysis or transplant\nB\n0\n246\n257\n1\n242\n253\n2\n200\n223\n3\n147\n172\n4\n95\n116\n5\n87\n103\n6\n62\n81\nNo. of patients at risk\nMethylprednisolone\nMethylprednisolone\nPlacebo\nPlacebo\n80\n60\n40\n20\n0\nCumulative incidence of 40% eGFR\nreduction, kidney failure, or death\ndue to kidney disease, %\nTime to event, y\nPrimary outcome in full-dose cohort\nC\n0\n126\n136\n1\n119\n133\n2\n110\n124\n3\n92\n117\n4\n76\n104\n5\n66\n92\n6\n44\n66\nNo. of patients at risk\nMethylprednisolone\nMethylprednisolone\nPlacebo\nPlacebo\n80\n60\n40\n20\n0\nCumulative incidence of 40% eGFR\nreduction, kidney failure, or death\ndue to kidney disease, %\nTime to event, y\nPrimary outcome in reduced-dose cohort\nD\n0\n120\n121\n1\n115\n117\n2\n78\n91\n3\n35\n44\nNo. of patients at risk\nMethylprednisolone\nMethylprednisolone\nPlacebo\nPlacebo\nComponent outcome of 40% eGFR reduction is shown in eFigure 4 in\nSupplement 2; the component outcome of death is not shown because there\nwere only 2 events (after a median [IQR] follow-up of 3.5 [2.4-6.2] y). Hazard\nratios, CIs, and P values were estimated using the Cox proportional hazards\nregression models, stratified according to randomization factors (site, ethnicity,\nbaseline proteinuria, baseline eGFR, and kidney biopsy findings). Included in\nthese analyses are all the participants who were randomized and received at\nleast 1 dose of methylprednisolone or placebo. Analyses were censored at the\ndate when patients died (for causes other than death due to kidney failure),\nwere lost to follow-up, or withdrew from the study or at the end of study visit,\nwhichever occurred first. The log-rank P values were <.001 for the primary\noutcome in all patients, .03 for kidney failure requiring dialysis or transplant,\n.002 for the primary outcome in the full-dose cohort, and .004 for the primary\noutcome in the reduced-dose cohort.\nResearch Original Investigation\nEffect of Oral Methylprednisolone on Kidney Function Decline or Failure in Patients With IgA Nephropathy\n1894\nJAMA\nMay 17, 2022\nVolume 327, Number 19\n(Reprinted)\njama.com\n\u00a9 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "source_id": "source_f1a3ce385b8202528077df675538cf47445af6e4c5d3f56a3b5fa06b54c7aa36",
+      "source_version": "sha256:fee1feecdda2c35ed35cf523dc06da85b31f8b93b13fa312d1085a561cd74cfb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "testing"
+    }
+  },
+  "source_and_guidance_access": [
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://guidance/SKILL"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://guidance/result"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://guidance/codex"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://guidance/read-main-report"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 73
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 120
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 123
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 225
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 153
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 156
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 4,
+            "start_line": 66,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 225
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 153
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 156
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 8,
+            "start_line": 31,
+            "end_line": 153
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 156
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 208,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_a6c2c02c8d1f671f",
+        "pages": [
+          1
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "testing",
+            "source_id": "sh_a6c2c02c8d1f671f",
+            "query": "primaryOutcomes",
+            "mode": "prefix",
+            "limit": 5
+          },
+          {
+            "trial_id": "testing",
+            "source_id": "sh_7bba7ac210eadd58",
+            "query": "primary outcome",
+            "mode": "phrase",
+            "limit": 8
+          },
+          {
+            "trial_id": "testing",
+            "source_id": "sh_ae5710389c3b23b1",
+            "query": "primary",
+            "mode": "all",
+            "limit": 5
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_7bba7ac210eadd58",
+        "query": "primary outcome",
+        "mode": "phrase",
+        "limit": 8,
+        "cursor": "sc_7531d800d04af43f_8"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://guidance/evidence"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_7bba7ac210eadd58",
+        "query": "primary outcome",
+        "mode": "phrase",
+        "limit": 8,
+        "cursor": "sc_7531d800d04af43f_16"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_7bba7ac210eadd58",
+        "query": "primary outcome",
+        "mode": "phrase",
+        "limit": 8,
+        "cursor": "sc_7531d800d04af43f_24"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_a6c2c02c8d1f671f",
+            "page": 1,
+            "start_line": 575,
+            "end_line": 651
+          },
+          {
+            "source_id": "sh_ae5710389c3b23b1",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 67
+          },
+          {
+            "source_id": "sh_ae5710389c3b23b1",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 68
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 1,
+            "start_line": 1,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 281,
+            "start_line": 1,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 288,
+            "start_line": 1,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 291,
+            "start_line": 1,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 293,
+            "start_line": 17,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 294,
+            "start_line": 1,
+            "end_line": null
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_mcp_resource",
+      "arguments": {
+        "server": "rob2",
+        "uri": "rob2://current-batch"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 30
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 97,
+            "start_line": 1,
+            "end_line": 27
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 282,
+            "start_line": 1,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_a6c2c02c8d1f671f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 15
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 114,
+            "end_line": 127
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 73
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 120
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 123
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 225
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 153
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 156
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 4,
+            "start_line": 60,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 225
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 198
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 153
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 156
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 8,
+            "start_line": 23,
+            "end_line": 153
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 156
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 10,
+            "start_line": 196,
+            "end_line": 227
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 117
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5689e6af291a4c5abe541c745f8d3654.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5689e6af291a4c5abe541c745f8d3654.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5689e6af291a4c5abe541c745f8d3654.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_7bba7ac210eadd58",
+        "query": "randomisation",
+        "mode": "all",
+        "limit": 5
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 129,
+            "start_line": 19,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 130,
+            "start_line": 1,
+            "end_line": 26
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 222,
+            "start_line": 1,
+            "end_line": null
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9aea31227baa470896aa0293910f3c66.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9aea31227baa470896aa0293910f3c66.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9aea31227baa470896aa0293910f3c66.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9aea31227baa470896aa0293910f3c66.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9aea31227baa470896aa0293910f3c66.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 291,
+            "start_line": 1,
+            "end_line": 23
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 304,
+            "start_line": 1,
+            "end_line": 29
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 308,
+            "start_line": 1,
+            "end_line": 84
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "testing",
+            "source_id": "sh_7bba7ac210eadd58",
+            "query": "discontinuation",
+            "mode": "all",
+            "limit": 3
+          },
+          {
+            "trial_id": "testing",
+            "source_id": "sh_ae5710389c3b23b1",
+            "query": "immunosuppressive",
+            "mode": "all",
+            "limit": 3
+          },
+          {
+            "trial_id": "testing",
+            "source_id": "sh_7bba7ac210eadd58",
+            "query": "concomitant medications",
+            "mode": "phrase",
+            "limit": 3
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_ae5710389c3b23b1",
+        "pages": [
+          1
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 141,
+            "start_line": 25,
+            "end_line": null
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 123,
+            "start_line": 14,
+            "end_line": 36
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 290,
+            "start_line": 1,
+            "end_line": 25
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_ae5710389c3b23b1",
+        "query": "immunosuppressive",
+        "mode": "all",
+        "limit": 3,
+        "cursor": "sc_2e6e8e1d9bb8964b_3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.623fecf5230c4af9a0e84b55f46f40b6.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.623fecf5230c4af9a0e84b55f46f40b6.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.623fecf5230c4af9a0e84b55f46f40b6.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.623fecf5230c4af9a0e84b55f46f40b6.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "testing",
+        "source_id": "sh_7bba7ac210eadd58",
+        "query": "missing data",
+        "mode": "phrase",
+        "limit": 4
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 295,
+            "start_line": 1,
+            "end_line": 20
+          },
+          {
+            "source_id": "sh_e3fd74cc49838508",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 30
+          },
+          {
+            "source_id": "sh_535f935a9c9b2e8d",
+            "page": 1,
+            "start_line": 1,
+            "end_line": null
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:measurement",
+        "max_response_bytes": 26000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:measurement",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.f22c45da66ee412f8600b9eb5d409db9.1",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.f22c45da66ee412f8600b9eb5d409db9.2",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.f22c45da66ee412f8600b9eb5d409db9.3",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.f22c45da66ee412f8600b9eb5d409db9.4",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 92
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 6,
+            "start_line": 35,
+            "end_line": 104
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 223
+          },
+          {
+            "source_id": "sh_f1a3ce385b820252",
+            "page": 11,
+            "start_line": 118,
+            "end_line": 166
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:selection",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 264
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 265
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 284
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 285
+          },
+          {
+            "source_id": "sh_ae5710389c3b23b1",
+            "page": 4
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.8641987cc76540f68d1510499cdeab4d.1",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.8641987cc76540f68d1510499cdeab4d.2",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.8641987cc76540f68d1510499cdeab4d.3",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "testing",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.8641987cc76540f68d1510499cdeab4d.4",
+        "max_response_bytes": 40000
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "testing",
+        "windows": [
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 273
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 274
+          },
+          {
+            "source_id": "sh_7bba7ac210eadd58",
+            "page": 290,
+            "start_line": 1,
+            "end_line": 32
+          },
+          {
+            "source_id": "sh_ae5710389c3b23b1",
+            "page": 2,
+            "start_line": 30,
+            "end_line": 54
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 78,
+    "tokens": {
+      "input_tokens": 8749382,
+      "cached_input_tokens": 8393728,
+      "output_tokens": 22893,
+      "reasoning_output_tokens": 1785
+    },
+    "dollars": null
+  },
+  "review_focus": "Assess exact target/result matching and source entailment, official interpretation, material mechanisms and warranted uncertainty. Identify material defects with locators; do not score preferred labels.",
+  "raw_seal": "diagnostics/final-medium-verifier-cutover-20261006/cases/testing/scientific-review-seal"
+}

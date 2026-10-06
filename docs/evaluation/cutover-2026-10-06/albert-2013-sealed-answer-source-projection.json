@@ -1,0 +1,2397 @@
+{
+  "case": "albert-2013",
+  "purpose": "Sealed answers and selected evidence/source accesses for independent material-warrant review; adopted Domain/overall labels withheld. Structural verification is not scientific support certification.",
+  "artifact_sha256": "811587793f2bdd1435f03745da1f33ea25888d40ab79e9372dd341bccf3773ad",
+  "session_sha256": "7eaff714b155551da0a0e562e2e060bf54e536b93e8fd57401a441d1ffa8a419",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "runtime_strata": "Original frozen runtime7355c4c; Albert host-only verifier recovery at2a4f9fe, answers unchanged.",
+  "approved_result": {
+    "results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_af2f0bc26a980daf",
+            "eh_450f7edbcaaded61"
+          ],
+          "rationale": "Individual patients were randomized to four concurrent dose groups (A/C antibiotics, B/D placebo), pooled for the main two-group comparison; no crossover or cluster allocation is described. The registry SINGLE_GROUP metadata conflicts with its own four-arm narrative and the report."
+        },
+        "bindings": [
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:6d59f3bcb3dd05cc6dde4296f1b4b6d590dbbf1459e1dbd7432fa4b23ac7b4e9"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/0/statistic"
+            },
+            "value_digest": "sha256:0edfcef01f88f5c3e54ab4b13e668968c43d9811fc2f5216e238256f29fd3a74"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/0/value"
+            },
+            "value_digest": "sha256:5f7b9b51467bf417e5d4c6703b2de9c18328a69761e595c165b58af6500da73a"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/0/unit"
+            },
+            "value_digest": "sha256:1cd18334ad4fe687ead044649f243aac5b2aba7ac16f15860c8de82f80b90dfa"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/1/statistic"
+            },
+            "value_digest": "sha256:0edfcef01f88f5c3e54ab4b13e668968c43d9811fc2f5216e238256f29fd3a74"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/1/value"
+            },
+            "value_digest": "sha256:5935bc30bbc1c76e69d4c791c64dff50b58bb99ced15a7080b018388844bb5a4"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/1/unit"
+            },
+            "value_digest": "sha256:1cd18334ad4fe687ead044649f243aac5b2aba7ac16f15860c8de82f80b90dfa"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "specified",
+          "comparison_groups": "specified",
+          "effect_measure": "unclear",
+          "eligible_result_choice": "conflicting",
+          "measurement": "specified",
+          "outcome_definition": "specified",
+          "source_table_meaning": "conflicting",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_045e822a138b4c8a",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_1f7809d427d16100",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:09a731ba8e1e7c70e78d65f2a85dc4862c1d4cba56f949a71b2717715517d868",
+            "handle": "eh_26c5a6118a8ac392",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.12,
+              0.075,
+              0.27,
+              0.92
+            ],
+            "render_identity": "sha256:8378d42fbef87897c062ec940232690a4a1513a5159e59309009a4254dc434f4",
+            "transcription": "Table 3 Outcome measures at baseline, 100 days follow-up and 1-year follow-up. Disease-specific disability-RMDQ, Median [lower; upper quartile]. Antibiotic baseline n = 90: 15.0 [11; 18]; Antibiotic 100 days n = 76: 11.5 [7; 14]; Antibiotic 1-year follow-up n = 77: 7.0 [4; 11]; Placebo baseline n = 72: 15.0 [12; 18]; Placebo 100 days n = 67: 14.0 [11; 18]; Placebo 1-year follow-up n = 67: 14.0 [8; 18]. p value for difference between placebo and antibiotic groups at 1-year follow-up: 0.0001."
+          },
+          {
+            "delivery_receipt": "sha256:fe478db8ccc88174128a66b45a256ca807baf256905a72e7355246c6ff6c1f1d",
+            "handle": "eh_450f7edbcaaded61",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.18,
+              0.07,
+              0.82,
+              0.56
+            ],
+            "render_identity": "sha256:655227949c9705707db8e89ad892a98d56696c0cafd6ab77b8d1c2f6c098b344",
+            "transcription": "Fig. 1 Study flow chart. 347 patients with a 6-24 months old MRI confirming a lumbar disc herniation and pain in the lumbar region. 178 were excluded, because the new MRI revealed no new Modic changes or Modic type 2 changes only. 7 = refused participation, 3 wished to become pregnant and were advised against participation, 4 did not like the idea of long-term antibiotics. 162 patients were randomised: 45 took single dose antibiotics; 45 took double dose antibiotics; 36 took single dose placebo; 36 took double dose placebo. Both antibiotic arms join the antibiotic follow-up path: Drop outs = 13: 4 - side effects; 3 - new disc herniation; 1 - no show at follow-up; 2 - > 65 year of age; 1 - Modic 2; 2 - new cancer. 77 (85.6%) participated in 1 year follow-up. Both placebo arms join the placebo follow-up path: Drop outs = 5: 3 - new disc herniation; 2 - no show at follow up. 67 (93.1%) participated in 1 year follow-up."
+          },
+          {
+            "handle": "eh_69749090d4a24726",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_af2f0bc26a980daf",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_bc15f0aef1a3a215",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_da065b49b6d10a34",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_ef2825a3434d7e4e",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "narrower",
+        "relation_rationale": "Select Table 3's continuous RMDQ endpoint at one year, pooled antibiotics versus pooled placebo, because it directly measures the requested disability construct and reports a complete main-comparison pair. RMDQ is first-named of two article primary measures (the other lumbar pain); no single designated primary outcome or hierarchy between these measures and timepoints is established by the original report. One year is the principal reported between-group comparison and current registry window. Table 3 reports medians 7.0 [4;11] versus 14.0 [8;18], p=0.0001; quartiles are not confidence intervals. No between-group effect estimate or CI is invented. This is narrower than the all-randomized assignment target because analysis is confined to one-year attendees. The 100-day RMDQ medians 11.5 versus 14.0 are an earlier competing window, and dose-specific 30% responder NNTs (4.0 and 3.0) change both endpoint and contrast and are not selected. Abstract 5.7 at one year and 11 at 100 days conflict with Table 3's 7.0 and 11.5; the abstract's statistic is not specified. Unknown which of crude t-test, age/sex-adjusted comparison or Mann-Whitney test produced the selected p-value. Registry currently labels a single conflated 'Low Back Pain Roland Morris Questionaire', not the article's two co-primary measures; it is dated augmentation, not historical registry bytes.",
+        "reported": {
+          "analysis_population": "Participants attending the 1-year follow-up, analyzed in assigned groups regardless of medication compliance: antibiotics n=77/90, placebo n=67/72. The report calls this intention to treat but excludes 18 randomized participants; RMDQ-specific item completeness is not independently tabulated.",
+          "endpoint": {
+            "definition": null,
+            "name": "Disease-specific disability-RMDQ"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "antibiotics",
+              "statistic": "Median",
+              "unit": "RMDQ",
+              "value": "7.0"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "Median",
+              "unit": "RMDQ",
+              "value": "14.0"
+            }
+          ]
+        },
+        "requested_outcome": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Pooled single- and double-dose Bioclavid (amoxicillin-clavulanate 500 mg/125 mg, one or two tablets three times daily for 100 days), groups A+C, randomized n=90",
+              "id": "antibiotics"
+            },
+            {
+              "assignment": "Pooled matching single- and double-dose placebo, groups B+D, randomized n=72",
+              "id": "placebo"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Between-group comparison of RMDQ scores at 1-year follow-up (reported group medians)",
+          "measurement": {
+            "method": "Disease-specific disability measured by the 23-item Roland Morris Disability Questionnaire (RMDQ), scale 0-23, higher scores worse",
+            "metric": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)"
+          },
+          "outcome_definition": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)",
+          "time_point_or_window": {
+            "description": "1-year (12-month) follow-up after treatment assignment/start; not one year after completion of the 100-day course",
+            "kind": "quantified",
+            "unit": "year",
+            "value": "1"
+          }
+        },
+        "trial_id": "albert-2013"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "label": "PMC3631045.pdf",
+      "logical_path": "PMC3631045.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 11,
+      "projection_hash": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "role": "main_article",
+      "sha256": "sha256:e1812023fb5425786e80c2cb4c03d2abd9a401008d70e83934909eec24a0dcff",
+      "trial_id": "albert-2013"
+    },
+    {
+      "declared_role": null,
+      "id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+      "label": "ClinicalTrials.gov NCT00302796",
+      "logical_path": "registry/NCT00302796.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1",
+      "role": "registry",
+      "sha256": "sha256:6d625b2d8b7174b0271f33f83f58ed58587e9190730153f739466545611b15b1",
+      "trial_id": "albert-2013"
+    }
+  ],
+  "questions": [
+    {
+      "domain_id": "domain:deviations",
+      "checkpoint_identity": "sha256:1db46183139e6c7db37dee38f748fbe6311b4042fc0a1e148d87a9cd45308951",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "More adverse events with antibiotics (65% vs23%, including prolonged gastrointestinal symptoms) create a possible unblinding route; this limits certainty without proving awareness."
+            }
+          ],
+          "justification": "Participants were reported masked through one year with indistinguishable active/placebo tablets and packaging. This probably concealed assignment. Gastrointestinal complaints could provide clues but occurred in both groups; the report does not establish participants knew their symptoms identified treatment.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [
+            "Success of masking and individual treatment guesses were not measured or reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:783840c023d34735a84750dd0a8dc023ed85defbeaca88f5aec7a40e2c8368cf",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:23bfc7571c8dbba262ea96e34963b27fe4230dc65edfa38683405cdabf3642f7",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:52d4cb90c5e1119392f7bcc6b06fbfdcba8abaa6b43d81a27b9f9a964309f85b",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The complete report, masking methods, adverse-event section and current registry were inspected, and the blinding search was continued to its terminal result; no masking-success evidence is supplied.",
+              "unresolved_premise": "Actual awareness from side effects is unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Differential adverse events might have alerted carers; actual recognition of assignment is unreported."
+            }
+          ],
+          "justification": "Pharmacy-held codes and anonymous matching containers probably concealed assigned treatment from personnel delivering it. The current registry lists care-provider masking, which is corroborative context rather than proof of historical conduct. No disclosed codes or deliberate unmasking is reported.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [
+            "All carers' actual knowledge and response to adverse-event clues are not established."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:c6d615aa2df74d6a241cbab129b30c76c9f7555ca7032d9d6dbc1b882494673b",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:7c5235900114bfbfacf91992406a161ccfc9adeaeae6a4815eb3c0aad2190ed6",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:52d4cb90c5e1119392f7bcc6b06fbfdcba8abaa6b43d81a27b9f9a964309f85b",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Report pharmacy/masking methods and current registry masking fields were inspected; no captured protocol or independent conduct account resolves this detail.",
+              "unresolved_premise": "Carer-specific masking success is unreported."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "Analysis in assigned groups regardless of compliance argues against an as-treated or adherence-restricted analysis, but does not resolve post-randomization exclusions."
+            }
+          ],
+          "justification": "Attendees were analyzed in assigned groups irrespective of adherence, appropriate for an assignment effect when the only omission is missing outcomes. However, Fig1 also records age>65 and Modic2 exclusions plus new herniation/cancer. It does not distinguish missing observations from exclusions of eligible participants with available data, or establish whether ineligibility was confirmed independently of assignment. Therefore the ITT label cannot establish appropriateness, and neither probable option is justified for the complete exclusion process.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [
+            "Whether exclusions were solely for unavailable outcomes; timing and assignment-independence of eligibility rechecks; whether any eligible participant with observed RMDQ was discarded."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bc09bdaad14a10482f5e95570231853838ca0c66f453a2336f6cc51f8604f243",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:c4b33ec8ee2256fd16ba921469a1b5ed688cdcf302931b9cc0afd57013bbae76",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:40d2586712ea5606481c0c475f66b578672fbc6bceb27c887fb402f3622cfad2",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Full report, flow diagram, eligibility methods and registry eligibility were inspected; an excluded search only located flow text and supplies no further analysis detail.",
+              "unresolved_premise": "Analysis exclusions cannot be fully classified for2.6."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Eighteen omissions (13/90 antibiotics,5/72 placebo) include potentially prognostic new illness, but the subset constituting inappropriate analysis exclusions rather than missing outcomes is unknown. No reassignment is reported. Consequently potential substantial impact specifically from failure to analyze in randomized groups cannot be classified; missing-outcome mechanisms are assessed independently in Domain3.",
+          "question_id": "sq:deviations:substantial-impact",
+          "unknowns": [
+            "Number and RMDQ values of participants with inappropriate analysis exclusions; their potential effect on the median comparison."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:98c9a5ae0407be1107baf12683493ada7227e12e402dfa1e553f9abba65d44b2",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The inspected flow, analysis methods and Table3 contain no exclusion-specific outcome values or sensitivity analysis; current registry has no results and no additional captured analysis source is available.",
+              "unresolved_premise": "Material impact of inappropriate exclusions is unresolved."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:measurement",
+      "checkpoint_identity": "sha256:4ab4d1b48efb213ffb5c010e009d28feb4cf97a84ea08ff67208c1feee82be0c",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware"
+      ],
+      "answers": [
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The23-item RMDQ directly measures the approved disability construct on a0-23 scale and is linked to a Danish validation reference. No demonstrated poor validity or inability to detect clinically plausible disability changes is reported. Its self-reported nature does not itself make this instrument inappropriate.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:cf61e2d09e09ed3f98562b9e320d586d69cd3cf03deb57e0ef218174d9d7e541",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:687a8ab601a0c92d56a9c2c1c4fa33f0ec184a264ef40695e77377ff5d8cbd81",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "Both groups were scheduled to complete the same self-reported RMDQ at12 months, with common questionnaire-completion checks and blinded data entry. Differential doctor consultations do not create additional RMDQ ascertainment opportunities for the scheduled selected outcome. Missing visits are handled in Domain3 rather than assumed to imply a different measurement method.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [
+            "Detailed administration logs for each arm are unavailable."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:23bfc7571c8dbba262ea96e34963b27fe4230dc65edfa38683405cdabf3642f7",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:ad5944fedf89d766e72228cbbb887d4435640250c674c1256f82be04e566f736",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:cf61e2d09e09ed3f98562b9e320d586d69cd3cf03deb57e0ef218174d9d7e541",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The full study-flow and outcome-measure methods were inspected; they describe a common schedule and instrument and no differential procedure.",
+              "unresolved_premise": "Actual arm-specific administration details are not independently audited."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Differential gastrointestinal adverse events provide a possible route to unblinding; no participant-specific recognition or masking-success assessment is reported."
+            }
+          ],
+          "justification": "For this self-reported RMDQ the assessors are the participants, not the MRI reader or physical examiner. Participants were reported masked through one year with identical tablets/packaging, so they were probably unaware of assignment. Adverse-event clues limit certainty but do not establish known treatment status for the RMDQ respondents.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [
+            "Whether individual participants inferred assignment from symptoms and whether such knowledge persisted at12 months."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:c6d615aa2df74d6a241cbab129b30c76c9f7555ca7032d9d6dbc1b882494673b",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:23bfc7571c8dbba262ea96e34963b27fe4230dc65edfa38683405cdabf3642f7",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:52d4cb90c5e1119392f7bcc6b06fbfdcba8abaa6b43d81a27b9f9a964309f85b",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Masking methods, adverse-event section and the terminal blinding search were inspected; no additional captured source establishes participant awareness.",
+              "unresolved_premise": "Participant masking success is uncertain."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:c5f272316e5c4d030cf2d5f9c25bd055ec35a60378babc338e0a13ac5ddccb1e",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 4,
+              "implication": "Questionnaire checks reduce item missingness among attendees but cannot establish outcomes for nonattendees."
+            }
+          ],
+          "justification": "The report describes144/162 completing the one-year visit with questionnaires and confines analysis to attendees; Fig1 gives77/90 antibiotics and67/72 placebo. These are completion/analysis counts, not separately verified RMDQ observed counts. Nonetheless the documented nonattendance and dropouts make near-complete ascertainment unlikely, and13 versus5 omissions cannot be shown incapable of materially changing the continuous-score comparison. The100-day143 versus147 conflict is retained but does not replace the selected one-year window.",
+          "missing_data": {
+            "conflicts": [],
+            "rows": [
+              {
+                "analyzed": 77,
+                "basis": [
+                  "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+                  "sha256:da065b49b6d10a34c94dd6cee3b89e49e26aa5e8ac8f5f1afada38c5b4a0d1ba"
+                ],
+                "completed": 77,
+                "eligible": null,
+                "endpoint": "Disease-specific disability-RMDQ",
+                "event_count": null,
+                "excluded": 13,
+                "exclusions": [
+                  "side effects4",
+                  "new disc herniation3",
+                  "no-show1",
+                  "age>65 two",
+                  "Modic2 one",
+                  "new cancer2"
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 90
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 90,
+                "result_identity": "sha256:68d554678fe8480f3a89396f6a50a3ce6bf73c8643acbf76c13b4dc7a18dc857",
+                "scope": {
+                  "arm": "antibiotics",
+                  "population": "All participants randomized to pooled antibiotic groups A+C",
+                  "time_point": "1-year follow-up",
+                  "unit": "participants"
+                },
+                "treated": null
+              },
+              {
+                "analyzed": 67,
+                "basis": [
+                  "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+                  "sha256:da065b49b6d10a34c94dd6cee3b89e49e26aa5e8ac8f5f1afada38c5b4a0d1ba"
+                ],
+                "completed": 67,
+                "eligible": null,
+                "endpoint": "Disease-specific disability-RMDQ",
+                "event_count": null,
+                "excluded": 5,
+                "exclusions": [
+                  "new disc herniation3",
+                  "no-show2"
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 72
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 72,
+                "result_identity": "sha256:68d554678fe8480f3a89396f6a50a3ce6bf73c8643acbf76c13b4dc7a18dc857",
+                "scope": {
+                  "arm": "placebo",
+                  "population": "All participants randomized to pooled placebo groups B+D",
+                  "time_point": "1-year follow-up",
+                  "unit": "participants"
+                },
+                "treated": null
+              }
+            ]
+          },
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "RMDQ-specific observed count and any available observations deliberately excluded from analysis are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:b8f43aabedfd3a90595b10b0bb877e92f903d2f9e7618f72ef9eab6194567b7a",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ff4e1606718ab468a7793e9031ff74704ad2cef8c6d2f43b759f13357fb89a51",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:98c9a5ae0407be1107baf12683493ada7227e12e402dfa1e553f9abba65d44b2",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:7f834a82e22ca6cfd9e8f09ac7e387c24b5a183b467f46bd42d53fadbc7136a0",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Full report, original flow layout and RMDQ table were inspected; completion and analysis counts support probably-no without inventing observed counts.",
+              "unresolved_premise": "Exact outcome availability is not separately reported."
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The described analysis excludes one-year nonattendees. Questionnaire completion checks address incomplete forms, not their missing outcomes. No reported correction or sensitivity analysis shows the selected one-year medians robust under plausible missing RMDQ values. This is absence of reassuring evidence, not proof of actual bias.",
+          "question_id": "sq:missing:evidence-unbiased",
+          "unknowns": [
+            "The unobserved RMDQ distribution and any unpublished robustness analyses are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bc09bdaad14a10482f5e95570231853838ca0c66f453a2336f6cc51f8604f243",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:7f834a82e22ca6cfd9e8f09ac7e387c24b5a183b467f46bd42d53fadbc7136a0",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:142dd0638040051a8bd3661bbeaa2083b5bef6eb3b1cb702c4a109103f0dbf3f",
+              "stopping_rationale": "The complete methods/results and current registry were inspected; the terminal sensitivity/imputation search only recovered questionnaire-completion checks and no captured SAP/supplement supplies a robustness analysis.",
+              "unresolved_premise": "No evidence demonstrating freedom from missing-outcome bias was located."
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Age/ineligibility and side-effect exclusions may operate independently of true RMDQ; they do not exclude an outcome-related mechanism for other dropouts."
+            }
+          ],
+          "justification": "New disc herniation and cancer are health-related dropout reasons and could affect a patient's true disability score and ability to attend. Thus missingness could depend on RMDQ's true value. No assumption is made that every listed dropout reason is outcome-dependent.",
+          "question_id": "sq:missing:true-value-dependent",
+          "unknowns": [
+            "True one-year scores and timing for each dropout are unavailable."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+              "kind": "inference"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "New-herniation counts are equal between groups, some reasons may be unrelated to RMDQ, and age/gender of losses were similar. This limits confidence about differential bias but does not remove the likely health-dependent selection."
+            },
+            {
+              "basis_index": 1,
+              "implication": "New-herniation counts are equal between groups, some reasons may be unrelated to RMDQ, and age/gender of losses were similar. This limits confidence about differential bias but does not remove the likely health-dependent selection."
+            }
+          ],
+          "justification": "Six dropouts had new disc herniations, a condition closely linked to the disability being measured; two antibiotic dropouts had new cancer. These health events likely select people with different true disability and capacity to attend from remaining participants. Dropout reasons and completion proportions also differ by arm (13/90 vs5/72), and lost participants were more often smokers. Together these facts support likely outcome-dependent missingness rather than only a hypothetical route, though its size and direction cannot be quantified.",
+          "question_id": "sq:missing:likely-dependent",
+          "unknowns": [
+            "Exact timing and RMDQ severity of losses; overlap between unavailable outcomes and deliberate exclusions; direction and magnitude of resulting bias."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:1efe74775113e08c9592f32ed7935a77a803b641cd507cb969a64651aad7ba4f",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Flow reasons, follow-up comparison and analysis section were inspected; no loss-specific RMDQ values or sensitivity analysis are available in the two captured Sources.",
+              "unresolved_premise": "Outcome-dependent losses cannot be quantified."
+            }
+          ]
+        }
+      ],
+      "search_accounts": [
+        {
+          "batch_identity": "sha256:c4b5010e6025f8134d47e8823f09d54e1d53e0e4f8b5086e2930915085510d0c",
+          "candidate_count": 1,
+          "condition": null,
+          "exhausted": true,
+          "handle": "sr_142dd0638040051a",
+          "hits": [
+            {
+              "page": 3,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c"
+            }
+          ],
+          "identity": "sha256:142dd0638040051a8bd3661bbeaa2083b5bef6eb3b1cb702c4a109103f0dbf3f",
+          "limit": 10,
+          "matching_page_count": 1,
+          "mode": "any",
+          "next_cursor": null,
+          "normalized_query": "sensitivity imputation",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": "domain:missing",
+          "purpose_question_id": null,
+          "query": "sensitivity imputation",
+          "ranking_complete": true,
+          "returned_candidates": [
+            {
+              "end_line": 60,
+              "page": 3,
+              "rank": 1,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+              "start_line": 52
+            }
+          ],
+          "returned_material": 1,
+          "returned_rank_end": 1,
+          "returned_rank_start": 1,
+          "session_handle": "ss_211dd491f7080063",
+          "session_id": "sha256:211dd491f70800630b386ec4fa1596bb73252675bed616e4bcd189355e3e5e4a",
+          "sources": [
+            {
+              "id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+              "projection_hash": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812"
+            },
+            {
+              "id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+              "projection_hash": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1"
+            }
+          ],
+          "total_matches": 1,
+          "trial_id": "albert-2013",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "domain_id": "domain:randomization",
+      "checkpoint_identity": "sha256:1b64d3630ddfeb4383d43f166a6955bfe3ca219c94a5e94e6a4fb4b2120c0782",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The Central Pharmacy explicitly used a computer-generated randomization list for individual participants. Four concurrent groups support the parallel design despite registry SINGLE_GROUP metadata.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:c6d615aa2df74d6a241cbab129b30c76c9f7555ca7032d9d6dbc1b882494673b",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "The pharmacy retained the allocation list until final follow-up and supplied sealed white boxes labelled only by patient number containing indistinguishable tablets. This probably prevented recruiters from knowing forthcoming allocations; dispensing only after irreversible enrollment is not explicitly documented.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [
+            "Exact enrollment-to-box dispensing procedure is not described."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:c6d615aa2df74d6a241cbab129b30c76c9f7555ca7032d9d6dbc1b882494673b",
+              "kind": "inference"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The complete main report and registry were inspected; the pharmacy/packaging methods support a probable answer; no protocol/SAP is captured.",
+              "unresolved_premise": "Irreversible assignment before dispensing is not explicitly reported."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Modic-volume and prior-surgery distributions differ and may affect prognosis, but this pattern does not establish failed randomization."
+            },
+            {
+              "basis_index": 3,
+              "implication": "Modic-volume and prior-surgery distributions differ and may affect prognosis, but this pattern does not establish failed randomization."
+            }
+          ],
+          "justification": "Both baseline RMDQ medians were15, with similar age, smoking and most other characteristics. The isolated significant Modic-volume imbalance and previous-surgery difference do not show an excess of imbalances or allocation manipulation. Across many comparisons the pattern is compatible with chance.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [
+            "Intended allocation ratio and exact joint prognostic distribution are not fully specified."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:5e888169882201ca5e277a33cc3a4514a5809fe83034fb233a222bf5bf7adac8",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:847e964b19af71326fe44d730f9be830353dc478037e668e3799580159d7a956",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:91653979fc94e4feb083b08cfad9a0ab1865a2a6b0673211af0d86ee2c6daba4",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:0bd62a37966118f7170f4aa4f6f5162b791aa2150d43bdb05506b812962d7e79",
+              "kind": "context"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:selection",
+      "checkpoint_identity": "sha256:099120a5f2b8af4d750220dc2d6a8b7b1e16cdb71171395b6e2e5d8f9b248c04",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 4,
+              "implication": "RMDQ-based power calculation, pooled main contrast, blinded statistician and registry one-year window support an intended disability comparison but do not establish the complete prespecified analysis."
+            },
+            {
+              "basis_index": 5,
+              "implication": "RMDQ-based power calculation, pooled main contrast, blinded statistician and registry one-year window support an intended disability comparison but do not establish the complete prespecified analysis."
+            }
+          ],
+          "justification": "The report describes primary measures, a sample-size calculation based on pooled RMDQ comparison, masked statistical analysis and several continuous-data tests. It does not establish that the exact one-year attendee analysis and chosen test were fixed before unblinded outcomes were available. The current registry's one-year combined primary label and embedded first-post/update dates are insufficient to date that content or reconstruct original analysis intentions. No single designated primary outcome or hierarchy between RMDQ and lumbar pain is established by the original report.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "Original plan for pooling, exclusion handling, test/model and timepoint hierarchy; finalization and amendments relative to unblinding."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:f912ce76d51c28b91d2e07de1b9670303bd11b34676c98e048b69bda29fd3c4e",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:b9159ccef610477721400da223b06f7c7ebb725d121be782f41a27089c6d18c5",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ddfd109f034217c8e4829b5f29a71b49425bde331c5882695e6726bdcbcfb9dd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:0d3a4f619d27fec8c8b023a8561207e89c76d26199823e4808046d51fd8abad8",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ac652736cd382f87f4c1920d4edd143e9a6418292181f98e8d52249809e2dd18",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:41eb57343fe9c309eb454d66236420250771df682e7dcfdb959de20a09da6e01",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:4dec0d447961add6d7e0f32c5833f1fcb8e5f674b7ffa9fe3681aff343db34f4",
+              "stopping_rationale": "Full main report and registry projection were inspected; plan/protocol search was completed to terminal receipt. No protocol/SAP or explicit applicable document locator is captured, and current registry bytes are dated augmentation.",
+              "unresolved_premise": "Exact pre-unblinding analysis plan cannot be established."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Reporting both100-day and one-year RMDQ summaries argues against hiding the earlier score solely because its effect was smaller, but does not establish that every intended eligible measurement is reported."
+            }
+          ],
+          "justification": "RMDQ was collected at baseline,100 days and12 months; Table3 reports both follow-up score summaries. The approved measurement/timepoint remains fixed. No original hierarchy or complete measurement plan establishes all eligible intended results. Abstract antibiotic5.7 versus Table3 median7.0 is unresolved, not proof that the table value was selected for significance. Lumbar pain is a separate co-primary construct and is not silently substituted for disability.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [
+            "Original eligible measurement/timepoint hierarchy; reason for abstract/table discrepancy; whether other eligible disability measurements were collected."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bff39c81e9a83cde16833da824b4054b2efb5f7953761e3e5cc00fe290b9f258",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:98c9a5ae0407be1107baf12683493ada7227e12e402dfa1e553f9abba65d44b2",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:926a2691945ac651b08168f70d14937602ef93fdc3876e82de7f34865660c638",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:41eb57343fe9c309eb454d66236420250771df682e7dcfdb959de20a09da6e01",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Methods, Table3, abstract and registry primary-outcome fields were compared; no captured historical plan explains the discrepancy or establishes all intended eligible measurements.",
+              "unresolved_premise": "Result-based choice among eligible measurements remains unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 4,
+              "implication": "The report identifies pooled comparison as the main aim, dose response as tertiary and statistics as performed masked; these reduce grounds to assert result-based selection but do not establish original analysis finalization or all eligible outputs."
+            },
+            {
+              "basis_index": 2,
+              "implication": "The report identifies pooled comparison as the main aim, dose response as tertiary and statistics as performed masked; these reduce grounds to assert result-based selection but do not establish original analysis finalization or all eligible outputs."
+            }
+          ],
+          "justification": "Methods describe crude and age/sex-adjusted t-tests plus conditional Mann-Whitney analysis; Table3 supplies medians and one p-value without identifying which test produced it. Continuous disability and dose-specific30%-response NNTs are both reported but concern different analysis forms/contrasts. No full plan or all-analysis output establishes whether the selected table tuple was chosen on the basis of results. The abstract discrepancy can reflect different summaries or error; without an explanation it supports uncertainty rather than a claim of likely selection.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "Selected p-value model; complete outputs of eligible analyses; original pooling and missing-data strategy; reason for differing abstract values."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bc09bdaad14a10482f5e95570231853838ca0c66f453a2336f6cc51f8604f243",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:98c9a5ae0407be1107baf12683493ada7227e12e402dfa1e553f9abba65d44b2",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:8831ff3fca29017612303c01f5342f2ac648a11212511885a5379bb99f7b7a2d",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:926a2691945ac651b08168f70d14937602ef93fdc3876e82de7f34865660c638",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:ac652736cd382f87f4c1920d4edd143e9a6418292181f98e8d52249809e2dd18",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:4dec0d447961add6d7e0f32c5833f1fcb8e5f674b7ffa9fe3681aff343db34f4",
+              "stopping_rationale": "Full statistics section, main quantitative table, responder results and registry were inspected; terminal plan search supplies no prespecified test-to-result mapping or further analysis source.",
+              "unresolved_premise": "Selection among multiple eligible analyses cannot be determined."
+            }
+          ]
+        }
+      ],
+      "search_accounts": [
+        {
+          "batch_identity": "sha256:c4b5010e6025f8134d47e8823f09d54e1d53e0e4f8b5086e2930915085510d0c",
+          "candidate_count": 13,
+          "condition": null,
+          "exhausted": true,
+          "handle": "sr_4dec0d447961add6",
+          "hits": [
+            {
+              "page": 1,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c"
+            },
+            {
+              "page": 9,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c"
+            },
+            {
+              "page": 2,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c"
+            }
+          ],
+          "identity": "sha256:4dec0d447961add6d7e0f32c5833f1fcb8e5f674b7ffa9fe3681aff343db34f4",
+          "limit": 10,
+          "matching_page_count": 7,
+          "mode": "any",
+          "next_cursor": null,
+          "normalized_query": "analysis plan protocol",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": null,
+          "query": "analysis plan protocol",
+          "ranking_complete": true,
+          "returned_candidates": [
+            {
+              "end_line": 55,
+              "page": 1,
+              "rank": 11,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+              "start_line": 44
+            },
+            {
+              "end_line": 48,
+              "page": 9,
+              "rank": 12,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+              "start_line": 36
+            },
+            {
+              "end_line": 106,
+              "page": 2,
+              "rank": 13,
+              "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+              "start_line": 96
+            }
+          ],
+          "returned_material": 3,
+          "returned_rank_end": 13,
+          "returned_rank_start": 11,
+          "session_handle": "ss_f6f063db7ae89c36",
+          "session_id": "sha256:f6f063db7ae89c3675004ef8776b1a3f55cce319c9dad9b59518995b4078971e",
+          "sources": [
+            {
+              "id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+              "projection_hash": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812"
+            },
+            {
+              "id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+              "projection_hash": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1"
+            }
+          ],
+          "total_matches": 7,
+          "trial_id": "albert-2013",
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "selected_evidence": {
+    "045e822a138b4c8ae69bc546d437d7c5501c5c768322e19905f8a3d71cbd14dd": {
+      "end": 4432,
+      "end_line": 89,
+      "handle": "eh_045e822a138b4c8a",
+      "identity": "sha256:045e822a138b4c8ae69bc546d437d7c5501c5c768322e19905f8a3d71cbd14dd",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "Differences in binary variables were tested with Fisher's\nexact test. Continuous data were analyzed with three tests.\nFirstly, crude an unpaired T-tests; secondly, adjusted for\ngender and age. Thirdly, if the distribution was not nor-\nmally distributed, with the Mann-Whitney test. No interim\nanalysis was performed. Analyses were preformed on all\npatients who participated at the 1-year follow-up and all\npatients were analyzed in their 'intention to treat' group,\nregardless of their compliance to the medicine protocol.\nEthics\nThe study was approved by and registered in: the Danish\nMedicine Agency and the Scientific Ethics Committee of\nthe Region of Southern Denmark (no. S-VF-20050112),\nthe Danish Data registry, Euro-dract (2005-005500-17),\nGovernment Clinical trial registry (NCT00302796) and\nmonitored by the Unit of Good Clinical Practice (GCP),\nUniversity of Southern Denmark. All patients signed a\nwritten informed consent prior to participation.\nResults\nThe study flow chart is shown in Fig. 1. Of the 162 patients\nthat entered the study 147 (90.7 %) completed the end of\ntreatment questionnaires, 144 (88.9 %) completed the 1-year\nfollow-up (MRI, questionnaires, physical examination).\nAll baseline variables were equally distributed in the\nplacebo and antibiotic groups (Table 2). The only exception\nwas the volume of Modic changes, where the placebo group\nhad significantly more minute changes (grade 1).\nThere were no significant differences in age and gender\nbetween the 1-year participants and those lost to follow-up;\nhowever, there were significantly more smokers amongst\nthose lost to follow-up.\nThe antibiotic group improved on all primary outcome\nmeasures and improvement continued from 100 days follow-\nup until 1-year follow-up. In comparison to the placebo group,\nthe 1-year improvement was both statistically significant on all\noutcome measures and clinically important in terms of the\nrelative magnitude of improvement for the primary outcome\nmeasures (Tables 3, 4). There were no difference between the\ngroupsintheserumanalysisatbaselineorfollow-up(Table 5).\nPatients reported that pain relief and improvement in dis-\nability commenced gradually, for most patients 6-8 weeks\nafter start of the antibiotic tablets and for some at the end of\nthe treatment period. Improvements reportedly continued\nlong after end of the treatment period, at least for another\n6 months, and some patients reported continuing improve-\nment at 1-year follow-up.\nModic changes\nComparing the MRI of all patients at baseline and 1-year\nfollow-up. Out of a possible 134 adjacent endplates, 130\n(97 %) of the placebo group demonstrated Modic changes\nand 142 out of 154 (92.2 %) in the antibiotic group.\nThe percentage of patients with grade 1 Modic changes\n(minute) 28.8 % of the placebo group and 10.4 % of the\nTable 1 Outcome measures\nSelf-reported questionnaires\nQuestionnaire characteristics\nGlobal perceived effect\nThe patients compare their baseline status with their status at follow-up, measured on a 7-point Likert\nscale\nRoland Morris Disability\nQuestionnaire (RMDQ)\nA disease-specific disability questionnaire in which the patient answers 23 yes/no questions. The scale\nwidth is 0-23, where high scores are worst [27]\nLBP pain rating scale\nThree 11-point box scales measuring current pain, the worst within the last 2 weeks and usual pain within\nthe last 2 weeks. These three scores are measured and averaged for both leg and lumbar pain\nindependently [28]\nHours with LBP during the last\n4 weeks\nNumber of days during the last 28 days (4 weeks) the participant had experienced LBP (0-28 days), and,\non an typical day, how many of the hours awake they experienced LBP (0-16 h). The number of days\nand hours are multiplied (a 0-448 scale)\nEQ-5D: Thermometer\nQuality-adjusted health status EQ-5D [40]\non a vertical Thermometer (1-100), 100 is best\nDays with sick leave\nThe number of days within the last year the participant was on sick-leave support from the government\nBothersomeness\nMeasured on a 11-point box scale, where 0 = none, 10 = my life is worthless due to my back pain [41]\nConstant pain\nPain that can vary during the day but is always present\nMRI\nVolume of the vertebrae with Modic type 1 change, (1-4)\nSerum analysis\nLeukocytes, neutrophils, eosinophils, basophils, lymphocytes, monocytes, P/S creatinine, lactate\ndehydrogenase, alkaline phosphatase, C-reactive protein\n700\nEur Spine J (2013) 22:697-707\n123",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "0bd62a37966118f7170f4aa4f6f5162b791aa2150d43bdb05506b812962d7e79": {
+      "end": 3238,
+      "end_line": 110,
+      "handle": "eh_0bd62a37966118f7",
+      "identity": "sha256:0bd62a37966118f7170f4aa4f6f5162b791aa2150d43bdb05506b812962d7e79",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "Previous disc herniation surgery\n51.9 %\n40.3 %\nNS",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 3189,
+      "start_line": 107,
+      "trial_id": "albert-2013"
+    },
+    "0d3a4f619d27fec8c8b023a8561207e89c76d26199823e4808046d51fd8abad8": {
+      "end": 913,
+      "end_line": 14,
+      "handle": "eh_0d3a4f619d27fec8",
+      "identity": "sha256:0d3a4f619d27fec8c8b023a8561207e89c76d26199823e4808046d51fd8abad8",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "derivedSection.miscInfoModule.versionHolder: \"2026-10-05\"\nhasResults: false",
+      "source_id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+      "source_version": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1",
+      "start": 838,
+      "start_line": 13,
+      "trial_id": "albert-2013"
+    },
+    "1efe74775113e08c9592f32ed7935a77a803b641cd507cb969a64651aad7ba4f": {
+      "end": 1617,
+      "end_line": 31,
+      "handle": "eh_1efe74775113e08c",
+      "identity": "sha256:1efe74775113e08c9592f32ed7935a77a803b641cd507cb969a64651aad7ba4f",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "There were no significant differences in age and gender\nbetween the 1-year participants and those lost to follow-up;\nhowever, there were significantly more smokers amongst\nthose lost to follow-up.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 1421,
+      "start_line": 28,
+      "trial_id": "albert-2013"
+    },
+    "1f7809d427d161005c03de65f8ceee8fa1fd901e923f6b026054e0aedb8b69e8": {
+      "end": 963,
+      "end_line": 18,
+      "handle": "eh_1f7809d427d16100",
+      "identity": "sha256:1f7809d427d161005c03de65f8ceee8fa1fd901e923f6b026054e0aedb8b69e8",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "antibiotic group were noted, p = 0.006. At 1-year follow-\nup 10 patients in both groups demonstrated no Modic\nchanges. A significant decrease in volume was observed in\nthe antibiotic group, where changes of volume 2-4 were\nreduced to volume 1 (p = 0.05). This reduction was not\nobserved in the placebo group.\nDose response\nThere was a trend towards a positive dose-response rela-\ntionship with double dose antibiotics appearing to be more\nefficacious; however, this was not statistically significant as\nthe trial was not powered for this comparison (results not\nshown). For a 30 % or more reduction [29] in baseline\ndisease-specific disability (RMDQ), the 'number needed to\ntreat' in the single-dose group was 4.0 (95 % CI 2.1-11.8)\nand for the double dose group was 3.0 (95 % CI 1.9-5.8).\nFor the arbitrary threshold of a 100 h reduction in 'painful\nhours in the last 28 days' the number needed to treat in the\nsingle-dose group was 3.0 (95 % CI 1.6-3.9) and for",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "23bfc7571c8dbba262ea96e34963b27fe4230dc65edfa38683405cdabf3642f7": {
+      "end": 2553,
+      "end_line": 46,
+      "handle": "eh_23bfc7571c8dbba2",
+      "identity": "sha256:23bfc7571c8dbba262ea96e34963b27fe4230dc65edfa38683405cdabf3642f7",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "At both baseline and at 1-year follow-up each participant\nunderwent a physical examination and completed self-repor-\nted questionnaires. An MRI and blood samples were also\ntaken. The MRI protocol at baseline and at the 1-year follow-\nup were uniform and performed by the same staff, blinded to\ntreatment, and in the same MRI machine. At the end of the\ntreatment period, (100 days), patients were also mailed a\nquestionnaire. The patients and the observer were blinded to\nthe allocation and all previous measurements. All physical\nexaminations were performed by the same blinded observer.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 1966,
+      "start_line": 37,
+      "trial_id": "albert-2013"
+    },
+    "26c5a6118a8ac392c8e5f4705a48e92361aa630174f7f0032a4fd89410716f10": {
+      "delivery_receipt": "sha256:09a731ba8e1e7c70e78d65f2a85dc4862c1d4cba56f949a71b2717715517d868",
+      "handle": "eh_26c5a6118a8ac392",
+      "identity": "sha256:26c5a6118a8ac392c8e5f4705a48e92361aa630174f7f0032a4fd89410716f10",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.12,
+        0.075,
+        0.27,
+        0.92
+      ],
+      "render": {
+        "identity": "sha256:8378d42fbef87897c062ec940232690a4a1513a5159e59309009a4254dc434f4",
+        "page": 7,
+        "png_sha256": "sha256:5905c241d031e45679c42070b90b0e146a4ab2c1484443c37d4af348d301fbfd",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c"
+      },
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "transcription": "Table 3 Outcome measures at baseline, 100 days follow-up and 1-year follow-up. Disease-specific disability-RMDQ, Median [lower; upper quartile]. Antibiotic baseline n = 90: 15.0 [11; 18]; Antibiotic 100 days n = 76: 11.5 [7; 14]; Antibiotic 1-year follow-up n = 77: 7.0 [4; 11]; Placebo baseline n = 72: 15.0 [12; 18]; Placebo 100 days n = 67: 14.0 [11; 18]; Placebo 1-year follow-up n = 67: 14.0 [8; 18]. p value for difference between placebo and antibiotic groups at 1-year follow-up: 0.0001.",
+      "trial_id": "albert-2013",
+      "uncertainty": "RMDQ units and scale are defined separately in Table 1; the quartile intervals are not confidence intervals."
+    },
+    "40d2586712ea5606481c0c475f66b578672fbc6bceb27c887fb402f3622cfad2": {
+      "end": 522,
+      "end_line": 9,
+      "handle": "eh_40d2586712ea5606",
+      "identity": "sha256:40d2586712ea5606481c0c475f66b578672fbc6bceb27c887fb402f3622cfad2",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "analysis was performed. Analyses were preformed on all\npatients who participated at the 1-year follow-up and all\npatients were analyzed in their 'intention to treat' group,\nregardless of their compliance to the medicine protocol.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 293,
+      "start_line": 6,
+      "trial_id": "albert-2013"
+    },
+    "41eb57343fe9c309eb454d66236420250771df682e7dcfdb959de20a09da6e01": {
+      "end": 9507,
+      "end_line": 107,
+      "handle": "eh_41eb57343fe9c309",
+      "identity": "sha256:41eb57343fe9c309eb454d66236420250771df682e7dcfdb959de20a09da6e01",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.outcomesModule.primaryOutcomes[0].measure: \"Low Back Pain Roland Morris Questionaire\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"One year follow-up\"",
+      "source_id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+      "source_version": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1",
+      "start": 9324,
+      "start_line": 106,
+      "trial_id": "albert-2013"
+    },
+    "450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3": {
+      "delivery_receipt": "sha256:fe478db8ccc88174128a66b45a256ca807baf256905a72e7355246c6ff6c1f1d",
+      "handle": "eh_450f7edbcaaded61",
+      "identity": "sha256:450f7edbcaaded61bae292a344c0884438aafe1f2a914981e8ed515356fbdea3",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.18,
+        0.07,
+        0.82,
+        0.56
+      ],
+      "render": {
+        "identity": "sha256:655227949c9705707db8e89ad892a98d56696c0cafd6ab77b8d1c2f6c098b344",
+        "page": 5,
+        "png_sha256": "sha256:8b3468351317b9c2ebff5626e01b90d3b7132eac0164fde86ea872fc0c089cbc",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c"
+      },
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "transcription": "Fig. 1 Study flow chart. 347 patients with a 6-24 months old MRI confirming a lumbar disc herniation and pain in the lumbar region. 178 were excluded, because the new MRI revealed no new Modic changes or Modic type 2 changes only. 7 = refused participation, 3 wished to become pregnant and were advised against participation, 4 did not like the idea of long-term antibiotics. 162 patients were randomised: 45 took single dose antibiotics; 45 took double dose antibiotics; 36 took single dose placebo; 36 took double dose placebo. Both antibiotic arms join the antibiotic follow-up path: Drop outs = 13: 4 - side effects; 3 - new disc herniation; 1 - no show at follow-up; 2 - > 65 year of age; 1 - Modic 2; 2 - new cancer. 77 (85.6%) participated in 1 year follow-up. Both placebo arms join the placebo follow-up path: Drop outs = 5: 3 - new disc herniation; 2 - no show at follow up. 67 (93.1%) participated in 1 year follow-up.",
+      "trial_id": "albert-2013"
+    },
+    "52d4cb90c5e1119392f7bcc6b06fbfdcba8abaa6b43d81a27b9f9a964309f85b": {
+      "end": 1757,
+      "end_line": 33,
+      "handle": "eh_52d4cb90c5e11193",
+      "identity": "sha256:52d4cb90c5e1119392f7bcc6b06fbfdcba8abaa6b43d81a27b9f9a964309f85b",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "Unintended effects\nAdverse events were more common in the antibiotic group\n(65 % of participants) compared to the placebo group\n(23 %). These were mainly low-grade gastroenterological\ncomplaints such as loose bowel movements, increased\nflatus or burping. Middle-grade events were defined as\nloose bowl movements lasting more than 3 weeks and were\nreported by 27 % in the antibiotics group and 11 % of\nthose in the placebo group, considerable side effects in 21\nand 6 %, respectively. One case of a serious adverse\n(severe vomiting resulting in blood in the vomit) event was\nreported in the placebo group and none in the antibiotic\ngroup. No difference in the number of adverse effects was\nobserved between the double and single-dose antibiotics.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 1012,
+      "start_line": 20,
+      "trial_id": "albert-2013"
+    },
+    "5e888169882201ca5e277a33cc3a4514a5809fe83034fb233a222bf5bf7adac8": {
+      "end": 3564,
+      "end_line": 143,
+      "handle": "eh_5e888169882201ca",
+      "identity": "sha256:5e888169882201ca5e277a33cc3a4514a5809fe83034fb233a222bf5bf7adac8",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "Table 2 Baseline\ncharacteristics of participants\nAntibiotics\ngroup n = 90\nPlacebo\ngroup n = 72\np value of\ndifference\nAge (years)\n44.7 SD 10.3\n45.5 SD 9.2\nNS\nGender (female)\n58.2 %\n58.2 %\nNS\nSmokers\n33 %\n32.8 %\nNS\nNumber of possible endplates with Modic type one\nchanges, adjacent to the previous herniation\n97 %\n92.2 %\nNS\nDistribution of size of Modic changes\nminute changes = size 1\n10.4 %\n28.8 %\n0.007\nContinuous pain for more than 2 years\n52.6 %\n52.2 %\nNS\nDisease-specific disability-RMDQ\nMedian, [lower; upper quartile]\n15\n[11; 18]\n15\n[12; 18]\nNS\nBack pain (0-10)\nMedian [lower; upper quartile]\n6.7\n[5.3; 7.7]\n6.3\n[4.7; 8]\nNS\nLeg pain (0-10)\nMedian [lower; upper quartile]\n5.3\n[2.3; 7]\n4.0\n[1; 7]\nNS\nNumber of hours with back pain\nMedian [lower; upper quartile]\n448\n[364; 448]\n448\n[392; 448]\nNS\nPrevious disc herniation surgery\n51.9 %\n40.3 %\nNS\nDays with sick leave\nMean\n51\nSD 92\n42\nSD 80\nNS\nBothersomeness\nMedian, [lower; upper quartile]\n7\n[6; 8]\n8\n[5; 9]\nNS\nNumber with constant pain\n75.3 %\n73.1 %\nNS\nEQ-5D, thermometer\nMedian, [lower; upper quartile]\n59\n[40; 70]\n60\n[40; 75]\nNS\nLast 2 weeks pain unchanged\n75.3 %\n68.7 %\nNS\nLast 2 weeks pain worsening\n19.5 %\n23.9 %\nNS",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 2390,
+      "start_line": 45,
+      "trial_id": "albert-2013"
+    },
+    "687a8ab601a0c92d56a9c2c1c4fa33f0ec184a264ef40695e77377ff5d8cbd81": {
+      "end": 1126,
+      "end_line": 20,
+      "handle": "eh_687a8ab601a0c92d",
+      "identity": "sha256:687a8ab601a0c92d56a9c2c1c4fa33f0ec184a264ef40695e77377ff5d8cbd81",
+      "kind": "narrative",
+      "page": 11,
+      "quote": "27. Albert HB, Jensen AM, Dahl D et al (2003) Criteria validation of\nthe Roland Morris questionnaire. A Danish translation of the\ninternational scale for the assessment of functional level in\npatients with low back pain and sciatica. Ugeskr Laeger 165:\n1875-1880 [in Danish]",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 852,
+      "start_line": 16,
+      "trial_id": "albert-2013"
+    },
+    "69749090d4a247262812b3c4d7294be7bfbfbe032b479da3496d93c40488e6d7": {
+      "end": 10930,
+      "end_line": 127,
+      "handle": "eh_69749090d4a24726",
+      "identity": "sha256:69749090d4a247262812b3c4d7294be7bfbfbe032b479da3496d93c40488e6d7",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "derivedSection.conditionBrowseModule.ancestors[0].id: \"D010146\"\nderivedSection.conditionBrowseModule.ancestors[0].term: \"Pain\"\nderivedSection.conditionBrowseModule.ancestors[1].id: \"D009461\"\nderivedSection.conditionBrowseModule.ancestors[1].term: \"Neurologic Manifestations\"\nderivedSection.conditionBrowseModule.ancestors[2].id: \"D012816\"\nderivedSection.conditionBrowseModule.ancestors[2].term: \"Signs and Symptoms\"\nderivedSection.conditionBrowseModule.ancestors[3].id: \"D013568\"\nderivedSection.conditionBrowseModule.ancestors[3].term: \"Pathological Conditions, Signs and Symptoms\"\nderivedSection.conditionBrowseModule.meshes[0].id: \"D001416\"\nderivedSection.conditionBrowseModule.meshes[0].term: \"Back Pain\"\nderivedSection.conditionBrowseModule.meshes[1].id: \"D017116\"\nderivedSection.conditionBrowseModule.meshes[1].term: \"Low Back Pain\"\nderivedSection.miscInfoModule.versionHolder: \"2026-10-05\"\nhasResults: false\nprotocolSection.armsInterventionsModule.armGroups[0].description: \"1 antibiotic tablet 45 patients Group\"\nprotocolSection.armsInterventionsModule.armGroups[0].interventionNames[0]: \"Drug: Bioclavid\"\nprotocolSection.armsInterventionsModule.armGroups[0].label: \"Group A, Antibiotic\"\nprotocolSection.armsInterventionsModule.armGroups[0].type: \"EXPERIMENTAL\"\nprotocolSection.armsInterventionsModule.armGroups[1].description: \"1 placebo tablet\"\nprotocolSection.armsInterventionsModule.armGroups[1].interventionNames[0]: \"Drug: Placebo\"\nprotocolSection.armsInterventionsModule.armGroups[1].label: \"Group B: 1 placebo\"\nprotocolSection.armsInterventionsModule.armGroups[1].type: \"PLACEBO_COMPARATOR\"\nprotocolSection.armsInterventionsModule.armGroups[2].description: \"2 antibiotic tablets 45 patients\"\nprotocolSection.armsInterventionsModule.armGroups[2].interventionNames[0]: \"Drug: Bioclavid\"\nprotocolSection.armsInterventionsModule.armGroups[2].label: \"Group C: Antibiotics\"\nprotocolSection.armsInterventionsModule.armGroups[2].type: \"EXPERIMENTAL\"\nprotocolSection.armsInterventionsModule.armGroups[3].description: \"2 placebo tablets 36 patients\"\nprotocolSection.armsInterventionsModule.armGroups[3].interventionNames[0]: \"Drug: Placebo\"\nprotocolSection.armsInterventionsModule.armGroups[3].label: \"Group D, Placebo\"\nprotocolSection.armsInterventionsModule.armGroups[3].type: \"PLACEBO_COMPARATOR\"\nprotocolSection.armsInterventionsModule.interventions[0].armGroupLabels[0]: \"Group A, Antibiotic\"\nprotocolSection.armsInterventionsModule.interventions[0].armGroupLabels[1]: \"Group C: Antibiotics\"\nprotocolSection.armsInterventionsModule.interventions[0].description: \"500 + 125 mg times 3 or 6\"\nprotocolSection.armsInterventionsModule.interventions[0].name: \"Bioclavid\"\nprotocolSection.armsInterventionsModule.interventions[0].type: \"DRUG\"\nprotocolSection.armsInterventionsModule.interventions[1].armGroupLabels[0]: \"Group B: 1 placebo\"\nprotocolSection.armsInterventionsModule.interventions[1].armGroupLabels[1]: \"Group D, Placebo\"\nprotocolSection.armsInterventionsModule.interventions[1].name: \"Placebo\"\nprotocolSection.armsInterventionsModule.interventions[1].type: \"DRUG\"\nprotocolSection.conditionsModule.conditions[0]: \"Back Pain\"\nprotocolSection.conditionsModule.keywords[0]: \"Low Back Pain,\"\nprotocolSection.contactsLocationsModule.locations[0].city: \"Ringe\"\nprotocolSection.contactsLocationsModule.locations[0].country: \"Denmark\"\nprotocolSection.contactsLocationsModule.locations[0].facility: \"The Back Research Center\"\nprotocolSection.contactsLocationsModule.locations[0].geoPoint.lat: 55.23828\nprotocolSection.contactsLocationsModule.locations[0].geoPoint.lon: 10.4786\nprotocolSection.contactsLocationsModule.locations[0].zip: \"5230\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].affiliation: \"The Back Research Center, University of Southern Denmark\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].name: \"Hanne B Albert, Ph.D\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].role: \"PRINCIPAL_INVESTIGATOR\"\nprotocolSection.descriptionModule.briefSummary: \"A large proportion of patients with Low Back Pain (LBP) (80 %) are classified as \\\"non-specific\\\", due to the lack of a patho-anatomical diagnosis. This term is not satisfactory, since it implies uncertainty for both the patient and the clinician. Modic changes have recently been identified as a pain giving patho-anatomical diagnosis for a considerable percentage (20-30 %) of LBP patients. The causes of these Modic changes have not been determined conclusively but bacterial infection is among the plausible causes for those following a disc herniation.\"\nprotocolSection.descriptionModule.briefSummary: \"\"\nprotocolSection.descriptionModule.briefSummary: \"Purpose The aim of this study is to assess the clinical effect of antibiotic treatment compared to placebo, in patients with LBP and Modic changes following a lumbar herniated disc.\"\nprotocolSection.descriptionModule.briefSummary: \"\"\nprotocolSection.descriptionModule.briefSummary: \"Design A double blind prospective clinically controlled trial. Patients will be randomized by a blinded observer to either Group A: 1 antibiotic tablet 45 patients Group B: 1 placebo tablet 36 patients Group C: 2 antibiotic tablets 45 patients Group D: 2 placebo tablets 36 patients\"\nprotocolSection.descriptionModule.briefSummary: \"\"\nprotocolSection.descriptionModule.briefSummary: \"The patients will take the drug three times a day for 100 days.\"\nprotocolSection.designModule.designInfo.allocation: \"RANDOMIZED\"\nprotocolSection.designModule.designInfo.interventionModel: \"SINGLE_GROUP\"\nprotocolSection.designModule.designInfo.maskingInfo.masking: \"QUADRUPLE\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[0]: \"PARTICIPANT\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[1]: \"CARE_PROVIDER\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[2]: \"INVESTIGATOR\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[3]: \"OUTCOMES_ASSESSOR\"\nprotocolSection.designModule.designInfo.primaryPurpose: \"TREATMENT\"\nprotocolSection.designModule.enrollmentInfo.count: 162\nprotocolSection.designModule.enrollmentInfo.type: \"ACTUAL\"\nprotocolSection.designModule.phases[0]: \"PHASE4\"\nprotocolSection.designModule.studyType: \"INTERVENTIONAL\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Inclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Age between 18-65 years\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Previous lumbar herniated disc confirmed by MRI\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Time since lumbar disc herniation more than 6 months less than 2 years\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* LBP in the area of L1 to L5, with an added Low Back Pain Rating Scale of 6 or more\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* The present MRI shows Modic changes\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Positive Springing test (SPT) at the level of Modic changes\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Exclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Allergy against antibiotics\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* The Beck Depression Inventory \\\\>7,\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Pregnancy\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Breast feeding\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* All Kidney diseases\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Pending workers litigation or pension\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Danish as second language\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Fertile women who do not user safe anti conseption\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Reduced liver functions\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Reduced liver function due to previous treatment wiht amoxicillin/clavulanasid.\"\nprotocolSection.eligibilityModule.healthyVolunteers: false\nprotocolSection.eligibilityModule.maximumAge: \"65 Years\"\nprotocolSection.eligibilityModule.minimumAge: \"18 Years\"\nprotocolSection.eligibilityModule.sex: \"ALL\"\nprotocolSection.eligibilityModule.stdAges[0]: \"ADULT\"\nprotocolSection.eligibilityModule.stdAges[1]: \"OLDER_ADULT\"\nprotocolSection.identificationModule.briefTitle: \"Antibiotic Treatment to Patients With Low Back Pain\"\nprotocolSection.identificationModule.nctId: \"NCT00302796\"\nprotocolSection.identificationModule.officialTitle: \"Antibiotic Treatment to Patients With Low Back Pain Associated With Modic Changes Following Disc Herniation. A Randomized Clinical Controlled Trial\"\nprotocolSection.identificationModule.orgStudyIdInfo.id: \"2005-005500-17\"\nprotocolSection.identificationModule.organization.class: \"OTHER\"\nprotocolSection.identificationModule.organization.fullName: \"The Back Research Center, Denmark\"\nprotocolSection.identificationModule.secondaryIdInfos[0].id: \"2005\"\nprotocolSection.identificationModule.secondaryIdInfos[0].link: \"https://reporter.nih.gov/quickSearch/2005\"\nprotocolSection.identificationModule.secondaryIdInfos[0].type: \"NIH\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Low Back Pain Roland Morris Questionaire\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"One year follow-up\"\nprotocolSection.oversightModule.oversightHasDmc: true\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.name: \"The Back Research Center, Denmark\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.oldNameTitle: \"Hanne Albert\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.oldOrganization: \"The Back Research Center\"\nprotocolSection.statusModule.completionDateStruct.date: \"2009-10\"\nprotocolSection.statusModule.completionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.expandedAccessInfo.hasExpandedAccess: false\nprotocolSection.statusModule.lastUpdatePostDateStruct.date: \"2010-05-27\"\nprotocolSection.statusModule.lastUpdatePostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.lastUpdateSubmitDate: \"2010-05-26\"\nprotocolSection.statusModule.overallStatus: \"COMPLETED\"\nprotocolSection.statusModule.primaryCompletionDateStruct.date: \"2009-10\"\nprotocolSection.statusModule.primaryCompletionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.startDateStruct.date: \"2006-03\"\nprotocolSection.statusModule.statusVerifiedDate: \"2009-07\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2006-03-15\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2006-03-14\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2006-03-14\"",
+      "source_id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+      "source_version": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "783840c023d34735a84750dd0a8dc023ed85defbeaca88f5aec7a40e2c8368cf": {
+      "end": 1090,
+      "end_line": 20,
+      "handle": "eh_783840c023d34735",
+      "identity": "sha256:783840c023d34735a84750dd0a8dc023ed85defbeaca88f5aec7a40e2c8368cf",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Randomization was performed by the Central Pharmacy,\nOdense University Hospital using a computer-generated\nrandomization list retained at the pharmacy until after the last\npatient's 1-year follow-up. Placebo tablets were calcium\ncarbonate and identical in size, color, coating and aluminum\npacking to the active tablets. All tablets were packed in sealed\nwhite cardboard boxes on which only the patient number was\nprinted (1-162). Patients and the assessor were blinded to\nrandomization until after completion of the patient's 1-year\nfollow-up. Patients were recommended not to seek any other\ntreatment during the 1-year follow-up period. At both follow-\nup treatments by doctors, physiotherapists and alternative\ntreatment providers were registered.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 340,
+      "start_line": 8,
+      "trial_id": "albert-2013"
+    },
+    "7c5235900114bfbfacf91992406a161ccfc9adeaeae6a4815eb3c0aad2190ed6": {
+      "end": 5940,
+      "end_line": 64,
+      "handle": "eh_7c5235900114bfbf",
+      "identity": "sha256:7c5235900114bfbfacf91992406a161ccfc9adeaeae6a4815eb3c0aad2190ed6",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.descriptionModule.briefSummary: \"Design A double blind prospective clinically controlled trial. Patients will be randomized by a blinded observer to either Group A: 1 antibiotic tablet 45 patients Group B: 1 placebo tablet 36 patients Group C: 2 antibiotic tablets 45 patients Group D: 2 placebo tablets 36 patients\"\nprotocolSection.descriptionModule.briefSummary: \"\"\nprotocolSection.descriptionModule.briefSummary: \"The patients will take the drug three times a day for 100 days.\"\nprotocolSection.designModule.designInfo.allocation: \"RANDOMIZED\"\nprotocolSection.designModule.designInfo.interventionModel: \"SINGLE_GROUP\"\nprotocolSection.designModule.designInfo.maskingInfo.masking: \"QUADRUPLE\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[0]: \"PARTICIPANT\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[1]: \"CARE_PROVIDER\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[2]: \"INVESTIGATOR\"\nprotocolSection.designModule.designInfo.maskingInfo.whoMasked[3]: \"OUTCOMES_ASSESSOR\"",
+      "source_id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+      "source_version": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1",
+      "start": 4902,
+      "start_line": 55,
+      "trial_id": "albert-2013"
+    },
+    "7f834a82e22ca6cfd9e8f09ac7e387c24b5a183b467f46bd42d53fadbc7136a0": {
+      "end": 3401,
+      "end_line": 62,
+      "handle": "eh_7f834a82e22ca6cf",
+      "identity": "sha256:7f834a82e22ca6cfd9e8f09ac7e387c24b5a183b467f46bd42d53fadbc7136a0",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "To avoid a later need for imputation, the project secre-\ntary checked every questionnaire for completion, if missing\ndata, the patient was asked to fill in before leaving the\ncenter. A project secretary, also blinded to treatment allo-\ncation, entered all data in EpiData v3.1 (The EpiData\nAssociation, Odense, Denmark), coded under the partici-\npant's project number.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 3033,
+      "start_line": 56,
+      "trial_id": "albert-2013"
+    },
+    "847e964b19af71326fe44d730f9be830353dc478037e668e3799580159d7a956": {
+      "end": 1420,
+      "end_line": 27,
+      "handle": "eh_847e964b19af7132",
+      "identity": "sha256:847e964b19af71326fe44d730f9be830353dc478037e668e3799580159d7a956",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "All baseline variables were equally distributed in the\nplacebo and antibiotic groups (Table 2). The only exception\nwas the volume of Modic changes, where the placebo group\nhad significantly more minute changes (grade 1).",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 1200,
+      "start_line": 24,
+      "trial_id": "albert-2013"
+    },
+    "8831ff3fca29017612303c01f5342f2ac648a11212511885a5379bb99f7b7a2d": {
+      "end": 789,
+      "end_line": 15,
+      "handle": "eh_8831ff3fca290176",
+      "identity": "sha256:8831ff3fca29017612303c01f5342f2ac648a11212511885a5379bb99f7b7a2d",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "Dose response\nThere was a trend towards a positive dose-response rela-\ntionship with double dose antibiotics appearing to be more\nefficacious; however, this was not statistically significant as\nthe trial was not powered for this comparison (results not\nshown). For a 30 % or more reduction [29] in baseline\ndisease-specific disability (RMDQ), the 'number needed to\ntreat' in the single-dose group was 4.0 (95 % CI 2.1-11.8)\nand for the double dose group was 3.0 (95 % CI 1.9-5.8).",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 309,
+      "start_line": 7,
+      "trial_id": "albert-2013"
+    },
+    "91653979fc94e4feb083b08cfad9a0ab1865a2a6b0673211af0d86ee2c6daba4": {
+      "end": 2793,
+      "end_line": 74,
+      "handle": "eh_91653979fc94e4fe",
+      "identity": "sha256:91653979fc94e4feb083b08cfad9a0ab1865a2a6b0673211af0d86ee2c6daba4",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "Number of possible endplates with Modic type one\nchanges, adjacent to the previous herniation\n97 %\n92.2 %\nNS\nDistribution of size of Modic changes\nminute changes = size 1\n10.4 %\n28.8 %\n0.007",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 2603,
+      "start_line": 65,
+      "trial_id": "albert-2013"
+    },
+    "926a2691945ac651b08168f70d14937602ef93fdc3876e82de7f34865660c638": {
+      "end": 2104,
+      "end_line": 44,
+      "handle": "eh_926a2691945ac651",
+      "identity": "sha256:926a2691945ac651b08168f70d14937602ef93fdc3876e82de7f34865660c638",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "144 of the 162 original patients were evaluated at\n1-year follow-up. The two groups were similar at baseline.\nThe antibiotic group improved highly statistically signifi-\ncantly on all outcome measures and improvement continued\nfrom 100 days follow-up until 1-year follow-up. At base-\nline, 100 days follow-up, 1-year follow-up the disease-\nspecific disability-RMDQ changed: antibiotic 15, 11, 5.7;\nplacebo 15, 14, 14. Leg pain: antibiotics 5.3, 3.0, 1.4; pla-\ncebo 4.0, 4.3, 4.3. Lumbar pain: antibiotics 6.7, 5.0, 3.7;\nplacebo 6.3, 6.3, 6.3. For the outcome measures, where a",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 1528,
+      "start_line": 35,
+      "trial_id": "albert-2013"
+    },
+    "98c9a5ae0407be1107baf12683493ada7227e12e402dfa1e553f9abba65d44b2": {
+      "end": 478,
+      "end_line": 36,
+      "handle": "eh_98c9a5ae0407be11",
+      "identity": "sha256:98c9a5ae0407be1107baf12683493ada7227e12e402dfa1e553f9abba65d44b2",
+      "kind": "narrative",
+      "page": 7,
+      "quote": "Table 3 Outcome measures at baseline, 100 days follow-up and 1-year follow-up\nAntibiotic\nbaseline\nn = 90\nAntibiotic\n100 days\nn = 76\nAntibiotic 1-year\nfollow-up n = 77\nPlacebo\nbaseline\nn = 72\nPlacebo\n100 days\nn = 67\nPlacebo 1-year\nfollow-up n = 67\np value for difference between placebo and\nantibiotic groups at 1-year follow-up\nDisease-specific\ndisability-RMDQ\nMedian [lower; upper\nquartile]\n15.0\n[11; 18]\n11.5\n[7; 14]\n7.0\n[4; 11]\n15.0\n[12; 18]\n14.0\n[11; 18]\n14.0\n[8; 18]\n0.0001",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "ac652736cd382f87f4c1920d4edd143e9a6418292181f98e8d52249809e2dd18": {
+      "end": 5223,
+      "end_line": 98,
+      "handle": "eh_ac652736cd382f87",
+      "identity": "sha256:ac652736cd382f87f4c1920d4edd143e9a6418292181f98e8d52249809e2dd18",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Sample size\nPower calculations were based on the results of a pilot\nstudy, where the patients receiving antibiotics had a med-\nian reduction of RMDQ of 3.7 [24]. A sample size of 65 in\neach group was calculated as necessary to detect a reduc-\ntion of minimum 3.7 in the antibiotic group on the RMDQ,\nwith a SD of the difference of four and a placebo effect of\n1.4 on the RMDQ, for an alpha of 0.05 and a power of 0.90.\nDropout due to side effects was estimated to be 10 %. The\nsample size calculation is based on a two-group compari-\nson hence comparing antibiotics with placebo is the main\naim. To fulfill a late request from the Danish Medical\nauthorities a dose-response part was included, but the\nstudy is not designed for this tertiary purpose and therefore\nthis is not formally tested.\nStatistics\nAll statistics were performed by an independent professor\nin statistics at Aalborg University who was blinded to\ngroup allocation. Data were analyzed in STATA version\n16.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 4250,
+      "start_line": 79,
+      "trial_id": "albert-2013"
+    },
+    "ad5944fedf89d766e72228cbbb887d4435640250c674c1256f82be04e566f736": {
+      "end": 4249,
+      "end_line": 78,
+      "handle": "eh_ad5944fedf89d766",
+      "identity": "sha256:ad5944fedf89d766e72228cbbb887d4435640250c674c1256f82be04e566f736",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "To avoid a later need for imputation, the project secre-\ntary checked every questionnaire for completion, if missing\ndata, the patient was asked to fill in before leaving the\ncenter. A project secretary, also blinded to treatment allo-\ncation, entered all data in EpiData v3.1 (The EpiData\nAssociation, Odense, Denmark), coded under the partici-\npant's project number.\nOutcome measures\nAll patients underwent clinical examination and blood tests\n(serum analysis) at baseline and at end of treatment. Self-\nreported questionnaires were completed at baseline; end of\nantibiotic treatment (100 days), and at 12-month follow-up.\nThe outcome measures are presented in Table 1.\nThe primary outcome measures were disease-specific\ndisability Roland Morris Questionnaire [27] (RMDQ) and\nlumbar pain [28] (LBP Rating Scale). A clinically impor-\ntant change was defined as a 30 % reduction of the indi-\nvidual's baseline score and 2 LBP rating scale points [29]\n(Table 1). Secondary outcome measures were global per-\nceived effect, leg pain, hours with LBP during the last\n4 weeks, EQ-5D Thermometer, days with sick leave,\nbothersomeness, constant pain, MRI Modic grading, serum\nanalysis, four test at the physical examination.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 3033,
+      "start_line": 56,
+      "trial_id": "albert-2013"
+    },
+    "af2f0bc26a980daf6f899c53f61d893ecb91a4af3403a78fb762076e94917c42": {
+      "end": 5261,
+      "end_line": 101,
+      "handle": "eh_af2f0bc26a980daf",
+      "identity": "sha256:af2f0bc26a980daf6f899c53f61d893ecb91a4af3403a78fb762076e94917c42",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "1 = endplate only, 2 = up to 25 %, 3 = up to 50 %\n4 = above 50 % of the vertebrae. Patients also had to have\nLBP in the area from L1 to L5 with a Numerical Pain\nRating Scale score of C6 after adding the current LBP\n(0-10); the mean LBP during the last 2 weeks (0-10) and\nworst LBP during the last 2 weeks (0-10) and then\ndividing by three.\nRandomization was performed by the Central Pharmacy,\nOdense University Hospital using a computer-generated\nrandomization list retained at the pharmacy until after the last\npatient's 1-year follow-up. Placebo tablets were calcium\ncarbonate and identical in size, color, coating and aluminum\npacking to the active tablets. All tablets were packed in sealed\nwhite cardboard boxes on which only the patient number was\nprinted (1-162). Patients and the assessor were blinded to\nrandomization until after completion of the patient's 1-year\nfollow-up. Patients were recommended not to seek any other\ntreatment during the 1-year follow-up period. At both follow-\nup treatments by doctors, physiotherapists and alternative\ntreatment providers were registered.\nThree independent experts in infectious diseases were\npresented with the bacterial culture results of Stirling's study\n[10] and all three recommended amoxicillin-clavulanate.\nThis drug is known to be able to penetrate into the discs [26].\nTherefore, treatment consisted of amoxicillin-clavulanate\n(500 mg/125 mg) (Bioclavid ) tablets three times a day, at\n8 h intervals, for 100 days. This long duration of antibiotic\ntreatment is commonly prescribed for post-operative discitis.\nThe randomization divided patients into four dosage\ngroups: A (n = 45) one Bioclavid tablet, B (n = 36) one\nplacebo tablet, C (n = 45) two Bioclavid tablets, D\n(n = 36) two placebo tablets. Compliance was measured in\ndaily medication diaries. During their 12-month participa-\ntion in this trial patients were not provided with any other\ntreatment except mild analgesics, if required.\nStudy flow\nAt both baseline and at 1-year follow-up each participant\nunderwent a physical examination and completed self-repor-\nted questionnaires. An MRI and blood samples were also\ntaken. The MRI protocol at baseline and at the 1-year follow-\nup were uniform and performed by the same staff, blinded to\ntreatment, and in the same MRI machine. At the end of the\ntreatment period, (100 days), patients were also mailed a\nquestionnaire. The patients and the observer were blinded to\nthe allocation and all previous measurements. All physical\nexaminations were performed by the same blinded observer.\nAt baseline, all patients had a 1.5 h thorough patient\neducation session including important information about;\nwhat are Modic changes? Why are they so painful? What is\nthe presumed pathoanatomical pathway for the link\nbetween the previous herniation and the present Modic\ntype 1 changes? Why they should not do exercise during\nthe treatment period and so forth. All patients were allowed\nto take their usual anti-inflammatory and pain relieving\nmedication (treatment as usual).\nTo avoid a later need for imputation, the project secre-\ntary checked every questionnaire for completion, if missing\ndata, the patient was asked to fill in before leaving the\ncenter. A project secretary, also blinded to treatment allo-\ncation, entered all data in EpiData v3.1 (The EpiData\nAssociation, Odense, Denmark), coded under the partici-\npant's project number.\nOutcome measures\nAll patients underwent clinical examination and blood tests\n(serum analysis) at baseline and at end of treatment. Self-\nreported questionnaires were completed at baseline; end of\nantibiotic treatment (100 days), and at 12-month follow-up.\nThe outcome measures are presented in Table 1.\nThe primary outcome measures were disease-specific\ndisability Roland Morris Questionnaire [27] (RMDQ) and\nlumbar pain [28] (LBP Rating Scale). A clinically impor-\ntant change was defined as a 30 % reduction of the indi-\nvidual's baseline score and 2 LBP rating scale points [29]\n(Table 1). Secondary outcome measures were global per-\nceived effect, leg pain, hours with LBP during the last\n4 weeks, EQ-5D Thermometer, days with sick leave,\nbothersomeness, constant pain, MRI Modic grading, serum\nanalysis, four test at the physical examination.\nSample size\nPower calculations were based on the results of a pilot\nstudy, where the patients receiving antibiotics had a med-\nian reduction of RMDQ of 3.7 [24]. A sample size of 65 in\neach group was calculated as necessary to detect a reduc-\ntion of minimum 3.7 in the antibiotic group on the RMDQ,\nwith a SD of the difference of four and a placebo effect of\n1.4 on the RMDQ, for an alpha of 0.05 and a power of 0.90.\nDropout due to side effects was estimated to be 10 %. The\nsample size calculation is based on a two-group compari-\nson hence comparing antibiotics with placebo is the main\naim. To fulfill a late request from the Danish Medical\nauthorities a dose-response part was included, but the\nstudy is not designed for this tertiary purpose and therefore\nthis is not formally tested.\nStatistics\nAll statistics were performed by an independent professor\nin statistics at Aalborg University who was blinded to\ngroup allocation. Data were analyzed in STATA version\n16.\nEur Spine J (2013) 22:697-707\n699\n123",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "b8f43aabedfd3a90595b10b0bb877e92f903d2f9e7618f72ef9eab6194567b7a": {
+      "end": 1617,
+      "end_line": 31,
+      "handle": "eh_b8f43aabedfd3a90",
+      "identity": "sha256:b8f43aabedfd3a90595b10b0bb877e92f903d2f9e7618f72ef9eab6194567b7a",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "The study flow chart is shown in Fig. 1. Of the 162 patients\nthat entered the study 147 (90.7 %) completed the end of\ntreatment questionnaires, 144 (88.9 %) completed the 1-year\nfollow-up (MRI, questionnaires, physical examination).\nAll baseline variables were equally distributed in the\nplacebo and antibiotic groups (Table 2). The only exception\nwas the volume of Modic changes, where the placebo group\nhad significantly more minute changes (grade 1).\nThere were no significant differences in age and gender\nbetween the 1-year participants and those lost to follow-up;\nhowever, there were significantly more smokers amongst\nthose lost to follow-up.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 967,
+      "start_line": 20,
+      "trial_id": "albert-2013"
+    },
+    "b9159ccef610477721400da223b06f7c7ebb725d121be782f41a27089c6d18c5": {
+      "end": 958,
+      "end_line": 18,
+      "handle": "eh_b9159ccef6104777",
+      "identity": "sha256:b9159ccef610477721400da223b06f7c7ebb725d121be782f41a27089c6d18c5",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "Differences in binary variables were tested with Fisher's\nexact test. Continuous data were analyzed with three tests.\nFirstly, crude an unpaired T-tests; secondly, adjusted for\ngender and age. Thirdly, if the distribution was not nor-\nmally distributed, with the Mann-Whitney test. No interim\nanalysis was performed. Analyses were preformed on all\npatients who participated at the 1-year follow-up and all\npatients were analyzed in their 'intention to treat' group,\nregardless of their compliance to the medicine protocol.\nEthics\nThe study was approved by and registered in: the Danish\nMedicine Agency and the Scientific Ethics Committee of\nthe Region of Southern Denmark (no. S-VF-20050112),\nthe Danish Data registry, Euro-dract (2005-005500-17),\nGovernment Clinical trial registry (NCT00302796) and\nmonitored by the Unit of Good Clinical Practice (GCP),\nUniversity of Southern Denmark. All patients signed a\nwritten informed consent prior to participation.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "bc09bdaad14a10482f5e95570231853838ca0c66f453a2336f6cc51f8604f243": {
+      "end": 522,
+      "end_line": 9,
+      "handle": "eh_bc09bdaad14a1048",
+      "identity": "sha256:bc09bdaad14a10482f5e95570231853838ca0c66f453a2336f6cc51f8604f243",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "Differences in binary variables were tested with Fisher's\nexact test. Continuous data were analyzed with three tests.\nFirstly, crude an unpaired T-tests; secondly, adjusted for\ngender and age. Thirdly, if the distribution was not nor-\nmally distributed, with the Mann-Whitney test. No interim\nanalysis was performed. Analyses were preformed on all\npatients who participated at the 1-year follow-up and all\npatients were analyzed in their 'intention to treat' group,\nregardless of their compliance to the medicine protocol.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "bc15f0aef1a3a215a4de35d90c00d6220d18b83e39d2f0cc294f3727955a8357": {
+      "end": 3765,
+      "end_line": 82,
+      "handle": "eh_bc15f0aef1a3a215",
+      "identity": "sha256:bc15f0aef1a3a215a4de35d90c00d6220d18b83e39d2f0cc294f3727955a8357",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "ORIGINAL ARTICLE\nAntibiotic treatment in patients with chronic low back pain\nand vertebral bone edema (Modic type 1 changes): a double-blind\nrandomized clinical controlled trial of efficacy\nHanne B. Albert \u2022 Joan S. Sorensen \u2022\nBerit Schiott Christensen \u2022 Claus Manniche\nReceived: 6 August 2012 / Revised: 23 November 2012 / Accepted: 15 January 2013 / Published online: 13 February 2013\n Springer-Verlag Berlin Heidelberg 2013\nAbstract\nPurpose\nModic type 1 changes/bone edema in the\nvertebrae are present in 6 % of the general population and\n35-40 % of the low back pain population. It is strongly\nassociated with low back pain. The aim was to test the\nefficacy of antibiotic treatment in patients with chronic low\nback pain ([6 months) and Modic type 1 changes (bone\nedema).\nMethods\nThe study was a double-blind RCT with 162\npatients whose only known illness was chronic LBP of\ngreater than 6 months duration occurring after a previous\ndisc herniation and who also had bone edema demonstrated\nas Modic type 1 changes in the vertebrae adjacent to the\nprevious herniation. Patients were randomized to either\n100 days of antibiotic treatment (Bioclavid) or placebo and\nwere blindly evaluated at baseline, end of treatment and at\n1-year follow-up.\nOutcome measures\nPrimary outcome, disease-specific\ndisability, lumbar pain. Secondary outcome leg pain,\nnumber of hours with pain last 4 weeks, global perceived\nhealth, EQ-5D thermometer, days with sick leave, bother-\nsomeness, constant pain, magnetic resonance image (MRI).\nResults\n144 of the 162 original patients were evaluated at\n1-year follow-up. The two groups were similar at baseline.\nThe antibiotic group improved highly statistically signifi-\ncantly on all outcome measures and improvement continued\nfrom 100 days follow-up until 1-year follow-up. At base-\nline, 100 days follow-up, 1-year follow-up the disease-\nspecific disability-RMDQ changed: antibiotic 15, 11, 5.7;\nplacebo 15, 14, 14. Leg pain: antibiotics 5.3, 3.0, 1.4; pla-\ncebo 4.0, 4.3, 4.3. Lumbar pain: antibiotics 6.7, 5.0, 3.7;\nplacebo 6.3, 6.3, 6.3. For the outcome measures, where a\nclinically important effect size was defined, improvements\nexceeded the thresholds, and a trend towards a dose-\nresponse relationship with double dose antibiotics being\nmore efficacious.\nConclusions\nThe antibiotic protocol in this study was\nsignificantly more effective for this group of patients\n(CLBP associated with Modic I) than placebo in all the\nprimary and secondary outcomes.\nKeywords\nModic changes Antibiotics Chronic low\nback pain End plate changes LBP\nIntroduction\nModic type 1 changes are bone edema in vertebrae and\nhave been shown to be both commonly observed in and\ntightly associated with, low back pain [1, 2]. A recent\nsystematic review showed that the prevalence for any type\nof Modic change in patients with non-specific low back\npain (LBP) was 46 % as opposed to 6 % in the general\npopulation [1]. A positive association between Modic type\nand non-specific LBP was found with a mean odds ratios of\n4.5 [4, 5]. These findings are relevant as chronic lower back\npain (CLBP) is seldom reliably attributable to specific\npathoanatomical causes [3].\nModic changes are only visible on magnetic resonance\nimages (MRI) and three types have been identified (Types\n1-3) [4]. Histological studies of material harvested during\nH. B. Albert (&) J. S. Sorensen C. Manniche\nResearch Department, Spine Centre of Southern Denmark,\nInstitute of Regional Health Services Research, Lillebaelt\nHospital, University of Southern Denmark, Middelfart, Denmark\ne-mail: hanne.birgit.albert@slb.regionsyddanmark.dk\nB. S. Christensen\nDepartment of Rheumatology, Aarhus University Hospital,\nAarhus, Denmark\n123\nEur Spine J (2013) 22:697-707\nDOI 10.1007/s00586-013-2675-y",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "bff39c81e9a83cde16833da824b4054b2efb5f7953761e3e5cc00fe290b9f258": {
+      "end": 4249,
+      "end_line": 78,
+      "handle": "eh_bff39c81e9a83cde",
+      "identity": "sha256:bff39c81e9a83cde16833da824b4054b2efb5f7953761e3e5cc00fe290b9f258",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Outcome measures\nAll patients underwent clinical examination and blood tests\n(serum analysis) at baseline and at end of treatment. Self-\nreported questionnaires were completed at baseline; end of\nantibiotic treatment (100 days), and at 12-month follow-up.\nThe outcome measures are presented in Table 1.\nThe primary outcome measures were disease-specific\ndisability Roland Morris Questionnaire [27] (RMDQ) and\nlumbar pain [28] (LBP Rating Scale). A clinically impor-\ntant change was defined as a 30 % reduction of the indi-\nvidual's baseline score and 2 LBP rating scale points [29]\n(Table 1). Secondary outcome measures were global per-\nceived effect, leg pain, hours with LBP during the last\n4 weeks, EQ-5D Thermometer, days with sick leave,\nbothersomeness, constant pain, MRI Modic grading, serum\nanalysis, four test at the physical examination.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 3402,
+      "start_line": 63,
+      "trial_id": "albert-2013"
+    },
+    "c4b33ec8ee2256fd16ba921469a1b5ed688cdcf302931b9cc0afd57013bbae76": {
+      "end": 5405,
+      "end_line": 97,
+      "handle": "eh_c4b33ec8ee2256fd",
+      "identity": "sha256:c4b33ec8ee2256fd16ba921469a1b5ed688cdcf302931b9cc0afd57013bbae76",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "Methods\nThis clinical trial was conducted at the Spine Centre of\nSouthern Denmark and the participants were recruited from\ntwo secondary spine centers. The initial inclusion criteria\nwere: age between 18 and 65 years, MRI-confirmed disc\nherniation L3/L4 or L4/L5 or L5/S1 within the preceding\n6-24 months, lower back pain of[6 months duration, both\nconservative and surgically treated patients were included,\nregardless of sciatica, neuropathic pain or not. Individuals\nwho fulfilled these criteria were posted a letter describing\nthe project as well as a questionnaire containing pain\ndrawings and the exclusion criteria: allergy to antibiotics,\ncurrent pregnancy or lactation, any kidney disease or\npending litigation. Subjects who fulfilled final criteria and\nwere interested in participation underwent a repeat MRI;\nall performed at the Spine Center of Southern Denmark\n(T1- and T2-weighted images). Individuals were then\nconsecutively recruited into the study if their repeat MRI\nshowed Modic type 1 changes adjacent to the previously\nherniated disc regardless of size of the Modic change.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 4311,
+      "start_line": 78,
+      "trial_id": "albert-2013"
+    },
+    "c6d615aa2df74d6a241cbab129b30c76c9f7555ca7032d9d6dbc1b882494673b": {
+      "end": 873,
+      "end_line": 16,
+      "handle": "eh_c6d615aa2df74d6a",
+      "identity": "sha256:c6d615aa2df74d6a241cbab129b30c76c9f7555ca7032d9d6dbc1b882494673b",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Randomization was performed by the Central Pharmacy,\nOdense University Hospital using a computer-generated\nrandomization list retained at the pharmacy until after the last\npatient's 1-year follow-up. Placebo tablets were calcium\ncarbonate and identical in size, color, coating and aluminum\npacking to the active tablets. All tablets were packed in sealed\nwhite cardboard boxes on which only the patient number was\nprinted (1-162). Patients and the assessor were blinded to\nrandomization until after completion of the patient's 1-year",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 340,
+      "start_line": 8,
+      "trial_id": "albert-2013"
+    },
+    "cf61e2d09e09ed3f98562b9e320d586d69cd3cf03deb57e0ef218174d9d7e541": {
+      "end": 3230,
+      "end_line": 63,
+      "handle": "eh_cf61e2d09e09ed3f",
+      "identity": "sha256:cf61e2d09e09ed3f98562b9e320d586d69cd3cf03deb57e0ef218174d9d7e541",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "Roland Morris Disability\nQuestionnaire (RMDQ)\nA disease-specific disability questionnaire in which the patient answers 23 yes/no questions. The scale\nwidth is 0-23, where high scores are worst [27]",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 3033,
+      "start_line": 60,
+      "trial_id": "albert-2013"
+    },
+    "da065b49b6d10a34c94dd6cee3b89e49e26aa5e8ac8f5f1afada38c5b4a0d1ba": {
+      "end": 1403,
+      "end_line": 147,
+      "handle": "eh_da065b49b6d10a34",
+      "identity": "sha256:da065b49b6d10a34c94dd6cee3b89e49e26aa5e8ac8f5f1afada38c5b4a0d1ba",
+      "kind": "narrative",
+      "page": 7,
+      "quote": "Table 3 Outcome measures at baseline, 100 days follow-up and 1-year follow-up\nAntibiotic\nbaseline\nn = 90\nAntibiotic\n100 days\nn = 76\nAntibiotic 1-year\nfollow-up n = 77\nPlacebo\nbaseline\nn = 72\nPlacebo\n100 days\nn = 67\nPlacebo 1-year\nfollow-up n = 67\np value for difference between placebo and\nantibiotic groups at 1-year follow-up\nDisease-specific\ndisability-RMDQ\nMedian [lower; upper\nquartile]\n15.0\n[11; 18]\n11.5\n[7; 14]\n7.0\n[4; 11]\n15.0\n[12; 18]\n14.0\n[11; 18]\n14.0\n[8; 18]\n0.0001\nBack pain\n(0-10)\nMedian [lower; upper\nquartile]\n6.7\n[5.3; 7.7]\n5.0\n[2.7; 6.7]\n3.7\n[1.3; 5.8]\n6.3\n[4.7; 8]\n6.3\n[3.7; 7.7]\n6.3\n[4; 7.7]\n0.0001\nLeg pain (0-10)\nMedian [lower; upper\nquartile]\n5.3\n[2.3; 7]\n3.0\n[1; 5.7]\n1.7\n[0; 4.2]\n4.0\n[1; 7]\n4.3\n[1; 7]\n4.3\n[1; 6.3]\n0.0004\nNumber of hours with\nback pain\nMedian [lower; upper\nquartile]\n448\n[364; 448]\n180\n[16; 136]\n64\n[4; 280]\n448\n[392; 448]\n200\n[28; 392]\n448\n[224; 448]\n0.0001\nDays with sick leave\nlast year\nMean\n51.0\nSD 92\n*\n18.9\nSD 61\n42.0\nSD 80\n*\n45.4\nSD 90\n0.064\nBothersomeness scale\n(0-10)\nMedian [lower; upper\nquartile]\n7\n[6; 8]\n*\n3\n[2; 5]\n8\n[5; 9]\n*\n6\n[4; 8]\n0.0001\nEQ-5D (1-100) 100 is\nbest Thermometer\nMedian [lower; upper\nquartile]\n59\n[40; 70]\n65\n[40; 79]\n75\n[54; 90]\n60\n[40; 75]\n60\n[40; 75]\n60\n[39; 74]\n0.0014\nGeneral improvement\nin %\n*\n*\n39\nSD 38.4\n*\n*\n1.8\nSD 31.7\n0.0001\n* The measurement was not obtained at 100 days follow-up\nEur Spine J (2013) 22:697-707\n703\n123",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "ddfd109f034217c8e4829b5f29a71b49425bde331c5882695e6726bdcbcfb9dd": {
+      "end": 10930,
+      "end_line": 127,
+      "handle": "eh_ddfd109f034217c8",
+      "identity": "sha256:ddfd109f034217c8e4829b5f29a71b49425bde331c5882695e6726bdcbcfb9dd",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.outcomesModule.primaryOutcomes[0].measure: \"Low Back Pain Roland Morris Questionaire\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"One year follow-up\"\nprotocolSection.oversightModule.oversightHasDmc: true\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.name: \"The Back Research Center, Denmark\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.oldNameTitle: \"Hanne Albert\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.oldOrganization: \"The Back Research Center\"\nprotocolSection.statusModule.completionDateStruct.date: \"2009-10\"\nprotocolSection.statusModule.completionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.expandedAccessInfo.hasExpandedAccess: false\nprotocolSection.statusModule.lastUpdatePostDateStruct.date: \"2010-05-27\"\nprotocolSection.statusModule.lastUpdatePostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.lastUpdateSubmitDate: \"2010-05-26\"\nprotocolSection.statusModule.overallStatus: \"COMPLETED\"\nprotocolSection.statusModule.primaryCompletionDateStruct.date: \"2009-10\"\nprotocolSection.statusModule.primaryCompletionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.startDateStruct.date: \"2006-03\"\nprotocolSection.statusModule.statusVerifiedDate: \"2009-07\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2006-03-15\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2006-03-14\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2006-03-14\"",
+      "source_id": "source_57c534b62a28a969f008143c9543c5a172346baa76404f90313f98510add12f5",
+      "source_version": "sha256:0682d24666381039240c3a273b469b8f41c1f2b4fc4f2e88b798ede2a6e471c1",
+      "start": 9324,
+      "start_line": 106,
+      "trial_id": "albert-2013"
+    },
+    "ef2825a3434d7e4edda259c046cfadbc2862a9a4ba57c5ce102fd8e5f56aafe3": {
+      "end": 5785,
+      "end_line": 106,
+      "handle": "eh_ef2825a3434d7e4e",
+      "identity": "sha256:ef2825a3434d7e4edda259c046cfadbc2862a9a4ba57c5ce102fd8e5f56aafe3",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "surgery, show that Type 1 involve disruption and fissuring\nof the endplate with regions of degeneration, regeneration,\nreactive bone formation, endplate edema and vascular\ngranulation tissue [4, 5]. Several studies have examined the\nreliability of reporting Modic changes and all have shown\nexcellent inter and intra-observer reliability [6, 7]. In\ncomparative studies, Modic changes have demonstrated a\nhigher reliability than other MRI findings, such as disc\nherniations [8].\nInfection is one of the hypothetical causes of the bone\nedema underlying Modic type 1 changes [9]. Stirling found\nnuclear tissue removed under strict sterile conditions dur-\ning surgery for lumbar herniated discs, to be infected with\nlow virulent anaerobic organisms (Proprionibacterium\nacnes and Corynebacterium propinquum) in 53 % of the\npatients [10]. To investigate if skin contamination was the\ncause of this surprising result, Stirling et al. conducted\nanother study with 207 patients with lumbar disc herniation\nand 27 patients with other spinal disorders such as scoli-\nosis, fracture and tumors, all patients had nucleus material\nremoved. In 37 % of the patients with lumbar disc herni-\nation bacteria were indentified, mainly P. acnes. Con-\nversely, no (0 %) bacteria were found in the extracted\nnuclear material in the group with other spinal disorders. If\nskin contamination was the cause of the bacterial presence\nin the nucleus material the percentage of infected patients\nshould be very similar [11]. Corsia et al. [12] replicated this\nand evacuated extruded disc material in 30 lumbar disc\nherniations: 71 % were infected, 36 % with Staphylococ-\ncus and 18 % with P. acnes; and in 30 cervical disc her-\nniations they found 59 % were infected, 37 % with\nP. acnes. Agarwal et al. [12] cultured material from 52\npatients, 10 (19 %) of them were infected and in 7 (70 %)\nof those, P. acnes was the sole organism isolated. It is\nthought that these anaerobic mouth and skin commensal\norganisms gain access to the disc during normal bactere-\nmias as a result of the neovascularisation associated with\ndisc degeneration or herniation [13-21]. Local inflamma-\ntion in the adjacent bone may be a secondary effect due to\ncytokine and propionic acid production, i.e., the infection is\nin the disc and the Modic change is a ''side effect'' man-\nifest in the bone. P. acnes cannot live in the highly vas-\ncularised/aerobic bone and is not present there [22].\nTo evaluate the role of P. acnes in the occurrence of\nlater Modic type 1 changes after a disc herniation, a cohort\nstudy of 61 immunocompetent patients undergoing surgery\nfor a lumbar disc herniation underwent an MRI examina-\ntion before surgery and 1-2 years afterwards. Evacuation\nof nuclear material took place during surgery under strict\nsterile conditions. The study revealed that 46 % of the\npatients had infected nuclear material, 84 % of these with\nP. acnes. The possible role of bacteria in developing Modic\nchanges after a disc herniation was confirmed hence, 20 of\nthe 25 (80 %) with anaerobic cultures developed new\nModic changes in the vertebrae adjacent to the previous\ndisc herniation, compared to 16 of the 36 (44 %) with no\nidentified infection or aerobic bacterial infection (n = 2).\nFisher's exact test p \\ 0.0079 [23].\nIn a recently published uncontrolled pilot study, 32\npatients with chronic low back pain, following a lumbar\ndisc herniation and of up to 2 years duration associated\nwith Modic type 1 changes/bone edema, were treated with\nAmoxicillin-clavulanate (500 mg/125 mg) 3 9 day for\n90 days [24]. Twenty-nine patients (90.6 %) completed the\ntreatment and three patients dropped out due to diarrhea. At\nthe end of treatment and at long-term follow-up (mean\n10.8 months) there was both a clinically important and\nstatistically significant (p B 0.001) improvement in all\noutcome measures [24]. These results provided additional\ntentative support for the hypothesis that bacterial infection\nmay play a role in LBP with Modic changes (bone edema).\nThe aim of this study was to test the efficacy of Modic\nantibiotic spine therapy (MAST) in patients with chronic\nlow back pain, new Modic type 1 changes in the vertebrae\nadjacent to a previously herniated disc. Additionally, we\ninvestigated whether a dose-response relationship could be\nidentified.\nMethods\nThis clinical trial was conducted at the Spine Centre of\nSouthern Denmark and the participants were recruited from\ntwo secondary spine centers. The initial inclusion criteria\nwere: age between 18 and 65 years, MRI-confirmed disc\nherniation L3/L4 or L4/L5 or L5/S1 within the preceding\n6-24 months, lower back pain of[6 months duration, both\nconservative and surgically treated patients were included,\nregardless of sciatica, neuropathic pain or not. Individuals\nwho fulfilled these criteria were posted a letter describing\nthe project as well as a questionnaire containing pain\ndrawings and the exclusion criteria: allergy to antibiotics,\ncurrent pregnancy or lactation, any kidney disease or\npending litigation. Subjects who fulfilled final criteria and\nwere interested in participation underwent a repeat MRI;\nall performed at the Spine Center of Southern Denmark\n(T1- and T2-weighted images). Individuals were then\nconsecutively recruited into the study if their repeat MRI\nshowed Modic type 1 changes adjacent to the previously\nherniated disc regardless of size of the Modic change.\nModic findings were coded by an experienced research\nradiologist. With regard to the presence and coding of\nModic changes, this radiologist demonstrated a perfect\nintra-tester reliability (kappa = 1.0) and an excellent inter-\ntester reliability (kappa = 0.93) [25]. The size and volume\nwere graded according to the Nordic Modic Protocol [8]:\n698\nEur Spine J (2013) 22:697-707\n123",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "albert-2013"
+    },
+    "f912ce76d51c28b91d2e07de1b9670303bd11b34676c98e048b69bda29fd3c4e": {
+      "end": 5223,
+      "end_line": 98,
+      "handle": "eh_f912ce76d51c28b9",
+      "identity": "sha256:f912ce76d51c28b91d2e07de1b9670303bd11b34676c98e048b69bda29fd3c4e",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "The primary outcome measures were disease-specific\ndisability Roland Morris Questionnaire [27] (RMDQ) and\nlumbar pain [28] (LBP Rating Scale). A clinically impor-\ntant change was defined as a 30 % reduction of the indi-\nvidual's baseline score and 2 LBP rating scale points [29]\n(Table 1). Secondary outcome measures were global per-\nceived effect, leg pain, hours with LBP during the last\n4 weeks, EQ-5D Thermometer, days with sick leave,\nbothersomeness, constant pain, MRI Modic grading, serum\nanalysis, four test at the physical examination.\nSample size\nPower calculations were based on the results of a pilot\nstudy, where the patients receiving antibiotics had a med-\nian reduction of RMDQ of 3.7 [24]. A sample size of 65 in\neach group was calculated as necessary to detect a reduc-\ntion of minimum 3.7 in the antibiotic group on the RMDQ,\nwith a SD of the difference of four and a placebo effect of\n1.4 on the RMDQ, for an alpha of 0.05 and a power of 0.90.\nDropout due to side effects was estimated to be 10 %. The\nsample size calculation is based on a two-group compari-\nson hence comparing antibiotics with placebo is the main\naim. To fulfill a late request from the Danish Medical\nauthorities a dose-response part was included, but the\nstudy is not designed for this tertiary purpose and therefore\nthis is not formally tested.\nStatistics\nAll statistics were performed by an independent professor\nin statistics at Aalborg University who was blinded to\ngroup allocation. Data were analyzed in STATA version\n16.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 3705,
+      "start_line": 69,
+      "trial_id": "albert-2013"
+    },
+    "ff4e1606718ab468a7793e9031ff74704ad2cef8c6d2f43b759f13357fb89a51": {
+      "end": 3657,
+      "end_line": 67,
+      "handle": "eh_ff4e1606718ab468",
+      "identity": "sha256:ff4e1606718ab468a7793e9031ff74704ad2cef8c6d2f43b759f13357fb89a51",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "At both baseline and at 1-year follow-up each participant\nunderwent a physical examination and completed self-repor-\nted questionnaires. An MRI and blood samples were also\ntaken. The MRI protocol at baseline and at the 1-year follow-\nup were uniform and performed by the same staff, blinded to\ntreatment, and in the same MRI machine. At the end of the\ntreatment period, (100 days), patients were also mailed a\nquestionnaire. The patients and the observer were blinded to\nthe allocation and all previous measurements. All physical\nexaminations were performed by the same blinded observer.\nAt baseline, all patients had a 1.5 h thorough patient\neducation session including important information about;\nwhat are Modic changes? Why are they so painful? What is\nthe presumed pathoanatomical pathway for the link\nbetween the previous herniation and the present Modic\ntype 1 changes? Why they should not do exercise during\nthe treatment period and so forth. All patients were allowed\nto take their usual anti-inflammatory and pain relieving\nmedication (treatment as usual).\nTo avoid a later need for imputation, the project secre-\ntary checked every questionnaire for completion, if missing\ndata, the patient was asked to fill in before leaving the\ncenter. A project secretary, also blinded to treatment allo-\ncation, entered all data in EpiData v3.1 (The EpiData\nAssociation, Odense, Denmark), coded under the partici-\npant's project number.\nOutcome measures\nAll patients underwent clinical examination and blood tests\n(serum analysis) at baseline and at end of treatment. Self-\nreported questionnaires were completed at baseline; end of\nantibiotic treatment (100 days), and at 12-month follow-up.",
+      "source_id": "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      "source_version": "sha256:51ea5af6b1768398db6e485c178f86d88e0655eb6823c7e281d67e35db309812",
+      "start": 1966,
+      "start_line": 37,
+      "trial_id": "albert-2013"
+    }
+  },
+  "source_and_guidance_access": [
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 82
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 106
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 89
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 74
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 146
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 158
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 242
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 118
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 76
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 5,
+            "start_line": 19,
+            "end_line": 74
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 146
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 158
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 242
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 118
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 76
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 10,
+            "start_line": 78,
+            "end_line": 118
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 76
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "source_id": "sh_57c534b62a28a969",
+        "pages": [
+          1
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "source_id": "sh_99261d402821f95a",
+        "page": 7
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "source_id": "sh_99261d402821f95a",
+        "page": 5
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 82
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 106
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 89
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 74
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 146
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 158
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 242
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 118
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 76
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 5,
+            "start_line": 16,
+            "end_line": 74
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 146
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 158
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 242
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 118
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 76
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 10,
+            "start_line": 71,
+            "end_line": 118
+          },
+          {
+            "source_id": "sh_99261d402821f95a",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 76
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.29774c3c35f740a3b1ed7e85e6dff451.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.29774c3c35f740a3b1ed7e85e6dff451.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.29774c3c35f740a3b1ed7e85e6dff451.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fd758cbcbffe40f88c7ad4e3252962a2.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fd758cbcbffe40f88c7ad4e3252962a2.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fd758cbcbffe40f88c7ad4e3252962a2.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fd758cbcbffe40f88c7ad4e3252962a2.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fd758cbcbffe40f88c7ad4e3252962a2.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d764c61dd46043e7a68b7f590a4eeb07.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d764c61dd46043e7a68b7f590a4eeb07.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.d764c61dd46043e7a68b7f590a4eeb07.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_57c534b62a28a969",
+            "page": 1,
+            "start_line": 51,
+            "end_line": 107
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "albert-2013",
+            "query": "blinding",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:deviations"
+          },
+          {
+            "trial_id": "albert-2013",
+            "query": "excluded",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:deviations"
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "query": "blinding",
+        "mode": "any",
+        "limit": 10,
+        "purpose_domain_id": "domain:deviations",
+        "cursor": "sc_f8207cd5c61461b3_10"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.67082e8e61584a9cb1f98c2afc8fc235.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.67082e8e61584a9cb1f98c2afc8fc235.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.67082e8e61584a9cb1f98c2afc8fc235.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.67082e8e61584a9cb1f98c2afc8fc235.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.67082e8e61584a9cb1f98c2afc8fc235.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ec613b6f26f74551a40d9eb401fd2a7e.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ec613b6f26f74551a40d9eb401fd2a7e.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ec613b6f26f74551a40d9eb401fd2a7e.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ec613b6f26f74551a40d9eb401fd2a7e.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "query": "sensitivity imputation",
+        "mode": "any",
+        "limit": 10,
+        "purpose_domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:measurement"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.c5fc5e29cce141ae9a7ef6a2c03bc039.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.c5fc5e29cce141ae9a7ef6a2c03bc039.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.c5fc5e29cce141ae9a7ef6a2c03bc039.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.c5fc5e29cce141ae9a7ef6a2c03bc039.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "domain_id": "domain:selection"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9c6db056f1354dbc9907d30106d35026.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "windows": [
+          {
+            "source_id": "sh_57c534b62a28a969",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 14
+          },
+          {
+            "source_id": "sh_57c534b62a28a969",
+            "page": 1,
+            "start_line": 106,
+            "end_line": 127
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "albert-2013",
+            "query": "analysis plan protocol",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection"
+          },
+          {
+            "trial_id": "albert-2013",
+            "source_id": "sh_57c534b62a28a969",
+            "query": "Roland",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection"
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9c6db056f1354dbc9907d30106d35026.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "albert-2013",
+        "query": "analysis plan protocol",
+        "mode": "any",
+        "limit": 10,
+        "purpose_domain_id": "domain:selection",
+        "cursor": "sc_f6f063db7ae89c36_10"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9c6db056f1354dbc9907d30106d35026.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9c6db056f1354dbc9907d30106d35026.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.9c6db056f1354dbc9907d30106d35026.5"
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 54,
+    "tokens": {
+      "input_tokens": 6481676,
+      "cached_input_tokens": 6032896,
+      "output_tokens": 19589,
+      "reasoning_output_tokens": 1778
+    },
+    "dollars": null
+  },
+  "review_focus": "Assess exact target/result matching and source entailment, official interpretation, material mechanisms and warranted uncertainty. Identify material defects with locators; do not score preferred labels.",
+  "raw_seal": "diagnostics/final-medium-run-20261006/cases/albert-2013/scientific-review-seal"
+}

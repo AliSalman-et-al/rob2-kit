@@ -1,0 +1,32 @@
+{
+  "case": "monaleesa-2",
+  "same_session": "01a10ffe-9508-7380-999e-9b5153798e03",
+  "model": "gpt-6.1-sol",
+  "effort": "medium",
+  "original_terminal": {
+    "returncode": 0,
+    "reason": "no active tool and no observable productive progress for 300 seconds",
+    "session_id": "01a10ffe-9508-7380-999e-9b5153798e03",
+    "elapsed_seconds": 315.4318633520161,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "reason": "Initial proposal idle guard stopped after315.43seconds, before native calls or completed responses; cause unknown, not scientific failure.",
+  "unchanged_initial_state": true,
+  "changes": "Separate output directory with equivalent workspace/home symlinks. Launcher uses supported exec resume for existing session, asserts exactly one session and records continuation telemetry. All runtime, Sources, prompt, config and scientific input bytes unchanged. Timer, loop, hash, evidence and profile guards retained.",
+  "original_frozen_preflight_sha256": "9dc7fb478e25336da21091a5bf08e83d90957ff1ced088f3e2f3f1de5dedc94e",
+  "recovery_frozen_preflight_sha256": "39c99e12e1344f300adb51a6496cc85ec666260f34efff414d27f3ecd2ed4ab1",
+  "recovery_launcher_sha256": "29ee5fc1548c958ff06d296e35a5e1ef2c15eec433d0abdc281752c92bce4267",
+  "initial_session_seals": {
+    "rollout-2026-10-06T11-55-06-01a10ffe-9508-7380-999e-9b5153798e03.jsonl": "3815fa6a841f35ec5592b686dbe5946b1ecfb638acd14405bf7fd48bee4fc66c"
+  },
+  "all_original_attempts_preserved": true,
+  "no_domain_feedback": true,
+  "observed_initial_completed_responses": 0,
+  "interrupted_request_cost": "Unknown; absence of completed usage does not establish zero billing.",
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "paid_recovery_launched": false,
+  "technical_session_sha256": "499992c2f4dcf68bd164f490ad8ad6f5427266f0c3b402b16c3f2771a7e045c6"
+}

@@ -162,10 +162,10 @@ after the gate. Use only this minimal continuation:
 Continue.
 ```
 
-The server computes the overall Trial label after the fifth Domain. It applies
-the deterministic Cochrane rule: all five Low is Low; exactly one Some concerns
-with no High is Some concerns; any High or at least two Some concerns is High.
-The model and the researcher do not override this aggregation.
+The server proposes the overall Trial label after the fifth Domain: all five Low
+is Low; any High is High; other vectors propose Some concerns. Multiple Some
+concerns support High only when their combination substantially lowers confidence
+in this specific Result, with a bound host assessment and rationale (ADR0039).
 
 For every completed run, verify the bundle:
 

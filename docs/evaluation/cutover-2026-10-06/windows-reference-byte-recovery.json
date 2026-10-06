@@ -1,0 +1,18 @@
+{
+  "failed_head": "ea9c02491b0a391c18540438beca92215892b0af",
+  "run": 37439170604,
+  "job": 112188785422,
+  "job_result": "1 failed, 1662 passed, 8 skipped; only test_fixed_pack_inputs_add_current_reference_and_question_context failed",
+  "cause": "Raw UTF-8 CRLF reference embedded by runner versus universal-newline LF translation in test read_text",
+  "change": "Expected full reference now decoded from read_bytes with explicit UTF-8; full-content assertion unchanged",
+  "negative_control": "Emulating CRLF in raw reference bytes reproduced the original assertion failure without modifying source files",
+  "positive_control": "Same emulated CRLF reference passes the corrected existing full-content assertion",
+  "focused_runner_tests": "4 passed in 1.74s",
+  "ruff": "check and format --check pass; 197 files formatted",
+  "ty": "changed test passes",
+  "production_runner_changes": false,
+  "source_bytes_changes": false,
+  "assertion_weakening": false,
+  "extra_paid_cases": false,
+  "failure_log_sha256": "3693451302ddb9757e1af82b3067c9d08255f04324dec35b954a23efb426c689"
+}

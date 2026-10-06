@@ -6,10 +6,13 @@ model loop. The server captures trial sources, validates evidence selections
 against them, applies deterministic RoB 2 logic, records assessment history,
 and exports verifiable bundles.
 
-The v0.10 public contract submits each Domain in one atomic call. Existing
+The v0.11 public contract keeps each Trial's Result choice and reasoning in one
+selection; it replaces separate Result/MissingResult/assessment input collections.
+Each Domain still submits in one atomic call. Existing
 v0.9 workspaces keep their saved assessments. Use the current skill and tool
 contract to resume them. Historical bundles still verify under their recorded
-semantics. See the [v0.10 decision](docs/adr/0036-atomic-domain-submission.md).
+semantics. See the [proposal selection decision](docs/adr/0037-single-trial-proposal-selection.md)
+and [atomic Domain decision](docs/adr/0036-atomic-domain-submission.md).
 
 ## Use rob2-kit
 
@@ -30,13 +33,13 @@ rob2 --help
 ```
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
-try `rob2 --help` again. The package includes the `rob2` command, an 18-tool MCP
+try `rob2 --help` again. The package includes the `rob2` command, a typed native MCP
 server, and the portable `rob2-assess` skill.
 
 To install a wheel instead, use its path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.10.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.11.0-py3-none-any.whl
 ```
 
 ### Prepare a workspace
@@ -89,9 +92,22 @@ For Codex, add this to `~/.codex/config.toml` or a trusted project's
 ```toml
 [mcp_servers.rob2]
 command = "rob2"
-args = ["mcp"]
+args = ["mcp-codex"]
 env = { ROB2_WORKSPACE = "C:/path/to/my-assessment" }
 ```
+
+The supported Codex entrypoint is `rob2 mcp-codex`. It preserves image-bearing
+`render_page` receipts and full schema as text beside the original PNG. Codex CLI
+0.159.0 otherwise prefers structured content and omits that image from model
+input. A native `gpt-6-luna`/medium smoke verified actual image delivery and
+provenance on that version; clinical comprehension and accuracy are unproven.
+Text-only calls and the standard `rob2 mcp` entrypoint are unchanged.
+
+To opt out, use `args = ["mcp"]`. After a host upgrade, verify delivery by checking
+that the native session `render_page` tool output contains an `input_image` and
+that its decoded PNG hash matches the receipt, then check observations against
+private source facts. A returned MCP image alone does not prove model delivery.
+No host-version detection or global configuration mutation is performed.
 
 For Claude Code, run this from the assessment workspace:
 
@@ -161,7 +177,7 @@ rob2 verify-sources C:/path/to/archive.sources.zip
 
 ### Public contract
 
-The server exposes 18 strictly typed MCP tools and the live
+The server exposes the strictly typed MCP tool catalog and the live
 `rob2://current-batch` resource. The generated [public contract](docs/release/public-contract.json)
 records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and
@@ -175,7 +191,7 @@ revision-checked operation.
 
 ```powershell
 uv sync --frozen
-./scripts/verify_v010.ps1
+./scripts/verify_release.ps1
 ```
 
 The verification script runs Ruff, ty, pytest with four workers, public

@@ -14,13 +14,13 @@ from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import pymupdf
 from rapidfuzz.distance import OSA
 
 from ..models import canonical_json_bytes
-from ..workflow_models import SearchReceiptHandle
+from ..workflow_models import DomainSourceReference, SearchReceiptHandle
 from ._state import (
     _SEARCH_PROFILE,
     _canonical_query_text,
@@ -33,8 +33,10 @@ from ._state import (
     _ordered_sources,
     _projection_hash,
     _read,
+    _reading_batch_basis,
     _root,
     _state,
+    _trial_inventory_basis,
     internal_path,
 )
 from .contracts import COUNTERS
@@ -50,12 +52,13 @@ _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
 _TERM_FEEDBACK_MAX_TERMS = 16
 _TERM_FEEDBACK_MAX_SOURCES = 64
-_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.2"
+_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.5"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
 _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v1.0"
-_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.9"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.10"
+_LEGACY_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.9"
 _SEARCH_NORMALIZATION_VERSION = "rob2-kit.search-normalization.v1"
 _SEARCH_RANKING_VERSION = "fts5-bm25-scoped-page-source-tiebreak.v1"
 _LEGACY_SEARCH_PROFILE = "legacy-default-v1"
@@ -114,6 +117,15 @@ def reset_search_caches() -> None:
     _cached_normalized_search_text.cache_clear()
 
 
+def _source_navigation_action(trial_id: str, source_id: str) -> dict[str, Any]:
+    return {
+        "operation": "list_sources",
+        "trial_id": trial_id,
+        "source_id": source_id,
+        "limit": _SOURCE_NAVIGATION_MAX_ENTRIES,
+    }
+
+
 def list_sources(
     workspace: str | Path,
     trial_id: str | None = None,
@@ -146,6 +158,7 @@ def list_sources(
         navigation = _source_navigation(
             source,
             pages,
+            root=root,
             trial_id=trial["id"],
             cursor=cursor,
             limit=limit,
@@ -157,7 +170,11 @@ def list_sources(
     ]
     result: dict[str, Any] = {
         "outcome": "success",
-        "sources": sources,
+        "trial_inventory_identity": trial["identity"],
+        "sources": [
+            {**source, "navigation_action": _source_navigation_action(trial["id"], source["id"])}
+            for source in sources
+        ],
         "conditions": conditions,
         "omissions": trial.get("omissions", []),
     }
@@ -170,13 +187,58 @@ def _source_navigation(
     source: dict[str, Any],
     pages: tuple[str, ...],
     *,
-    trial_id: str | None = None,
+    root: Path,
+    trial_id: str,
     cursor: str | None,
     limit: int,
 ) -> dict[str, Any]:
-    """Return bounded literal navigation over one verified persisted projection."""
+    """Return bounded PDF metadata and literal navigation, without reading coverage."""
 
-    entries = _source_navigation_entries(pages, trial_id=trial_id, source_id=source["id"])
+    bookmarks: list[dict[str, Any]] = []
+    unmapped_bookmarks = 0
+    if source.get("media_type") == "application/pdf":
+        data = internal_path(root, "sources", trial_id, f"{source['id']}.bin").read_bytes()
+        if "sha256:" + hashlib.sha256(data).hexdigest() != source["sha256"]:
+            raise EvidenceIntegrityError("captured Source bytes do not match Canonical identity")
+        with pymupdf.open(stream=data, filetype="pdf") as document:
+            for index, (level, label, page) in enumerate(document.get_toc()):
+                if not label.strip() or not 1 <= page <= len(pages):
+                    unmapped_bookmarks += 1
+                    continue
+                bookmarks.append(
+                    {
+                        "kind": "pdf_bookmark",
+                        "text": label[:_SOURCE_NAVIGATION_MAX_TEXT],
+                        "page": page,
+                        "outline_index": index,
+                        "outline_level": level,
+                        "label_truncated": len(label) > _SOURCE_NAVIGATION_MAX_TEXT,
+                        "label_sha256": "sha256:"
+                        + hashlib.sha256(label.encode("utf-8")).hexdigest(),
+                        "read_action": {
+                            "operation": "read_pages",
+                            "trial_id": trial_id,
+                            "source_id": source["id"],
+                            "pages": [page],
+                        },
+                    }
+                )
+    entries = bookmarks + _source_navigation_entries(
+        pages, trial_id=trial_id, source_id=source["id"]
+    )
+    for entry in entries[len(bookmarks) :]:
+        entry["read_action"] = {
+            "operation": "read_pages",
+            "trial_id": trial_id,
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": entry["page"],
+                    "start_line": entry["start_line"],
+                    "end_line": entry["end_line"],
+                }
+            ],
+        }
     offset = 0
     if cursor is not None:
         payload = _decode_source_navigation_cursor(cursor)
@@ -185,7 +247,9 @@ def _source_navigation(
             or payload.get("projection_hash") != source.get("projection_hash")
             or payload.get("version") != _SOURCE_NAVIGATION_VERSION
         ):
-            raise ValueError("source_navigation_cursor_stale: source or projection changed")
+            raise ValueError(
+                "source_navigation_cursor_stale: Source, projection, or navigation recipe changed"
+            )
         offset = payload["offset"]
         if offset < 0 or offset > len(entries):
             raise ValueError("source_navigation_cursor_expired: request the first page")
@@ -218,6 +282,9 @@ def _source_navigation(
         "source_label": source["label"],
         "logical_path": source["logical_path"],
         "projection_hash": source["projection_hash"],
+        "source_sha256": source["sha256"],
+        "pdf_bookmark_count": len(bookmarks),
+        "unmapped_pdf_bookmark_count": unmapped_bookmarks,
         "navigation_version": _SOURCE_NAVIGATION_VERSION,
         "entries": selected,
         "total_entries": len(entries),
@@ -273,7 +340,7 @@ def _decode_source_navigation_cursor(cursor: str) -> dict[str, Any]:
         or isinstance(payload["offset"], bool)
         or not isinstance(payload["projection_hash"], str)
         or not isinstance(payload["source_id"], str)
-        or payload["version"] != _SOURCE_NAVIGATION_VERSION
+        or not isinstance(payload["version"], str)
     ):
         raise ValueError("source_navigation_cursor_invalid: incomplete cursor")
     return payload
@@ -319,6 +386,7 @@ def _source_navigation_entries(
 
     page_lines = [page.splitlines() for page in pages]
     page_marker = re.compile(r"^(?:page\s+\d+(?:\s+of\s+\d+)?|version\s+\S+)$", re.I)
+    caption = re.compile(r"^(?:figure|table)\s+(?:[a-z]*\d+|[ivx]+)[.:]?\s+\S.+", re.I)
     numbered_heading = re.compile(r"^(?:\d+[.)]\s*|\d+(?:\.\d+)+\s+)[A-Z][^.!?:;]{0,119}$")
     contents_row = re.compile(r"^.{2,180}?\.{2,}\s*\d{1,4}\s*$")
     date_pattern = re.compile(
@@ -484,14 +552,41 @@ def _source_navigation_entries(
                     }
                 )
         for line_number, text in useful:
-            if len(text) > 120 or text.endswith((".", ":", ";", "?", "!")):
+            # PDF extraction can put a section number and title on adjacent lines.
+            # Keep their literal coordinates; this remains a candidate, not a TOC claim.
+            if re.fullmatch(r"\d+(?:\.\d+)*[.)]?", text) and line_number < len(lines):
+                title = lines[line_number].strip()
+                blank_before = line_number == 1 or not lines[line_number - 2].strip()
+                if (
+                    blank_before
+                    and title
+                    and title[0].isupper()
+                    and len(title) <= 120
+                    and len(title.split()) <= 10
+                    and not title.endswith((".", ":", ";", "?", "!"))
+                    and "@" not in title
+                    and ";" not in title
+                ):
+                    entries.append(
+                        {
+                            "text": lines[line_number - 1] + "\n" + lines[line_number],
+                            "page": page_number,
+                            "start_line": line_number,
+                            "end_line": line_number + 1,
+                            "kind": "heading_candidate",
+                        }
+                    )
+            is_caption = caption.match(text) is not None
+            if len(text) > 120 or (not is_caption and text.endswith((".", ":", ";", "?", "!"))):
                 continue
             if "@" in text or ";" in text:
                 continue
             blank_before = line_number == 1 or not lines[line_number - 2].strip()
             blank_after = line_number == len(lines) or not lines[line_number].strip()
-            if not numbered_heading.fullmatch(text) and not (
-                blank_before and blank_after and len(text.split()) <= 10
+            if (
+                not is_caption
+                and not numbered_heading.fullmatch(text)
+                and not (blank_before and blank_after and len(text.split()) <= 10)
             ):
                 continue
             entries.append(
@@ -770,6 +865,7 @@ def _source_navigation_diagnostic(
     source: dict[str, Any] | None,
     pages: tuple[str, ...] | None,
     trial_id: str,
+    root: Path,
 ) -> dict[str, Any] | None:
     """Attach literal source navigation to a scoped lexical miss."""
 
@@ -778,6 +874,7 @@ def _source_navigation_diagnostic(
     navigation = _source_navigation(
         source,
         pages,
+        root=root,
         trial_id=trial_id,
         cursor=None,
         limit=_SOURCE_NAVIGATION_MAX_ENTRIES,
@@ -865,6 +962,30 @@ def search_sources(
         sources = [source for source in sources if source["id"] == source_id]
         if not sources:
             raise ValueError("source is outside the active Trial")
+    unavailable = [
+        source["id"]
+        for source in sources
+        if not internal_path(root, "sources", trial_id, f"{source['id']}.bin").is_file()
+    ]
+    if unavailable:
+        return {
+            "outcome": "condition",
+            "condition": {
+                "code": "captured_source_unavailable",
+                "detail": (
+                    "Captured bytes are unavailable for part of this search scope; no text "
+                    "was searched and no absence receipt was issued. Preserve this limitation. "
+                    "Search available Sources separately by passing source_id to search_sources "
+                    "or independent source-scoped requests to search_sources_batch. Each search "
+                    "still verifies captured bytes and projections; do not infer dossier-wide "
+                    "absence from a narrower search or replace historical captured bytes."
+                ),
+                "unavailable_source_ids": unavailable,
+                "available_source_ids": [
+                    source["id"] for source in sources if source["id"] not in unavailable
+                ],
+            },
+        }
     # FTS is a derivative projection, not evidence in its own right.  Verify
     # every projection this query is about to trust once before reading it.
     # This also makes a damaged FTS cache fail closed instead of returning
@@ -1177,18 +1298,11 @@ def search_sources(
     for candidate in selected_candidates:
         source_id, page = candidate["source_id"], candidate["page"]
         page_text = verified[(trial_id, source_id)][1][page - 1]
-        spans = [
-            (start, end)
-            for start, end in _all_search_match_spans(page_text, normalized_query, mode)
-            if start < candidate["end"] and end > candidate["start"]
-        ]
-        if not spans:
-            spans = [(candidate["start"], candidate["end"])]
-        # Keep the issued candidate's query span as the anchor. The displayed
-        # source window and its reusable Evidence must cover the same bounds.
+        # Candidate coordinates already include the literal delivery window.
+        # Treat it as one bound to retain every grouped anchor and qualifier.
         quote_start, quote_end, hit_candidate_truncated = _search_candidate_window(
             page_text,
-            spans,
+            [(candidate["start"], candidate["end"])],
         )
         if quote_end <= quote_start:
             quote_end = len(page_text)
@@ -1273,7 +1387,7 @@ def search_sources(
         "total_matches": total_matches,
         "truncated": candidate_truncated,
         "condition": condition,
-        "batch_identity": (_read(root, "batch") or {}).get("identity"),
+        "batch_identity": _trial_inventory_basis(_state(root), trial_id),
         "session_id": session_identity,
         "session_handle": session_handle,
         "candidate_count": len(candidates),
@@ -1338,6 +1452,7 @@ def search_sources(
             source=source,
             pages=verified[(trial_id, requested_source_id)][1] if source is not None else None,
             trial_id=trial_id,
+            root=root,
         )
     return {
         "outcome": "success",
@@ -1748,29 +1863,6 @@ def _fts_token_match_spans(text: str, query: str, mode: str) -> list[tuple[int, 
     return [min(candidates)] if candidates else []
 
 
-def _search_match_line_range(
-    text: str,
-    query: str,
-    mode: str,
-    spans: list[tuple[int, int]] | None = None,
-) -> tuple[int, int]:
-    """Map the normalized search span to inclusive lines of the page projection."""
-    if spans is None:
-        spans = _search_match_spans(text, query, mode)
-    if not spans:
-        raise ValueError("search result match is absent from the captured page projection")
-    raw_start = min(start for start, _end in spans)
-    raw_end = max(end for _start, end in spans)
-    line_starts = [0]
-    offset = 0
-    for line in text.splitlines(keepends=True):
-        offset += len(line)
-        line_starts.append(offset)
-    start_line = bisect_right(line_starts, raw_start)
-    end_line = bisect_right(line_starts, max(raw_start, raw_end - 1))
-    return start_line, end_line
-
-
 def _preview_window_bounds(
     text: str, spans: list[tuple[int, int]], radius: int = 120
 ) -> tuple[int, int]:
@@ -1861,13 +1953,6 @@ def _search_candidate_window(
     if len(text[line_start:line_end].encode("utf-8")) <= _SEARCH_CANDIDATE_MAX_BYTES:
         return line_start, line_end, False
     return candidate_start, candidate_end, False
-
-
-def _recomputed_search_hits(
-    pages: dict[str, tuple[str, ...]], query: str, mode: str, limit: int
-) -> list[tuple[str, int]]:
-    """Recompute lexical hits from verified pages, bypassing the persistent FTS cache."""
-    return _recomputed_search_summary(pages, query, mode, limit)[0]
 
 
 def _recomputed_search_summary(
@@ -2449,7 +2534,11 @@ def _session_candidates(
     ordered_source_ids: list[str],
     all_pairs: list[tuple[str, int]],
     profile: str = _SEARCH_PROFILE,
+    candidate_version: str = _SEARCH_CANDIDATE_VERSION,
 ) -> list[dict[str, Any]]:
+    if candidate_version not in {_SEARCH_CANDIDATE_VERSION, _LEGACY_SEARCH_CANDIDATE_VERSION}:
+        raise ValueError("unsupported search candidate recipe")
+    literal_windows = candidate_version == _SEARCH_CANDIDATE_VERSION
     COUNTERS["candidate_reconstructions"] += 1
     # FTS normally returns each page once, but the canonical session must not
     # depend on that implementation detail.  Preserve the first page rank
@@ -2467,8 +2556,8 @@ def _session_candidates(
             raise ValueError(
                 "search match localization failed: FTS hit has no recoverable Source span"
             )
-        # One local line window per cluster; adjacent windows merge, but the
-        # raw coordinates remain the exact boundaries of the merged quote.
+        # Cluster match lines first. The current recipe expands each cluster
+        # before coalescing, so identical delivered windows count only once.
         windows: list[tuple[int, int]] = []
         for start, end in spans:
             first, last, _raw_start, _raw_end = _line_bounds_from_starts(starts, start, end)
@@ -2485,6 +2574,17 @@ def _session_candidates(
             raw_end = starts[min(last, len(starts) - 1)]
             while raw_end > raw_start and text[raw_end - 1] in "\r\n":
                 raw_end -= 1
+            if literal_windows:
+                anchors = [
+                    (start, end) for start, end in spans if start < raw_end and end > raw_start
+                ]
+                left, right, truncated = _search_candidate_window(text, anchors)
+                # Oversized clusters retain their full anchor range for read_pages recovery.
+                if not truncated:
+                    raw_start, raw_end = left, right
+                    while raw_end > raw_start and text[raw_end - 1] in "\r\n":
+                        raw_end -= 1
+                    first, last, _left, _right = _line_bounds(text, raw_start, raw_end)
             candidates.append(
                 {
                     "source_id": source_id,
@@ -2516,11 +2616,28 @@ def _session_candidates(
             )
             smaller = min(prior["end"] - prior["start"], candidate["end"] - candidate["start"])
             strongly_overlaps = smaller > 0 and overlap * 5 >= smaller * 4
-            if same_page and strongly_overlaps:
+            union_bytes = (
+                len(
+                    pages[candidate["source_id"]][candidate["page"] - 1][
+                        min(prior["start"], candidate["start"]) : max(
+                            prior["end"], candidate["end"]
+                        )
+                    ].encode("utf-8")
+                )
+                if same_page and literal_windows
+                else 0
+            )
+            if (
+                same_page
+                and strongly_overlaps
+                and (not literal_windows or union_bytes <= _SEARCH_CANDIDATE_MAX_BYTES)
+            ):
                 prior["start"] = min(prior["start"], candidate["start"])
                 prior["end"] = max(prior["end"], candidate["end"])
                 prior["start_line"] = min(prior["start_line"], candidate["start_line"])
                 prior["end_line"] = max(prior["end_line"], candidate["end_line"])
+                if literal_windows:
+                    prior["cluster"] = min(prior["cluster"], candidate["cluster"])
                 continue
         coalesced.append(candidate)
 
@@ -2682,11 +2799,14 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         or isinstance(receipt.get("returned_material"), bool)
         or receipt["returned_material"] < 0
         or not isinstance(receipt.get("returned_candidates"), list)
-        or receipt.get("batch_identity") != batch.get("identity")
         or not isinstance(sources, list)
         or not isinstance(hits, list)
     ):
         raise ValueError("search receipt shape is corrupt")
+    if receipt.get("batch_identity") != _trial_inventory_basis(_state(root), str(trial_id)):
+        raise ValueError(
+            "search receipt inventory is stale; rerun search_sources on the current Trial inventory"
+        )
     authoritative = {
         source["id"]: source
         for trial in batch.get("trials", [])
@@ -2757,9 +2877,15 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError("search session derivative is corrupt") from error
     spec = session.get("spec") if isinstance(session, dict) else None
+    candidate_version = spec.get("candidate_version") if isinstance(spec, dict) else None
+    if not isinstance(candidate_version, str) or candidate_version not in {
+        _SEARCH_CANDIDATE_VERSION,
+        _LEGACY_SEARCH_CANDIDATE_VERSION,
+    }:
+        raise ValueError("search session configuration is stale or corrupt")
     expected_spec = {
         "version": _SEARCH_SESSION_VERSION,
-        "candidate_version": _SEARCH_CANDIDATE_VERSION,
+        "candidate_version": candidate_version,
         "trial_id": trial_id,
         "sources": sources,
         "query": receipt["normalized_query"],
@@ -2822,6 +2948,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         source_ids,
         all_pairs,
         profile=profile,
+        candidate_version=cast(str, candidate_version),
     )
     if candidates != expected_candidates:
         raise ValueError("search session candidates are stale or corrupt")
@@ -2914,22 +3041,6 @@ def read_pages(
     }
 
 
-def record_read_coverage(
-    workspace: str | Path,
-    trial_id: str,
-    source_id: str,
-    page: int,
-    start_line: int,
-    end_line: int,
-) -> None:
-    """Persist only the numbered range actually delivered by ``read_pages``."""
-
-    record_read_coverage_batch(
-        workspace,
-        [(trial_id, source_id, page, start_line, end_line)],
-    )
-
-
 def record_read_coverage_batch(
     workspace: str | Path,
     ranges: list[tuple[str, str, int, int, int]],
@@ -2956,8 +3067,7 @@ def record_read_coverage_batch(
     phase = _state(root).get("phase")
     if phase not in {"proposal", "assessment"}:
         return
-    batch = _read(root, "batch") or {}
-    batch_id = batch.get("identity")
+    batch_id = _reading_batch_basis(_state(root))
     if not isinstance(batch_id, str):
         raise ValueError("active Batch identity is unavailable")
     with _db(root, "derivative.sqlite3") as connection:
@@ -3126,8 +3236,7 @@ def main_report_read_gaps(
     phase = phase or state.get("phase")
     if phase not in {"proposal", "assessment"}:
         return []
-    batch = _read(root, "batch") or {}
-    batch_id = batch.get("identity")
+    batch_id = _reading_batch_basis(_state(root))
     if not isinstance(batch_id, str):
         return []
     gaps: list[dict[str, Any]] = []
@@ -3190,6 +3299,48 @@ def main_report_read_gaps(
     return gaps
 
 
+def source_reading_status(
+    workspace: str | Path, trial_id: str
+) -> dict[str, Literal["partially_read", "read_complete"]]:
+    """Reuse verified, source-bound delivery receipts across Domain contexts.
+
+    Cached text and a context snapshot are not receipts. These statuses say
+    which lines were returned, never that the model understood or retained them.
+    """
+    root = _root(workspace)
+    state = _state(root)
+    state.get("batch") or {}
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT source_id,page,start_line,end_line FROM page_reads "
+            "WHERE batch_id=? AND phase=? AND trial_id=? ORDER BY start_line,end_line",
+            (_reading_batch_basis(state), state.get("phase"), trial_id),
+        ).fetchall()
+    requested = {
+        (trial_id, row[0])
+        for row in rows
+        if internal_path(root, "sources", trial_id, f"{row[0]}.bin").is_file()
+    }
+    verified = _verified_source_projections(root, requested)
+    result: dict[str, Literal["partially_read", "read_complete"]] = {}
+    for (_, source_id), (_, pages) in verified.items():
+        complete = True
+        for page, text in enumerate(pages, 1):
+            covered = [(row[2], row[3]) for row in rows if row[0] == source_id and row[1] == page]
+            line_count = len(text.splitlines())
+            if not line_count:
+                complete = complete and (0, 0) in covered
+                continue
+            next_line = 1
+            for start, end in covered:
+                if start > next_line:
+                    break
+                next_line = max(next_line, end + 1)
+            complete = complete and next_line > line_count
+        result[source_id] = "read_complete" if complete else "partially_read"
+    return result
+
+
 def main_report_reading_status(
     workspace: str | Path,
     trials: list[dict[str, Any]],
@@ -3201,8 +3352,7 @@ def main_report_reading_status(
     root = _root(workspace)
     _ensure(root)
     gaps = main_report_read_gaps(root, trials, phase=phase)
-    batch = _read(root, "batch") or {}
-    batch_id = batch.get("identity")
+    batch_id = _reading_batch_basis(_state(root))
     result: dict[str, dict[str, Any]] = {}
     with _db(root, "derivative.sqlite3") as connection:
         for trial in trials:
@@ -3980,11 +4130,6 @@ def _normalized_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
     return _normalized_text_with_spans(value)
 
 
-def _normalized_equal(left: str, right: str) -> bool:
-    """Compare text after the Evidence boundary's canonical normalization."""
-    return _normalized_with_spans(left)[0] == _normalized_with_spans(right)[0]
-
-
 def _normalized_contains(material: str, phrase: str) -> bool:
     """Test normalized containment without requiring a unique occurrence.
 
@@ -4194,6 +4339,8 @@ def select_text_evidence(
     source_id: str,
     page: int,
     selected_text: str,
+    *,
+    delivered_page_only: bool = False,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -4217,75 +4364,116 @@ def select_text_evidence(
     if not normalized_selection:
         raise ValueError(invalid_selection)
 
-    def matches(page_text: str) -> tuple[str, list[tuple[int, int]], list[int]]:
+    def matches(page_text: str) -> list[tuple[int, int]]:
         normalized_text, spans = _normalized_with_spans(page_text)
-        starts: list[int] = []
-        offset = 0
-        while True:
-            start = normalized_text.find(normalized_selection, offset)
-            if start < 0:
-                break
-            starts.append(start)
-            offset = start + 1
-        if starts:
-            return page_text, spans, starts
 
-        # Search and Evidence share line-wrap dehyphenation, but a model may
-        # copy a semantic spelling such as ``multi-stage`` where the raw page
-        # has ``multi-\nstage``. Retry only against the non-dehyphenated page
-        # stream, where a hyphen-plus-line-break becomes a space. This does not
-        # make ordinary punctuation optional. Unwrapped words and paraphrases
-        # still fail.
+        def occurrences(
+            stream: str, needle: str, mapping: list[tuple[int, int]]
+        ) -> list[tuple[int, int]]:
+            found: list[tuple[int, int]] = []
+            offset = 0
+            while True:
+                position = stream.find(needle, offset)
+                if position < 0:
+                    break
+                found.append((mapping[position][0], mapping[position + len(needle) - 1][1]))
+                offset = position + 1
+            return found
+
+        primary = occurrences(normalized_text, normalized_selection, spans)
+        if primary and not delivered_page_only:
+            return primary
         wrapped_text, wrapped_spans = _normalized_text_with_spans(
             page_text, dehyphenate_line_ends=False
         )
         wrapped_selection, _ = _normalized_text_with_spans(
             selected_text, dehyphenate_line_ends=False
         )
+        hyphens = [match.start() for match in re.finditer(r"(?<=\w)-(?=\w)", wrapped_selection)]
+        if not hyphens:
+            return primary
         line_wrap_selection = re.sub(r"(?<=\w)-(?=\w)", " ", wrapped_selection)
-        if line_wrap_selection == wrapped_selection:
-            return page_text, spans, starts
+        fallback: list[tuple[int, int]] = []
         offset = 0
         while True:
-            start = wrapped_text.find(line_wrap_selection, offset)
-            if start < 0:
+            position = wrapped_text.find(line_wrap_selection, offset)
+            if position < 0:
                 break
-            starts.append(start)
-            offset = start + 1
-        if starts:
-            return page_text, wrapped_spans, starts
-        return page_text, spans, starts
+            # Native matching permits a typed semantic hyphen only where the
+            # Source itself contains a physical hyphen followed by a line break.
+            # Plain spaces cannot warrant inserted punctuation or numeric ranges.
+            if not delivered_page_only or all(
+                re.fullmatch(
+                    r"[-\u00ad][^\S\r\n]*\r?\n\s*",
+                    page_text[slice(*wrapped_spans[position + index])],
+                )
+                for index in hyphens
+            ):
+                fallback.append(
+                    (
+                        wrapped_spans[position][0],
+                        wrapped_spans[position + len(line_wrap_selection) - 1][1],
+                    )
+                )
+            offset = position + 1
+        # Different presentation streams may identify the same physical passage.
+        # Native uniqueness includes all allowed streams, not only the first hit.
+        return sorted(set(primary + fallback)) if delivered_page_only else fallback
 
     if page <= source["page_count"]:
-        text, spans, starts = matches(pages[page - 1])
+        text = pages[page - 1]
+        selections = matches(text)
     else:
-        text, spans, starts = "", [], []
+        text, selections = "", []
     # Models occasionally carry the printed page label forward instead of the
     # 1-based source page index.  A unique exact match elsewhere in this same
     # verified projection is still unambiguous evidence: canonicalize to the
     # actual page rather than making the caller rediscover the page number.
-    if not starts:
-        candidates: list[tuple[int, list[tuple[int, int]], list[int]]] = []
+    if not selections and not delivered_page_only:
+        candidates: list[tuple[int, list[tuple[int, int]]]] = []
         occurrence_count = 0
         for candidate_page, candidate_text in enumerate(pages, 1):
             if candidate_page == page and page <= source["page_count"]:
                 continue
-            _, candidate_spans, candidate_starts = matches(candidate_text)
-            occurrence_count += len(candidate_starts)
-            if candidate_starts:
-                candidates.append((candidate_page, candidate_spans, candidate_starts))
+            candidate_selections = matches(candidate_text)
+            occurrence_count += len(candidate_selections)
+            if candidate_selections:
+                candidates.append((candidate_page, candidate_selections))
         if occurrence_count == 1:
-            page, spans, starts = candidates[0]
+            page, selections = candidates[0]
             text = pages[page - 1]
     # Caller supplied offsets are a second, unstable interpretation of page
     # text.  The server finds the one normalized occurrence and rejects ambiguity.
-    if not starts:
+    if not selections:
         raise ValueError(invalid_selection)
-    if len(starts) != 1:
+    if len(selections) != 1:
+        if delivered_page_only:
+            raise ValueError(
+                f"selected text is ambiguous on physical page {page}; copy a longer unique "
+                "contiguous quote with distinguishing context from read_pages"
+            )
         raise ValueError("selected text is ambiguous; select a unique passage")
-    start = spans[starts[0]][0]
-    end = spans[starts[0] + len(normalized_selection) - 1][1]
+    start, end = selections[0]
     start_line, end_line, _raw_start, _raw_end = _line_bounds(text, start, end)
+    if delivered_page_only:
+        state = _state(root)
+        with _db(root, "derivative.sqlite3") as connection:
+            ranges = connection.execute(
+                "SELECT start_line,end_line FROM page_reads "
+                "WHERE batch_id=? AND trial_id=? AND source_id=? AND page=? "
+                "ORDER BY start_line,end_line",
+                (_reading_batch_basis(state), trial_id, source_id, page),
+            ).fetchall()
+        next_line = start_line
+        for first, last in ranges:
+            if first > next_line:
+                break
+            next_line = max(next_line, last + 1)
+        if next_line <= end_line:
+            raise ValueError(
+                "selected quote was not fully delivered by read_pages; read this Source's "
+                f"physical page {page}, lines {start_line}-{end_line}, then copy the quote"
+            )
     return {
         "outcome": "success",
         "evidence": _evidence(
@@ -4621,3 +4809,63 @@ def select_visual_evidence(
             evidence,
         ),
     }
+
+
+def source_reference_resolver(
+    workspace: str | Path, trial_id: str
+) -> Callable[["DomainSourceReference"], str]:
+    """Reuse existing text/visual selectors for compact current-Trial references."""
+    from ..workflow_models import SourceQuoteReference, VisualEvidenceReference, WorkingSourceRange
+    from .source_handles import resolve_source_handle
+
+    handles: dict[WorkingSourceRange | SourceQuoteReference | VisualEvidenceReference, str] = {}
+
+    def resolve(
+        reference: str | WorkingSourceRange | SourceQuoteReference | VisualEvidenceReference,
+    ) -> str:
+        if isinstance(reference, str):
+            return reference
+        if reference not in handles:
+            if isinstance(reference, VisualEvidenceReference):
+                with _db(_root(workspace), "derivative.sqlite3") as connection:
+                    delivery = connection.execute(
+                        "SELECT source_id FROM visual_deliveries WHERE identity=? AND trial_id=?",
+                        (reference.delivery_receipt, trial_id),
+                    ).fetchone()
+                if delivery is None:
+                    raise ValueError(
+                        "visual Evidence requires a current-Trial ImageContent receipt"
+                    )
+                selected = select_visual_evidence(
+                    workspace,
+                    trial_id,
+                    delivery[0],
+                    reference.delivery_receipt,
+                    reference.transcription,
+                    list(reference.region),
+                    reference.uncertainty,
+                )
+            else:
+                source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
+                if isinstance(reference, SourceQuoteReference):
+                    selected = select_text_evidence(
+                        workspace,
+                        trial_id,
+                        source_id,
+                        reference.page,
+                        reference.selected_text,
+                        delivered_page_only=True,
+                    )
+                else:
+                    selected = select_text_evidence_by_lines(
+                        workspace,
+                        trial_id,
+                        source_id,
+                        reference.page,
+                        reference.start_line,
+                        reference.end_line,
+                    )
+            handles[reference] = selected["evidence"]["handle"]
+        return handles[reference]
+
+    return resolve

@@ -4,6 +4,8 @@ import subprocess
 from collections import Counter
 from pathlib import Path
 
+import pytest
+
 from scripts.render_d3_card_prompt_contrast import (
     TESTED_D3_PROMPT_CANDIDATE,
     _arm_context,
@@ -61,6 +63,15 @@ def test_run_plan_pairs_two_models_at_three_repeats() -> None:
 
 
 def test_arms_use_the_pinned_generic_and_frozen_candidate_prompts() -> None:
+    available = subprocess.run(
+        ["git", "cat-file", "-e", "8fa90ed5aec80de8bfc5dfb55e480b7a38f65dd8^{commit}"],
+        cwd=ROOT,
+        capture_output=True,
+    )
+    if available.returncode:
+        pytest.skip(
+            "Historical contrast requires the preserved 8fa90ed commit, absent from this checkout."
+        )
     baseline_source = subprocess.run(
         [
             "git",

@@ -1,0 +1,15 @@
+{
+  "candidate_head": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "case": "albert-2013",
+  "paid_inference": false,
+  "original_failed_attempt_preserved": true,
+  "before_phase": "ready_to_finalize",
+  "after_phase": "finalized",
+  "answers_and_closed_assessment_unchanged": true,
+  "artifact": "diagnostics/final-medium-run-20261006/cases/albert-2013/workspace-run/.rob2-kit/finalized/3d4c0fde9a506d7388c5216e0e08904affa4a7372e61ac3dca88ade7a98770f1.rob2.zip",
+  "sha256": "811587793f2bdd1435f03745da1f33ea25888d40ab79e9372dd341bccf3773ad",
+  "product_verifier": true,
+  "standalone_verifier_exit": 0,
+  "scientific_support_certified": false,
+  "scope": "Native host-only finalization recovery for reviewed stale verifier predicate; no answers, basis roles, source bytes or Result rewritten."
+}

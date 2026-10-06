@@ -1,69 +1,95 @@
 # Specify the Result
 
 Use this reference while choosing and constructing each Proposal Result. Use the
-live `validate_proposal` schema for field shapes; `save_proposal` consumes the
+live `validate_proposal` schema for field shapes. Submit one choice with its reasoning per Trial in
+`selections`; `save_proposal` consumes the
 receipt returned by that call.
 
 ## Construct the request
+
+Construct the scientific card before sending it. A comparative `estimate`,
+`effect_measure` and optional `precision` are source strings. Selected narrative
+or figure handles belong in `source_passages`; `candidate.evidence` is only for advanced typed
+proof objects. Handles already carry record-kind/source metadata, but cannot
+supply scientific scope, clarity, units or uncertainty.
+
+For `exact`, `candidate.clarity` requires eight explicit facets: `outcome_definition`,
+`measurement`, `time_point`, `analysis_population`, `comparison_groups`,
+`effect_measure`, `source_table_meaning` and `eligible_result_choice`. Each accepts
+`specified`, `unclear`, `unavailable` or `conflicting`; exact requires every facet
+specified. Do not fill these from matching numbers or treat them as defaults.
+An optional group value needs separate `group_id`, `value` and `unit`, supported
+by the source. `statistic` is an optional source label (string or null). Timing value and unit must be given
+together or both omitted. `source_passages` is the one shared citation array;
+`unknowns` a string array, and `counterevidence` an object array or `[]`.
+
+Use `candidate: null` with grounded `missing_facts` only when no complete comparative
+candidate can proceed. Unknown scope facts about an existing candidate go in the
+selection's `unknowns`; they are not another selection for the same Trial. Construction feedback groups repeated defects by record field, with counts
+and missing fields, so independent failures remain visible. A reading receipt
+repair is separate: satisfy its exact pending source ranges before validation
+can complete. Structural acceptance does not settle source entailment.
 
 This fictional example shows the shape of one complete `validate_proposal` request
 for an assessable comparative Result. It assumes supporting Evidence has already
 been selected. Replace every example fact and identifier with information from
 the current Trial. Use the current `expected_revision` from `get_status` and
 same-Trial Evidence handles returned by the tools. Choose `relation` and
-`applicability` from inspected Sources; the example values are not defaults.
+`design` from inspected Sources; the example values are not defaults.
 The live schema remains authoritative. Schema validity alone does not establish
 Evidence support or scientific correctness.
 
 ```json
 {
-	"results": [
-		{
-			"kind": "assessable",
-			"trial_id": "fictional_quiz_trial",
-			"relation": "narrower",
-			"relation_rationale": "The reported mean difference is limited to learners with observed quiz scores, while the assignment target includes all randomized learners.",
-			"applicability": {
-				"design": "individual_parallel",
-				"rationale": "Learners were individually randomized to two parallel teaching groups.",
-				"evidence": ["eh_0000000000000001"]
-			},
-			"target": {
-				"measurement": {"method": "Number of correct answers on the course quiz"},
-				"time_point_or_window": {"kind": "quantified", "description": "15 days after randomization", "value": "15", "unit": "days"},
-				"comparison_groups": [
-					{"id": "practice", "assignment": "Spaced practice"},
-					{"id": "review", "assignment": "Single review session"}
-				],
-				"baseline_subgroup": null,
-				"intended_effect_measure": "Mean difference"
-			},
-			"reported": {
-				"form": "comparative_effect",
-				"effect_measure": "Mean difference",
-				"estimate": "2.3",
-				"analysis_population": "Randomized learners with observed course quiz scores; handling of learners without observed scores is not reported.",
-				"endpoint": {"name": "Course quiz score"}
-			},
-			"passage_refs": ["eh_0000000000000001"]
-		}
-	],
-	"assessments": [
-		{
-			"trial_id": "fictional_quiz_trial",
-			"evidence_basis": ["eh_0000000000000001"],
-			"scope_justification": "The selected passage supports the reported quiz endpoint at 15 days, which is the target time point; the observed-score restriction makes the relation narrower.",
-			"population_justification": "The target is all randomized learners. The reported analysis includes learners with observed scores, while exclusions and missing observations are not fully reported.",
-			"unknowns": ["The report does not establish how learners without observed scores were handled."],
-			"counterevidence": [
-				{
-					"evidence": "eh_0000000000000002",
-					"implication": "A separate fictional report states that learners without observed scores were excluded after randomization, which conflicts with treating the reported population as all randomized learners."
-				}
-			]
-		}
-	],
-	"expected_revision": 7
+  "selections": [
+    {
+      "trial_id": "fictional_quiz_trial",
+      "relation": "narrower",
+      "candidate": {
+        "design": "individual_parallel",
+        "design_rationale": "Learners were individually randomized to two parallel teaching groups.",
+        "design_evidence": [
+          "eh_0000000000000001"
+        ],
+        "target_measurement": "Number of correct answers on the course quiz",
+        "target_window": "15 days after randomization",
+        "comparison_groups": [
+          {
+            "id": "practice",
+            "assignment": "Spaced practice"
+          },
+          {
+            "id": "review",
+            "assignment": "Single review session"
+          }
+        ],
+        "baseline_subgroup": null,
+        "intended_effect_measure": "Mean difference",
+        "reported_outcome": "Course quiz score",
+        "reported_definition": null,
+        "analysis_population": "Randomized learners with observed course quiz scores; handling of learners without observed scores is not reported.",
+        "effect_measure": "Mean difference",
+        "estimate": "2.3",
+        "target_time_value": "15",
+        "target_time_unit": "days"
+      },
+      "scope_rationale": "The reported mean difference is limited to learners with observed quiz scores, while the assignment target includes all randomized learners. The selected passage supports the reported quiz endpoint at 15 days, which is the target time point; the observed-score restriction makes the relation narrower.",
+      "population_rationale": "The target is all randomized learners. The reported analysis includes learners with observed scores, while exclusions and missing observations are not fully reported.",
+      "source_passages": [
+        "eh_0000000000000001"
+      ],
+      "unknowns": [
+        "The report does not establish how learners without observed scores were handled."
+      ],
+      "counterevidence": [
+        {
+          "evidence": "eh_0000000000000002",
+          "implication": "A separate fictional report states that learners without observed scores were excluded after randomization, which conflicts with treating the reported population as all randomized learners."
+        }
+      ]
+    }
+  ],
+  "expected_revision": 7
 }
 ```
 
@@ -72,70 +98,89 @@ After a successful validation call, save only its receipt. Copy the
 Result cards. The server retains the validated draft and its audit identity:
 
 ```json
-{"expected_revision": 8}
-```
-
-For a group-bound Result, use one `group_values` array and keep every value as
-its own source string:
-
-```json
 {
-	"form": "group_bound_values",
-	"analysis_population": "All randomized learners with quiz results at day 15.",
-	"endpoint": {"name": "Course quiz score"},
-	"group_values": [
-		{"group_id": "practice", "statistic": "mean", "value": "18.4", "unit": "points"},
-		{"group_id": "review", "statistic": "mean", "value": "16.1", "unit": "points"}
-	]
+  "expected_revision": 8
 }
 ```
 
-For an unavailable Result, provide a concrete missing fact and an assessment
-with a missing-fact justification. Use an intake-condition basis only when the
+For a group-bound Result, replace the comparative fields with the following
+scientific fields in the complete card; omit `effect_measure`, `estimate`, and
+`precision`. Keep every value as its own source string:
+
+```json
+{
+  "analysis_population": "All randomized learners with quiz results at day 15.",
+  "group_values": [
+    {
+      "group_id": "practice",
+      "statistic": "mean",
+      "value": "18.4",
+      "unit": "points"
+    },
+    {
+      "group_id": "review",
+      "statistic": "mean",
+      "value": "16.1",
+      "unit": "points"
+    }
+  ],
+  "reported_outcome": "Course quiz score"
+}
+```
+
+Keep `target.comparison_groups` and `reported.group_values` limited to the
+requested comparison. Other arms can remain in the cited Source and context,
+but do not add them to the assessment target merely for completeness. A requested
+joint comparison can include multiple arms; this is not a two-arm restriction.
+The saved card, not a narrower verbal summary, defines the groups assessed.
+
+For an unavailable Result, use one selection with `candidate: null`, a concrete
+source-grounded missing fact and `scope_rationale` explaining why it prevents a
+complete candidate. Use an intake-condition basis only when the
 captured Trial has no supported Sources:
 
 ```json
 {
-	"results": [
-		{
-			"kind": "unavailable",
-			"trial_id": "fictional_quiz_trial",
-			"relation": "unavailable",
-			"missing_facts": [
-				{
-					"fact": "Quiz result at 15 days after randomization",
-					"basis": {"kind": "missing_reporting", "evidence": "eh_0000000000000001"}
-				}
-			]
-		}
-	],
-	"assessments": [
-		{
-			"trial_id": "fictional_quiz_trial",
-			"evidence_basis": ["eh_0000000000000001"],
-			"missing_fact_justification": "The selected passage captures the missing report; it does not support an invented estimate.",
-			"unknowns": [],
-			"counterevidence": []
-		}
-	],
-	"expected_revision": 7
+  "selections": [
+    {
+      "trial_id": "fictional_quiz_trial",
+      "relation": "unavailable",
+      "candidate": null,
+      "scope_rationale": "The selected passage captures the missing report; it does not support an invented estimate.",
+      "population_rationale": null,
+      "source_passages": [
+        "eh_0000000000000001"
+      ],
+      "unknowns": [],
+      "counterevidence": [],
+      "missing_facts": [
+        {
+          "fact": "Quiz result at 15 days after randomization",
+          "basis": {
+            "kind": "missing_reporting",
+            "evidence": "eh_0000000000000001"
+          }
+        }
+      ]
+    }
+  ],
+  "expected_revision": 7
 }
 ```
 
 For numeric timing, include the description as well as the value and unit. It
 preserves the time origin or window, for example:
 
-`{"kind": "quantified", "description": "15 days after randomization", "value": "15", "unit": "days"}`
+`{"target_window": "15 days after randomization", "target_time_value": "15", "target_time_unit": "days"}`
 
-Use `described` when the source gives a timing window in words:
+For a target window described in words, omit numeric timing fields:
 
-`{"kind": "described", "description": "During the course"}`
+`{"target_window": "During the course"}`
 
 ## Establish pack applicability
 
 Identify the unit of randomization and whether the trial uses a parallel or
-crossover design. Record `applicability` with a concise rationale and inspected
-Evidence from this Trial. Set `design` to `individual_parallel`,
+crossover design. Record `design_rationale` and inspected `design_evidence` from this Trial. Set `design` to `individual_parallel`,
 `cluster_randomized`, or `crossover` when Sources establish that design. Each
 known design requires same-Trial Evidence handles. Use `design:"unclear"` when
 the design remains unresolved. The server determines pack support from `design`.
@@ -189,41 +234,57 @@ review identifies a better candidate.
 The target records the requested measurement, time, randomized groups, an
 optional baseline-defined subgroup, and intended effect measure. The server
 anchors target to randomized participants, qualified by `baseline_subgroup` when
-supplied. `reported.analysis_population` holds estimate participants and
-reported exclusions. Describe every complete randomized arm in
-`comparison_groups`. `measurement.method` is ascertainment or definition, not a
+supplied. `analysis_population` holds estimate participants and
+reported exclusions. Describe the randomized arms in the requested comparison
+in `comparison_groups`, preserving legitimate joint multi-arm targets. `target_measurement` is ascertainment or definition, not a
 summary statistic.
 
-Include the passages supporting the population summary in passage_refs,
+Include the passages supporting the population summary in `source_passages`,
 including separate passages for eligibility criteria and analyzed denominators.
+Trial eligibility defines who entered this Trial. With no baseline subgroup, the
+target is all participants randomized in that Trial, not everyone in an external
+disease population. Eligibility alone does not make its all-randomized analysis
+`narrower`. Compare analysis restrictions against the specified target; discuss
+transport beyond trial eligibility separately. A genuinely broader external
+target must be independently specified, not inferred from a disease label.
 
 The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
 captured outcome, target metric, and `effect_of_interest:"assignment"`.
 
 For every assessable Result, explain the complete correspondence in
-`relation_rationale`, including population, outcome, measurement, time,
+`scope_rationale`, including population, outcome, measurement, time,
 comparison, and analysis scope. Matching endpoint names alone do not establish
-exactness. State any material difference. For other assessable Results:
+exactness. State any material difference. For `exact`, submit `clarity` with all
+eight facets supported as `specified`; omitting it records all facets as unclear
+and cannot establish exactness. For a non-exact Result, identify which facets
+remain unclear, unavailable, or conflicting. For other assessable Results:
 
 - `broader`: the reported event, population, or time scope is a superset;
-- `narrower`: it is a subset or adds restrictions;
+- `narrower`: it is a subset or adds restrictions relative to the specified target;
 - `component`: it is one constituent of the requested composite or category;
 - `related`: the constructs overlap without one of those ordered relations.
 
 Keep Source-owned endpoint names and quantities bound to exact selected Evidence
-even when their scientific scope is equivalent.
+even when their scientific scope is equivalent. `candidate.reported_outcome`
+already holds the raw quantitative-anchor endpoint label; it is not a normalized
+interpretation field. Explain equivalent wording and separately sourced event
+criteria in `scope_rationale` with their citations. `candidate.precision` holds
+the verbatim interval expression (including stated confidence level and units),
+not a reformatted explanation. Target measurement/window, analysis-population
+summary and scope/population reasoning remain interpreted, evidence-grounded
+prose; they need not imitate source wording. Literal binding failure by itself
+does not establish scientifically incorrect meaning.
 
 ## Preserve the Source-owned quantities
 
-Choose one reported form for a comparative Result:
+Supply `effect_measure` and `estimate` for a between-group effect, or omit
+both and supply complete `group_values` for every randomized group. The server
+derives the canonical form. A category profile remains descriptive and cannot
+proceed to comparative assessment without the comparator result.
 
-- `comparative_effect` for a between-group estimate;
-- `group_bound_values` for one complete statistic, value, and unit per randomized
-  group.
-
-Use the Source endpoint label in `endpoint.name`. Include
-`endpoint.definition` only when one selected passage explicitly ties the exact
+Use the Source endpoint label in `reported_outcome`. Include
+`reported_definition` only when one selected passage explicitly ties the exact
 complete definition to that label; otherwise omit it.
 
 Keep the endpoint name and at least one complete quantitative tuple in the same
@@ -232,7 +293,7 @@ statistic/value/unit group value, or complete category axes plus cell value.
 Precision is supported separately. Do not splice an endpoint name from one
 passage with all quantities from another.
 
-For a continued or split table, use top-level `evidence` with one
+For a continued or split table, use `candidate.evidence` with one
 `table_multispan` object instead. Select each literal fragment separately and
 give it one role: `title_or_definition`, `header`, `quantitative_row`, `unit`,
 or `footnote`. It needs at least distinct `header` and `quantitative_row`
@@ -245,7 +306,10 @@ row label such as `Total`.
 
 Keep quantities as Source strings. Put a comparative estimate's reported
 interval in `precision`. Keep a group statistic's label, value, and unit in
-their separate fields. Do not invent statistics or units. For a
+their separate fields. Omit `statistic` or use `statistic: null` when the source
+gives a group value but does not identify its statistic; keep `source_table_meaning` unclear and
+explain the unresolved meaning in the Result rationale. A nearby verb such as
+“changed” is not a statistic label. Do not invent statistics or units. For a
 comparative effect, omit optional `group_values` unless the Source states one
 unambiguous statistic and unit for every target group. Reported group IDs are
 structural references and must match target group IDs.

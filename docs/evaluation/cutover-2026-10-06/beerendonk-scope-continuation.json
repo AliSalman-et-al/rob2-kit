@@ -1,0 +1,39 @@
+{
+  "case": "beerendonk-1999",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10fed-91df-76f3-a3cc-5ef02d4686a7",
+    "elapsed_seconds": 271.75836954201804,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "scope_review_reference": "sha256:8b7a4e3a1b66facfff8141d6aa8f5b6b828e6153b283a8026f56f6c68a2a1370",
+  "scope_relation": "component",
+  "source_review": [
+    {
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_sha256": "sha256:28b0f081ea84de41a82b55d2ff4cb07f34155e37475b02751220b66885c6dcff",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "checked": "Original requested state-and-trait STAI family and absence of primary designation retained. Native rendered page5Table3: state luteal estimatedmeanSEM44.2(2.4)restrictedvs39.7(2.1)normal, baseline38.9(2.3)vs36.2(2.0); pG.13 and pTG.48 concern across-occasion group and interaction effects, not luteal-only testing. TraitTable4competing values35.3(2.0)/33.2(1.8)baseline and38.1(2.2)/34.9(2.0)luteal preserved; pG.25/pTG.46. Native rendered page3Table1 confirms57/62randomized,21/29excluded and36/33analyzed. Textdefines20-item20\u201380state/trait, baselinebefore randomization10daysbeforeovarian stimulation andluteal12daysafterovumpickup beforepregnancy-test knowledge. Repeated-model factors and compliant-cycle-completer population retained, not recast all-randomized."
+    }
+  ],
+  "retained_qualifiers": [
+    "Component mapping explicitly approved to Table3luteal state means; no uniquejoint scalar or primarydesignation invented.",
+    "Trait, baseline and time-by-group alternatives remain disclosed; no exact human-reference alignment claim.",
+    "No calculated difference, confidenceinterval or luteal-only pvalue invented;50excluded fromanalysis not certified as50unobserved endpoints."
+  ],
+  "assessment_running": true,
+  "no_domain_feedback": true,
+  "source_and_result_unchanged": true,
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6"
+}

@@ -1,0 +1,19 @@
+{
+  "status": "installed release verification passed",
+  "candidate_code_commit": "98f3ea71902e45b81d7a8b4b1cd5e6197e416373",
+  "wheel": ".release-dist/wheel-ek__46qa/rob2_kit-0.11.0-py3-none-any.whl",
+  "bytes": 461749,
+  "sha256": "8c03c605ad2c34f9605cd050af882cf665f14ffdde2cfbc1d9e7860e8491325c",
+  "scientific_pack_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+  "scope": "Fresh wheel installed through normal release verifier; all five complete official projections passed. Independent review and full regression remain open; no paid Medium launch.",
+  "previous_audits": [
+    {
+      "status": "installed release verification passed",
+      "wheel": ".release-dist/wheel-1xm4cl7k/rob2_kit-0.11.0-py3-none-any.whl",
+      "bytes": 462573,
+      "sha256": "f02ec2a8a1c607bedd3d712314bbf80ad8de0977d7c6c841e805f076d74cdb41",
+      "scientific_pack_hash": "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08",
+      "scope": "Fresh wheel installed and normal release verifier exercised all five official Domain projections. Independent scientific review and clean final regression pending. No paid Medium launch."
+    }
+  ]
+}

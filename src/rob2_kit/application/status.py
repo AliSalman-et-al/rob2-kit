@@ -4,16 +4,22 @@ from typing import Any
 from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
-from .evidence import _evidence_catalog, main_report_reading_status
+from .evidence import (
+    _evidence_catalog,
+    _source_navigation_action,
+    main_report_reading_status,
+    source_reading_status,
+)
+from .result_scope import result_scope_review
 from .working import investigation_projection, working_checkpoint_status
 
 _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
 
-def _selected_evidence(workspace: Path) -> list[dict[str, Any]]:
+def _selected_evidence(workspace: Path, *, include_text: bool = True) -> list[dict[str, Any]]:
     """Expose only the selected-material records needed to resume a proposal."""
     selected: list[dict[str, Any]] = []
-    remaining = _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+    remaining = _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET if include_text else 0
     for item in _evidence_catalog(workspace).values():
         if item.get("kind") == "narrative":
             keys = (
@@ -142,7 +148,7 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
     return {"counts": counts, "wording": wording}
 
 
-def get_status(workspace: str | Path) -> dict[str, Any]:
+def get_status(workspace: str | Path, *, include_evidence_text: bool = False) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
@@ -209,6 +215,61 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         if isinstance(active_record, dict)
         else None
     )
+    from .companion_sources import captured_companions
+    from .source_handles import source_handle
+
+    companions = []
+    for candidate in captured_companions(root, state):
+        trial_id = candidate["trial_id"]
+        admission = next(
+            (
+                a
+                for a in state.get("source_admissions", [])
+                if a["candidate"]["identity"] == candidate["identity"]
+            ),
+            None,
+        )
+        admitted = admission is not None
+        source_ids = admission["source_ids"] if admitted else []
+        reading = source_reading_status(root, trial_id) if admitted else {}
+        open_trial = state.get("phase") == "assessment" and dispositions.get(trial_id) in {
+            "pending",
+            "reviewable",
+        }
+        if not open_trial:
+            continue
+        companions.append(
+            {
+                "candidate_identity": candidate["identity"],
+                "trial_id": trial_id,
+                "document_staged": True,
+                "admitted_to_active_batch": admitted,
+                "source_ids": [source_handle(s) for s in source_ids],
+                "navigation_action": _source_navigation_action(trial_id, source_ids[0])
+                if admitted
+                else None,
+                "reading_status": reading.get(source_ids[0], "unread")
+                if admitted
+                else "not_admitted",
+                "next_action": (
+                    {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "source_id": source_handle(source_ids[0]),
+                        "pages": [1],
+                    }
+                    if admitted and reading.get(source_ids[0]) != "read_complete"
+                    else {
+                        "operation": "admit_companion_source",
+                        "trial_id": trial_id,
+                        "candidate_identity": candidate["identity"],
+                        "expected_revision": state["revision"],
+                    }
+                    if not admitted and open_trial
+                    else None
+                ),
+            }
+        )
     return _result(
         "success",
         state,
@@ -224,8 +285,18 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
             active_question_ids=active_question_ids,
         ),
         trial_review=_current_trial_review(state),
-        selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
+        selected_evidence=(
+            _selected_evidence(root, include_text=include_evidence_text)
+            if state.get("phase") == "proposal"
+            else []
+        ),
         main_report_reading=main_report_reading,
+        companion_sources=companions,
+        scope_review=(
+            result_scope_review((state.get("proposal") or {}).get("payload", {}).get("results", []))
+            if state.get("phase") == "proposal"
+            else []
+        ),
         conditions=conditions,
         authoritative_wording=public["wording"],
         counters=dict(COUNTERS),
@@ -272,10 +343,12 @@ def _active_trial_and_domain(state: dict[str, Any]) -> tuple[str | None, str | N
 
 
 def _current_trial_review(state: dict[str, Any]) -> dict[str, Any] | None:
+    from .trials import _review_record_is_current
+
     trial_id, _ = _active_trial_and_domain(state)
     reviews = state.get("trial_reviews")
     review = reviews.get(trial_id) if trial_id is not None and isinstance(reviews, dict) else None
-    return review if isinstance(review, dict) else None
+    return review if isinstance(review, dict) and _review_record_is_current(state, review) else None
 
 
 def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
@@ -293,14 +366,14 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "operation": "prepare_batch",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["requested_outcome", "trial_labels"],
+            "caller_inputs": ["requested_outcome", "trial_labels", "acquire_registry_documents"],
         }
     if phase == "proposal":
         return {
             "operation": "validate_proposal",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["results", "assessments"],
+            "caller_inputs": ["selections"],
         }
     if phase == "assessment":
         trial_id, domain_id = _active_trial_and_domain(state)

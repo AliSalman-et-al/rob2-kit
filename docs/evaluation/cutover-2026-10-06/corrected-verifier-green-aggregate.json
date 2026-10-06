@@ -1,0 +1,21 @@
+{
+  "candidate_head": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "scope": "Complete clean corrected-verifier regression aggregate; isolated detached worktree, pytest -q -n4",
+  "passed": 1644,
+  "skipped": 8,
+  "failed": 0,
+  "exit": 0,
+  "seconds": 3310.29,
+  "log_sha256": "bd6f150673239b324c454f40a303426cfb8af1ea6a13e6447daaa0575774e316",
+  "junit_sha256": "a5b961d82501e176f296876d54e0bb711d2d5154746772b838fdd63b1627871e",
+  "supervision": {
+    "head": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+    "pid": 2745227,
+    "status": "completed",
+    "exit_status": 0,
+    "log_sha256": "bd6f150673239b324c454f40a303426cfb8af1ea6a13e6447daaa0575774e316"
+  },
+  "current_later_commits": "Aggregate applies to exact7d116f9. Through94bcf5d later changes were documentation and sealed diagnostic receipts. Subsequent DOI citation-boundary patch has separate focused validation and is not covered by this aggregate.",
+  "previous_green_aggregate": "0dc9002 pre-verifier-fix1643passed8skipped remains separate retained stratum",
+  "scientific_validation": "Separate fixed-case Source warrant review; no accuracy gain or merge readiness claim."
+}

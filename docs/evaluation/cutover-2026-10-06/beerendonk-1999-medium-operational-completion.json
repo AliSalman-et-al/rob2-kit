@@ -1,0 +1,58 @@
+{
+  "case": "beerendonk-1999",
+  "runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10fed-91df-76f3-a3cc-5ef02d4686a7",
+    "elapsed_seconds": 271.75836954201804,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "assessment_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10fed-91df-76f3-a3cc-5ef02d4686a7",
+    "elapsed_seconds": 628.1896104280022,
+    "finalized_batch_observed": true,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "artifact": "diagnostics/final-medium-verifier-cutover-20261006/cases/beerendonk-1999/workspace-run/.rob2-kit/finalized/6b5a8321dcb3177bc1b2ee02d111d8ed1993ad0789a90c44b2b049a68ca63d19.rob2.zip",
+  "artifact_sha256": "2d649844d5701f11431661dadc4b23cbf0f75a5df30e8053e140746c0dfc0903",
+  "product_verifier": true,
+  "standalone_verifier_exit": 0,
+  "source_warrant_review": "pending; structural verification does not certify scientific support",
+  "projection_sha256": "a3f1699bc886ebf9f0512ea427d4f3b6c438692f3ca2c4154f913930f02c6831",
+  "session_sha256": "d72bf9024e44746f6ac12e32b6e9885cc233256cd4d54e5f44681c0c9f35cb07",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 59,
+    "tokens": {
+      "input_tokens": 7310762,
+      "cached_input_tokens": 6904320,
+      "output_tokens": 22504,
+      "reasoning_output_tokens": 3796
+    },
+    "dollars": null
+  },
+  "accuracy_gain_claimed": false,
+  "all_attempts_preserved": true
+}

@@ -34,12 +34,17 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.10.0":
+    if value["contract_version"] != "0.11.0":
         raise ValueError("public contract version differs")
     expected_order = [
+        "read_guidance",
+        "calculate_arithmetic",
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",
+        "request_companion_source",
+        "acquire_companion_source",
+        "admit_companion_source",
         "list_sources",
         "search_sources",
         "search_sources_batch",
@@ -78,9 +83,16 @@ def _load_contract() -> dict[str, Any]:
         raise ValueError("public tool title is missing")
     if any(not item["description"].strip() for item in value["tools"]):
         raise ValueError("public tool description is missing")
-    if any(item["destructive"] or not item["idempotent"] for item in value["tools"]):
+    if any(
+        item["destructive"]
+        or item["idempotent"]
+        != (item["name"] not in {"acquire_companion_source", "admit_companion_source"})
+        for item in value["tools"]
+    ):
         raise ValueError("public tool safety annotations differ")
-    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != []:
+    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != [
+        "rob2://guidance/{name}"
+    ]:
         raise ValueError("public resource catalog differs")
     if set(value["resource_descriptions"]) != {"rob2://current-batch"} or not all(
         isinstance(description, str) and description.strip()
@@ -103,136 +115,59 @@ def _schema_hash(schema: dict[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(text.encode()).hexdigest()
 
 
-def _verify_d3_projection(context: dict[str, Any]) -> None:
-    """Check the live structured D3.1 premise boundary and provenance split."""
+def _verify_official_projection(context: dict[str, Any], domain_id: str) -> None:
+    """Check installed official-source delivery and question dependencies."""
+    from rob2_kit.application.domains import _official_guidance_recovery
+    from rob2_kit.packs import SCIENTIFIC_PACK
 
-    if context.get("domain_id") != "domain:missing":
-        raise ValueError("D3 acceptance context has the wrong Domain")
     questions = context.get("questions")
     if not isinstance(questions, list):
-        raise ValueError("D3 acceptance context has no question cards")
-    card = next(
-        (
-            item
-            for item in questions
-            if isinstance(item, dict) and item.get("id") == "sq:missing:data-available"
-        ),
-        None,
-    )
-    if not isinstance(card, dict):
-        raise ValueError("D3.1 question card is missing")
-
-    if card.get("official_guidance") != (
-        "‘Nearly all’ should be interpreted as that the number of participants with missing "
-        "outcome data is sufficiently small that their outcomes, whatever they were, could "
-        "have made no important difference to the estimated effect of intervention. For "
-        "continuous outcomes, availability of data from 95% of the participants will often be "
-        "sufficient. Note that imputed data should be regarded as missing data."
-    ):
-        raise ValueError("D3.1 official guidance projection differs")
-    if card.get("source_locator") != "Full guidance p. 45, Box 8, signalling question 3.1":
-        raise ValueError("D3.1 official locator projection differs")
-
-    evidence_needed = card.get("evidence_needed")
-    invalid_shortcuts = card.get("invalid_shortcuts")
-    considerations = card.get("considerations")
-    if not all(
-        isinstance(value, list) for value in (evidence_needed, invalid_shortcuts, considerations)
-    ):
-        raise ValueError("D3.1 structured guidance fields are not lists")
-    evidence_text = " ".join(str(item) for item in evidence_needed).casefold()
-    if not all(
-        marker in evidence_text
-        for marker in (
-            "yes or probably yes",
-            "actual outcome-availability evidence",
-            "observed-outcome counts",
-            "loss-to-follow-up or censoring accounting",
-            "complete/nearly-complete ascertainment",
-        )
-    ):
-        raise ValueError("D3.1 affirmative availability evidence boundary is incomplete")
-    shortcuts = [str(item).casefold() for item in invalid_shortcuts]
-
-    def has_shortcut(*markers: str) -> bool:
-        return any(all(marker in item for marker in markers) for item in shortcuts)
-
-    if not all(
-        (
-            has_shortcut("analysis denominator", "itt membership"),
-            has_shortcut("planned or scheduled follow-up"),
-            has_shortcut("treatment continuation", "discontinuation"),
-            has_shortcut("generic censoring rule", "actual rates", "follow-up accounting"),
-        )
-    ):
-        raise ValueError("D3.1 non-entailing shortcut boundary is incomplete")
-    consideration_text = " ".join(str(item) for item in considerations).casefold()
-    if not all(
-        marker in consideration_text for marker in ("administrative censoring", "missing follow-up")
-    ):
-        raise ValueError("D3.1 censoring distinction is missing")
+        raise ValueError("official question cards are missing")
+    expected = {
+        question.id: question
+        for question in SCIENTIFIC_PACK.questions
+        if question.domain_id == domain_id
+    }
+    if {question.get("id") for question in questions} != set(expected):
+        raise ValueError("official question identity differs")
+    for question in questions:
+        canonical = expected[question["id"]]
+        if question["wording"] != canonical.wording or set(question["options"]) != {
+            answer.value for answer in canonical.allowed_answers
+        }:
+            raise ValueError("official question wording or options differ")
+        if question["activation"] != canonical.activation.model_dump(mode="json"):
+            raise ValueError("official question dependencies differ")
+        if not question.get("query_suggestions") or "decision_rule" in question:
+            raise ValueError("question navigation or scientific authority differs")
+    core = context.get("official_guidance")
+    expected_core = json.loads(json.dumps(_official_guidance_recovery(domain_id)))
+    if core != expected_core:
+        raise ValueError("complete official source material differs")
 
 
 def _verify_packaged_skill(skill: str, reference: str) -> None:
-    """Check the portable skill's compact audit and co-located detail."""
-
-    def section(text: str, heading: str, prefix: str) -> list[str]:
-        lines = text.splitlines()
-        start = lines.index(heading) + 1
-        end = next(
-            (index for index in range(start, len(lines)) if lines[index].startswith(prefix)),
-            len(lines),
-        )
-        return lines[start:end]
-
-    audit_lines = section(skill, "### 6. Audit and commit the Domain once", "### ")
-    audit = " ".join(line.strip() for line in audit_lines).casefold()
-    if audit.count("availability audit") != 1 or not all(
-        marker in audit
-        for marker in (
-            "yes/probably yes needs evidence of all or nearly-all availability",
-            "no/probably no needs evidence of materially incomplete availability",
-            "if the extent remains unknown, use no information",
-            "analysis membership",
-            "planned follow-up",
-            "treatment status",
-            "generic censoring rule alone establish neither direction",
-        )
-    ):
-        raise ValueError("packaged skill D3.1 availability audit is incomplete")
-
-    audit_lines = section(reference, "## Availability audit", "## ")
-    audit_text = " ".join(line.strip() for line in audit_lines).casefold()
-    bullets: list[str] = []
-    continuation = False
-    for line in audit_lines:
-        if line.startswith("- "):
-            bullets.append(line.removeprefix("- ").strip())
-            continuation = True
-        elif not line.strip():
-            continuation = False
-        elif continuation:
-            bullets[-1] = f"{bullets[-1]} {line.strip()}"
-    normalized = [item.casefold() for item in bullets]
+    """Check scientific-source routing and co-located interface instructions."""
+    for asset in (skill, reference):
+        if not all(
+            marker in asset
+            for marker in (
+                "official",
+                "counterevidence",
+                "missing_data",
+            )
+        ):
+            raise ValueError("packaged D3 source routing or submission instructions are missing")
     if not all(
-        any(all(marker in item for marker in markers) for item in normalized)
-        for markers in (
-            ("observed-outcome counts", "randomized"),
-            ("loss-to-follow-up", "censoring", "accounting"),
-            ("complete or nearly complete",),
-            ("analysis denominators", "itt membership"),
-            ("planned", "scheduled", "follow-up"),
-            ("treatment continuation", "discontinuation"),
-            ("generic censoring rule", "actual rates", "follow-up accounting"),
-        )
-    ) or not all(
-        marker in audit_text
+        marker in reference
         for marker in (
-            "materially incomplete",
-            "failure to demonstrate complete availability is not evidence",
+            "read_pages",
+            "basis",
+            "randomized - observed",
+            "scoped",
         )
     ):
-        raise ValueError("packaged missing-data reference availability audit is incomplete")
+        raise ValueError("packaged D3 source recovery or typed arithmetic is missing")
 
 
 async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
@@ -297,6 +232,18 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
             data = dict(pages[0]["data"])
             for section in ("questions", "comparison_cards", "evidence"):
                 data[section] = [item for page in pages for item in page["data"].get(section, [])]
+            cores = [
+                page["data"]["official_guidance"]
+                for page in pages
+                if page["data"].get("official_guidance")
+            ]
+            if cores:
+                data["official_guidance"] = {
+                    "pack": cores[0]["pack"],
+                    "sections": [section for core in cores for section in core["sections"]],
+                    "complete": True,
+                    "next_cursor": None,
+                }
             data.pop("context_page", None)
             merged["data"] = data
             merged["head"] = pages[-1].get("head", merged.get("head"))
@@ -312,50 +259,50 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
     return flat
 
 
-def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
-    """Build a deliberately small, fully Evidence-bound acceptance Result."""
-
+def _acceptance_result(evidence: dict[str, Any]) -> dict[str, Any]:
     phrase = "requested outcome"
     return {
-        "kind": "assessable",
         "trial_id": "trial",
         "relation": "exact",
-        "relation_rationale": (
-            "The selected Evidence supports the requested endpoint correspondence."
+        "scope_rationale": "The selected Evidence supports endpoint and time correspondence.",
+        "population_rationale": (
+            "The reported population is distinguished from baseline eligibility."
         ),
-        "applicability": {
+        "source_passages": [evidence["handle"]],
+        "unknowns": [],
+        "counterevidence": [],
+        "candidate": {
+            "clarity": {
+                name: "specified"
+                for name in (
+                    "outcome_definition",
+                    "measurement",
+                    "time_point",
+                    "analysis_population",
+                    "comparison_groups",
+                    "effect_measure",
+                    "source_table_meaning",
+                    "eligible_result_choice",
+                )
+            },
             "design": "individual_parallel",
-            "rationale": "The fixture represents an individually randomized parallel trial.",
-            "evidence": [_evidence["handle"]],
-        },
-        "target": {
-            "measurement": {"method": phrase},
-            "time_point_or_window": {"kind": "described", "description": phrase},
+            "design_rationale": "The fixture is an individually randomized parallel trial.",
+            "design_evidence": [evidence["handle"]],
+            "target_measurement": phrase,
+            "target_window": phrase,
             "comparison_groups": [
                 {"id": "a", "assignment": phrase},
                 {"id": "b", "assignment": phrase},
             ],
             "baseline_subgroup": None,
             "intended_effect_measure": phrase,
-        },
-        "reported": {
-            "form": "group_bound_values",
+            "reported_outcome": phrase,
+            "reported_definition": phrase,
             "analysis_population": phrase,
-            "endpoint": {"name": phrase, "definition": phrase},
             "group_values": [
-                {"group_id": "a", "statistic": phrase, "value": phrase, "unit": phrase},
-                {"group_id": "b", "statistic": phrase, "value": phrase, "unit": phrase},
+                {"group_id": group, "statistic": phrase, "value": phrase, "unit": phrase}
+                for group in ("a", "b")
             ],
-        },
-        "clarity": {
-            "outcome_definition": "specified",
-            "measurement": "specified",
-            "time_point": "specified",
-            "analysis_population": "specified",
-            "comparison_groups": "specified",
-            "effect_measure": "specified",
-            "source_table_meaning": "specified",
-            "eligible_result_choice": "specified",
         },
     }
 
@@ -437,22 +384,7 @@ async def _verify_proposal(client: Client) -> None:
         client,
         "validate_proposal",
         {
-            "results": [result],
-            "assessments": [
-                {
-                    "trial_id": "trial",
-                    "evidence_basis": [evidence["handle"]],
-                    "scope_justification": (
-                        "The reported endpoint and time window match the target."
-                    ),
-                    "population_justification": (
-                        "The reported analysis population is distinguished from baseline "
-                        "eligibility."
-                    ),
-                    "unknowns": [],
-                    "counterevidence": [],
-                }
-            ],
+            "selections": [result],
             "expected_revision": prepared["state_revision"],
         },
     )
@@ -517,7 +449,24 @@ def _domain_answers(
             {
                 "question_id": question["id"],
                 "answer": answer,
-                "bases": [basis],
+                "bases": (
+                    []
+                    if answer == "no_information"
+                    else [
+                        {("role" if key == "kind" else key): value for key, value in basis.items()}
+                    ]
+                ),
+                "limitations": (
+                    [
+                        {
+                            ("premise" if key == "unresolved_premise" else key): value
+                            for key, value in basis.items()
+                            if key != "kind"
+                        }
+                    ]
+                    if answer == "no_information"
+                    else []
+                ),
                 "justification": "The cited basis supports the selected uncertainty option.",
                 "unknowns": [],
                 "counterevidence": [],
@@ -616,8 +565,7 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         )
         if context.get("domain_id") != domain_id:
             raise ValueError(f"acceptance Domain context differs: {domain_id}")
-        if domain_id == "domain:missing":
-            _verify_d3_projection(context)
+        _verify_official_projection(context, domain_id)
         revision = int(context["state_revision"])
         searched = await _call(
             client,
@@ -698,7 +646,10 @@ def _verify_wheel_archive(wheel: Path) -> None:
         for host in ("codex.json", "claude-code.json"):
             member = f"rob2_kit/hosts/{host}"
             payload = json.loads(archive.read(member))
-            if payload.get("mcp_command") != "rob2 mcp" or payload.get("skills") != ["rob2-assess"]:
+            expected_command = "rob2 mcp-codex" if host == "codex.json" else "rob2 mcp"
+            if payload.get("mcp_command") != expected_command or payload.get("skills") != [
+                "rob2-assess"
+            ]:
                 raise ValueError(f"wheel host contract differs: {host}")
         missing_skills = sorted(skill_members - set(names))
         if missing_skills:

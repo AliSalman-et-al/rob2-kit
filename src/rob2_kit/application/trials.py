@@ -4,10 +4,12 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from ..logic.aggregation import aggregation_record
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import NeedsInputTerminalRequest, TrialClosureRequest, TrialReviewRequest
 from ._state import _commit_records, _ensure, _identity, _result, _root, _state
 from .contracts import WorkflowConflict
+from .domains import _overall_receipt
 from .finalization import _valid_proposal_gate
 from .status import _active_trial_and_domain, _continuation
 
@@ -92,10 +94,9 @@ def _review_domain_findings(
         # the missing expansion is left for the ordinary recovery path.
         evidence_by_identity = {}
     records = state.get("domain_records") or {}
-    # Working premise notes are reusable only while their own checkpoint still
-    # matches the approved Result and captured Source projection.  A stale
-    # checkpoint is deliberately absent from final review rather than being
-    # treated as a prior Domain judgment.
+    # Source/Result mismatches suppress working notes. New Domain commits keep
+    # their source observations for review, while dependent inferences below
+    # become unresolved rather than outranking the committed judgment.
     from .working import (
         _stored_checkpoint,
         investigation_projection,
@@ -272,7 +273,9 @@ def _review_domain_findings(
                     "The cited participant-flow rows report randomized, analyzed, or event "
                     "quantities without an outcome-observed count or explicit outcome-status "
                     "fact. Those quantities alone do not establish outcome availability for "
-                    "this Result; check the cited inference against the source passage."
+                    "this Result. Exact observed counts are not required for a probable "
+                    "judgment supported by other outcome-specific follow-up evidence; "
+                    "check the cited inference against the source passage."
                 ),
                 "assertion": "server_derived",
                 "evidence": references,
@@ -487,12 +490,12 @@ def _review_domain_findings(
         if isinstance(premise_checkpoint, dict):
             domain_premises = tuple(
                 item
-                for item in premise_checkpoint.get("premise_records", ())
+                for item in (premise_checkpoint.get("premise_records") or ())
                 if isinstance(item, dict) and item.get("domain_id") == domain.id
             )
             unread_ranges = tuple(
                 item
-                for item in premise_checkpoint.get("unread_ranges", ())
+                for item in (premise_checkpoint.get("unread_ranges") or ())
                 if isinstance(item, dict)
             )
         if investigation is not None and investigation.get("stale"):
@@ -525,6 +528,10 @@ def _review_domain_findings(
                     "kind": basis["kind"],
                     "assertion": "host_asserted",
                 }
+                # Review the warrant's original observation/inference snapshot,
+                # not only its citation role. This does not certify entailment.
+                if isinstance(basis.get("working_observation"), dict):
+                    basis_finding["working_observation"] = basis["working_observation"]
                 evidence_identity = basis.get("evidence")
                 fact_role = (
                     "counterevidence"
@@ -693,6 +700,7 @@ def _review_domain_findings(
                     "domain_id": domain.id,
                     "checkpoint_identity": record["identity"],
                     "judgment": record.get("judgment"),
+                    "decision": record.get("decision"),
                     "answers": answer_findings,
                     "premise_checkpoint_identity": premise_checkpoint_identity,
                     "premise_records": domain_premises,
@@ -751,6 +759,23 @@ def _review_payload(
     facts: list[str],
 ) -> dict[str, Any]:
     return {
+        **(
+            {
+                "snapshot_identity": state["snapshots"][trial_id]["identity"],
+                "aggregation": state["snapshots"][trial_id]["aggregation"],
+            }
+            if disposition == "assessed" and "aggregation" in state["snapshots"][trial_id]
+            else {}
+        ),
+        **(
+            {
+                "trial_inventory_identity": next(
+                    t["identity"] for t in state["batch"]["trials"] if t["id"] == trial_id
+                )
+            }
+            if any(a["trial_id"] == trial_id for a in state.get("source_admissions", []))
+            else {}
+        ),
         "trial_id": trial_id,
         "result_identity": _identity(_approved_result(state, trial_id)),
         "checkpoint_ids": _checkpoint_ids(state, trial_id),
@@ -779,6 +804,8 @@ def _review_record_is_current(state: dict[str, Any], review: dict[str, Any]) -> 
         return True
     # Reviews written before domain attribution was added remain valid when
     # their original payload still matches the current Result and checkpoints.
+    if "trial_inventory_identity" in payload:
+        return False
     legacy = dict(payload)
     legacy.pop("domain_attribution", None)
     return review.get("identity") == _identity(legacy) and all(
@@ -812,7 +839,7 @@ def review_trial(
     """Bind the current Result and Domain checkpoint set for explicit review."""
     root = _root(workspace)
     _ensure(root)
-    state = _state(root)
+    state: dict[str, Any] = _state(root)
 
     def validated_retry(review_record: dict[str, Any]) -> dict[str, Any]:
         response = _result(
@@ -839,6 +866,16 @@ def review_trial(
         dispositions.get(request.trial_id) if isinstance(dispositions, dict) else None
     )
     if current_disposition not in {"pending", "reviewable"}:
+        if request.cumulative_concerns is not None:
+            current_snapshot = (state.get("snapshots") or {}).get(request.trial_id)
+            if not isinstance(current_snapshot, dict):
+                raise ValueError("the Trial AssessmentSnapshot is unavailable")
+            record, _ = aggregation_record(current_snapshot, request.cumulative_concerns)
+            if record != current_snapshot.get("aggregation"):
+                raise ValueError(
+                    "Trial closure is immutable; start a fresh assessment in a new workspace to "
+                    "record a changed cumulative assessment while preserving this closed record"
+                )
         current_review = (state.get("trial_reviews") or {}).get(request.trial_id)
         closure = (state.get("trial_closures") or {}).get(request.trial_id)
         if (
@@ -886,6 +923,46 @@ def review_trial(
             or snapshot.get("checkpoints") != checkpoint_ids
         ):
             raise ValueError("the Trial AssessmentSnapshot does not match its current checkpoints")
+    updated_snapshot = None
+    if request.cumulative_concerns is not None:
+        if disposition != "assessed":
+            raise ValueError("cumulative concerns require an assessed Trial")
+        updated_snapshot = dict(snapshot)
+        aggregation, evaluation = aggregation_record(snapshot, request.cumulative_concerns)
+        updated_snapshot.update(
+            aggregation=aggregation,
+            overall=evaluation.judgment.value,
+            overall_trace=list(evaluation.trace),
+            overall_driver_domains=list(evaluation.driver_domains),
+            overall_receipt=_overall_receipt(
+                request.trial_id, state["domain_records"], snapshot["domain_judgments"], evaluation
+            ),
+        )
+        updated_snapshot.pop("identity", None)
+        updated_snapshot["identity"] = _identity(updated_snapshot)
+        if updated_snapshot["identity"] != snapshot["identity"]:
+            if request.expected_revision != state.get("revision", 0):
+                raise WorkflowConflict(request.expected_revision, int(state.get("revision", 0)))
+            state = {
+                **state,
+                "snapshots": {**state["snapshots"], request.trial_id: updated_snapshot},
+                "snapshot_history": {
+                    **state["snapshot_history"],
+                    request.trial_id: [
+                        *state["snapshot_history"][request.trial_id],
+                        updated_snapshot["identity"],
+                    ],
+                },
+                "snapshot_history_records": {
+                    **state["snapshot_history_records"],
+                    request.trial_id: [
+                        *state["snapshot_history_records"][request.trial_id],
+                        updated_snapshot,
+                    ],
+                },
+            }
+        else:
+            updated_snapshot = None
     review = _review_payload(state, request.trial_id, disposition, reason, facts)
     review["identity"] = _identity(review)
     existing = (state.get("trial_reviews") or {}).get(request.trial_id)
@@ -897,6 +974,8 @@ def review_trial(
     reviews[request.trial_id] = review
     next_state = {**state, "trial_reviews": reviews}
     records: dict[str, dict[str, Any]] = {f"trial_review:{review['identity']}": review}
+    if updated_snapshot is not None:
+        records[f"snapshot:{updated_snapshot['identity']}"] = updated_snapshot
     if precommit_validator is not None:
         pending_state = {**next_state, "revision": int(state.get("revision", 0)) + 1}
         precommit_validator(
