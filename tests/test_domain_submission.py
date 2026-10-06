@@ -75,7 +75,9 @@ def test_new_submission_rejects_invalid_scientific_or_citation_content(change: d
         DomainSaveAnswer.model_validate(value)
 
 
-def test_limitation_only_does_not_authorize_definitive_science(tmp_path: Path) -> None:
+def test_limitation_only_preserves_host_answer_without_semantic_certification(
+    tmp_path: Path,
+) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     draft = _domain_draft("trial", "domain:randomization", revision, evidence)
     draft["answers"][0]["answer"] = "yes"
@@ -87,8 +89,12 @@ def test_limitation_only_does_not_authorize_definitive_science(tmp_path: Path) -
         }
     ]
     response = _call(workspace, "save_domain_judgment", draft)
-    assert response["outcome"] == "repair"
-    assert any(item["code"] == "answer_requires_direct_basis" for item in response["repairs"])
+    assert response["outcome"] == "success", response
+    record = _state(workspace)["domain_records"]["trial:" + draft["domain_id"]]
+    submitted = draft["answers"][0]
+    stored = next(a for a in record["answers"] if a["question_id"] == submitted["question_id"])
+    assert stored["answer"] == submitted["answer"]
+    assert any(b["kind"] == "limitation" for b in stored["bases"])
 
 
 def test_explicit_roles_and_information_limits_need_no_semantic_coercion() -> None:
@@ -122,10 +128,12 @@ def test_direct_citation_does_not_erase_an_explicit_information_limit(tmp_path: 
         }
     ]
     response = _call(workspace, "save_domain_judgment", draft)
-    assert response["outcome"] == "repair"
-    assert any(
-        item["code"] == "complete_claim_has_unresolved_premise" for item in response["repairs"]
-    )
+    assert response["outcome"] == "success", response
+    record = _state(workspace)["domain_records"]["trial:" + draft["domain_id"]]
+    submitted = draft["answers"][0]
+    stored = next(a for a in record["answers"] if a["question_id"] == submitted["question_id"])
+    assert stored["answer"] == submitted["answer"]
+    assert any(b["kind"] == "limitation" for b in stored["bases"])
 
 
 @pytest.mark.parametrize("role", ["direct_support", "context"])
@@ -150,7 +158,7 @@ def test_d32_no_can_retain_unknown_bias_with_inspected_evidence(tmp_path: Path, 
 
 
 @pytest.mark.parametrize("index, value", [(1, "yes"), (0, "no"), (2, "no")])
-def test_unresolved_positive_reassurance_and_missingness_claims_remain_rejected(
+def test_source_limits_are_preserved_for_both_question_polarities(
     tmp_path: Path,
     index: int,
     value: str,
@@ -168,22 +176,23 @@ def test_unresolved_positive_reassurance_and_missingness_claims_remain_rejected(
     if index in {1, 2}:
         draft["answers"] = draft["answers"][: index + 1]
     response = _call(workspace, "save_domain_judgment", draft)
-    assert response["outcome"] == "repair"
-    assert any(r["code"] == "complete_claim_has_unresolved_premise" for r in response["repairs"])
+    assert response["outcome"] == "success", response
+    record = _state(workspace)["domain_records"]["trial:" + draft["domain_id"]]
+    submitted = draft["answers"][index]
+    stored = next(a for a in record["answers"] if a["question_id"] == submitted["question_id"])
+    assert stored["answer"] == submitted["answer"]
+    assert any(b["kind"] == "limitation" for b in stored["bases"])
 
 
-def test_d32_no_still_requires_inspected_evidence_or_valid_search(tmp_path: Path) -> None:
+def test_d32_no_requires_an_explicit_material_premise(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     draft = _domain_draft("trial", "domain:missing", revision, evidence)
     draft["answers"][1]["bases"] = []
-    draft["answers"][1]["limitations"] = [
-        {
-            "premise": "No reassuring analysis is known.",
-            "stopping_rationale": "No source was inspected for this premise.",
-        }
-    ]
+    before = _state(workspace)
     response = _call(workspace, "save_domain_judgment", draft)
-    assert any(r["code"] == "answer_requires_direct_basis" for r in response["repairs"])
+    assert response["outcome"] == "repair", response
+    assert any(r["path"] == "/answers/1/bases" for r in response["repairs"])
+    assert _state(workspace) == before
 
 
 @pytest.mark.parametrize("invalid", ["evidence", "search_receipt", "counterpoint"])
@@ -221,7 +230,7 @@ def test_d32_negative_evidence_exception_does_not_bypass_handle_validation(
     ],
 )
 @pytest.mark.parametrize("probable", [False, True])
-def test_required_unknowns_are_not_negative_evidence_exemptions(
+def test_required_unknowns_remain_visible_for_definite_and_probable_answers(
     tmp_path: Path,
     domain_id: str,
     question_id: str,
@@ -243,12 +252,11 @@ def test_required_unknowns_are_not_negative_evidence_exemptions(
     active = active_questions({a["question_id"]: a["answer"] for a in draft["answers"]})
     draft["answers"] = [a for a in draft["answers"] if a["question_id"] in active]
     response = _call(workspace, "save_domain_judgment", draft)
-    if probable:
-        assert response["outcome"] == "success", response
-    else:
-        assert any(
-            r["code"] == "complete_claim_has_unresolved_premise" for r in response["repairs"]
-        )
+    assert response["outcome"] == "success", response
+    stored = _state(workspace)["domain_records"]["trial:" + domain_id]
+    answer = next(a for a in stored["answers"] if a["question_id"] == question_id)
+    assert answer["answer"] == target["answer"]
+    assert any(b["kind"] == "limitation" for b in answer["bases"])
 
 
 def test_mcp_rejects_d32_no_information_without_changing_answer(tmp_path: Path) -> None:

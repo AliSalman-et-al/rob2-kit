@@ -129,37 +129,28 @@ def test_public_d2_and_d3_contexts_share_result_bound_source_flow(tmp_path: Path
             assert len(card["missing_data"]["rows"]) == 2
 
 
-def test_public_cards_expose_neutral_paired_contrasts_without_answers(tmp_path: Path) -> None:
+def test_public_comparisons_keep_reconstruction_separate_from_official_questions(
+    tmp_path: Path,
+) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    expected_pairs = {
-        "domain:deviations": {
-            "d2-protocol-status-same-trial-context",
-            "d2-cause-same-protocol-inconsistency",
-        },
-        "domain:missing": {
-            "d3-complete-versus-unresolved-availability",
-            "d3-mitigation-evidence",
-            "d3-possible-versus-likely-dependence",
-        },
-        "domain:measurement": {
-            "d4-objective-versus-judgment-dependent",
-            "d4-equal-versus-differential-detection",
-            "d4-assessor-awareness",
-            "d4-possible-versus-likely-influence",
-        },
-    }
-    for domain_id, required_pairs in expected_pairs.items():
+    for domain_id in (
+        "domain:deviations",
+        "domain:missing",
+        "domain:measurement",
+        "domain:selection",
+    ):
         context = _call(
-            workspace,
-            "get_domain_context",
-            {"trial_id": "trial", "domain_id": domain_id},
+            workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
         )
         assert context["outcome"] == "success", context
-        card = context["data"]["comparison_cards"][0]
-        pairs = card["paired_examples"]
-        assert required_pairs <= {item["pair_id"] for item in pairs}
-        assert not any("answer" in item for item in pairs)
-        assert all(item["status"] == "unknown" for item in card["propositions"])
+        data = context["data"]
+        card = data["comparison_cards"][0]
+        assert card["slots"]
+        assert not {"propositions", "paired_examples", "answers", "judgment"} & card.keys()
+        official = {section["excerpt"] for section in data["official_guidance"]["sections"]}
+        for question in SCIENTIFIC_PACK.questions:
+            if question.domain_id == domain_id:
+                assert question.guidance.official.source_excerpt in official
 
 
 def test_blinded_trial_d2_6_can_carry_flow_without_activating_d2_3(tmp_path: Path) -> None:
@@ -1312,8 +1303,6 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "Ground each active proposition and uncertainty in inspected Evidence, scoped search "
         "receipts, or an explicit scientific limitation" in data["completion_rule"]
     )
-    assert any("protocol or SAP" in item for item in data["guidance"])
-    assert any("does not by itself prove" in item for item in data["traps"])
     question_card = data["questions"][0]
     assert set(question_card) == {
         "id",
@@ -1321,48 +1310,20 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "options",
         "activation_status",
         "activation",
-        "official_guidance",
-        "source_locator",
-        "bias_construct",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "answer_anchors",
-        "considerations",
-        "invalid_shortcuts",
+        "guidance_locator",
         "query_suggestions",
     }
-    assert question_card["official_guidance"]
-    assert question_card["source_locator"].startswith("Full guidance ")
-    pack_question = next(
-        item for item in SCIENTIFIC_PACK.questions if item.id == question_card["id"]
-    )
-    assert set(pack_question.guidance.model_dump(mode="json")) == {"official", "operational"}
-    assert set(pack_question.guidance.official.model_dump(mode="json")) == {
-        "version",
-        "source_locator",
-        "source_sha256",
-        "source_excerpt",
+    pack_question = next(q for q in SCIENTIFIC_PACK.questions if q.id == question_card["id"])
+    assert pack_question.guidance.official.source_locator == question_card["guidance_locator"]
+    assert pack_question.guidance.official.source_excerpt in {
+        section["excerpt"] for section in data["official_guidance"]["sections"]
     }
     assert set(pack_question.guidance.operational.model_dump(mode="json")) == {
         "id",
         "version",
         "attribution",
-        "bias_construct",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "answer_anchors",
-        "considerations",
-        "invalid_shortcuts",
         "query_suggestions",
     }
-    assert pack_question.guidance.official.source_excerpt == question_card["official_guidance"]
-    assert pack_question.guidance.official.source_locator == question_card["source_locator"]
-    assert pack_question.guidance.operational.decision_rule == question_card["decision_rule"]
-    assert pack_question.guidance.operational.considerations == tuple(
-        question_card["considerations"]
-    )
     assert {item["id"] for item in data["questions"]} == {
         item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == data["domain_id"]
     }
@@ -1416,7 +1377,7 @@ def test_domain_source_is_derived_from_selected_evidence(tmp_path: Path) -> None
     ],
 )
 @pytest.mark.parametrize("firm_answer", ["yes", "no"])
-def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence(
+def test_answer_certainty_is_not_rewritten_from_basis_roles(
     tmp_path: Path,
     probable_answer: str,
     circumstance: str,
@@ -1446,14 +1407,10 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
         search_receipt=receipt,
     )
     firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
-    repaired = _call_raw(workspace, firm)
-    _assert_repairs(repaired)
-    repair = next(
-        item for item in repaired["repairs"] if item["code"] == "answer_requires_direct_basis"
-    )
-    assert "question 'sq:deviations:participants-aware'" in repair["detail"]
-    assert f"'{firm_answer}'" in repair["detail"]
-    assert "probably_yes/probably_no" not in repair["detail"]
+    accepted_firm = _call_raw(workspace, firm)
+    assert accepted_firm["outcome"] == "success", accepted_firm
+    record = _state(workspace)["domain_records"]["trial:domain:deviations"]
+    assert record["answers"][0]["answer"] == firm_answer
 
 
 @pytest.mark.parametrize("appropriate_answer", ["yes", "probably_yes"])

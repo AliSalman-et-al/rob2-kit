@@ -1154,7 +1154,7 @@ def test_search_candidate_identity_is_invariant_and_purpose_is_explicit(tmp_path
     )
 
 
-def test_missing_question_card_exposes_explicit_availability_premise(tmp_path: Path) -> None:
+def test_missing_question_card_recovers_full_official_and_faq_context(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     for domain_id in ("domain:randomization", "domain:deviations"):
         saved = _call(
@@ -1176,29 +1176,24 @@ def test_missing_question_card_exposes_explicit_availability_premise(tmp_path: P
     pack_question = next(
         item for item in SCIENTIFIC_PACK.questions if item.id == "sq:missing:data-available"
     )
-    assert card["official_guidance"] == pack_question.guidance.official.source_excerpt
-    assert card["source_locator"] == pack_question.guidance.official.source_locator
-
-    evidence = " ".join(card["evidence_needed"]).casefold()
-    assert "yes or probably yes" in evidence
-    assert "actual outcome-availability evidence" in evidence
-    assert "observed-outcome counts" in evidence
-    assert "loss-to-follow-up or censoring accounting" in evidence
-    assert "complete/nearly-complete ascertainment" in evidence
-
-    shortcuts = [item.casefold() for item in card["invalid_shortcuts"]]
-    assert any("analysis denominator" in item and "itt membership" in item for item in shortcuts)
-    assert any("planned or scheduled follow-up" in item for item in shortcuts)
-    assert any("treatment continuation" in item and "discontinuation" in item for item in shortcuts)
-    assert any(
-        "generic censoring rule" in item
-        and "actual rates" in item
-        and "follow-up accounting" in item
-        for item in shortcuts
+    assert card["guidance_locator"] == pack_question.guidance.official.source_locator
+    core = context["data"]["official_guidance"]
+    assert core["complete"]
+    relevant = [
+        section for section in core["sections"] if pack_question.id in section["question_ids"]
+    ]
+    assert pack_question.guidance.official.source_excerpt in {s["excerpt"] for s in relevant}
+    expected_faq = [
+        section
+        for section in SCIENTIFIC_PACK.official_sections or ()
+        if section.question_ids == (pack_question.id,)
+    ]
+    assert expected_faq
+    assert all(
+        section.guidance.source_excerpt in {s["excerpt"] for s in relevant}
+        for section in expected_faq
     )
-    considerations = " ".join(card["considerations"]).casefold()
-    assert "administrative censoring" in considerations
-    assert "missing follow-up" in considerations
+    assert not {"decision_rule", "evidence_needed", "invalid_shortcuts"} & card.keys()
 
 
 def test_list_sources_resolves_one_captured_trial_or_returns_boundary_error(tmp_path: Path) -> None:

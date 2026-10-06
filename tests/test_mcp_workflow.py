@@ -88,7 +88,7 @@ def test_cli_exports_packaged_skill(tmp_path: Path) -> None:
     assert "does not require another model call or reassessing the whole Domain" in installed
 
 
-def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Path) -> None:
+def test_domain_questions_preserve_typed_official_navigation(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     questions: dict[str, dict[str, Any]] = {}
     for domain in SCIENTIFIC_PACK.domains:
@@ -102,99 +102,18 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         )
         assert saved["outcome"] == "success", saved
         revision = int(saved["head"]["state_revision"])
-    expected = {
-        "sq:randomization:sequence": "underwent randomization",
-        "sq:deviations:participants-aware": "completed treatment",
-        "sq:deviations:context-deviations": "nonadherence alone",
-        "sq:deviations:affected-outcome": "an ITT analysis",
-        "sq:selection:prespecified-analysis": "an objective definition",
-        "sq:selection:multiple-analyses": "a single ITT analysis",
-    }
-    fidelity_markers = {
-        "sq:randomization:sequence": "random component",
-        "sq:randomization:concealment": "remote or centrally",
-        "sq:randomization:baseline-imbalance": "compatible with chance",
-        "sq:deviations:participants-aware": "side effects",
-        "sq:deviations:personnel-aware": "carers",
-        "sq:deviations:context-deviations": "trial context",
-        "sq:deviations:affected-outcome": "effect estimate",
-        "sq:deviations:balanced": "balanced between",
-        "sq:deviations:appropriate-analysis": "intention-to-treat",
-        "sq:deviations:substantial-impact": "5%",
-        "sq:missing:data-available": "95%",
-        "sq:missing:evidence-unbiased": "last-observation",
-        "sq:missing:true-value-dependent": "health status",
-        "sq:missing:likely-dependent": "censoring",
-        "sq:measurement:method-inappropriate": "sensitive",
-        "sq:measurement:differential": "Comparable methods",
-        "sq:measurement:assessor-aware": "blinded",
-        "sq:measurement:influence-possible": "participant-reported",
-        "sq:measurement:influence-likely": "strong levels of belief",
-        "sq:selection:prespecified-analysis": "unblinded outcome data",
-        "sq:selection:multiple-measurements": "multiple eligible",
-        "sq:selection:multiple-analyses": "multiple eligible ways",
-    }
-    assert set(questions) == set(fidelity_markers)
-    compact_fields = {
-        "id",
-        "wording",
-        "options",
-        "bias_construct",
-        "answer_anchors",
-        "activation_status",
-        "activation",
-        "official_guidance",
-        "source_locator",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "considerations",
-        "invalid_shortcuts",
-        "query_suggestions",
-    }
-    assert all(set(question) == compact_fields for question in questions.values())
-    for question_id, shortcut in expected.items():
-        question = questions[question_id]
-        assert question["activation"]["kind"] in {"always", "rule"}
-        assert question["source_locator"].startswith("Full guidance ")
-        assert shortcut in question["invalid_shortcuts"]
-        assert question["decision_rule"]
-        assert question["options"]
-        assert question["no_information_rule"]
-        pack_question = next(item for item in SCIENTIFIC_PACK.questions if item.id == question_id)
-        assert pack_question.guidance.official.source_excerpt == question["official_guidance"]
-        assert pack_question.guidance.official.source_locator == question["source_locator"]
-        assert pack_question.guidance.operational.decision_rule == question["decision_rule"]
-        assert pack_question.guidance.operational.evidence_needed == tuple(
-            question["evidence_needed"]
-        )
-        assert set(question["options"]) == {
-            answer.value for answer in pack_question.allowed_answers
-        }
-        assert (
-            pack_question.guidance.operational.no_information_rule
-            == question["no_information_rule"]
-        )
-        assert pack_question.guidance.operational.considerations == tuple(
-            question["considerations"]
-        )
-        assert pack_question.guidance.operational.invalid_shortcuts == tuple(
-            question["invalid_shortcuts"]
-        )
-        assert tuple(question["query_suggestions"]) == tuple(
+    assert set(questions) == {q.id for q in SCIENTIFIC_PACK.questions}
+    for pack_question in SCIENTIFIC_PACK.questions:
+        card = questions[pack_question.id]
+        assert card["wording"] == pack_question.wording
+        assert card["activation"] == pack_question.activation.model_dump(mode="json")
+        assert card["guidance_locator"] == pack_question.guidance.official.source_locator
+        assert set(card["options"]) == {answer.value for answer in pack_question.allowed_answers}
+        assert card["query_suggestions"] == [
             item.model_dump(mode="json")
             for item in pack_question.guidance.operational.query_suggestions
-        )
-    for question_id, marker in fidelity_markers.items():
-        guidance = questions[question_id]
-        assert marker.lower() in guidance["official_guidance"].lower()
-        allowed = {
-            answer.value
-            for answer in next(
-                item for item in SCIENTIFIC_PACK.questions if item.id == question_id
-            ).allowed_answers
-        }
-        assert all(option in allowed for option in guidance["options"])
+        ]
+        assert not {"official_guidance", "decision_rule", "answer_anchors"} & card.keys()
 
 
 def test_domain_query_suggestions_include_executable_alternative_wording(tmp_path: Path) -> None:

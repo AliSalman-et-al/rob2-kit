@@ -869,17 +869,11 @@ def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
         "options",
         "activation_status",
         "activation",
-        "official_guidance",
-        "source_locator",
-        "decision_rule",
-        "evidence_needed",
-        "no_information_rule",
-        "considerations",
-        "invalid_shortcuts",
+        "guidance_locator",
         "query_suggestions",
     } <= question.keys()
-    assert question["decision_rule"]
-    assert question["official_guidance"]
+    assert not {"decision_rule", "official_guidance", "answer_anchors"} & question.keys()
+    assert data["official_guidance"]["complete"]
     assert question["query_suggestions"]
     assert (
         data["evidence_workspace"]["recoverable_narrative_text_bytes"]
