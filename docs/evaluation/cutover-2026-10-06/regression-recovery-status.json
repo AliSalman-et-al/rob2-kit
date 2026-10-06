@@ -1,0 +1,18 @@
+{
+  "status": "durable replacement suite running",
+  "tested_candidate_sha": "f4912d81008f10ee8cd0082fd77d5a3df71fdcde",
+  "runtime_code_checkpoint": "98f3ea71902e45b81d7a8b4b1cd5e6197e416373",
+  "last_reported_percent": 61,
+  "recorded_failure_markers": 10,
+  "new_failure_traces": "Unavailable until pytest terminal summary; no new runtime fixes claimed.",
+  "durability": "Independent reparented watchdog, log, JUnit XML destination and explicit exit-status file. One live broad suite; no model process.",
+  "closed_review_scopes": [
+    "official source/content",
+    "prose/schema",
+    "architecture/pagination/history",
+    "prospective protocol"
+  ],
+  "remaining_gate": "Finish suite, review every actual failure, focused fixes/rechecks and final immutable preflight/profile integrity.",
+  "prior_run": "4c3cbcf partial log retained at48%, 37 unidentified failure markers, no exit result; cause unknown.",
+  "checked_at_unix": 1791260152.8109071
+}
