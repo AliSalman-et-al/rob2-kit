@@ -41,3 +41,15 @@ existing fresh Proposal Review workflow is distinct from in-place preservation.
 The previous optional request/host staging route remains available before
 approval or when a separate prospective dossier is intended. It must not be
 represented as preservation of an active assessment.
+
+## Reference recovery
+
+Keep the exact Source citation, including its punctuation, and supply the DOI
+identity without sentence punctuation or enclosing citation brackets. A filename
+such as `Prot_000.pdf` is not a URL. For a captured ClinicalTrials.gov registry
+Source, the existing validated document route is
+`https://cdn.clinicaltrials.gov/large-docs/{last two NCT digits}/{NCT ID}/{filename}`.
+It requires the captured Trial's matching registry ID and an exact quoted PDF
+filename in that registry Source. Arbitrary constructed URLs do not qualify.
+Recording a handoff does not fetch, admit or establish applicability of a document;
+acquisition still applies the bounded public-host and DOI metadata checks.
