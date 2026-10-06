@@ -10,7 +10,11 @@ will be frozen and reported before merge. Historical diagnostics remain in `docs
 The all-domain official guidance core is implemented. Current production code is
 checkpoint `98f3ea7`; its fresh installed wheel passed release verification for all
 five Domain projections. See `guidance-audit.md`, `experiment-disposition.md` and
-`package-audit-receipt.json`. Independent review closure, regression failure review
-and immutable final input/build freeze remain pending. No final Medium case has
+`package-audit-receipt.json`. Independent content, prose/schema, architecture and protocol reviews closed at
+`3c6660d`. The complete replacement regression at `f4912d8` ended with 14 failed,
+1,629 passed and 8 skipped; all 14 failures now have passing focused followups.
+`regression-failure-review.json` preserves classifications and followup strata.
+There is no single full-suite green claim. The final verification decision and
+immutable final input/build/profile freeze remain pending. No final Medium case has
 launched; earlier Low pilots remain superseded development evidence.
 `execution-protocol.md` defines prospective run/reporting rules, not gate closure.
