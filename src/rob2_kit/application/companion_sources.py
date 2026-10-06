@@ -561,6 +561,17 @@ def _locator_present(reference: CompanionReference, text: str) -> bool:
             token = unquote(parsed.path.lstrip("/"))
         if token.casefold() == reference.locator.casefold():
             return True
+        # Citation punctuation is outside the DOI identity. Keep internal punctuation
+        # and balanced suffix parentheses; never accept an arbitrary DOI prefix.
+        token = token.rstrip(".,;:")
+        wrappers = {")": "(", "]": "[", "}": "{"}
+        while token and token[-1] in wrappers:
+            closing = token[-1]
+            if token.count(closing) <= token.count(wrappers[closing]):
+                break
+            token = token[:-1].rstrip(".,;:")
+        if token.casefold() == reference.locator.casefold():
+            return True
     return False
 
 

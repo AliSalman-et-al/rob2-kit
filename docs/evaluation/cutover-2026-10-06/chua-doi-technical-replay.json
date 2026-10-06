@@ -1,0 +1,266 @@
+{
+  "kind": "versioned unpaid acquisition handoff replay only; no source admission or scientific rerun",
+  "original_case": "chua-2022",
+  "original_runtime": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "current_patch_sha256": "f1bd2c3184a752035150ce493cee8368ae9220eb67be6a97ebd00f2513b8ef48",
+  "failed_attempts": [
+    [
+      47,
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_23",
+          "type": "mcp_tool_call",
+          "server": "rob2",
+          "tool": "request_companion_source",
+          "arguments": {
+            "reference": {
+              "trial_id": "chua-2022",
+              "source_id": "sh_ffc67037a8e93118",
+              "page": 1,
+              "citation": "Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.",
+              "locator": "10.1186/s13063-019-3305-8",
+              "locator_kind": "doi",
+              "requested_role": "protocol",
+              "registry_id": "NCT03396094",
+              "linkage_rationale": "Current registry explicitly cites the Pre-AeRATE protocol matching the main report reference 27. Protocol is not among current captured Sources; possible historical endpoint and analysis details require reading and applicability checks, and publication in April 2019 is after recruitment began."
+            }
+          },
+          "result": {
+            "content": [],
+            "structured_content": {
+              "outcome": "condition",
+              "head": {
+                "phase": "proposal",
+                "state_revision": 1,
+                "next_action": {
+                  "operation": "validate_proposal",
+                  "authority": "host",
+                  "expected_revision": 1,
+                  "caller_inputs": [
+                    "selections"
+                  ]
+                },
+                "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+              },
+              "condition": {
+                "code": "invalid_request",
+                "detail": "locator must be explicitly present in the cited reference"
+              }
+            }
+          },
+          "error": null,
+          "status": "completed"
+        }
+      }
+    ],
+    [
+      49,
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_24",
+          "type": "mcp_tool_call",
+          "server": "rob2",
+          "tool": "request_companion_source",
+          "arguments": {
+            "reference": {
+              "trial_id": "chua-2022",
+              "source_id": "sh_ffc67037a8e93118",
+              "page": 1,
+              "citation": "protocolSection.referencesModule.references[0].citation: \"Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.\"",
+              "locator": "10.1186/s13063-019-3305-8",
+              "locator_kind": "doi",
+              "requested_role": "protocol",
+              "registry_id": "NCT03396094",
+              "linkage_rationale": "Current registry explicitly cites Pre-AeRATE protocol matching main report reference 27. Not captured as PDF in active inventory; historical plan applicability and timing are unverified."
+            }
+          },
+          "result": {
+            "content": [],
+            "structured_content": {
+              "outcome": "condition",
+              "head": {
+                "phase": "proposal",
+                "state_revision": 1,
+                "next_action": {
+                  "operation": "validate_proposal",
+                  "authority": "host",
+                  "expected_revision": 1,
+                  "caller_inputs": [
+                    "selections"
+                  ]
+                },
+                "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+              },
+              "condition": {
+                "code": "invalid_request",
+                "detail": "locator must be explicitly present in the cited reference"
+              }
+            }
+          },
+          "error": null,
+          "status": "completed"
+        }
+      }
+    ]
+  ],
+  "original_events_sha256": "0448f021754aee44bec8d1df7d57e75a63a91873b45fd827851e1420fe13004b",
+  "request_reference": {
+    "trial_id": "chua-2022",
+    "source_id": "sh_ffc67037a8e93118",
+    "page": 1,
+    "citation": "Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.",
+    "linkage_rationale": "Current registry explicitly cites the Pre-AeRATE protocol matching the main report reference 27. Protocol is not among current captured Sources; possible historical endpoint and analysis details require reading and applicability checks, and publication in April 2019 is after recruitment began.",
+    "requested_role": "protocol",
+    "locator_kind": "doi",
+    "locator": "10.1186/s13063-019-3305-8",
+    "registry_id": "NCT03396094"
+  },
+  "replay_response": {
+    "outcome": "success",
+    "state_revision": 13,
+    "phase": "finalized",
+    "request_identity": "sha256:71fb5e57031c4d3fe80452771b70c14e5bd522c0a119c4a981f939e05cf71901",
+    "reference": {
+      "trial_id": "chua-2022",
+      "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+      "page": 1,
+      "citation": "Chua MT, Khan FA, Ng WM, Lu Q, Low MJW, Yau YW, Punyadasa A, Kuan WS. Pre- and Apnoeic high flow oxygenation for RApid sequence intubation in The Emergency department (Pre-AeRATE): study protocol for a multicentre, randomised controlled trial. Trials. 2019 Apr 4;20(1):195. doi: 10.1186/s13063-019-3305-8.",
+      "linkage_rationale": "Current registry explicitly cites the Pre-AeRATE protocol matching the main report reference 27. Protocol is not among current captured Sources; possible historical endpoint and analysis details require reading and applicability checks, and publication in April 2019 is after recruitment began.",
+      "requested_role": "protocol",
+      "locator_kind": "doi",
+      "locator": "10.1186/s13063-019-3305-8",
+      "registry_id": "NCT03396094"
+    },
+    "parent_source_sha256": "sha256:9e2be0c938c8272b21af59a4d780be92f39a1c918ef8eb1891bc41ad11c2d992",
+    "reference_recorded": true,
+    "document_staged": false,
+    "admitted_to_active_batch": false,
+    "document_read": false,
+    "acquisition": "host_handoff_required",
+    "handoff_argv": [
+      "rob2",
+      "stage-companion",
+      "--workspace",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/chua-doi-technical-replay-20261006/workspace",
+      "--reference",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/chua-doi-technical-replay-20261006/workspace/.rob2-kit/companion_requests/71fb5e57031c4d3fe80452771b70c14e5bd522c0a119c4a981f939e05cf71901/reference.json",
+      "--output",
+      "HOST_CHOSEN_FRESH_WORKSPACE",
+      "--registry-policy",
+      "HOST_CHOSEN_POLICY"
+    ],
+    "lifecycle": "Optional handoff only; no fetch or Source admission occurred. A successful host stage creates a separate workspace requiring intake and review. Read/search only after that workspace admits the candidate. Continue the current assessment with its existing Sources and honestly bounded unknowns; a missing optional document does not force NI or any judgment.",
+    "source_text_is_untrusted_data": true,
+    "input_transfer": {
+      "corpus": "copied_input_plus_candidate_not_necessarily_original_captured_corpus",
+      "input_file_versions_before_staging": [
+        {
+          "path": "input/chua-2022/Supplementary-Table-1.pdf",
+          "sha256": "sha256:4291503f26008b998e92f43e007284ab0928235a71fd594d4da88d8f2ba7d894"
+        },
+        {
+          "path": "input/chua-2022/Supplementary-Table-2.pdf",
+          "sha256": "sha256:7cbbf652bc1873966c626bd51568c0ff4087807a00519ba3cb633766325ec4d6"
+        },
+        {
+          "path": "input/chua-2022/Supplementary-Table-3.pdf",
+          "sha256": "sha256:8ddf706a05c25af8959b490384e9661e8d7136e34c694fbf192ee70dea23b309"
+        },
+        {
+          "path": "input/chua-2022/Supplementary-Table-4.pdf",
+          "sha256": "sha256:6bfd91bf5112b8d6f181578404b7e9a7ef8cf9a62a8ea1f61166d6ae010385d0"
+        },
+        {
+          "path": "input/chua-2022/main.pdf",
+          "sha256": "sha256:e5d602621f33d65b7955d694d380fea1cd0968f0aeec8e87e127fc55291382a1"
+        },
+        {
+          "path": "input/chua-2022/sources.toml",
+          "sha256": "sha256:e1893190d0b544b364e4ce67adb997fb9e176536cdf59df71fd35a21351dcd6e"
+        }
+      ],
+      "captured_source_transfer": [
+        {
+          "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+          "trial_id": "chua-2022",
+          "logical_path": "main.pdf",
+          "sha256": "sha256:e5d602621f33d65b7955d694d380fea1cd0968f0aeec8e87e127fc55291382a1",
+          "role": "main_article",
+          "transfer_status": "copied_input_bytes_match"
+        },
+        {
+          "source_id": "source_937c1c8b38e7b34f0cd79e24eef556374f39a6a212686bec76c02dbe615233a3",
+          "trial_id": "chua-2022",
+          "logical_path": "Supplementary-Table-1.pdf",
+          "sha256": "sha256:4291503f26008b998e92f43e007284ab0928235a71fd594d4da88d8f2ba7d894",
+          "role": "supplement",
+          "transfer_status": "copied_input_bytes_match"
+        },
+        {
+          "source_id": "source_a3af7cb76242001e4ceef561ecc71d69c7408b008293bd7baf6b0ae5f2dfa7b2",
+          "trial_id": "chua-2022",
+          "logical_path": "Supplementary-Table-2.pdf",
+          "sha256": "sha256:7cbbf652bc1873966c626bd51568c0ff4087807a00519ba3cb633766325ec4d6",
+          "role": "supplement",
+          "transfer_status": "copied_input_bytes_match"
+        },
+        {
+          "source_id": "source_b49999b30d45c3a147b1af1b2b13ab8102d485e14d4b9338ac64dcd0d0135336",
+          "trial_id": "chua-2022",
+          "logical_path": "Supplementary-Table-3.pdf",
+          "sha256": "sha256:8ddf706a05c25af8959b490384e9661e8d7136e34c694fbf192ee70dea23b309",
+          "role": "supplement",
+          "transfer_status": "copied_input_bytes_match"
+        },
+        {
+          "source_id": "source_e7e6ca446bf5c3248974910bb969fc15a25d852940f052370683cfc62d33c5da",
+          "trial_id": "chua-2022",
+          "logical_path": "Supplementary-Table-4.pdf",
+          "sha256": "sha256:6bfd91bf5112b8d6f181578404b7e9a7ef8cf9a62a8ea1f61166d6ae010385d0",
+          "role": "supplement",
+          "transfer_status": "copied_input_bytes_match"
+        },
+        {
+          "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+          "trial_id": "chua-2022",
+          "logical_path": "registry/NCT03396094.json",
+          "sha256": "sha256:9e2be0c938c8272b21af59a4d780be92f39a1c918ef8eb1891bc41ad11c2d992",
+          "role": "registry",
+          "transfer_status": "captured_source_not_in_copied_input"
+        }
+      ],
+      "registry_settings": [
+        {
+          "trial_directory": "chua-2022",
+          "registry_id": "NCT03396094",
+          "registry_mode": "current_fetch",
+          "acquire_current_documents": false
+        }
+      ],
+      "registry_policies": [
+        "require-offline-replay",
+        "retain-input-settings"
+      ],
+      "target_trial": "chua-2022",
+      "manifest_change": "Only target Trial sources.toml receives candidate Other declarations; registry settings retained. Other input file bytes are copied unchanged."
+    }
+  },
+  "canonical_bytes_unchanged": true,
+  "raw_citation_preserved": true,
+  "source_security_checks_unchanged": true,
+  "new_protocol_admitted": false,
+  "sealed_answers_changed": false,
+  "network_accessed": false,
+  "limitation": "Successful handoff is not source acquisition. Existing acquisition permits only vetted hosts and exact Crossref metadata; Springer is outside the current PDF allowlist. No restriction bypass or successful protocol capture claim.",
+  "validation": {
+    "complete_companion_sources_suite": "47 passed in 15.63s",
+    "log_sha256": "a18a57ba52a75c612db3d05324a6f7a57ddac2495b0b25901f3a6a05dd473691",
+    "ruff": "passed",
+    "ty": "passed",
+    "diff_check": "passed",
+    "initial_focus_failure": "1 failed, 19 passed: negative test incorrectly expected rejection of an exact DOI substring actually present in source. Revised negative uses an invented citation; failed log preserved. No production behavior changed to satisfy that assertion."
+  },
+  "patch_review_requested": true
+}

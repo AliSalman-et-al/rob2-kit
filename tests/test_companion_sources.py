@@ -57,6 +57,60 @@ def reference(kind="url", locator=URL):
     )
 
 
+@pytest.mark.parametrize(
+    "locator,citation,expected",
+    [
+        (DOI, DOI + ".", True),
+        (DOI, DOI + ",", True),
+        (DOI, DOI + ";", True),
+        (DOI, "(" + DOI + ").", True),
+        (DOI, "[https://doi.org/" + DOI + "].", True),
+        (DOI, "{doi: " + DOI + "}", True),
+        (DOI, "[(" + DOI + ")].", True),
+        ("10.1234/a.b;c:d", "10.1234/a.b;c:d.", True),
+        ("10.1234/a(b)", "(10.1234/a(b)).", True),
+        ("10.1234/a(b)", "https://doi.org/10.1234/a%28b%29.", True),
+        ("10.1234/a(b)", "10.1234/a(b)", True),
+        (DOI, DOI + "-other.", False),
+        (DOI, DOI + ".other", False),
+        (DOI, DOI + "(other)", False),
+        ("10.1234/a", "10.1234/a(b)", False),
+        (DOI, "10.1234/different.", False),
+        (DOI, "https://doi.org/" + DOI + "?version=2", False),
+    ],
+)
+def test_doi_citation_boundaries_preserve_full_identity(locator, citation, expected):
+    assert companion._locator_present(reference("doi", locator), citation) is expected
+
+
+def test_punctuated_doi_handoff_preserves_citation_and_source(tmp_path, network):
+    network(lambda request: pytest.fail("request handoff must not fetch"))
+    original = tmp_path / "original"
+    directory = original / "input" / "trial"
+    directory.mkdir(parents=True)
+    citation = "Protocol citation (doi: " + DOI + ")."
+    (directory / "report.txt").write_text(citation)
+    prepare_batch(
+        original, [TrialDeclaration(id="trial", label="trial", requested_outcome="neutral")], 0
+    )
+    source = list_sources(original, "trial")["sources"][0]
+    before = _state(original)
+    ref = reference("doi", DOI).model_copy(
+        update={"source_id": source["id"], "citation": citation}
+    )
+    companion.request_companion_source(original, ref)
+    request_path = next((original / ".rob2-kit/companion_requests").glob("*/request.json"))
+    saved = json.loads(request_path.read_text())
+    assert saved["reference"]["citation"] == citation
+    assert saved["reference"]["locator"] == DOI
+    assert saved["parent_source_sha256"] == source["sha256"]
+    assert _state(original) == before
+    with pytest.raises(ValueError, match="citation must occur"):
+        companion.request_companion_source(
+            original, ref.model_copy(update={"citation": "Invented reference " + DOI})
+        )
+
+
 def test_explicit_capture_preserves_original_and_uses_normal_intake(tmp_path, network):
     network(lambda request: httpx.Response(200, content=pdf()))
     original = tmp_path / "original"

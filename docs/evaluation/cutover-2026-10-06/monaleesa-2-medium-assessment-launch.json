@@ -1,0 +1,278 @@
+{
+  "case": "monaleesa-2",
+  "scope_only_approval": {
+    "authority": "Existing user-authorized host scope review only",
+    "review_reference": "sha256:c0fb9683d652e210f7a36bc9138d953345b9409d97adfb441b56e855669f2f57",
+    "proposed_results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_dee9ee61b54fe069",
+            "eh_1f908b3a6d840a51"
+          ],
+          "rationale": "Patients were individually randomized to ribociclib plus letrozole or placebo plus letrozole in a double-blind parallel trial; no treatment crossover was allowed during the reported period."
+        },
+        "bindings": [
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/effect_measure"
+            },
+            "value_digest": "sha256:91a90102e1ed0dbf08b1185f3059e0a27ae0befc7fc2fc2ce9949102b805854a"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/estimate"
+            },
+            "value_digest": "sha256:ff53579f83b8b6702d8a213f822f462025ac1a0556c8cfffb60166c973727f90"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/precision"
+            },
+            "value_digest": "sha256:8917d79f91cf851a36e3ed08837ffa48cb4bbeda433a3bc71ab469268a33aa5e"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:acda1846c8d92522f0232e608365bb85cbc97ef46d0da9955842555ad202176b"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "conflicting",
+          "comparison_groups": "specified",
+          "effect_measure": "specified",
+          "eligible_result_choice": "unclear",
+          "measurement": "specified",
+          "outcome_definition": "specified",
+          "source_table_meaning": "specified",
+          "time_point": "unclear"
+        },
+        "evidence": [
+          {
+            "handle": "eh_08886f6093164cda",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:af319c58cfe8c1b22f8ad8d11c35330abbc000bd0f550efca34d0c04a020cfb9",
+            "handle": "eh_1f908b3a6d840a51",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "render_identity": "sha256:d4f40dbdb3b4b0948b056e71303aaa7d5f251f037438c9f216b5e5d78fb9e075",
+            "transcription": "Supplementary Figure. Figure S1. Study Overview (CONSORT Diagram). Screened (n = 958), with a branch to Excluded (n = 290), continues to Randomized (n = 668), branching to Randomized to ribociclib + letrozole (n = 334) and Randomized to placebo + letrozole (n = 334). Ribociclib + letrozole: Received treatment (n = 334); arrow to Discontinued treatment (n = 139): Disease progression (n = 87), Adverse events (n = 25), Patient decision (n = 12), Physician decision (n = 10), Protocol deviation (n = 3), Death (n = 2); arrow to Intent-to-treat population (n = 334), Safety set (n = 334). Placebo + letrozole: Received treatment (n = 330), Did not receive treatment (n = 4): Physician decision (n = 3), Patient decision (n = 1); arrow to Discontinued treatment (n = 180): Disease progression (n = 146), Adverse events (n = 7), Patient decision (n = 13), Physician decision (n = 13), Protocol deviation (n = 1), Death (n = 0); arrow to Intent-to-treat population (n = 334), Safety set (n = 330). CONSORT, Consolidated Standards of Reporting Trials. Printed page 3."
+          },
+          {
+            "handle": "eh_1fc560e7dec3f863",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_388d7cacad7766f1",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_3beada08922ebe1a",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_4856c438a5b92fcd",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_519512607ad7ab18",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_6d8416b448b7412d",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_7c83e4ed0cb3a362",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_a408f163fb45bc55",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_a82c9e8374cc0b4f",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_ab69e286de20ec9a",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_acb040e7625538dd",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_ad389894a02287bf",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_bb27bfb66c3b21f4",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_c6144e6e4dd2c8f2",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_de38f625353fb6d5",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_dee9ee61b54fe069",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_e3b574bc72e3dc72",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_faab0ff890cebb48",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "related",
+        "relation_rationale": "The investigator/local RECIST 1.1 endpoint directly matches the requested outcome concept. Proposed quantitative Result is the main article's stratified Cox hazard ratio, ribociclib plus letrozole versus placebo plus letrozole, in all randomized patients at the January 29, 2016 interim cutoff (243 progression/death events; median follow-up 15.3 months). This is a hazard ratio over accumulated follow-up, not a 15.3-month or 18-month risk contrast. The researcher designated no primary outcome, effect statistic, cutoff, population restriction or contrast beyond the named outcome; the article and original protocol independently call local PFS primary. Those source designations do not resolve researcher Result choice. Hence the non-exact related category retains ambiguity pending explicit approval of these proposed facets rather than asserting exactness. Central-review PFS HR 0.59 (95% CI 0.41 to 0.85), fixed-time 12/18-month rates and group medians are distinct candidates; the local HR is chosen because it directly compares the requested investigator endpoint across follow-up. Plans censor after new anticancer therapy or two or more missing assessments; the resulting analysis is not an unrestricted treatment-policy estimand merely because it is ITT. Current registry records HR 0.556 (95% limits 0.429, 0.720), up to 23 months and Log Rank, while its description and the article identify Cox for HR estimation: retain those presentation/method/window differences without declaring numerical correspondence proof of identity.",
+        "reported": {
+          "analysis_population": "Reported intention-to-treat population: all 668 randomized patients, 334 per assigned group, including four placebo-assigned patients who did not receive treatment. Plans define FAS as all randomized patients but also list incorrect consent as an FAS exclusion criterion; no resulting exclusion is established for this reported result. ITT membership does not establish complete outcome observation.",
+          "effect_measure": "hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "progression-free survival"
+          },
+          "estimate": "0.56",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.43 to 0.72"
+        },
+        "requested_outcome": "Investigator-assessed progression-free survival (RECIST 1.1)",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Ribociclib 600 mg daily, 3 weeks on/1 week off, plus letrozole 2.5 mg daily",
+              "id": "ribociclib"
+            },
+            {
+              "assignment": "Placebo plus letrozole 2.5 mg daily",
+              "id": "placebo"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "hazard ratio",
+          "measurement": {
+            "method": "Investigator/local radiologist assessment of progression-free survival using RECIST 1.1: time from randomization to first documented disease progression or death from any cause.",
+            "metric": "Investigator-assessed progression-free survival (RECIST 1.1)"
+          },
+          "outcome_definition": "Investigator-assessed progression-free survival (RECIST 1.1)",
+          "time_point_or_window": {
+            "description": "Proposed reported interim analysis through January 29, 2016; median follow-up 15.3 months. The researcher did not specify an analysis cutoff or fixed follow-up time.",
+            "kind": "described"
+          }
+        },
+        "trial_id": "monaleesa-2"
+      }
+    ],
+    "no_domain_feedback": true,
+    "no_source_or_result_rewrite": true,
+    "source_review": [
+      "Original main physical pages 3\u20134: local RECIST 1.1 PFS, stratified Cox HR .56 (.43\u2013.72), all 668 randomized, Jan 29 2016 cutoff, 243 events, median follow-up 15.3 months. Central HR .59 and fixed-time rates distinct.",
+      "Original protocol/SAP physical pages 390, 406\u2013407 checked: FAS all randomized; planned new-treatment / >=2 missed assessment censoring; discontinuation alone not censoring; stratified Cox. Plans do not establish actual implementation or unblinding timing.",
+      "Current registry presentation and window differences retained. Result choice qualified as related, not exact researcher-reference alignment. No domain advice."
+    ]
+  },
+  "continuation_freeze": {
+    "same_session": "01a10ffe-9508-7380-999e-9b5153798e03",
+    "scope_only_approval": true,
+    "no_science_feedback": true,
+    "coverage": {
+      "passed": true,
+      "manifest_sha256": "27ae6382cd2c07be2da9aa154e100d4e3c2546f6552de2176e2c310a0949145f",
+      "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+      "evidence_bundle_sha256": "b9bd16cf499f88e08530a93176c78ed4e8da7c6d1f03b7085b69977b9b3fe87c",
+      "required_window_count": 598,
+      "supplied_window_count": 598,
+      "required_image_count": 1,
+      "supplied_image_count": 1,
+      "scope": "declared research-design coverage only; no semantic sufficiency claim"
+    },
+    "files": {
+      "scope-approval.json": "488c6e513ab0c140ca9e74d5983559ddd0a70e8e72067f5272d7b9859a8e5f01",
+      "approved-seed-state.json": "eaef351a6383226a3ba7bd8b8f5793e48abbe7cb65e16df1186d6bb13e8d682c",
+      "assessment-prompt.txt": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+      "assessment-evidence-manifest.json": "27ae6382cd2c07be2da9aa154e100d4e3c2546f6552de2176e2c310a0949145f",
+      "assessment-native-evidence.bundle": "b9bd16cf499f88e08530a93176c78ed4e8da7c6d1f03b7085b69977b9b3fe87c",
+      "assessment-empty-text-recovery.json": "a1e422f7cad644b0201e2e929832c1054f4769fc25920c908e3e05d53d8951ce",
+      "run_stage.py": "29ee5fc1548c958ff06d296e35a5e1ef2c15eec433d0abdc281752c92bce4267",
+      "home/config.toml": "41ae7f69b9ae00bd35665751e271c7fc19c93b4728703ab97b59fe0dfbb64d78"
+    }
+  },
+  "launch": {
+    "command": [
+      "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+      "exec",
+      "resume",
+      "01a10ffe-9508-7380-999e-9b5153798e03",
+      "--strict-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "-m",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"medium\"",
+      "--json",
+      "-o",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/monaleesa-2/technical-proposal-recovery-01/assessment-final.txt",
+      "-"
+    ],
+    "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/monaleesa-2/technical-proposal-recovery-01/workspace-run",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "config_sha256": "41ae7f69b9ae00bd35665751e271c7fc19c93b4728703ab97b59fe0dfbb64d78",
+    "launcher_sha256": "29ee5fc1548c958ff06d296e35a5e1ef2c15eec433d0abdc281752c92bce4267",
+    "manifest_sha256": "27ae6382cd2c07be2da9aa154e100d4e3c2546f6552de2176e2c310a0949145f",
+    "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+    "environment_keys": [
+      "CODEX_HOME",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "LOGNAME",
+      "NO_COLOR",
+      "PATH",
+      "ROB2_WORKSPACE",
+      "SHELL",
+      "TEMP",
+      "TERM",
+      "TMP",
+      "TMPDIR",
+      "USER",
+      "XDG_RUNTIME_DIR"
+    ],
+    "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+    "started_at_utc": "2026-10-06T07:23:03.635662+00:00",
+    "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+    "authorized_new_sessions": 1
+  },
+  "runtime_stratum": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "source_or_result_rewritten": false,
+  "domain_feedback_provided": false,
+  "transport_recovery": "Workspace execution restored; process inspection found no surviving case/test processes. Existing settled proposal resumed once, no duplicate launch.",
+  "original_proposal_terminal_preserved": true
+}
