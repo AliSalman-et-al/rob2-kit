@@ -1,0 +1,5 @@
+{
+  "known_fda_url_capture": "unsupported_or_forbidden_public_url",
+  "regulatory_role": "string_pattern_mismatch",
+  "explicit_citation_constraint": "_validated_reference requires citation substring and locator occurrence in the existing captured Source page; no external discovery-origin reference."
+}
