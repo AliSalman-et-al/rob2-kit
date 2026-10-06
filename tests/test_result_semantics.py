@@ -846,7 +846,8 @@ def test_unidentified_group_statistic_survives_assessment_without_inventing_a_la
         binding["field"]["path"].endswith("/statistic") for binding in stored["bindings"]
     )
     assert (
-        canonical["scientific_pack"]["result_semantics_version"] == "rob2-kit.result-semantics.v0.9"
+        canonical["scientific_pack"]["result_semantics_version"]
+        == "rob2-kit.result-semantics.v0.10"
     )
     standalone_shape = runpy.run_path("scripts/verify_bundle.py")["_valid_result_shape"]
     # v0.8 claimed complete statistic labels; its interpretation must stay strict.
@@ -855,3 +856,111 @@ def test_unidentified_group_statistic_survives_assessment_without_inventing_a_la
         stored["clarity"]["source_table_meaning"] = "specified"
         assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.9")
         stored["clarity"]["source_table_meaning"] = "unclear"
+
+
+@pytest.mark.parametrize(
+    ("source", "statistic", "values", "interpretation"),
+    [
+        (
+            "At one year, requested outcome GMR was 0.87 for intervention and 0.96 "
+            "for control; individually randomized.",
+            "GMR",
+            ("0.87", "0.96"),
+            "These are paired ratios and scientifically unitless; no unit is printed.",
+        ),
+        (
+            "At one year, requested outcome mean was 5.7 for intervention and 14 "
+            "for control; individually randomized.",
+            "mean",
+            ("5.7", "14"),
+            "The reported unit is unreported; physical scale remains unknown.",
+        ),
+        (
+            "At one year, requested outcome mean was 5.7 for intervention and 14 "
+            "for control; units are labelled points in the table but mg in the legend; "
+            "individually randomized.",
+            "mean",
+            ("5.7", "14"),
+            "The source units conflict between points and mg; no single unit is established.",
+        ),
+    ],
+)
+def test_null_source_unit_preserves_interpretation_without_literal_binding(
+    tmp_path: Path, source: str, statistic: str, values: tuple[str, str], interpretation: str
+) -> None:
+    import runpy
+
+    from rob2_kit.application.finalization import _valid_result_shape
+
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/main.txt").write_text(source + "\n")
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["relation"] = "narrower"
+    result["relation_rationale"] = interpretation
+    result["clarity"]["source_table_meaning"] = "unclear"
+    result["reported"] = {
+        "form": "group_bound_values",
+        "endpoint": {"name": "requested outcome"},
+        "analysis_population": "Reported group values; inclusion details unknown.",
+        "group_values": [
+            {"group_id": group, "statistic": statistic, "value": value, "unit": None}
+            for group, value in zip(("a", "b"), values, strict=True)
+        ],
+    }
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert saved["outcome"] == "review_required", saved
+    stored = _state(workspace)["proposal"]["payload"]["results"][0]
+    assert all(value["unit"] is None for value in stored["reported"]["group_values"])
+    assert stored["relation_rationale"] == interpretation
+    assert not any(binding["field"]["path"].endswith("/unit") for binding in stored["bindings"])
+    # Recovery and typed serialization retain null, without converting it to unitless.
+    recovered = _call(workspace, "get_status", {})
+    assert recovered["outcome"] == "success"
+    draft = AssessableResultDraft.model_validate(result)
+    assert draft.reported.form == "group_bound_values"
+    assert draft.reported.group_values[0].unit is None
+    standalone_shape = runpy.run_path("scripts/verify_bundle.py")["_valid_result_shape"]
+    for validator in (_valid_result_shape, standalone_shape):
+        assert validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.10")
+        assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.9")
+        stored["clarity"]["source_table_meaning"] = "specified"
+        assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.10")
+        stored["clarity"]["source_table_meaning"] = "unclear"
+    if statistic == "GMR":
+        _review(workspace)
+        _read_required_main_reports(workspace)
+        revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+        for domain in SCIENTIFIC_PACK.domains:
+            committed = _call(
+                workspace,
+                "save_domain_judgment",
+                _domain_draft("trial", domain.id, revision, evidence),
+            )
+            assert committed["outcome"] == "success", committed
+            revision = int(committed["head"]["state_revision"])
+        finalized = _finalize_assessment(workspace, revision)
+        artifact = workspace / str(finalized["data"]["artifact"]["path"])
+        assert verify_bundle(artifact)
+        assert _standalone_verify(artifact).returncode == 0
+
+
+def test_printed_units_remain_literal_and_source_bound(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    source = workspace / "input/trial/main.txt"
+    source.write_text(source.read_text().replace("events", "mg"))
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    for value in result["reported"]["group_values"]:
+        value["unit"] = "mg"
+    # The source prints mg; a different physical unit is not licensed.
+    result["reported"]["group_values"][0]["unit"] = "points"
+    rejected = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert rejected["outcome"] == "repair"
+    assert any(
+        r["code"] == "result_value_not_supported" and r["path"].endswith("/unit")
+        for r in rejected["repairs"]
+    )
+    result["reported"]["group_values"][0]["unit"] = "mg"
+    accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert accepted["outcome"] == "review_required", accepted

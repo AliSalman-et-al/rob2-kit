@@ -1161,9 +1161,6 @@ class ResultClarity(StrictModel):
     )
 
 
-MISSING_GROUP_VALUE_UNIT = "__rob2_missing_group_unit__"
-
-
 class GroupResultValue(StrictModel):
     group_id: NonBlankText = Field(
         description=(
@@ -1177,7 +1174,12 @@ class GroupResultValue(StrictModel):
         "unresolved meaning; the server does not infer a label.",
     )
     value: NonBlankText = Field(description="Source-reported value for this group.")
-    unit: NonBlankText = Field(description="Source-reported unit for this group value.")
+    unit: NonBlankText | None = Field(
+        default=None,
+        description="Literal source-reported unit, or null when unreported or unresolved. "
+        "A scientifically inferred unit belongs in scope_rationale, never in this literal field. "
+        "Null does not assert dimensionless; retain uncertainty in source_table_meaning.",
+    )
 
 
 class ReportedEndpoint(StrictModel):
@@ -2016,18 +2018,6 @@ class ProposedReportedResult(StrictModel):
         description="Optional table/derived quantitative proof only. "
         "Use selection.source_passages for narrative/figure handles.",
     )
-
-    @field_validator("group_values", mode="before")
-    @classmethod
-    def missing_units_reach_scientific_repair(cls, value: Any) -> Any:
-        if not isinstance(value, (list, tuple)):
-            return value
-        return [
-            {**group, "unit": MISSING_GROUP_VALUE_UNIT}
-            if isinstance(group, dict) and group.get("unit") is None
-            else group
-            for group in value
-        ]
 
     def to_draft(
         self,

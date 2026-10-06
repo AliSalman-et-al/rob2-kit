@@ -81,7 +81,8 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.10"
+_NULL_STATISTIC_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
 _GROUP_VALUES_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
 _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
@@ -487,6 +488,11 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path.endswith("/statistic") and leaf is None)
+            or (
+                leaf_path.startswith("/reported/group_values/")
+                and leaf_path.endswith("/unit")
+                and leaf is None
+            )
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
@@ -1737,17 +1743,24 @@ def _valid_result_shape(
             if (
                 not isinstance(item, dict)
                 or set(item) != {"group_id", "statistic", "value", "unit"}
-                or not all(_nonblank(item.get(key)) for key in ("group_id", "value", "unit"))
+                or not all(_nonblank(item.get(key)) for key in ("group_id", "value"))
+                or not (
+                    _nonblank(item.get("unit"))
+                    or (semantics_version == _RESULT_SEMANTICS_VERSION and item.get("unit") is None)
+                )
                 or not (
                     _nonblank(item.get("statistic"))
                     or (
-                        semantics_version == "rob2-kit.result-semantics.v0.9"
+                        semantics_version
+                        in {_RESULT_SEMANTICS_VERSION, _NULL_STATISTIC_RESULT_SEMANTICS_VERSION}
                         and item.get("statistic") is None
                     )
                 )
             ):
                 return False, set()
-            if item.get("statistic") is None and clarity.get("source_table_meaning") == "specified":
+            if (item.get("statistic") is None or item.get("unit") is None) and clarity.get(
+                "source_table_meaning"
+            ) == "specified":
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
@@ -1774,7 +1787,11 @@ def _valid_result_shape(
         values_key = (
             "group_values"
             if semantics_version
-            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            in {
+                _RESULT_SEMANTICS_VERSION,
+                _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+                _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+            }
             else "values"
         )
         if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
@@ -1900,7 +1917,11 @@ def _reported_result_has_coherent_anchor(
         values_key = (
             "group_values"
             if semantics_version
-            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            in {
+                _RESULT_SEMANTICS_VERSION,
+                _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+                _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+            }
             else "values"
         )
         quantitative_tuples = [
@@ -2103,6 +2124,7 @@ def _verify_result_evidence(
         return False
     strict_numeric = semantics_version in {
         _RESULT_SEMANTICS_VERSION,
+        _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
         _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
     }
 
@@ -3189,8 +3211,12 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         expected = _scientific_contract_descriptor()
     except (AttributeError, StopIteration, ValueError):
         return False
-    if isinstance(value, dict) and value == expected:
+    if isinstance(value, dict) and value in (
+        expected,
+        {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+    ):
         return True
+    expected = {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION}
     # Exact predecessor guidance pins retain their original contract shape.
     if value in (
         {

@@ -25,7 +25,7 @@ _ALLSOP = (
 
 
 def test_current_descriptor_pin_and_recognized_history_match_installed_pack() -> None:
-    assert _STANDALONE["_CONDITIONAL_SCIENTIFIC_PACK"] == _scientific_contract_descriptor()
+    assert _STANDALONE["_NULL_UNIT_SCIENTIFIC_PACK"] == _scientific_contract_descriptor()
     for descriptor in _STANDALONE.values():
         if isinstance(descriptor, dict) and descriptor.get("id") == "rob2.parallel.assignment":
             assert _valid_scientific_contract_descriptor(descriptor), descriptor

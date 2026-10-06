@@ -8,7 +8,6 @@ from typing import Any
 from pydantic import ValidationError
 
 from ..workflow_models import (
-    MISSING_GROUP_VALUE_UNIT,
     AssessableResult,
     AssessableResultDraft,
     CategoryProfileResult,
@@ -79,6 +78,11 @@ def _source_bound_leaves(value: Any, path: str) -> dict[str, Any]:
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path.endswith("/statistic") and leaf is None)
+            or (
+                leaf_path.startswith("/reported/group_values/")
+                and leaf_path.endswith("/unit")
+                and leaf is None
+            )
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
             or (
@@ -218,14 +222,19 @@ def _proposal_shape_repairs(
                             ),
                         }
                     )
-                if value.unit == MISSING_GROUP_VALUE_UNIT:
+                if (
+                    value.unit is None
+                    and result.clarity is not None
+                    and result.clarity.source_table_meaning == "specified"
+                ):
                     result_repairs.append(
                         {
                             "path": f"{reported_path}/{value_index}/unit",
-                            "code": "reported_group_value_unit_required",
+                            "code": "unknown_unit_conflicts_with_clarity",
                             "detail": (
-                                "Copy the source-reported unit for this group value. Do not "
-                                "infer or invent a unit from the statistic or value."
+                                "A null source unit preserves unreported or unresolved meaning; "
+                                "do not mark source_table_meaning as specified. Record any "
+                                "scientific unit interpretation separately in scope_rationale."
                             ),
                         }
                     )

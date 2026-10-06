@@ -589,3 +589,11 @@ relied-on snapshot, not a current account revision or server-verified entailment
 Existing bounded review detail recovery preserves this optional state without
 adding a consistency gate, scientific answer coercion or default account-first
 workflow. Proposed/adopted judgments remain separate and unchanged.
+
+Reported group units may be null when no literal source unit is established.
+A non-null unit remains source-bound; null neither asserts dimensionless nor
+resolves a conflict. Put scientific unit interpretations and limitations in the
+existing scope rationale, and keep source-table clarity unresolved when a unit
+is null. Result semantics v0.10 records this distinction; historical v0.9 and
+older exports retain their original non-null unit requirements. This changes
+representation, not RoB judgments or source-entailment authority.

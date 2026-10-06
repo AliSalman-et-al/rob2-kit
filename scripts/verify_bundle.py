@@ -192,6 +192,10 @@ _CONDITIONAL_SCIENTIFIC_PACK = {
     "domain_judgment_contract": _DOMAIN_JUDGMENT_CONTRACT,
     "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
 }
+_NULL_UNIT_SCIENTIFIC_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "result_semantics_version": "rob2-kit.result-semantics.v0.10",
+}
 _PRE_BOX9_ORDER_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
     "content_hash": "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08",
@@ -3647,6 +3651,11 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path.endswith("/statistic") and leaf is None)
+            or (
+                leaf_path.startswith("/reported/group_values/")
+                and leaf_path.endswith("/unit")
+                and leaf is None
+            )
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
@@ -3677,7 +3686,7 @@ def _decimal_text(value: Decimal) -> str:
 def _valid_requested_result(
     result: object,
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.9",
+    semantics_version: str = "rob2-kit.result-semantics.v0.10",
 ) -> bool:
     if not isinstance(result, dict) or _relation_name(
         result.get("requested_outcome")
@@ -3699,7 +3708,7 @@ def _valid_requested_result(
 def _valid_result_shape(
     result: dict[str, object],
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.9",
+    semantics_version: str = "rob2-kit.result-semantics.v0.10",
 ) -> bool:
     if not _valid_requested_result(result, requested_outcome, semantics_version):
         return False
@@ -3851,17 +3860,27 @@ def _valid_result_shape(
             if (
                 not isinstance(item, dict)
                 or set(item) != {"group_id", "statistic", "value", "unit"}
-                or not all(_nonblank(item.get(key)) for key in ("group_id", "value", "unit"))
+                or not all(_nonblank(item.get(key)) for key in ("group_id", "value"))
+                or not (
+                    _nonblank(item.get("unit"))
+                    or (
+                        semantics_version == "rob2-kit.result-semantics.v0.10"
+                        and item.get("unit") is None
+                    )
+                )
                 or not (
                     _nonblank(item.get("statistic"))
                     or (
-                        semantics_version == "rob2-kit.result-semantics.v0.9"
+                        semantics_version
+                        in {"rob2-kit.result-semantics.v0.9", "rob2-kit.result-semantics.v0.10"}
                         and item.get("statistic") is None
                     )
                 )
             ):
                 return False, set()
-            if item.get("statistic") is None and clarity.get("source_table_meaning") == "specified":
+            if (item.get("statistic") is None or item.get("unit") is None) and clarity.get(
+                "source_table_meaning"
+            ) == "specified":
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
@@ -3888,7 +3907,11 @@ def _valid_result_shape(
         values_key = (
             "group_values"
             if semantics_version
-            in {"rob2-kit.result-semantics.v0.8", "rob2-kit.result-semantics.v0.9"}
+            in {
+                "rob2-kit.result-semantics.v0.8",
+                "rob2-kit.result-semantics.v0.9",
+                "rob2-kit.result-semantics.v0.10",
+            }
             else "values"
         )
         if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
@@ -3945,7 +3968,7 @@ def _reported_result_has_coherent_anchor(
     by_handle: dict[str, dict[str, object]],
     *,
     strict_numeric: bool = True,
-    semantics_version: str = "rob2-kit.result-semantics.v0.9",
+    semantics_version: str = "rob2-kit.result-semantics.v0.10",
 ) -> bool:
     reported = cast(dict[str, Any], result["reported"])
     endpoint = reported["endpoint"]
@@ -4011,7 +4034,11 @@ def _reported_result_has_coherent_anchor(
         values_key = (
             "group_values"
             if semantics_version
-            in {"rob2-kit.result-semantics.v0.8", "rob2-kit.result-semantics.v0.9"}
+            in {
+                "rob2-kit.result-semantics.v0.8",
+                "rob2-kit.result-semantics.v0.9",
+                "rob2-kit.result-semantics.v0.10",
+            }
             else "values"
         )
         quantitative_tuples = [
@@ -4125,7 +4152,7 @@ def _valid_result_evidence(
     sources: dict[str, dict[str, object]],
     requested_outcomes: dict[str, str],
     batch: object = None,
-    semantics_version: str = "rob2-kit.result-semantics.v0.9",
+    semantics_version: str = "rob2-kit.result-semantics.v0.10",
 ) -> bool:
     """Replay the closed Result Evidence contract from exported selections."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
@@ -4216,6 +4243,7 @@ def _valid_result_evidence(
     strict_numeric = semantics_version in {
         "rob2-kit.result-semantics.v0.8",
         "rob2-kit.result-semantics.v0.9",
+        "rob2-kit.result-semantics.v0.10",
     }
 
     def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
@@ -5086,6 +5114,7 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _NULL_UNIT_SCIENTIFIC_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
                 _PRE_BOX9_ORDER_PACK,
                 _PRE_OFFICIAL_CORE_PACK,

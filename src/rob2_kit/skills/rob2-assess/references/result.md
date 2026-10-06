@@ -18,8 +18,13 @@ For `exact`, `candidate.clarity` requires eight explicit facets: `outcome_defini
 `effect_measure`, `source_table_meaning` and `eligible_result_choice`. Each accepts
 `specified`, `unclear`, `unavailable` or `conflicting`; exact requires every facet
 specified. Do not fill these from matching numbers or treat them as defaults.
-An optional group value needs separate `group_id`, `value` and `unit`, supported
-by the source. `statistic` is an optional source label (string or null). Timing value and unit must be given
+An optional group value needs separate `group_id` and `value`, supported by the
+source. `statistic` and `unit` are literal source labels (string or null). A null
+unit preserves an unreported or unresolved unit; it does not assert dimensionless.
+Put a scientific unit interpretation and its basis in `scope_rationale`, rather
+than inventing a printed label. Keep `source_table_meaning` unresolved when a
+statistic or unit is null, and preserve conflicting units in the rationale.
+Non-null units remain strictly source-bound. Timing value and unit must be given
 together or both omitted. `source_passages` is the one shared citation array;
 `unknowns` a string array, and `counterevidence` an object array or `[]`.
 
