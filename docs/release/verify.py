@@ -17,6 +17,7 @@ from typing import Any
 
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
+from mcp.types import TextResourceContents
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs" / "release" / "public-contract.json"
@@ -208,8 +209,8 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
     skill_resource = await client.read_resource("rob2://guidance/SKILL")
     missing_resource = await client.read_resource("rob2://guidance/missing")
     _verify_packaged_skill(
-        "\n".join(item.text for item in skill_resource if hasattr(item, "text")),
-        "\n".join(item.text for item in missing_resource if hasattr(item, "text")),
+        "\n".join(item.text for item in skill_resource if isinstance(item, TextResourceContents)),
+        "\n".join(item.text for item in missing_resource if isinstance(item, TextResourceContents)),
     )
     current = await client.read_resource("rob2://current-batch")
     if len(current) != 1 or not getattr(current[0], "text", None):
