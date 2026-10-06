@@ -16,6 +16,12 @@ pilots are a separate superseded stratum. A pending receipt is not launch approv
 Independent source/content, prose/schema and architecture/history reviews must
 close on this exact candidate, with installed verification and regression results.
 
+The parent decision recorded before the first Medium launch permits the exact-head
+focused failure cohort plus unchanged independently reviewed installed runtime to
+close the launch gate while one durable clean aggregate suite runs. A complete green
+aggregate remains mandatory before the PR leaves draft or merges. The original
+14-failure aggregate and every failed followup remain separate retained strata.
+
 Use fresh isolated case workspaces and the native MCP source workflow. Preserve
 original Code benchmark target wording, arms, endpoint, timing and effect measure.
 Captured registry augmentation must be separately identified, hashed and disclosed;

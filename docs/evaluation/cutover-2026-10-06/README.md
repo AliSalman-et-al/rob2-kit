@@ -14,7 +14,8 @@ five Domain projections. See `guidance-audit.md`, `experiment-disposition.md` an
 `3c6660d`. The complete replacement regression at `f4912d8` ended with 14 failed,
 1,629 passed and 8 skipped; all 14 failures now have passing focused followups.
 `regression-failure-review.json` preserves classifications and followup strata.
-There is no single full-suite green claim. The final verification decision and
-immutable final input/build/profile freeze remain pending. No final Medium case has
-launched; earlier Low pilots remain superseded development evidence.
+There is no single full-suite green claim. The exact-head focused cohort passed 14/14; the unchanged installed runtime
+and all ten final input/profile preflights passed. See `focused-closure-receipt.json`
+and `final-medium-freeze.json`. One clean aggregate suite is still running, and its
+green result is required before merge. No final Medium case has launched; earlier Low pilots remain superseded development evidence.
 `execution-protocol.md` defines prospective run/reporting rules, not gate closure.
