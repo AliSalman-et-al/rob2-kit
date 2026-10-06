@@ -1,0 +1,39 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|21 of 58
+7|
+8|93C power for a two-sided nominal alpha of 2.4C.
+9|This is based on an overall 1N1 allocation between dapaglifloIin and placebo.
+10|The HR 0.80 was originally chosen as a conservative assumption based on the observed
+11|HR 0.72 (95C confidence interval 0.50-1.04) for the composite of HF hospitalisation and CV
+12|death in patients with HF at baseline in the EMPA-REG OUTCOME trial (Fitchett et al 2016)
+13|and HR 0.61 (0.46-0.80) for patients with history of HF in the CANVAS program (RUdholm
+14|et al 2018) considering that these were post-hoc analyses in subgroups with limited
+15|documentation of baseline HF diagnosisO not characterised by ejection fraction.
+16|The event rate assumptions are based on sub analyses of the TOPCAT and I-PRESERVE
+17|studies by geographic regionO NT-proBNP levelsO prior hospitalisation for HFO and T2D status
+18|(Pfeffer et al 2015O Kristensen et al 2015O Kristensen et al 2017). The sample siIe calculation
+19|builds on the assumption of an annual event rate of 9C in the placebo group for the majority
+20|of prevalent HFpEF patientsO importantly all with NT-proBNP Q 300 pgJml by inclusion
+21|criterion. AdditionallyO a subgroup of patients due to be discharged or recently discharged
+22|from a HF hospitalisation (here denoted VsubacuteK patients) with a higher event rate is
+23|planned to be included. Assuming 20C of patients from the subacute category with an annual
+24|event rate of 24C during the first year and 9C thereafter for the remainder of the studyO the
+25|original sample siIe of 4700 was estimated to provide 844 events during a recruitment period
+26|of 18 months and a minimum follow-up of 15 months.
+27|Based on the ongoing blinded monitoring of event accrual (including the percentage of
+28|patients from the subacute category)O the sample siIe was increased from original 4700 to
+29|approximately 6100 randomised patients. AccordinglyO the recruitment period was anticipated
+30|to increase from the original 18 months to 26 months. Recruitment might be marginally
+31|prolonged in a few countries to meet local targets. The study is event driven and the number
+32|of patients or duration may further change.
+33|With the same event rate assumptions as aboveO assuming 11C of patients from the subacute
+34|categoryO approximately 6100 patients were estimated to provide the reHuired number of
+35|1117 patients with a primary event in the full study populationO during an anticipated
+36|recruitment period of 26 months and a minimum follow-up period of 13.5 months (total study
+37|duration 39 months).
+38|In additionO the expected number of patients who will be LTFU is expected to be smallT henceO
+39|these are not considered in the determination of the sample siIe.

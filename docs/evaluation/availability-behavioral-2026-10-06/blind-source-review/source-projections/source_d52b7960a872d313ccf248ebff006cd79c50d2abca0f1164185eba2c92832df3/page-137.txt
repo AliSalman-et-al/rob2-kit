@@ -1,0 +1,63 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|44 of 95
+6|
+7|Randomisation 1D1 ratio to IP Heither dapagliflozin at 10 mg or placeboI will be done in
+8|IxRS
+9|
+10|
+11|IP will be dispensed via IxRS to the patient. The patient will be instructed to take the IP
+12|in accordance with protocol without interruptions, and to bring all dispensed bottles to
+13|all study visits
+14|
+15|
+16|Patients who have consented to sampling for genetic research, will provide a blood
+17|sample
+18|8.2.2
+19|Visit 3 (Day 30H E7 days):
+20|At Visit 3, the following assessments and procedures will be conductedD
+21|
+22|CCCM and PGIS questionnaires will be completed
+23|
+24|
+25|NYHA Functional Classification will be evaluated and recorded
+26|
+27|Vital signs HBP, pulseI will be assessed and recorded
+28|
+29|
+30|Review and updating of concomitant medication and recording of relevant medications
+31|
+32|
+33|Review and recording of any cardiac and HF related procedures
+34|
+35|
+36|Review of potential efficacy and safety events including COVID-19 testing results
+37|
+38|
+39|If the patient has experienced any potential endpoints, SAEs, DAEs andPor amputations,
+40|adverse events HAEsI leading to amputation and potential risk factor AEs for amputations
+41|affecting lower limbs since the last visit, this will be recorded in the eCRF
+42|
+43|
+44|Blood samples will be taken for creatinine Hfor calculation of eGFRI assessment
+45|Hcentral laboratoryI
+46|8.2.3
+47|Visit 4 (Day 120 E7 days):
+48|At Visit 4, the following assessments and procedures will be conductedD
+49|
+50|CCCM and PGIS questionnaires will be completed
+51|
+52|
+53|NYHA Functional Classification will be evaluated and recorded
+54|
+55|
+56|Review and updating of concomitant medication and recording of relevant medications
+57|
+58|
+59|Review and recording of any cardiac and HF related procedures
+60|
+61|
+62|Review of potential efficacy and safety events including COVID-19 testing results
+63|

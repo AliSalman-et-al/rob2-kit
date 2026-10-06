@@ -1,0 +1,49 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|14 of 58
+7|Date
+8|Brief description of change
+9|based analyses.
+10|Clarifications made in section on EHandling of missing KCCQ dataF.
+11|L4.2.4.3 Analysis of CV deathM
+12|Clarifications that CV deaths are confirmed in adjudication and how censoring is
+13|handled.
+14|L4.2.4.4 Analysis of all-cause mortalityM
+15|Clarification that analysis includes deaths from any cause.
+16|L4.2.5 Analysis of safety variablesM
+17|Updated that summaries of AEs will be presented both for the on-treatment period and
+18|on- and off-treatment period.
+19|L4.2.5.1 Adverse eventsM
+20|Updated list of safety variablesO adding myocardial infarctionO unstable anginaO stroGeO
+21|major hypoglycaemic eventsO potential DKA and amputations.
+22|L4.2.5.4 Specific adverse eventsM
+23|AddedN EAEs leading to amputationsF to list.
+24|Added that event rate will be presented for AEs leading to amputations and preceding
+25|eventsO DKA and major hypoglycaemic eventsO as well as definition of event rate
+26|calculation.
+27|Added for clarificationN EEvents of genital area infections and necrotising fasciitis
+28|potential of FournierKs gangreneF.
+29|L4.2.5.5 Laboratory evaluation and vital signsM
+30|Removed PTDV and SCV from list of visits and added range to descriptive statistics.
+31|L4.2.6 Analysis of exploratory objectivesM
+32|AddedN EOnly NYHA assessments made at site or through phone visits with the
+33|patients to be used in analyses.F
+34|Added clarification on exploratory KCCQ analyses.
+35|L5 Interim AnalysesM
+36|Removed reference to Haybittle-Peto function as that method will not to be used.
+37|L6 Changes of Analysis from ProtocolM
+38|AddedN EThe alpha for final analysis adjusted for interim analysis at alpha 0.2%
+39|will be set to 5% minus 0.2% = 4.8%, rather than 4.98% as determined by the
+40|Haybittle-Peto function for 67% of events (sections 9.1 and 9.5 of the protocol)."
+41|LReferencesM
+42|Added referenceN Burman et al 2009.
+43|LAppendix AM
+44|Earlier Appendix A renamed A1 Methods.
+45|LAppendix A2M
+46|Added appendix including summary of results of anchor-based analysis on blinded
+47|study data.
+48|LAppendix BM
+49|Added appendix with R code for calculation of significance level.

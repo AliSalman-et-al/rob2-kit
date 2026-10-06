@@ -1,0 +1,46 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|48 of 95
+6|8.3
+7|Efficacy assessments
+8|8.3.1
+9|Efficacy event capture
+10|Efficacy events Hi.e. death, hospitalisation or urgent visits for HFI will be collected by site
+11|personnel according to the study visit schedule. All potential efficacy events should be recorded as
+12|an AE and on additional event modules in the eCRF. If the potential efficacy event fulfils SAE
+13|criteria Hsee Appendix B 2I the site is to record and report these events to the sponsor or designee
+14|within timelines described in Section 8.6.
+15|NYHA classification will be done by the Investigators and recorded in the eCRF. PROs will be
+16|collected for all patients throughout the study period via a hand-held electronic device. All-cause
+17|hospitalisations will be derived from SAE reports.
+18|8.3.2
+19|Efficacy event adjudication
+20|A Clinical Events Adjudication HCEAI Committee will be established for this trial and adjudicate
+21|primary efficacy events in accordance with adjudication criteria detailed in the CEA charter.
+22|Events to be adjudicated include components of the primary efficacy endpointD deaths,
+23|hospitalisation for HF, and urgent HF visits. All deaths will be adjudicated to determine if they are
+24|CV or non-CV deaths. All adjudication will be done on an ongoing basis throughout the trial.
+25|8.3.3
+26|Clinical Outcome Assessments (COA)
+27|A COA is any assessment that may be influenced by human choices, judgement, or motivation and
+28|may support either direct or indirect evidence of treatment benefit. Patient Reported Outcomes
+29|HPROsI is one of the types of COAs. A PRO is any report of the status of a patientOs health condition
+30|that comes directly from the patient, without interpretation of anyone else. PROs have become a
+31|significant endpoint when evaluating benefitPrisk of treatments in clinical trials. The following
+32|PROs will be collectedD CCCM, PGIS and EM-5D-5L Hsee Appendix I, Appendix C, Appendix LI.
+33|PROs will be collected for all patients throughout the study period via a hand-held electronic
+34|device. See study of assessment HSee Table1I for the timing of collection. The ePRO devices should
+35|be administered prior to first dose at visit 2Prandomisation. Site staff should stress that the
+36|information is confidential.
+37|8.3.3.1
+38|KCCI
+39|The Cansas City Cardiomyopathy Muestionnaire HCCCMI is a 23-item, self-administered disease
+40|specific instrument and has shown to be a valid, reliable and responsive measure for patients with
+41|HF HGreene et al 2018, Spertus et al 2005I. The CCCM was developed to independently measure
+42|the patientOs perception of their health status, which includes heart failure-related symptoms
+43|Hfrequency, severity and recent changeI, impact on physical and social function, self- efficacy and
+44|knowledge, and how their heart failure impacts their quality of life HMOLI. Scores are transformed
+45|to a range of 0-100. Higher scores represent a better outcome.
+46|The CCCM tool quantifies the following six H6I distinct domains and two H2I summary scoresD

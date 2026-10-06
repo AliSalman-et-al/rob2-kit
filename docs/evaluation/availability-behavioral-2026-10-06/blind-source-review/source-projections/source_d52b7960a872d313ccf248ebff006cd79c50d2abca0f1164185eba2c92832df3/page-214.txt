@@ -1,0 +1,44 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|25 of 36
+7|4.2.4.2
+8|Analysis of change from baseline to 8 months in the KCCQ total symptom
+9|score
+10|Hypothesis testing
+11|The composite rank-based endpoint representing the patientsO vital status at 8 months and the
+12|change from baseline to 8 months in TSS in surviving patientsH as defined in Section 3.2.2H
+13|will be analysed using the rank ANCOVA method (Stokes et al 2012) to test the null
+14|hypothesis of no differences in the distributions of ranked outcomes between the two
+15|treatment groups. Analysis will be stratified by T2D status at randomisationH and adjusted for
+16|the baseline TSS value as follows.
+17|First the change from baseline to 8 months in TSS and vital status at 8 monthsH as well as
+18|values of the baseline TSS covariate will be transformed to standardiDed ranks within each
+19|T2D randomiDation stratumH using fractional ranks and mean method for ties. Ranking for the
+20|composite endpoint will be done so that patients who died prior to the 8-month assessment are
+21|assigned the worst ranks within each stratum. This will be implemented by assigning a
+22|temporary value of -101 to subjects who died prior to 8-month assessment before deriving
+23|fractional ranks. ThenH separate regression models will be fit to the ranked data for each
+24|randomiDation stratum using a regression model for the ranked composite variable as
+25|dependent variableH adjusting for the ranked baseline covariate. Residuals from this regression
+26|model will be captured for further testing of differences between treatment groups. The
+27|Cochran-Mantel-HaensDel (CMH) testH stratified for the T2D status at randomiDationH using
+28|the values of the residuals as scores will be used to compare treatment groups.
+29|The p-value from the CMH test of treatment effect at 8 months will be the used for the
+30|confirmatory testing of the secondary endpoint in the multiple testing procedure described in
+31|section 4.1.3.
+32|Estimation of treatment effect
+33|Win ratioG
+34|For a summary statistic that uses the same ranking as that used in the hypothesis testH but has a
+35|clinical interpretationH the win ratio (WR) and the corresponding 95I confidence interval
+36|(Wang and Pocock 2016) will be reported. It is noted that the WR differs from the statistic
+37|used for hypothesis testingH so that exact consistency is not expected as between these two
+38|analysesH e.g. on rare occasionsH the confidence interval for WR could exclude unity while the
+39|pre-planned hypothesis test could be non-significantH or the hypothesis test could be
+40|significant with the confidence interval for WR including unity. Formal inference for the
+41|superiority of the treatment over control will be made only from the preplanned hypothesis
+42|test.
+43|The win ratio represents the odds of having a more favourable outcome versus a less
+44|favourable outcome when assigned to the dapaglifloDin 10 mg treatment group as opposed to

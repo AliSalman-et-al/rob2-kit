@@ -1,0 +1,110 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|6 of 36
+7|LIST OF ABBREVIATIONS
+8|Abbreviation or special
+9|term
+10|Explanation
+11|AE
+12|Adverse event
+13|ATC
+14|Anatomical Therapeutic Chemical
+15|BP
+16|Blood pressure
+17|CDF
+18|Cumulative distribution function
+19|CEA
+20|Clinical event adjudication
+21|CKD-EPI
+22|Chronic kidney disease epidemiology collaboration eCuation
+23|CMH
+24|Cochran-Mantel-HaensDel test
+25|CV
+26|Cardiovascular
+27|DAE
+28|Adverse events leading to discontinuation of investigational product
+29|DKA
+30|Diabetic Ketoacidosis
+31|DMC
+32|Data monitoring committee
+33|eCRF
+34|Electronic case report form
+35|eGFR
+36|Estimated glomerular filtration rate
+37|EQ- 5D-5L
+38|EuroQol five-dimensional five-level Cuestionnaire
+39|FAS
+40|Full analysis set
+41|HF
+42|Heart failure
+43|HFpEF
+44|Heart Failure with Preserved Ejection Fraction
+45|HR
+46|HaDard ratio
+47|IP
+48|Investigational Product (dapaglifloDin or matching placebo)
+49|ITT
+50|Intention to treat
+51|IxRS
+52|Interactive Voice/Web Response System
+53|KCCQ
+54|Kansas City Cardiomyopathy Questionnaire
+55|KM
+56|Kaplan-Meier
+57|LTFU
+58|Lost to follow-up
+59|LVEF
+60|Left ventricular ejection fraction
+61|MAR
+62|Missing at random
+63|MedDRA
+64|Medical dictionary for regulatory activities
+65|NYHA
+66|New York Heart Association
+67|PACD
+68|Primary analysis censoring date
+69|PGIS
+70|Patient global impression of severity
+71|PT
+72|MedDRA preferred term
+73|PTDV
+74|Premature treatment discontinuation visit
+75|
+76|[Extracted table 1]
+77||Abbreviation or special<br>term|Explanation|
+78||---|---|
+79||AE|Adverse event|
+80||ATC|Anatomical Therapeutic Chemical|
+81||BP|Blood pressure|
+82||CDF|Cumulative distribution function|
+83||CEA|Clinical event adjudication|
+84||CKD-EPI|Chronic kidney disease epidemiology collaboration eCuation|
+85||CMH|Cochran-Mantel-HaensDel test|
+86||CV|Cardiovascular|
+87||DAE|Adverse events leading to discontinuation of investigational product|
+88||DKA|Diabetic Ketoacidosis|
+89||DMC|Data monitoring committee|
+90||eCRF|Electronic case report form|
+91||eGFR|Estimated glomerular filtration rate|
+92||EQ- 5D-5L|EuroQol five-dimensional five-level Cuestionnaire|
+93||FAS|Full analysis set|
+94||HF|Heart failure|
+95||HFpEF|Heart Failure with Preserved Ejection Fraction|
+96||HR|HaDard ratio|
+97||IP|Investigational Product (dapaglifloDin or matching placebo)|
+98||ITT|Intention to treat|
+99||IxRS|Interactive Voice/Web Response System|
+100||KCCQ|Kansas City Cardiomyopathy Questionnaire|
+101||KM|Kaplan-Meier|
+102||LTFU|Lost to follow-up|
+103||LVEF|Left ventricular ejection fraction|
+104||MAR|Missing at random|
+105||MedDRA|Medical dictionary for regulatory activities|
+106||NYHA|New York Heart Association|
+107||PACD|Primary analysis censoring date|
+108||PGIS|Patient global impression of severity|
+109||PT|MedDRA preferred term|
+110||PTDV|Premature treatment discontinuation visit|

@@ -1,0 +1,89 @@
+1|Jul 11, 2022 14:51:06 EDT
+2|New England Journal of Medicine
+3|Brian Claggett
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|Amgen Inc.
+10|Consultant
+11|Self
+12|Beren Therapeutics
+13|Consultant
+14|Self
+15|Cardurion
+16|Consultant
+17|Self
+18|Corvia
+19|Consultant
+20|Self
+21|Myokardia
+22|Consultant
+23|Self
+24|Novartis
+25|Consultant
+26|Self
+27|Partners Healthcare
+28|Employment
+29|Self
+30|Peerbridge Health
+31|Consultant
+32|Self
+33|Additional Questions:
+34|Certification
+35|I certify that the information provided in this disclosure is complete and accurate.
+36|Disclosure Purpose: 22-06286
+37|Category: Consultant
+38|Description: Statistical Consulting
+39|Additional Information:
+40|Category: Consultant
+41|Description: Statistical Consulting
+42|Additional Information:
+43|Category: Consultant
+44|Description:
+45|Additional Information:
+46|Category: Consultant
+47|Description:
+48|Additional Information:
+49|Category: Consultant
+50|Description: Statistical Consulting
+51|Additional Information:
+52|Category: Consultant
+53|Description: Statistical Consulting
+54|Additional Information:
+55|Title: Biostatistician
+56|Position Description: Biostatistician
+57|Additional Information:
+58|Category: Consultant
+59|Description: Statistical Consulting
+60|Additional Information:
+61|1.
+62|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+63|No.
+64|2.
+65|What is the manuscript title?
+66|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+67|3.
+68|Are you the corresponding author?
+69|No.
+70|
+71|[Extracted table 1]
+72||Entity|Type|Interest Held By|
+73||---|---|---|
+74||Amgen Inc.|Consultant|Self|
+75||Category: Consultant Description: Statistical Consulting<br>Additional Information:|||
+76||Beren Therapeutics|Consultant|Self|
+77||Category: Consultant Description: Statistical Consulting<br>Additional Information:|||
+78||Cardurion|Consultant|Self|
+79||Category: Consultant Description:<br>Additional Information:|||
+80||Corvia|Consultant|Self|
+81||Category: Consultant Description:<br>Additional Information:|||
+82||Myokardia|Consultant|Self|
+83||Category: Consultant Description: Statistical Consulting<br>Additional Information:|||
+84||Novartis|Consultant|Self|
+85||Category: Consultant Description: Statistical Consulting<br>Additional Information:|||
+86||Partners Healthcare|Employment|Self|
+87||Title: Biostatistician Position Description: Biostatistician<br>Additional Information:|||
+88||Peerbridge Health|Consultant|Self|
+89||Category: Consultant Description: Statistical Consulting<br>Additional Information:|||

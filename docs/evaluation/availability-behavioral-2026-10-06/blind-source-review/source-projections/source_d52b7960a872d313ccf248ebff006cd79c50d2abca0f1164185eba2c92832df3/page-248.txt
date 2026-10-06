@@ -1,0 +1,43 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|23 of 58
+7|H
+8|PRIMARY AND SECONDARY VARIABLES
+9|Deaths and potential HF events will be adjudicated by an independent CEA committee. The
+10|CEA committee members will not have access to the treatment codes for any patient. The
+11|CEA procedures and event definitions will be described in the CEA charter according to the
+12|CDISC definitions (HicGs et al 2018).
+13|Only HF hospitalisations and urgent HF visits confirmed by the CEA will be used in the
+14|analysis of the primary and secondary endpoints and their components.
+15|The primary analyses of the endpoints concerning CV deathsO either as a component of a
+16|composite or on its ownO will include deaths adjudicated as CV cause. Deaths adjudicated as
+17|Ecause undeterminedF will be considered as non-CV deaths in these analyses.
+18|Adjudicated events occurring from randomisation until WoC or PACD will be included in the
+19|analysis of primary and secondary endpoints. The analysis of all-cause death as a sole
+20|outcome will in addition include any deaths (not adjudicated) after WoCO but on or before
+21|PACD.
+22|H.1
+23|Primary Variable
+24|The primary efficacy variable is time from randomisation to the first occurrence of any event
+25|in the composite of CV deathO hospitalisation for HF or an urgent HF visit.
+26|Patients who did not have an adjudicated primary endpoint event on or prior to PACD will be
+27|censored at the earliest of date of WoC or non-CV death when applicableO and otherwise at the
+28|date of the last clinical event assessment or the PACDO whichever occurs first. It is expected
+29|that patients alive and under study follow-up will have a clinical event assessment at their
+30|SCV after PACD. Last clinical event assessment is defined as the last date when the event
+31|assessment Huestion for a potential HF event was completed on the eCRF event assessment
+32|page.
+33|In analysis of the individual components hospitalisation for HF and urgent HF visitO to
+34|examine their contribution to the composite endpointO date of death from any cause will be an
+35|additional point of censoring.
+36|For analysis of time to first eventO data will be expressed as two variablesN
+37|
+38|A binary variable indicating whether the event in Huestion occurredO or the patient was
+39|censored.
+40|
+41|An integer variable for the number of days from randomisation to the first occurrence of
+42|an event (start date of the event W randomisation date X 1)O or for event free patientsO from
+43|randomisation to censoring (censoring date W randomisation date X 1).

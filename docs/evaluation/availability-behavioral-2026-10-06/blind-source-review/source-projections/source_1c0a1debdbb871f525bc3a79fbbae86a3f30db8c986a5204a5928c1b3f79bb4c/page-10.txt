@@ -1,0 +1,86 @@
+1|n engl j med 387;12 nejm.org september 22, 2022
+2|1098
+3|Dapagliflozin in Heart Failure with Preserved EF
+4|General Hospital of Northern Theater Command, Shenyang, China (Y.H.); Clínica Vesalio, San Borja, Peru (J.W.C.H.); the Department
+5|of Cardiovascular Diseases, Cardiac Intensive Care, University Hospitals Leuven, Leuven, Belgium (S.P.J.); the Department of Noninva-
+6|sive Cardiology, National Cardiology Hospital, Sofia, Bulgaria (T.K.); Kinshukai Hanwa Daini Senboku Hospital, Osaka, Japan (M.K.);
+7|Heart and Vascular Center, Semmelweis University, Budapest, Hungary (B.M.); Institut de Cardiologie de Montréal, Université de Mon-
+8|tréal, Montreal (E.O.), and the Division of Cardiac Surgery, St. Michael's Hospital, University of Toronto, Toronto (S.V.) - both in
+9|Canada; the Cardiovascular Division, Instituto de Pesquisa Clínica de Campinas, Campinas, Brazil (J.F.K.S.); the Department of Myo-
+10|cardial Disease and Heart Failure, National Medical Research Center of Cardiology, Moscow (S.N.T.); the Minneapolis Veterans Affairs
+11|Center for Care Delivery and Outcomes Research, University of Minnesota, Minneapolis (O.V.); Cardiovascular Center, Tam Anh Hos-
+12|pital, Tan Tao University, Tan Duc, Vietnam (V.N.P.); and Late-Stage Development, Cardiovascular, Renal and Metabolism, BioPharma-
+13|ceuticals Research and Development, AstraZeneca, Gothenburg, Sweden (U.W., N.Z., E.B., D.L., M.P., A.M.L.).
+14|References
+15|1. McMurray JJV, Solomon SD, Inzucchi
+16|SE, et al. Dapagliflozin in patients with
+17|heart failure and reduced ejection frac-
+18|tion. N Engl J Med 2019;381:1995-2008.
+19|2. Packer M, Anker SD, Butler J, et al.
+20|Cardiovascular and renal outcomes with
+21|empagliflozin in heart failure. N Engl J
+22|Med 2020;383:1413-24.
+23|3. Heerspink HJL, Stefánsson BV, Correa-
+24|Rotter R, et al. Dapagliflozin in patients
+25|with chronic kidney disease. N Engl J Med
+26|2020;383:1436-46.
+27|4. Heidenreich PA, Bozkurt B, Aguilar D,
+28|et al. 2022 AHA/ACC/HFSA guideline for
+29|the management of heart failure: a report
+30|of the American College of Cardiology/
+31|American Heart Association Joint Com-
+32|mittee on Clinical Practice Guidelines.
+33|J Am Coll Cardiol 2022;79(17):e263-e421.
+34|5. Solomon SD, McMurray JJV, Anand IS,
+35|et al. Angiotensin-neprilysin inhibition
+36|in heart failure with preserved ejection
+37|fraction. N Engl J Med 2019;381:1609-20.
+38|6. Lund LH, Claggett B, Liu J, et al. Heart
+39|failure with mid-range ejection fraction in
+40|CHARM: characteristics, outcomes and
+41|effect of candesartan across the entire
+42|ejection fraction spectrum. Eur J Heart
+43|Fail 2018;20:1230-9.
+44|7. Anker SD, Butler J, Filippatos G, et al.
+45|Empagliflozin in heart failure with a pre-
+46|served ejection fraction. N Engl J Med
+47|2021;385:1451-61.
+48|8. Butler J, Packer M, Filippatos G, et al.
+49|Effect of empagliflozin in patients with
+50|heart failure across the spectrum of left
+51|ventricular ejection fraction. Eur Heart J
+52|2022;43:416-26.
+53|9. Solomon SD, de Boer RA, DeMets D,
+54|et al. Dapagliflozin in heart failure with
+55|preserved and mildly reduced ejection
+56|fraction: rationale and design of the
+57|DELIVER trial. Eur J Heart Fail 2021;23:
+58|1217-25.
+59|10. Hicks KA, Mahaffey KW, Mehran R,
+60|et al. 2017 Cardiovascular and stroke end-
+61|point definitions for clinical trials. Circu-
+62|lation 2018;137:961-72.
+63|11. Stokes ME, Davis CS, Koch GG. Cate-
+64|gorical data analysis using the SAS system.
+65|2nd ed. Cary, NC: SAS Institute, 2000.
+66|12. Wang D, Pocock S. A win ratio ap-
+67|proach to comparing continuous non-
+68|normal outcomes in clinical trials. Pharm
+69|Stat 2016;15:238-45.
+70|13. Gasparyan SB, Folkvaljon F, Bengts-
+71|son O, Buenconsejo J, Koch GG. Adjusted
+72|win ratio with stratification: calculation
+73|methods and interpretation. Stat Methods
+74|Med Res 2021;30:580-611.
+75|14. Fine JP, Gray RJ. A proportional haz-
+76|ards model for the subdistribution of a
+77|competing risk. J Am Stat Assoc 1999;94:
+78|496-509.
+79|15. Solomon SD, Claggett B, Lewis EF, et al.
+80|Influence of ejection fraction on outcomes
+81|and efficacy of spironolactone in patients
+82|with heart failure with preserved ejection
+83|fraction. Eur Heart J 2016;37:455-62.
+84|Copyright © 2022 Massachusetts Medical Society.
+85|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+86|Downloaded from nejm.org on September 22, 2026.

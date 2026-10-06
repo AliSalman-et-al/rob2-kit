@@ -1,0 +1,49 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|28 of 36
+7| _ !
+8|(!) =
+9|"#$%(!)
+10|&'
+11|(
+12|-)1 -
+13|*
+14|9 + &',
+15|-
+16|*
+17|9 + &'
+18|.
+19|where #$%(!)is the CMH statistic from the mth imputed dataset and &' is the number
+20|of degrees of freedom associated with the statistic (in this case eCual 1). The
+21|transformed statistics are approximately normally distributed with mean of 0 and
+22|variance of 1 and can be combined using RubinOs rule.
+23|
+24|For the estimation of the win ratioH a combined Mann-Whitney estimate ( ) and its
+25|standard error ( ( )) will first be obtained by applying RubinOs rule to the
+26|corresponding estimates from multiple imputed datasets. Then the win ratio and its
+27|95I confidence interval will be obtained based on the combined Mann-Whitney
+28|estimate and its standard error as previously described.
+29|
+30|For the summaries of number and percentage of subjects in the categories of
+31|significant improvement and deterioration from baseline as well as CDF plotsH as
+32|discussed in the REstimation of treatment effectS sub-section aboveH the average
+33|number and percent of subjects in each category across all multiple imputed datasets
+34|will be reported.
+35|Supportive analyses and sensitivity analyses
+36|The number and percent of patients who die prior to the 8-month assessment will be
+37|summariDed by treatment group.
+38|Descriptive statistics of scores and change from baseline at 1H4H and 8 months and SVC will be
+39|presented for total symptom scoreH overall summary scoreH clinical summary score and
+40|domains (Physical limitationH symptom stabilityH symptom freCuencyH symptom burdenH
+41|Cuality of lifeH self efficacy and social limitation).
+42|The testing and estimation described for change from baseline at 8 months in TSSH will be
+43|repeated in an exploratory fashion for change from baseline in TSS at 1 and 4 monthsH and for
+44|the overall summary score and clinical summary scores at 1H 4 and 8 months.
+45|To assess the impact on TSS change from baseline of a treatment effect on mortalityH an
+46|alternative ranking my be applied where patients who die prior to the 8 months assessment
+47|will be assigned worse ranks than any patient surviving to 8 monthsH but among the deceased
+48|the relative ranking will be based on their last value of change from baseline in TSS while
+49|alive.

@@ -1,0 +1,109 @@
+1|Jul 06, 2022 13:32:58 EDT
+2|New England Journal of Medicine
+3|Josep COMIN COLET
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Grant / Contract
+11|Self
+12|AstraZeneca
+13|Consultant
+14|Self
+15|Bayer
+16|Consultant
+17|Self
+18|Boehringer Ingelheim
+19|Consultant
+20|Self
+21|Boehringer Ingelheim
+22|Consultant
+23|Self
+24|Boehringer Ingelheim
+25|Consultant
+26|Self
+27|Novartis
+28|Grant / Contract
+29|Self
+30|Novartis
+31|Consultant
+32|Self
+33|Vifor Pharma
+34|Grant / Contract
+35|Self
+36|Vifor Pharma
+37|Consultant
+38|Self
+39|Additional Questions:
+40|Disclosure Purpose: 22-06286
+41|Recipient Name: IDIBELL Bellvitge Biomedical Research Institute
+42|Recipient Type: Institution
+43|Grant / Contract Description: Coordination and execution of clinical studies
+44|Grant / Contract Purpose: Research
+45|Additional Information:
+46|Category: Consultant
+47|Description: National coordinator at the DELIVER STUDY
+48|Additional Information:
+49|Category: Consultant
+50|Description: Fees for speaking and advisory boards.
+51|Additional Information:
+52|Category: Consultant
+53|Description: Fees for speaking and advisory boards
+54|Additional Information:
+55|Category: Consultant
+56|Description: Fees for national coordination EMPULSE study.
+57|Additional Information:
+58|Category: Consultant
+59|Description: Fees for advisory boards.
+60|Additional Information:
+61|Recipient Name: IDIBELL Bellvitge Biomedical Research Institute
+62|Recipient Type: Institution
+63|Grant / Contract Description: Financial support for an investigator-initiated study.
+64|Grant / Contract Purpose: Research
+65|Additional Information:
+66|Category: Consultant
+67|Description: Fees for speaking and advisory boards.
+68|Additional Information:
+69|Recipient Name: IDIBELL Bellvitge Biomedical Research Institute
+70|Recipient Type: Institution
+71|Grant / Contract Description: Financial support for investigator-initiated studies.
+72|Grant / Contract Purpose: Research
+73|Additional Information:
+74|Category: Consultant
+75|Description: Fees for conferences and advisory boards.
+76|Additional Information:
+77|1.
+78|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+79|No.
+80|2.
+81|What is the manuscript title?
+82|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+83|3.
+84|Are you the corresponding author?
+85|No.
+86|
+87|[Extracted table 1]
+88||Entity|Type|Interest Held By|
+89||---|---|---|
+90||AstraZeneca|Grant / Contract|Self|
+91||Recipient Name: IDIBELL Bellvitge Biomedical Research Institute Recipient Type: Institution<br>Grant / Contract Description: Coordination and execution of clinical studies Grant / Contract Purpose: Research<br>Additional Information:|||
+92||AstraZeneca|Consultant|Self|
+93||Category: Consultant Description: National coordinator at the DELIVER STUDY<br>Additional Information:|||
+94||Bayer|Consultant|Self|
+95||Category: Consultant Description: Fees for speaking and advisory boards.<br>Additional Information:|||
+96||Boehringer Ingelheim|Consultant|Self|
+97||Category: Consultant Description: Fees for speaking and advisory boards<br>Additional Information:|||
+98||Boehringer Ingelheim|Consultant|Self|
+99||Category: Consultant Description: Fees for national coordination EMPULSE study.<br>Additional Information:|||
+100||Boehringer Ingelheim|Consultant|Self|
+101||Category: Consultant Description: Fees for advisory boards.<br>Additional Information:|||
+102||Novartis|Grant / Contract|Self|
+103||Recipient Name: IDIBELL Bellvitge Biomedical Research Institute Recipient Type: Institution<br>Grant / Contract Description: Financial support for an investigator-initiated study. Grant / Contract Purpose: Research<br>Additional Information:|||
+104||Novartis|Consultant|Self|
+105||Category: Consultant Description: Fees for speaking and advisory boards.<br>Additional Information:|||
+106||Vifor Pharma|Grant / Contract|Self|
+107||Recipient Name: IDIBELL Bellvitge Biomedical Research Institute Recipient Type: Institution<br>Grant / Contract Description: Financial support for investigator-initiated studies. Grant / Contract Purpose: Research<br>Additional Information:|||
+108||Vifor Pharma|Consultant|Self|
+109||Category: Consultant Description: Fees for conferences and advisory boards.<br>Additional Information:|||

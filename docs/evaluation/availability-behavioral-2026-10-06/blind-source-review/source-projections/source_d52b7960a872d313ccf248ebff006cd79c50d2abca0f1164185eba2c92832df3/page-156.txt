@@ -1,0 +1,15 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|63 of 95
+6|include both the LVEF J60K subpopulation and full study population, and that this potentially
+7|creates complex scenarios related to futility and benefit in one, other or both populations.
+8|9.5.1
+9|Data monitoring committee (DMC)
+10|An independent data monitoring committee HDMCI will be appointed and will report to the
+11|Executive Committee. The DMC will be responsible for safeguarding the interests of the patients
+12|in the outcome study by assessing the safety of the intervention during the study. The DMC will
+13|have access to the individual treatment codes and be able to merge these with the collected study
+14|data while the study is ongoing. A charter will be prepared to detail precise roles and
+15|responsibilities and procedures of the DMC.

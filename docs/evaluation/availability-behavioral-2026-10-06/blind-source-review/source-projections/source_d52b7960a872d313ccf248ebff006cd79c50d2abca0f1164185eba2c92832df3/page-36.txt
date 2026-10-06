@@ -1,0 +1,47 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|34 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|medications, as assessed on an individual basis, including diuretics and drugs that lower blood
+9|pressure. The need for conventional diuretics (or the dose of diuretic used) should be re-evaluated
+10|in lighW of Whe SaWienW¶V V\mSWomV and VignV.
+11|7.1.1.3
+12|Patients at risk of volume depletion
+13|Temporary interruption of IP may be considered in patients thought to be at risk of volume
+14|depletion/hypotension, such as patients with an acute medical illness potentially causing volume
+15|depletion because of inadequate fluid intake or fluid/blood loss (e.g. gastroenteritis,
+16|gastrointestinal haemorrhage), or those undergoing major surgery.
+17|7.1.2
+18|Procedures for discontinuation of study treatment
+19| Investigators should instruct their patients to contact the site before or at the time IP is stopped.
+20|A patient that decides to discontinue IP will always be asked about the reason(s) and the presence
+21|of any AEs. Generally, AEs, SAEs, and potential endpoint events should not lead to IP
+22|discontinuation, unless there is a clear clinical rationale to do so.
+23|The date of last intake of IP should be documented in the eCRF. All IP should be returned by the
+24|patient at their next on-site study visit or unscheduled visit. Patients permanently discontinuing
+25|IP should be given locally available standard of care therapy, at the discretion of the Investigator.
+26|DiVconWinXaWion of IP, foU an\ UeaVon, doeV noW imSacW on Whe SaWienW V SaUWiciSaWion in the study.
+27|The patient should continue attending subsequent study visits and data collection should continue
+28|according to the study protocol. If the patient does not agree to continue in-person study visits,
+29|a modified follow-up must be arranged to ensure the collection of endpoints and safety
+30|information. This could be a telephone contact with the patient, a contact with a relative or treating
+31|physician, or information from medical records. The approach taken should be recorded in the
+32|medical records. A patient that agrees to modified follow-up is not considered to have withdrawn
+33|from the study.
+34|Restart of randomised IP is always encouraged. Even if a premature treatment discontinuation visit
+35|(PTDV) was completed due to discontinuation of IP, this should not prevent the patient to return
+36|to randomised IP if deemed appropriate.
+37|7.2
+38|Lost to follow-up
+39|A patient will be considered potentially lost to follow-up if he or she fails to return for scheduled
+40|visits and it is not possible for the site to get contact with the patient. To optimise the chance of
+41|getting in contact with the patient during the study, Investigators should record as much contact
+42|information as possible at the start of the study including home phone, mobile phone, holiday home
+43|phone, family member phone numbers, email address, and social media contact details.
+44|The following actions must be taken if a patient fails to return to the clinic for a required study
+45|visit:
+46|x The site must attempt to contact the patient and reschedule the missed visit as soon as possible
+47|and counsel the patient on the importance of maintaining the assigned visit schedule.

@@ -1,0 +1,77 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|9 of 36
+7|1
+8|STUDY DETAILS
+9|1.1
+10|Study objectives
+11|1.1.1
+12|Primary objective
+13|Primary objectiveG
+14|Endpoint/variableG
+15|To determine whether dapaglifloDin is superior to
+16|placeboH when added to standard of careH in
+17|reducing the composite of CV death and HF events
+18|(hospitalisation for HF or urgent HF visit) in
+19|patients with HF and preserved systolic function.
+20|Time to the first occurrence of any of the
+21|components of this compositeG
+22|1.
+23|CV death
+24|2.
+25|Hospitalisation for HF
+26|3.
+27|Urgent HF visit (e.g.H emergency
+28| department or outpatient visit)
+29|1.1.2
+30|Secondary objectives
+31|Secondary objective:
+32|Endpoint/variable:
+33|To determine whether dapaglifloDin is superior
+34|to placebo in reducing the total number of
+35|recurrent HF hospitalisations and CV death
+36|Total number of (first and recurrent)
+37|hospitalisations for HF and CV death
+38|To determine whether dapaglifloDin is superior
+39|to placebo in improving Patient Reported
+40|Outcomes measured by KCCQ
+41|Change from baseline in the total
+42|symptom score (TSS) of the KCCQ at 8
+43|months
+44|To determine whether dapaglifloDin is superior
+45|to placebo in reducing the proportion of
+46|patients with worsened NYHA class
+47|Proportion of patients with worsened
+48|NYHA class from baseline to 8 months
+49|To determine whether dapaglifloDin is superior
+50|to placebo in reducing all-cause mortality
+51|Time to the occurrence of death from any
+52|cause
+53|1.1.3
+54|Safety objectives
+55|Safety Objective:
+56|Outcome Measure :
+57|To evaluate the safety and tolerability of
+58|dapaglifloDin compared to placebo in patients with
+59|HFpEF
+60|
+61|Serious adverse events (SAEs)
+62|
+63|Adverse events leading to treatment
+64|discontinuation (DAEs)
+65|
+66|AmputationsH adverse events (AEs)
+67|leading to amputation and potential risk
+68|factor AEs for amputations affecting lower
+69|limbs
+70|
+71|[Extracted table 2]
+72||Secondary objective:|Endpoint/variable:|
+73||---|---|
+74||To determine whether dapaglifloDin is superior<br>to placebo in reducing the total number of<br>recurrent HF hospitalisations and CV death|Total number of (first and recurrent)<br>hospitalisations for HF and CV death|
+75||To determine whether dapaglifloDin is superior<br>to placebo in improving Patient Reported<br>Outcomes measured by KCCQ|Change from baseline in the total<br>symptom score (TSS) of the KCCQ at 8<br>months|
+76||To determine whether dapaglifloDin is superior<br>to placebo in reducing the proportion of<br>patients with worsened NYHA class|Proportion of patients with worsened<br>NYHA class from baseline to 8 months|
+77||To determine whether dapaglifloDin is superior<br>to placebo in reducing all-cause mortality|Time to the occurrence of death from any<br>cause|

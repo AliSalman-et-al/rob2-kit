@@ -1,0 +1,61 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|46 of 95
+6|
+7|
+8|IP will be dispensed via IxRS to the patient. Drug accountability of the returned IP will
+9|be checked. The patient will be instructed to take the IP in accordance with protocol and
+10|without interruptions.
+11|
+12|
+13|Blood samples will be taken for creatinine Hfor calculation of eGFRI assessment
+14|Hcentral laboratoryI
+15|8.2.6
+16|Visit 7 and onwards (Day 480 and every 120 days E14 days)
+17|At visit 7 and subsequent visits, the following assessments and procedures will be conductedD
+18|
+19|
+20|Review and updating of concomitant medication and recording of relevant medications
+21|
+22|
+23|Review and recording of any cardiac and HF related procedures
+24|
+25|
+26|Review of potential efficacy and safety events including COVID-19 testing results
+27|
+28|If the patient has experienced any potential endpoints, SAEs, DAEs andPor
+29|amputations, adverse events HAEsI leading to amputation and potential risk factor AEs
+30|for amputations affecting lower limbs since the last visit, this will be recorded in the
+31|eCRF.
+32|
+33|
+34|IP will be dispensed via IxRS to the patient. Drug accountability of the returned IP will
+35|be checked. The patient will be instructed to take the IP in accordance with protocol and
+36|without interruptions.
+37|
+38|
+39|Starting from Visit 6, vital signs HBP, pulseI, and weight assessment as well as blood
+40|samples collection for creatinine Hfor calculation of eGFRI will be repeated every 12
+41|months - on Visit 6, Visit 9 and Visit 12.
+42|8.2.7
+43|Premature Treatment Discontinuation Visit
+44|Patients who prematurely and permanently discontinue treatment with IP should return for a
+45|premature treatment discontinuation visit HPTDVI, which will be done as soon as possible after last
+46|dose of IP. The following assessments and procedures will be conductedD
+47|
+48|CCCM, PGIS and EM-5D-5L questionnaire will be completed
+49|
+50|
+51|NYHA Functional Classification will be evaluated
+52|
+53|
+54|Vital signs HBP, pulseI and weight will be assessed and recorded
+55|
+56|
+57|Review and updating of concomitant medication and recording of relevant medications
+58|
+59|
+60|Review and recording of any cardiac and HF related procedures
+61|

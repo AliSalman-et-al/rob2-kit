@@ -1,0 +1,4 @@
+1|Protocol
+2|Protocol for: Solomon SD, McMurray JJV, Claggett B, et al. Dapagliflozin in heart failure with mildly reduced or
+3|preserved ejection fraction. N Engl J Med 2022;387:1089-98. DOI: 10.1056/NEJMoa2206286
+4|This trial protocol has been provided by the authors to give readers additional information about the work.

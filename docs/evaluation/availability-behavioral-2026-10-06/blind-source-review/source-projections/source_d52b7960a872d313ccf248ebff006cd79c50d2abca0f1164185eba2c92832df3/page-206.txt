@@ -1,0 +1,42 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|17 of 36
+7|deaths. This is done to reduce the impact of treatment differences in time to CV death on the
+8|assessment of this KCCQ secondary endpoint.
+9|3.2.3
+10|Proportion of patients with worsened NYHA class at 8 months
+11|The efficacy variable is the proportion of patients with worsened NYHA class from baseline
+12|to 8 months.
+13|The NYHA classification will be evaluated by the investigator and collected in eCRF at
+14|enrolment and randomisation visitsH at 1H 4 and 8 months visitsH at PTDV and SCV. Baseline
+15|is defined as the value at randomisation (visit 2). The analysis will include all data irrespective
+16|of whether the patient has discontinued study drug.
+17|For the primary analysis the data will be dichotomised into patients with worsened NYHA
+18|class at 8 months (the NYHA class is higher than baseline)H including patients who died due to
+19|any cause prior to 8 monthsH versus other patients with improved or unchanged class
+20|compared to baseline.
+21|3.2.4
+22|Death from any cause
+23|The efficacy variable is time to from randomisation to death from any cause. All deaths on or
+24|prior to PACDH including any deaths after WoCH will be included. Patients who are alive will
+25|be censored at the earliest of date last known alive and PACD.
+26|3.3
+27|Safety variables
+28|The safety and tolerability of dapaglifloDin in patients with HFpEF will be evaluated from
+29|serious adverse events (SAEs)H adverse events leading discontinuation of IP (DAEs)H adverse
+30|events(AE) leading to amputation and AEs reflecting potential risk factors for lower limb
+31|amputations (Rpreceding eventsS).
+32|In addition to amputationH non-serious and serious events potentially placing the patient at risk
+33|for a lower limb amputationH in this document denoted Rpreceding eventsSH should also be
+34|recorded in the eCRF as AE/SAEH whether or not an amputation has taken place. Preceding
+35|events will be defined for analysis by a predefined list of preferred terms. Additional
+36|information about amputations with underlying conditions and preceding events will be
+37|collected on dedicated eCRF pages.
+38|SAEs will be collected from time of informed consent until and including the patentOs last
+39|visit. Non-serious AEs will be collected from randomisation until and including the patientOs
+40|last visit. Collection of non-serious AEs is limited to AE leading to amputationH preceding
+41|eventsH AEs leading to a potential endpointH DAEs and AEs which are the reason for
+42|interruption of study drug.

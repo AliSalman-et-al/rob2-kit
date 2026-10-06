@@ -1,0 +1,47 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|51 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|8.9
+9|Optional exploratory genetics
+10|Approximately 6 mL blood sample for DNA isolation will be collected from subjects who have
+11|consented to participate in the genetic analysis component of the study. Participation is optional.
+12|Subjects who do not wish to participate in the genetic research may still participate in the study.
+13|See Appendix D for Information regarding genetic research. Details on processes for collection
+14|and shipment and destruction of these samples can be found in Appendix D.
+15|8.10
+16|Biomarkers (not applicable)
+17|8.11
+18|Health Economics (not applicable)
+19|9.
+20|STATISTICAL CONSIDERATIONS
+21|9.1
+22|Statistical hypotheses
+23|For the primary and secondary endpoints, the following hypothesis will be tested at the 4.980 %
+24|2-sided level:
+25|H0: HR [dapagliflozin:placebo] =1
+26|versus
+27|H1: HR [daSagliflo]in:Slacebo] 1
+28|9.2
+29|Sample size determination
+30|The primary objective of the study is to determine the superiority of dapagliflozin versus placebo
+31|added to standard of care in reducing the composite of CV death and heart failure events
+32|(hospitalisation for HF or urgent HF visit). Assuming a true hazard ratio (HR) of 0.80 between
+33|dapagliflozin and placebo, using a two-sided alpha of 5%, 844 primary endpoint events will
+34|provide a statistical power of 90% for the test of the primary composite endpoint. This is based
+35|on an overall 1:1 allocation between dapagliflozin and placebo.
+36|The HR was chosen as a conservative assumption based on the observed HR 0.72 (95% confidence
+37|interval 0.50-1.04) for the composite of HF hospitalisation and CV death in patients with HF at
+38|baseline in the EMPA-REG OUTCOME trial (Fitchett et al 2016) and HR 0.61 (0.46-0.80) for
+39|patients with history of HF in the CANVAS program (Rndholm eW al 2018) considering that these
+40|were post-hoc analyses in subgroups with limited documentation of baseline HF diagnosis, not
+41|characterised by ejection fraction.
+42|The event rate assumptions are based on sub analyses of the TOPCAT and I-PRESERVE studies
+43|by geographic region, NT-proBNP levels, prior hospitalisation for HF, and T2D status (Pfeffer et
+44|al 2015, Kristensen et al 2015 Kristensen et al 2017). The sample size calculation builds on the
+45|assumption of an annual event rate of 9% in the placebo group for the majority of prevalent HFpEF
+46|patients, importantly all with NT-proBNP 300 pg/ml by inclusion criterion. Additionally,
+47|a subgroup of patients due to be discharged or recently discharged from a HF hospitalisation (here

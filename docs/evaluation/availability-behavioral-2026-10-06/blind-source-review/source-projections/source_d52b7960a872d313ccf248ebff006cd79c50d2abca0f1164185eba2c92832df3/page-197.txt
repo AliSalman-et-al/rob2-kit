@@ -1,0 +1,12 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|8 of 36
+7|AMENDMENT HISTORY
+8|Date
+9|Brief description of change
+10|EE FF
+11|EE FF
+12|N/A

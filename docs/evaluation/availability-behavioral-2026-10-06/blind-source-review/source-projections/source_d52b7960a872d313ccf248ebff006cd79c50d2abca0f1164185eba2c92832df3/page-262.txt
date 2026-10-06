@@ -1,0 +1,42 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|37 of 58
+7|Estimation of treatment effect
+8|Win ratio
+9|For a summary statistic that uses the same ranGing as that used in the hypothesis testO but has a
+10|clinical interpretationO the WR and the corresponding 95C confidence interval (Wang and
+11|PococG 2016) will be reported. It is noted that the WR differs from the statistic used for
+12|hypothesis testingO so that exact consistency is not expected between these two analysesO eg on
+13|rare occasionsO the 95C confidence interval for WR could exclude unity while the p-value for
+14|the pre-planned hypothesis test could be R 0.05O or the hypothesis test could be < 0.05 with the
+15|confidence interval for WR including unity. Formal inference for the superiority of the
+16|treatment over control will be made only from the pre-planned hypothesis test based on the
+17|WR.
+18|The win ratio represents the odds of having a more favourable outcome versus a less
+19|favourable outcome when assigned to the dapaglifloIin 10 mg treatment group as opposed to
+20|placebo. More specificallyO each patient in the dapaglifloIin group is compared with each
+21|patient in the placebo group and each pair is labelled as EwinnerFO EloserFO or EtieFO depending
+22|on whether the patient on dapaglifloIin has a more favourableO less favourableO or the same
+23|outcomeO respectivelyO with respect to the composite ranGed endpoint compared to the patient
+24|on placebo. Win ratio is defined as the ratio of the number of EwinnerF pairs to the number of
+25|EloserF pairs for the dapaglifloIin arm. If the estimated win ratio is greater than 1 then the
+26|treatment effect is in favour of dapaglifloIin.
+27|The win ratio statistic adjusted for the randomisation stratification factor and baseline KCCQ-
+28|TSS will be obtained using the methodology in (Koch et al 1998O Kawaguchi et al 2011) for
+29|the stratified Mann-Whitney estimators for the comparison of two treatments with
+30|randomisation based covariance adjustment. The win ratio statistic will be calculated as
+31|Mann-Whitney oddsO ieO WR S MW \ (1 W MW)O where MW is the adjusted Mann-Whitney
+32|estimate. This transformation is monotonous in the domain of the Mann-Whitney estimate.
+33|The 95C confidence interval for the win ratio will be obtained by transforming the bounds of
+34|the confidence interval (Koch et al 1998) for the Mann-Whitney estimateO using the same
+35|transformation as for the win ratio.
+36|Responder analysis
+37|Number and percentage of patients in each treatment group will be summarised across the
+38|following categoriesO where change from baseline is defined as KCCQ-TSS at 8 months minus
+39|KCCQ-TSS at baselineN
+40|Thirteen point improvement from baseline at 8 months in KCCQ-TSSO identified as a
+41|clinically meaningful improvement in anchor-based analyses (see Appendix A)O vs no
+42|clinically meaningful improvementN

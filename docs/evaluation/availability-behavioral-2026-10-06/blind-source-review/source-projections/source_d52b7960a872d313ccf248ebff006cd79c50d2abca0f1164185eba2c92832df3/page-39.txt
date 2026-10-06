@@ -1,0 +1,53 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|37 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|8.2
+9|Treatment period
+10|8.2.1
+11|Visit 2, Randomisation (Day 1)
+12|Prior to Visit 2, the investigator will assess eligibility based on the central laboratory assessments
+13|from Visit 1. Patients not eligible will be considered screen failures and should not continue to
+14|Visit 2.
+15|Randomisation of hospitalized patients is allowed.
+16|
+17|At randomisation, the following assessments and procedures will be completed:
+18|x
+19|Medical history (including cardiac imaging assessments) will be re-assessed
+20|x
+21|A physical examination will be conducted
+22|x
+23|A pregnancy test for women of child-bearing potential will be done locally with
+24|a dipstick provided by central laboratory with result recorded in the medical record
+25|x
+26|Vital signs (BP, pulse) will be assessed and recorded
+27|x
+28|NYHA Functional Classification will be evaluated and recorded
+29|x
+30|The investigator will re-assess the inclusion and exclusion criteria
+31|x
+32|KCCQ, PGIS and EQ-5D-5L questionnaires will be completed
+33|x
+34|Review of concomitant medication and recording of relevant medications
+35|x
+36|If the patient has experienced any SAEs since last visit, this will be recorded in the eCRF
+37|x
+38|Randomisation 1:1 ratio to IP (either dapagliflozin at 10 mg or placebo) will be done in
+39|IxRS
+40|x
+41|IP will be dispensed via IxRS to the patient. The patient will be instructed to take the
+42|IP in accordance with protocol without interruptions, and to bring all dispensed bottles
+43|to all study visits
+44|x
+45|Patients who have consented to sampling for genetic research, will provide a blood
+46|sample
+47|8.2.2
+48|ViViW 3 (Da\ 30; 7 da\V):
+49|At Visit 3, the following assessments and procedures will be conducted:
+50|x
+51|KCCQ and PGIS questionnaires will be completed
+52|x
+53|NYHA Functional Classification will be evaluated and recorded

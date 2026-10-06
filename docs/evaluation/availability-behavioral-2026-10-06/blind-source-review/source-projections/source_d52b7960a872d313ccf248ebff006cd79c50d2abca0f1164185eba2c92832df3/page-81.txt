@@ -1,0 +1,9 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|79 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Appendix H Medical device incidents: definition and procedures for
+9|recording, evaluating, follow-up, and reporting (not applicable)

@@ -1,0 +1,46 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|57 of 95
+6|In addition, fatal AEs and potential HF endpoints will be centrally adjudicated by an independent
+7|CEA committee Hsee Section 8.3.1 and 8.3.2I. If adjudication confirms the endpoint, the SAE will
+8|not be reported to health authorities. However, if it is determined by the CEA committee that a
+9|potential endpoint does not meet the endpoint criteria, the event will be reported Haccording to the
+10|timelines specified in Section 8.6.1I to AZ patient safety data entry site and if applicable to the
+11|health authorities Hnote that the clock starts when the adjudication results are availableI.
+12|8.6.2
+13|Pregnancy
+14|All pregnancies and outcomes of pregnancy should be reported to AstraZeneca except if the
+15|pregnancy is discovered before the study patient has received any IP. If a pregnancy is reported,
+16|the Investigator should inform the sponsor within 24 hours of learning of the pregnancy. Abnormal
+17|pregnancy outcomes He.g. spontaneous abortion, foetal death, stillbirth, congenital anomalies,
+18|ectopic pregnancyI are considered SAEs.
+19|8.6.2.1
+20|Maternal exposure
+21|Qomen of childbearing potential who are not using contraception as defined in Section 5.2R
+22|exclusion criterion number 18 are not allowed to be included in this study. Should a pregnancy still
+23|occur, the investigational product should be discontinued immediately and the pregnancy reported
+24|to AstraZeneca.
+25|Dapagliflozin must not be used in the second and third trimesters of pregnancy. In the time period
+26|corresponding to second and third trimester of pregnancy with respect to human renal maturation,
+27|maternal exposure to dapagliflozin in rat studies was associated with increased incidence andPor
+28|severity of renal pelvic and tubular dilatations in progeny.
+29|There are no adequate and well-controlled studies of dapagliflozin in pregnant women. Qhen
+30|pregnancy is detected, investigational productHsI should be discontinued.
+31|8.6.3
+32|Overdose
+33|Dapagliflozin has been well tolerated at doses of up to 500 mgPday in single dose testing in healthy
+34|volunteers and up to 100 mgPday in repeat dose testing for 14 days in healthy volunteers and
+35|patients with T2D. Suspected single intake of more than 50 tablets of 10 mg dapagliflozin tablets
+36|or repeated intake of more than 10 tablets of 10 mg dapagliflozin tablets should be reported on the
+37|eCRF overdose module. If an overdose is suspected, monitoring of vital functions as well as
+38|treatment should be performed as appropriate.
+39|For further information regarding overdose, refer to the IB.
+40|
+41|An overdose without associated symptoms is only recorded on the Overdose eCRF
+42|module
+43|
+44|
+45|An overdose with associated AEs is recorded as the AE diagnosisPsymptoms on the
+46|relevant AE modules in the eCRF and on the Overdose eCRF module

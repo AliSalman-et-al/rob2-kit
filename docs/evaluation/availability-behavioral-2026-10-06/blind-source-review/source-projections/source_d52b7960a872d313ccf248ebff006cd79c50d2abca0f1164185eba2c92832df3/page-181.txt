@@ -1,0 +1,119 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|88 of 95
+6|❏
+7|❏
+8|❏
+9|❏
+10|❏
+11|❏
+12|5. Over the past 2 weeks, on average, how many times has fatigue limited your ability to do what
+13|you want`
+14|All of the
+15|Several
+16|At least
+17|3 or more times 1-2 times Less than
+18|Never over
+19|time
+20|times per
+21|once a
+22|per weeG but
+23|not
+24|per weeG once a
+25|the past 2
+26|❏
+27|day
+28|day
+29|every day
+30|❏
+31|weeG
+32|weeGs
+33|❏
+34|❏
+35|❏
+36|❏
+37|❏
+38|6. Over the past 2 weeks, how much has your fatigue bothered you`
+39|It has been ...
+40|Extremely
+41|Iuite a bit
+42|Moderately
+43|Slightly
+44|Not at all
+45|IOve had no
+46|bothersome
+47|bothersome
+48|bothersome
+49|bothersome
+50|bothersome
+51|fatigue
+52|❏
+53|❏
+54|❏
+55|❏
+56|❏
+57|❏
+58|7. Over the past 2 weeks, on average, how many times has shortness of breath limited your
+59|ability to do what you wanted`
+60|All
+61|of
+62|the
+63|time
+64|Several
+65|times
+66|per
+67|day
+68|At
+69|least
+70|once
+71|a
+72|day
+73|3 or
+74|more
+75|times
+76|per weeG
+77|but not
+78|everyday
+79|1 C 2
+80|times
+81|per
+82|weeG
+83|Less
+84|than
+85|once
+86|a
+87|weeG
+88|Never
+89|over
+90|the
+91|past 2
+92|weeGs
+93|❏
+94|❏
+95|❏
+96|❏
+97|❏
+98| ❏
+99|❏
+100|8. Over the past 2 weeks, how much has your shortness of breath bothered you`
+101|It has been ...
+102|Extremely
+103|Iuite a bit
+104|Moderately
+105|Slightly
+106|Not at all
+107|IOve had no
+108|bothersome
+109|bothersome
+110|bothersome
+111|bothersome
+112|bothersome
+113|shortness of breath
+114|❏
+115|❏
+116|❏
+117|❏
+118|❏
+119|❏

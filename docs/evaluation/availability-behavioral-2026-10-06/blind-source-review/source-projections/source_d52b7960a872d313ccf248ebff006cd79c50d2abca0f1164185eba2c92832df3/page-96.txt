@@ -1,0 +1,64 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|3 of 95
+6|Version 3.0, 16th December 2019
+7|Section
+8|changed
+9|Summary of change
+10|1. 1.2 Synopsis
+11|CSP synopsis was modified to adjust the study sample size from original
+12|4700 to approximately 6100, based on ongoing blinded monitoring of
+13|events accrual. Accordingly, the anticipated recruitment period was
+14|increased from 18 months to 22 months.
+15|2.
+16|4.1
+17|Overall
+18|design
+19|Overall design was modified to adjust the sample size increase as belowD
+20|EIt is estimated that approximately 11000 patients at approximately 400-
+21|500 sites in 20-25 countries will be enrolled to reach approximately
+22|6100 randomised patients.F
+23|3
+24|4.2
+25|Scientific
+26|rationale for
+27|study design
+28|The subacute subgroup definition was modified, such that the recent
+29|discharge date from hospitalisation for heart failure was extended from
+30|21 days to 30 days, to be more aligned with clinical practice, i.e.D
+31|EGto address a specific need in a period with high risk for events, a
+32|proportion of patients will be enrolled and randomised during
+33|hospitalisation for heart failure or within 30 days of discharge from
+34|hospitalisation for heart failure Hsubacute subgroupI.F
+35|4.
+36|6.3.1.2 Capping
+37|The definition of subacute subgroup Hone of the potential capping
+38|factorsI was modified the same as above.
+39|5.
+40|9.2 Sample size
+41|determination
+42|Statistical section 9.2 was updated to reflect the sample size increase in
+43|detail. SpecificallyD
+44|EBased on the ongoing blinded monitoring of event accrual Hincluding
+45|the percentage of patients from the sub-acute categoryI, the sample size
+46|is increased from original 4700 to approximately 6100 randomised
+47|patients to provide the required number of 844 patients with a primary
+48|event. Accordingly, the recruitment period is anticipated to increase
+49|from the original 18 months to 22 months. The study is event driven and
+50|the number of patients or duration may further change.F
+51|j
+52|
+53|[Extracted table 1]
+54||Column 1|Column 2|Column 3|
+55||---|---|---|
+56|||||
+57||th<br>Version 3.0, 16 December 2019|||
+58|||||
+59|||Section<br>changed|Summary of change|
+60||1.|1.2 Synopsis|CSP synopsis was modified to adjust the study sample size from original<br>4700 to approximately 6100, based on ongoing blinded monitoring of<br>events accrual. Accordingly, the anticipated recruitment period was<br>increased from 18 months to 22 months.|
+61||2.|4.1<br>Overall<br>design|Overall design was modified to adjust the sample size increase as belowD<br>EIt is estimated that approximately 11000 patients at approximately 400-<br>500 sites in 20-25 countries will be enrolled to reach approximately<br>6100 randomised patients.F|
+62||3|4.2<br>Scientific<br>rationale for<br>study design|The subacute subgroup definition was modified, such that the recent<br>discharge date from hospitalisation for heart failure was extended from<br>21 days to 30 days, to be more aligned with clinical practice, i.e.D<br>EGto address a specific need in a period with high risk for events, a<br>proportion of patients will be enrolled and randomised during<br>hospitalisation for heart failure or within 30 days of discharge from<br>hospitalisation for heart failure Hsubacute subgroupI.F|
+63||4.|6.3.1.2 Capping|The definition of subacute subgroup Hone of the potential capping<br>factorsI was modified the same as above.|
+64||5.<br>j|9.2 Sample size<br>determination|Statistical section 9.2 was updated to reflect the sample size increase in<br>detail. SpecificallyD<br>EBased on the ongoing blinded monitoring of event accrual Hincluding<br>the percentage of patients from the sub-acute categoryI, the sample size<br>is increased from original 4700 to approximately 6100 randomised<br>patients to provide the required number of 844 patients with a primary<br>event. Accordingly, the recruitment period is anticipated to increase<br>from the original 18 months to 22 months. The study is event driven and<br>the number of patients or duration may further change.F|

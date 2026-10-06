@@ -1,0 +1,60 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|46 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|In addition to amputation, non-serious and serious events potentially placing the patient at risk for
+9|a loweU limb amSXWaWion (3SUeceding eYenWV ́) VhoXld alVo be UecoUded in Whe eCRF aV AE/SAE
+10|ZheWheU oU noW an amSXWaWion haV Waken Slace. The loZeU limb amSXWaWion 3SUeceding eYenWV ́ of
+11|interest
+12|include
+13|diabetic
+14|foot
+15|related
+16|conditions,
+17|vascular,
+18|volume
+19|depletion,
+20|wounds/injury/trauma, infection and neuropathy. If any of these or other potentially relevant
+21|events have occurred, relevant information must be provided (this will be collected on a dedicated
+22|eCRF page - foU deWailV Vee eCRF inVWUXcWion) ́.
+23|8.5.1.2
+24|Capture of DKA events
+25|For SAEs or DAEs reported by the Investigator as Diabetic Ketoacidosis (DKA - see definition
+26|below) additional information will be recorded on specific eCRF pages in addition to the AE/SAE
+27|form.
+28|8.5.1.3
+29|DKA definition
+30|A diagnosis of Diabetic Ketoacidosis should only be made in a clinical setting consistent with
+31|DKA (based on patient history, symptoms, and physical exam) and in the absence of more likely
+32|alternative diagnoses and causes of acidosis (such as lactic acidosis). The following biochemical
+33|data should support diagnosis:
+34|x KeWonaemia 3.0 mmol/L and/oU VignificanW keWonXUia (moUe Whan 2+ on VWandaUd XUine
+35|sticks)
+36|x At least one of the following criteria suggesting high anion gap metabolic acidosis:
+37| AUWeUial oU VenoXV SH 7.3
+38| SeUXm bicaUbonaWe 18 mET/L
+39| Anion gap [Na ± (Cl + HCO3)] >10
+40|8.5.1.4
+41|Capture of cardiac ischaemic events and stroke
+42|For myocardial infarctions, unstable angina and stroke additional information will be recorded on
+43|specific eCRF pages in addition to the AE/SAE form.
+44|The diagnosis of stroke, MI and unstable angina should be made according to standard clinical
+45|practice and align with the definition for stroke in the standardised definitions for endpoints (Hicks
+46|et
+47|al.
+48|2018
+49|Hicks KA, Mahaffey KW, Mehran R, Nissen SE, et alCardiovascular and Stroke Endpoint
+50|Definitions for Clinical Trials. J Am Coll Cardiol 2018;71:1021±34) described in Appendix C.
+51|8.5.1.5
+52|Capture of additional laboratory values
+53|Any additional safety laboratory assessments during the study period, including creatinine, will be
+54|obWained SeU Whe InYeVWigaWoU¶V medical jXdgmenW in Whe coXUVe of VWandaUd caUe XVing local
+55|laboratories. Laboratory values would be recorded only on SAE eCRFs as part of narrative
+56|information, per the InvestigatoU¶V jXdgmenW.
+57|8.5.2
+58|Time period and frequency for collecting AE and SAE information
+59|Non- serious adverse events as defined per protocol will be collected from randomisation (Visit
+60|2), WhUoXghoXW Whe WUeaWmenW SeUiod XnWil and inclXding Whe SaWienW¶V laVW YiViW (Whe VWXd\ cloVXUe

@@ -1,0 +1,14 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|3 of 36
+7|An International, Double-blind, Randomised, Placebo-Controlled
+8|Phase III Study to Evaluate the Effect of Dapagliflozin on
+9|Reducing CV Death or Worsening Heart Failure in Patients with
+10|Heart Failure with Preserved Ejection Fraction (HFpEF)
+11|DELIVER - Dapagliflozin Evaluation to improve the LIVEs of
+12|patients with pReserved ejection fraction heart failure
+13|Biometrics Team Leader
+14|Date

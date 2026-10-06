@@ -1,0 +1,142 @@
+1|Corvia
+2|Grant / Contract
+3|Self
+4|CVRx, Inc.
+5|Consultant
+6|Self
+7|Cyclerion
+8|Consultant
+9|Self
+10|Cytokinetics
+11|Consultant
+12|Self
+13|Edwards Lifesciences
+14|Consultant
+15|Self
+16|Eidos
+17|Consultant
+18|Self
+19|EISAI INC.
+20|Consultant
+21|Self
+22|GlaxoSmithKline
+23|Consultant
+24|Self
+25|Imara Inc
+26|Consultant
+27|Self
+28|Impulse Dynamics (USA) Inc.
+29|Consultant
+30|Self
+31|Intellia Therapeutics
+32|Consultant
+33|Self
+34|Ionis
+35|Consultant
+36|Self
+37|Ironwood Pharmaceuticals, Inc
+38|Consultant
+39|Self
+40|Lilly Medical
+41|Consultant
+42|Self
+43|Merk Sharp & Dohme Corp
+44|Consultant
+45|Self
+46|MyoKardia
+47|Consultant
+48|Self
+49|Category: Consultant
+50|Description: I served as a consultant to Coridea for heart failure device development
+51|Additional Information:
+52|Recipient Name: Northwestern University
+53|Recipient Type: Institution
+54|Grant / Contract Description: REDUCE LAP-HF I and REDUCE LAP-HF II trials (I was principal
+55|investigator for both trials).
+56|Grant / Contract Purpose: Research
+57|Additional Information:
+58|Category: Consultant
+59|Description: I served on the Clinical Events Committee for a CVRx clinical trial
+60|Additional Information:
+61|Category: Consultant
+62|Description: I served on the steering committee/advisory board for the Cyclerion (Ironwood)
+63|CAPACITY HF trial.
+64|Additional Information:
+65|Category: Consultant
+66|Description: I have served as a consultant for HF drug development for Cytokinetics
+67|Additional Information:
+68|Category: Consultant
+69|Description: I have served as a consultant on heart failure device therapies for Edwards
+70|Additional Information:
+71|Category: Consultant
+72|Description: I have served as a consultant and advisory board member for Eidos for ATTR
+73|cardiomyopathy
+74|Additional Information:
+75|Category: Consultant
+76|Description: I served on an advisory board for Eisai in 2017
+77|Additional Information:
+78|Category: Consultant
+79|Description: I have served as a consultant for heart failure drug development for GSK.
+80|Additional Information:
+81|Category: Consultant
+82|Description: I served on the steering committee for an Imara heart failure clinical trial.
+83|Additional Information:
+84|Category: Consultant
+85|Description: I served as a consultant to review HF clinical trial protocol for Impulse Dynamics
+86|Additional Information:
+87|Category: Consultant
+88|Description: I have served as a consultant and on steering committee for Intellia cardiac amyloid
+89|clinical trial.
+90|Additional Information:
+91|Category: Consultant
+92|Description: I have served as a consultant on HF drug development and steering committee for
+93|CARDIO-TTRansform
+94|Additional Information:
+95|Category: Consultant
+96|Description: I served on the steering committee/advisory board for the Ironwood (Cyclerion)
+97|CAPACITY HF trial.
+98|Additional Information:
+99|Category: Consultant
+100|Description: I have served as an advisory board member for Lilly for heart failure drug development.
+101|Additional Information:
+102|Category: Consultant
+103|Description: I have served on advisory boards for Merck for HF therapeutics
+104|Additional Information:
+105|
+106|[Extracted table 1]
+107||Column 1|Column 2|Column 3|Column 4|Column 5|
+108||---|---|---|---|---|
+109|||||||
+110|||Category: Consultant Description: I served as a consultant to Coridea for heart failure device development<br>Additional Information:||||
+111|||Corvia|Grant / Contract|Self||
+112|||Recipient Name: Northwestern University Recipient Type: Institution<br>Grant / Contract Description: REDUCE LAP-HF I and REDUCE LAP-HF II trials (I was principal Grant / Contract Purpose: Research<br>investigator for both trials). Additional Information:||||
+113|||CVRx, Inc.|Consultant|Self||
+114|||Category: Consultant Description: I served on the Clinical Events Committee for a CVRx clinical trial<br>Additional Information:||||
+115|||Cyclerion|Consultant|Self||
+116|||Category: Consultant Description: I served on the steering committee/advisory board for the Cyclerion (Ironwood)<br>CAPACITY HF trial.<br>Additional Information:||||
+117|||Cytokinetics|Consultant|Self||
+118|||Category: Consultant Description: I have served as a consultant for HF drug development for Cytokinetics<br>Additional Information:||||
+119|||Edwards Lifesciences|Consultant|Self||
+120|||Category: Consultant Description: I have served as a consultant on heart failure device therapies for Edwards<br>Additional Information:||||
+121|||Eidos|Consultant|Self||
+122|||Category: Consultant Description: I have served as a consultant and advisory board member for Eidos for ATTR<br>cardiomyopathy<br>Additional Information:||||
+123|||EISAI INC.|Consultant|Self||
+124|||Category: Consultant Description: I served on an advisory board for Eisai in 2017<br>Additional Information:||||
+125|||GlaxoSmithKline|Consultant|Self||
+126|||Category: Consultant Description: I have served as a consultant for heart failure drug development for GSK.<br>Additional Information:||||
+127|||Imara Inc|Consultant|Self||
+128|||Category: Consultant Description: I served on the steering committee for an Imara heart failure clinical trial.<br>Additional Information:||||
+129|||Impulse Dynamics (USA) Inc.|Consultant|Self||
+130|||Category: Consultant Description: I served as a consultant to review HF clinical trial protocol for Impulse Dynamics<br>Additional Information:||||
+131|||Intellia Therapeutics|Consultant|Self||
+132|||Category: Consultant Description: I have served as a consultant and on steering committee for Intellia cardiac amyloid<br>clinical trial.<br>Additional Information:||||
+133|||Ionis|Consultant|Self||
+134|||Category: Consultant Description: I have served as a consultant on HF drug development and steering committee for<br>CARDIO-TTRansform<br>Additional Information:||||
+135|||Ironwood Pharmaceuticals, Inc|Consultant|Self||
+136|||Category: Consultant Description: I served on the steering committee/advisory board for the Ironwood (Cyclerion)<br>CAPACITY HF trial.<br>Additional Information:||||
+137|||Lilly Medical|Consultant|Self||
+138|||Category: Consultant Description: I have served as an advisory board member for Lilly for heart failure drug development.<br>Additional Information:||||
+139|||Merk Sharp & Dohme Corp|Consultant|Self||
+140|||Category: Consultant Description: I have served on advisory boards for Merck for HF therapeutics<br>Additional Information:||||
+141|||MyoKardia|Consultant|Self||
+142|||||||

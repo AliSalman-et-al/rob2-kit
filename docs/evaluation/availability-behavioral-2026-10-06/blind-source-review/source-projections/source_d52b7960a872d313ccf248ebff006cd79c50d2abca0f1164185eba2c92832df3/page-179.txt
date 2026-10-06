@@ -1,0 +1,64 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|86 of 95
+6|NYHA
+7|New York Heart Association
+8|PACD
+9|Primary Analysis Censoring Date
+10|PTDV
+11|Premature Treatment Discontinuation Visit
+12|PI
+13|Principal Investigator
+14|SAE
+15|Serious Adverse Event
+16|SAP
+17|Statistical Analysis Plan
+18|SCV
+19|Study Closure Visit
+20|SoA
+21|Schedule of Activities
+22|T2D
+23|Type 2 Diabetes Mellitus
+24|Appendix I New YorG Heart Association (NYHA) Functional Classification
+25|Class
+26|Patient symptoms
+27|I
+28|No limitation of physical activity. Ordinary physical activity does
+29|not cause undue fatigue, palpitation, dyspnoea Hshortness of breathI.
+30|II
+31|Slight limitation of physical activity. Comfortable at rest. Ordinary
+32|physical activity results in fatigue, palpitation, dyspnea Hshortness of
+33|breathI.
+34|III
+35|Marked limitation of physical activity. Comfortable at rest. Less
+36|than ordinary activity causes fatigue, palpitation, or dyspnea.
+37|IV
+38|Lnable to carry on any physical activity without discomfort.
+39|Symptoms of heart failure at rest. If any physical activity is
+40|undertaken, discomfort increases.
+41|Appendix J
+42|The KC Cardiomyopathy Iuestionnaire
+43|The KC Cardiomyopathy Questionnaire
+44|The following questions refer to your heart failure and how it may affect your life. Please read and
+45|complete the following questions. There are no right or wrong answers. Please mark the answer that
+46|best applies to you.
+47|1. Heart failure affects different people in different ways. Some feel shortness of breath while
+48|others feel fatigue. Please indicate how much you are limited by heart failure Hshortness of
+49|breath or fatigueI in your ability to do the following activities over the past 2 weeks.
+50|Place an P in one box on each line
+51|Not at
+52|Limited for
+53|Extremely Muite a bit
+54|Moderately Slightly
+55|other reasons
+56|Activity
+57|all
+58|Limited
+59|Limited
+60|Limited
+61|Limited
+62|or did not do
+63|Limited
+64|the activity

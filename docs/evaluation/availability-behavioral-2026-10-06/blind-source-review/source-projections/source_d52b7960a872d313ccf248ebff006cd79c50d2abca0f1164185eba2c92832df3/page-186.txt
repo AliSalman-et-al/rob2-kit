@@ -1,0 +1,23 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|93 of 95
+6|
+7|Qe would like to know how good or bad your health is
+8|
+9|TODAY.
+10|
+11|
+12|This scale is numbered from 0 to 100.
+13|
+14|
+15|100 means the best health you can imagine.
+16|
+17|0 means the worst health you can imagine.
+18|
+19|
+20|Mark an T on the scale to indicate how your health is TODAY.
+21|
+22|
+23|Now, please write the number you marked on the scale in the box below.

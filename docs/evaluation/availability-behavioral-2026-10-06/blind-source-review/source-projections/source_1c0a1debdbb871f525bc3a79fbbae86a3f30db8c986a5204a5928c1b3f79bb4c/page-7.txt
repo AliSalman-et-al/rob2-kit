@@ -1,0 +1,105 @@
+1|n engl j med 387;12 nejm.org september 22, 2022
+2|1095
+3|Dapagliflozin in Heart Failure with Preserved EF
+4|patient data were censored at the time of
+5|Covid-19 diagnosis showed similar results (Ta-
+6|ble S6). Overall results were similar when death
+7|from noncardiovascular causes was taken into
+8|account as a competing risk (subdistribution
+9|hazard ratio, 0.82; 95% CI, 0.73 to 0.92). The
+10|results of the assessment of the proportional-
+11|hazards assumption are provided in the Supple-
+12|mentary Appendix.
+13|Safety
+14|Overall, serious adverse events, including death,
+15|were reported in 1361 patients (43.5%) in the
+16|dapagliflozin group and in 1423 patients (45.5%)
+17|in the placebo group (Table 2). Adverse events
+18|that led to discontinuation of dapagliflozin or
+19|placebo were reported in 182 patients (5.8%) in
+20|the dapagliflozin group and in 181 patients
+21|(5.8%) in the placebo group (Table S7).
+22|Discussion
+23|In this randomized, placebo-controlled trial in-
+24|volving patients with heart failure and a mildly
+25|reduced or preserved ejection fraction, dapa-
+26|gliflozin resulted in a lower risk of the primary
+27|composite outcome, worsening heart failure or
+28|cardiovascular death, than placebo, with no ap-
+29|preciable difference in benefit among patients
+30|with a left ventricular ejection fraction of 60% or
+31|more and those with a left ventricular ejection
+32|fraction of less than 60%, or in other subgroups.
+33|Each of the three components of this composite
+34|outcome was less common in the dapagliflozin
+35|group than in the placebo group. In addition,
+36|dapagliflozin resulted in fewer total worsening
+37|heart failure events and cardiovascular deaths
+38|and a lower symptom burden than placebo. The
+39|incidence of adverse events was similar to that in
+40|the placebo group.
+41|In a previous trial (DAPA-HF; Dapagliflozin
+42|and Prevention of Adverse Outcomes in Heart
+43|Failure), dapagliflozin reduced the risk of wors-
+44|ening heart failure or cardiovascular death
+45|among patients with heart failure and a left
+46|ventricular ejection fraction of 40% or less.1 The
+47|results of the DELIVER trial extend those of the
+48|DAPA-HF trial to patients with heart failure and
+49|a left ventricular ejection fraction of more than
+50|40% and are consistent with the overall results
+51|of the EMPEROR-Preserved trial (Empagliflozin
+52|Outcome Trial in Patients with Chronic Heart
+53|Failure with Preserved Ejection Fraction), which
+54|assessed the effects of empagliflozin in patients
+55|with a left ventricular ejection fraction of more
+56|than 40%.10 The rationale for the dual primary
+57|analyses in our trial (i.e., evaluation of the pri-
+58|mary outcome in patients with a left ventricular
+59|ejection fraction of less than 60% in addition to
+60|the overall patient population) was based on
+61|concern about a potential declining benefit in
+62|patients with an ejection fraction in the normal
+63|range that had been observed in several previous
+64|trials of neurohormonal modulators.6,15 Although
+65|the EMPEROR-Preserved trial suggested some
+66|potential attenuation of benefit in the highest part
+67|of the range of ejection fraction,8 we observed no
+68|evidence of heterogeneity with respect to left
+69|ventricular ejection fraction in the DELIVER trial,
+70|with similar overall treatment effects among
+71|patients with a left ventricular ejection fraction
+72|of 60% or more and those with a left ventricular
+73|ejection fraction of less than 60%. This finding
+74|suggests that the benefit of SGLT2 inhibition is
+75|likely to extend throughout the full range of
+76|ejection fraction.
+77|The DELIVER trial was designed with broader
+78|inclusion criteria than those used in previous
+79|trials involving similar populations in that we en-
+80|rolled patients who were hospitalized or recently
+81|hospitalized, for whom evidence-based therapy
+82|is limited, as well as those with heart failure and
+83|a left ventricular ejection fraction that had im-
+84|proved to more than 40% at the time of enroll-
+85|ment.4 Our data suggest that these understudied
+86|groups also benefit from dapagliflozin.
+87|The most recent guidelines of the American
+88|Heart Association, American College of Cardiol-
+89|ogy, and Heart Failure Society of America desig-
+90|nated SGLT2 inhibitors as class IIA, level B, for
+91|the treatment of heart failure with a mildly re-
+92|duced or preserved left ventricular ejection frac-
+93|tion.4 The results of the DELIVER trial may in-
+94|form future guidelines and provide further
+95|guidance for their broader use in clinical prac-
+96|tice. Although the risk of cardiovascular death
+97|Figure 1 (facing page). Efficacy Outcomes in the Overall
+98|Population.
+99|Shown are time-to-event curves for the primary outcome
+100|(Panel A), individual components of the primary outcome
+101|(worsening heart failure [Panel B] and cardiovascular
+102|death [Panel C]), and death from any cause (Panel D).
+103|The insets show the same data on an expanded y axis.
+104|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+105|Downloaded from nejm.org on September 22, 2026.

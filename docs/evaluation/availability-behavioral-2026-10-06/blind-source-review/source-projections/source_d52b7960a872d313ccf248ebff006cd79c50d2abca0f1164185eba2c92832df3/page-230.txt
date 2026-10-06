@@ -1,0 +1,61 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|5 of 58
+7|4.2
+8|Analysis Methods ............................................................................................. 31
+9|4.2.1
+10|Demographics and Baseline Characteristics ...................................................... 31
+11|4.2.2
+12|Concomitant and Baseline Medication.............................................................. 32
+13|4.2.3
+14|Analysis of the Primary Efficacy Variables....................................................... 32
+15|4.2.4
+16|Analysis of the Secondary Efficacy Variables................................................... 35
+17|4.2.5
+18|Analysis of Safety Variables ............................................................................. 41
+19|4.2.6
+20|Analysis of Exploratory Objectives................................................................... 43
+21|5
+22|INTERIM ANALYSES.................................................................................... 44
+23|6
+24|CHANGES OF ANALYSIS FROM PROTOCOL............................................ 45
+25|7
+26|REFERENCES................................................................................................. 46
+27|Appendix A Estimation of Clinically Meaningful Thresholds for KCCQ Total Symptom
+28|Score ................................................................................................................ 49
+29|Appendix B Programming Code for Calculating Significance Level for LVEF <60C
+30|Subpopulation................................................................................................... 57
+31|LIST OF TABLES
+32|Table 1
+33|Level of D1 Depending on Proportion of Events in LVEF < 60C
+34|Subpopulation.......................................................................................... 29
+35|Table 2
+36|Characteristics and Categories for Subgroup Analysis of the Primary
+37|Endpoint.................................................................................................. 33
+38|Table A1
+39|Categories of Change from Baseline PGIS in Heart Failure Symptoms at
+40|8 Months ................................................................................................. 50
+41|Table A2
+42|Distribution of Change from Baseline KCCQ-TSS at 8 months by
+43|Change from Baseline PGIS 8 Months..................................................... 52
+44|Table A3
+45|Distribution-Based Cut-offs for a Minimal Clinically Important
+46|Difference in the KCCQ-TSS .................................................................. 56
+47|LIST OF FIGURES
+48|Figure 1
+49|Study Design ........................................................................................... 19
+50|Figure A1
+51|Empirical Cumulative Distribution Function for Change from Baseline
+52|KCCQ-TSS at 8 Months versus Change from Baseline PGIS at 8 Months
+53|with 7 Categories..................................................................................... 53
+54|Figure A2
+55|Empirical Cumulative Distribution Function for Change from Baseline
+56|KCCQ-TSS at 8 Months Versus Change from Baseline PGIS at 8
+57|Months with 5 Categories (Collapsing EModerateF and ELargeF) ............. 54
+58|Figure A3
+59|Empirical Cumulative Distribution Function for Change from Baseline
+60|KCCQ-TSS at 8 months Versus Change from Baseline PGIS at 8
+61|Months with 5 Categories (Collapsing ESmallF and EModerateF)............. 55

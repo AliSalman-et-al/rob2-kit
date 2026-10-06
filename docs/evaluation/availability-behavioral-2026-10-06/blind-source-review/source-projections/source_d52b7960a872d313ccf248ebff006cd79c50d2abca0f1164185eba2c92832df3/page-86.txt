@@ -1,0 +1,103 @@
+1|Clinical Study Protocol ± Version 1, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|84 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|2. Compared with 2 weeks ago, have your symptoms of heart failure (shortness of breath,
+9|fatigue, or ankle swelling) changed?
+10|
+11|My symptoms of heart failure haYe become«
+12|Much
+13|worse
+14|Slightly
+15|worse
+16|Not
+17|changed
+18|Slightly
+19|better
+20|Much
+21|better
+22|I¶Ye had QR symptoms
+23|over the last 2 weeks
+24|❏
+25|❏
+26|❏
+27|❏
+28|❏
+29|❏
+30|
+31|3. Over the past 2 weeks, how many times did you have swelling in your feet, ankles or legs when
+32|you woke up in the morning?
+33|Every morning
+34|3 or more times
+35|a week, but not
+36|every day
+37|1-2 times a week Less than once a
+38|week
+39|Never over the
+40|past 2 weeks
+41|❏
+42|❏
+43|❏
+44|❏
+45|❏
+46|
+47|4. Over the past 2 weeks, how much has swelling in your feet, ankles or legs bothered you?
+48|
+49|It has been ...
+50|Extremely
+51|bothersome
+52|Quite a bit
+53|bothersome
+54|Moderately
+55|bothersome
+56|Slightly
+57|bothersome
+58|Not at all
+59|bothersome
+60|I¶Ye had no
+61|swelling
+62|❏
+63|❏
+64|❏
+65|❏
+66|❏
+67|❏
+68|
+69|5. Over the past 2 weeks, on average, how many times has fatigue limited your ability to do what
+70|you want?
+71|All of the
+72|time
+73|Several
+74|times per
+75|day
+76|At least
+77|once a
+78|day
+79|3 or more times
+80|per week but not
+81|every day
+82|1-2 times
+83|per week
+84|Less than
+85|once a
+86|week
+87|Never over
+88|the past 2
+89|weeks
+90|❏
+91|❏
+92|❏
+93|❏
+94|❏
+95|❏
+96|❏
+97|
+98|
+99|
+100|
+101|
+102|
+103|

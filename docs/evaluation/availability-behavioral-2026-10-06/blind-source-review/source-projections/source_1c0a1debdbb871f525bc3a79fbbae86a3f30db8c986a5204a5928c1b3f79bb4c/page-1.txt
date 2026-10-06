@@ -1,0 +1,64 @@
+1|The new engl and jour nal of medicine
+2|n engl j med 387;12 nejm.org september 22, 2022
+3|1089
+4|The authors' full names, academic de-
+5|grees, and affiliations are listed in the
+6|Appendix. Dr. Solomon can be contacted
+7|at ssolomon@bwh.harvard.edu or at the
+8|Cardiovascular Division, Brigham and
+9|Women's Hospital, 75 Francis St., Boston,
+10|MA 02115.
+11|* A complete list of the DELIVER trial in-
+12|vestigators is provided in the Supplemen-
+13|tary Appendix, available at NEJM.org.
+14|This article was published on August 27,
+15|2022, at NEJM.org.
+16|N Engl J Med 2022;387:1089-98.
+17|DOI: 10.1056/NEJMoa2206286
+18|Copyright © 2022 Massachusetts Medical Society.
+19|BACKGROUND
+20|Sodium-glucose cotransporter 2 (SGLT2) inhibitors reduce the risk of hospitaliza-
+21|tion for heart failure and cardiovascular death among patients with chronic heart
+22|failure and a left ventricular ejection fraction of 40% or less. Whether SGLT2 in-
+23|hibitors are effective in patients with a higher left ventricular ejection fraction
+24|remains less certain.
+25|METHODS
+26|We randomly assigned 6263 patients with heart failure and a left ventricular ejec-
+27|tion fraction of more than 40% to receive dapagliflozin (at a dose of 10 mg once
+28|daily) or matching placebo, in addition to usual therapy. The primary outcome was
+29|a composite of worsening heart failure (which was defined as either an unplanned
+30|hospitalization for heart failure or an urgent visit for heart failure) or cardiovas-
+31|cular death, as assessed in a time-to-event analysis.
+32|RESULTS
+33|Over a median of 2.3 years, the primary outcome occurred in 512 of 3131 patients
+34|(16.4%) in the dapagliflozin group and in 610 of 3132 patients (19.5%) in the pla-
+35|cebo group (hazard ratio, 0.82; 95% confidence interval [CI], 0.73 to 0.92; P<0.001).
+36|Worsening heart failure occurred in 368 patients (11.8%) in the dapagliflozin
+37|group and in 455 patients (14.5%) in the placebo group (hazard ratio, 0.79; 95%
+38|CI, 0.69 to 0.91); cardiovascular death occurred in 231 patients (7.4%) and 261
+39|patients (8.3%), respectively (hazard ratio, 0.88; 95% CI, 0.74 to 1.05). Total events
+40|and symptom burden were lower in the dapagliflozin group than in the placebo
+41|group. Results were similar among patients with a left ventricular ejection fraction
+42|of 60% or more and those with a left ventricular ejection fraction of less than 60%,
+43|and results were similar in prespecified subgroups, including patients with or
+44|without diabetes. The incidence of adverse events was similar in the two groups.
+45|CONCLUSIONS
+46|Dapagliflozin reduced the combined risk of worsening heart failure or cardiovas-
+47|cular death among patients with heart failure and a mildly reduced or preserved
+48|ejection fraction. (Funded by AstraZeneca; DELIVER ClinicalTrials.gov number,
+49|NCT03619213.)
+50|ABSTR ACT
+51|Dapagliflozin in Heart Failure with Mildly
+52|Reduced or Preserved Ejection Fraction
+53|S.D. Solomon, J.J.V. McMurray, B. Claggett, R.A. de Boer, D. DeMets,
+54|A.F. Hernandez, S.E. Inzucchi, M.N. Kosiborod, C.S.P. Lam, F. Martinez,
+55|S.J. Shah, A.S. Desai, P.S. Jhund, J. Belohlavek, C.-E. Chiang, C.J.W. Borleffs,
+56|J. Comin-Colet, D. Dobreanu, J. Drozdz, J.C. Fang, M.A. Alcocer-Gamba,
+57|W. Al Habeeb, Y. Han, J.W. Cabrera Honorio, S.P. Janssens, T. Katova,
+58|M. Kitakaze, B. Merkely, E. O'Meara, J.F.K. Saraiva, S.N. Tereshchenko, J. Thierer,
+59|M. Vaduganathan, O. Vardeny, S. Verma, V.N. Pham, U. Wilderäng,
+60|N. Zaozerska, E. Bachus, D. Lindholm, M. Petersson, and A.M. Langkilde,
+61|for the DELIVER Trial Committees and Investigators*
+62|Original Article
+63|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+64|Downloaded from nejm.org on September 22, 2026.

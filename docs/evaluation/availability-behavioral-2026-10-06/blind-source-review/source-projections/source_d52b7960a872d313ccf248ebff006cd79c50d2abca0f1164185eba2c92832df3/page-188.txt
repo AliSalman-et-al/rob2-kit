@@ -1,0 +1,16 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|95 of 95
+6|Appendix L
+7|Patient Global Impression of Severity for Heart Failure
+8|Symptoms
+9|Patient Global Impression of Severity for Heart Failure Symptoms
+10|Overall, how would you rate the severity of your heart failure symptoms today`
+11|No symptoms
+12|Very mild
+13|Mild
+14|Moderate
+15|Severe
+16|Very Severe

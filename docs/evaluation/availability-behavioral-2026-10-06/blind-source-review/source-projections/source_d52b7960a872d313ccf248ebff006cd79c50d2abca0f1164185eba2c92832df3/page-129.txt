@@ -1,0 +1,42 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|36 of 95
+6|All investigational product HIPI should be kept in a secure place under appropriate storage
+7|conditions. The label on the IP bottle specifies the appropriate storage.
+8|Only patients randomised in the study may receive IP and only authorised site staff may supply or
+9|administer IP. The administration of all investigational products should be recorded in the
+10|appropriate sections of the eCRF.
+11|The Investigator is responsible for IP accountability, reconciliation, and record maintenance Hi.e.
+12|receipt, reconciliation, and final disposition recordsI.
+13|The investigator will retain the returned IP until the AZ representative or delegate collects it, along
+14|with any IP not dispensed. The AZ representative or delegate is responsible for confirming the
+15|investigator or delegate has recorded the quantities of returned and unused tablets at a patient level
+16|before IP is destroyed. The AZ representative or delegate will advise on the appropriate method
+17|for destruction of unused IP.
+18|6.3
+19|Measures to minimise bias: randomisation and blinding
+20|All patients will be centrally assigned to randomised IP using an interactive voicePweb response
+21|system HIxRSI. Randomisation to IP will be performed in balanced blocks to ensure approximate
+22|balance between the treatment groups H1D1I. The randomisation codes will be computer generated
+23|and loaded into the IxRS database. Before the study is initiated, the telephone number and call-in
+24|directions for the IxRS andPor the log-in information and directions for the IxRS will be provided
+25|to each site.
+26|If a randomised patient withdraws from the study, then hisPher enrolmentPrandomisation code
+27|cannot be reused. Qithdrawn randomised patients will be included in the intention to treat analysis.
+28|The IxRS will provide the Investigator with the kit identification number to be allocated to the
+29|patient at each dispensing visit. At all visits where IP is dispensed, site personnel will do a kit
+30|verification in IxRS before providing the IP bottle to the patient. Routines for this will be described
+31|in the IxRS user manual that will be provided to each centre.
+32|The blinding of treatment is ensured by using a double-blind technique. Individual treatment codes,
+33|indicating the randomised treatment for each patient, will be available to the investigatorHsI or
+34|pharmacists from the IxRS. Instructions for code breakingPunblinding will be described in the IxRS
+35|user manual that will be provided to each site.
+36|The randomisation code should not be broken except in medical emergencies when the appropriate
+37|management of the patient requires knowledge of the treatment randomisation. The Investigator is
+38|to document and report the action to AstraZeneca, without revealing the treatment given to the
+39|patient to the AstraZeneca staff.
+40|AstraZeneca retains the right to break the code for SAEs that are unexpected and are suspected to
+41|be causally related to an investigational product and that potentially require expedited reporting to
+42|regulatory authorities. Randomisation codes will not be broken for the planned analyses of data

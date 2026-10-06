@@ -1,0 +1,51 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|83 of 95
+6|As collection of the biological sampleHsI is an integral part of the study, then the subject is
+7|withdrawn from further study participation.
+8|The InvestigatorD
+9|
+10|Ensures subjectsO withdrawal of informed consent to the use of donated samples
+11|is notified immediately to AstraZeneca
+12|
+13|
+14|Ensures that biological samples from that subject, if stored at the study site, are
+15|immediately identified, disposed of Pdestroyed, and the action documented
+16|
+17|
+18|Ensures the organizationHsI holding the samples isPare informed about the
+19|withdrawn consent immediately and that samples are disposed ofPdestroyed, the
+20|action documented and the signed document returned to the study site
+21|
+22|Ensures that the subject and AstraZeneca are informed about the sample
+23|disposal.
+24|AstraZeneca ensures the organizations holding the samples isPare informed about the withdrawn
+25|consent immediately and that samples are disposed ofPdestroyed and the action documented and
+26|returned to the study site.
+27|E 3
+28|International Airline Transportation Association (IATA) 6.2
+29|Guidance Document
+30|LABELLING AND SHIPMENT OF BIOHANARD SAMPLES
+31|International Airline Transportation Association HIATAI classifies biohazardous agents into 3
+32|categories HhttpDPPwww.iata.orgPwhatwedoPcargoPdangeroushgoodsPinfectioushsubstances.htmI. For
+33|transport purposes the classification of infectious substances according to risk groups was removed
+34|from the Dangerous Goods Regulations in the 46th edition H2005I. Infectious substances are now
+35|classified either as Category A, Category B or Exempt. There is no direct relationship between
+36|Risk Groups and Categories A and B.
+37|Category A Infectious Substances are infectious substances in a form that, when exposure to it
+38|occurs, is capable of causing permanent disability, life-threatening or fatal disease in otherwise
+39|healthy humans or animals. Category A pathogens are e.g., Ebola, Lassa fever virusD
+40|
+41|Are to be packed and shipped in accordance with IATA Instruction 602.
+42|Category B Infectious Substances are infectious Substances that do not meet the criteria for
+43|inclusion in Category A. Category B pathogens are e.g., Hepatitis A, B, C, D, and E viruses,
+44|Human immunodeficiency virus types 1 and 2. They are assigned the following LN number and
+45|proper shipping nameD
+46|
+47|LN 3373 - Biological Substance, Category B
+48|
+49|
+50|Are to be packed in accordance with LN3373 and IATA 650
+51|Exempt - all other materials with minimal risk of containing pathogens

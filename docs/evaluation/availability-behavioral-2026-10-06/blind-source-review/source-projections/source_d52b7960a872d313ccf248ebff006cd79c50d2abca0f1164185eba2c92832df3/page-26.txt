@@ -1,0 +1,48 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|24 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|definiWionV cXUUenWl\ emSlo\ed in Whe SSonVoU¶V ongoing HFUEF oXWcome VWXd\ (DaSa-HF; Study
+9|D1699C00001).
+10|The rationale for including outpatient HF events, in addition to hospital admissions, is that it is the
+11|occXUUence of ZoUVening of Whe SaWienW¶V condiWion neceVViWaWing WUeaWmenW, and noW Whe Slace of
+12|treatment, that is important. As stated in EMA Guidance 2016, μ«SaWienW are often managed for
+13|episodes of transient decompensation or worsening HF in outpatient settings (eg, emergency
+14|departments, observation units, other outpatient settings). The capture of events of worsening HF
+15|ZiWhoXW hoVSiWaliVaWion ma\ be ZaUUanWed aV an addiWional endSoinW.¶ InclXding onl\ hoVSital
+16|admissions is likely to overlook a modest but significant proportion of episodes of worsening HF
+17|(Skali et al 2014, Okumura et al 2016, Greene at al 2000).
+18|While CV death and HF hospitalisations are clearly important to patients and health-care systems,
+19|Whe imSacW of HF on SaWienWV¶ V\mSWomV and Sh\Vical/Vocial fXncWioning iV alVo imSoUWanW. In oUdeU
+20|to evaluate the treatment effects on these aspects of the impact of HF, we will use the Kansas City
+21|Cardiomyopathy Questionnaire (KCCQ), a disease-specific patient reported outcomes (PRO)
+22|measure developed for patients with chronic HF. The KCCQ has shown to be a valid, reliable and
+23|responsive measure for patients with HF (Greene at al 2000, Spertus et al 2005).
+24|4.3
+25|Justification for dose
+26|The 10 mg dose of dapagliflozin has a well-characterised efficacy and safety profile in the T2D
+27|clinical development program and is the recommended dose in the majority of countries
+28|worldwide.
+29|From a pharmacokinetic perspective, the currently approved dapagliflozin dose of 10 mg once
+30|daily is appropriate for use in patients with HFpEF. Slightly higher systemic exposure to
+31|dapagliflozin is expected in HFpEF patients when symptomatic, based on the dual renal and
+32|hepatic metabolism of dapagliflozin and the lower perfusion of these organs in this patient group.
+33|However, the increase in systemic exposure of 10 mg dapagliflozin is not anticipated to warrant
+34|dose adjustment in HF patients. Moreover, the anticipated slightly higher systemic exposure to
+35|dapagliflozin is likely to be beneficial in HF patients, by compensating for the reduced renal
+36|perfusion and consequently lower renal glucose and sodium filtered loads in these patients. Doses
+37|lower than 10 mg are therefore unlikely to provide as much benefit to patients with HF as the
+38|10-mg dose. Lastly, no changes in dose of concomitant medications in the HFpEF population are
+39|needed due to a lack of clinically meaningful drug-drug interactions for dapagliflozin with current
+40|medications used for treatment of patients with HFpEF, including standard of care medications
+41|used to control co-morbidities in this patient group.
+42|In the dapagliflozin clinical program, there are no dose-related SAEs that preclude the use of
+43|10 mg as a preferred dose. Additionally, in a post-hoc analysis of data from 320 patients with
+44|a documented history of HF and concomitant T2D in placebo-controlled clinical trials,
+45|dapagliflozin 10 mg was found to be well tolerated in this population (Kosiborod et al 2017b).
+46|There are mechanistic reasons for choosing the 10-mg dose as well. One hypothesis of underlying
+47|pathophysiology in HFpEF is abnormal pressure coupling between the left ventricle and aorta, and
+48|drugs that reduce aortic stiffness may have beneficial effects in patients with HFpEF (Borlaug and

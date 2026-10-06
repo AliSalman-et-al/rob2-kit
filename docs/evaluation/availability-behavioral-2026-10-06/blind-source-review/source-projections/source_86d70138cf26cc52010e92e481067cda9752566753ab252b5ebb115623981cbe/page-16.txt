@@ -1,0 +1,44 @@
+1|
+2|
+3|
+4|
+5|15
+6|Endpoint Definitions
+7|
+8|I.
+9|Death
+10|
+11|A. Cardiovascular Death
+12|
+13|Cardiovascular death includes death classified in any of the following categories:
+14|
+15|1. Death due to Acute Myocardial Infarction refers to a death by any CV mechanism (e.g.,
+16|arrhythmia, sudden death, HF, stroke, pulmonary embolus, peripheral arterial disease) ≤ 30 days
+17|after a MI, related to the immediate consequences of the MI, such as progressive HF or recalcitrant
+18|arrhythmia. We note that there may be assessable mechanisms of CV death during this time
+19|period, but for simplicity, if the CV death occurs ≤ 30 days of the MI, it will be considered a death
+20|due to MI.
+21|Acute MI should be verified to the extent possible by the diagnostic criteria for acute MI or by
+22|autopsy findings showing recent MI or recent coronary thrombosis.
+23|Death resulting from a procedure to treat a MI (percutaneous coronary intervention (PCI), coronary
+24|artery bypass graft surgery (CABG)), or to treat a complication resulting from MI, should also be
+25|considered death due to acute MI.
+26|Death resulting from an elective coronary procedure to treat myocardial ischemia (i.e., chronic
+27|stable angina) or death due to a MI that occurs as a direct consequence of a CV
+28|investigation/procedure/operation should be considered as a death due to a CV procedure.
+29|
+30|2. Sudden Cardiac Death refers to a death that occurs unexpectedly and not within 30 days of an
+31|acute MI. Sudden cardiac death includes the following scenarios:
+32|a. Death witnessed and occurring without new or worsening symptoms
+33|
+34|b. Death witnessed within 60 minutes of the onset of new or worsening cardiac symptoms, unless
+35|the symptoms suggest acute MI
+36|c. Death witnessed and attributed to an identified arrhythmia (e.g., captured on an
+37|electrocardiographic (ECG) recording, witnessed on a monitor, or unwitnessed but found on
+38|implantable cardioverter-defibrillator review)
+39|
+40|d. Death after unsuccessful resuscitation from cardiac arrest (e.g., implantable cardioverter
+41|defibrillator (ICD) unresponsive sudden cardiac death, pulseless electrical activity arrest)
+42|e. Death after successful resuscitation from cardiac arrest and without identification of a specific
+43|cardiac or non-cardiac etiology
+44|f. Unwitnessed death in a subject seen alive and clinically stable ≤ 24 hours prior to being found

@@ -1,0 +1,51 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|73 of 95
+6|An adverse event is the development of any untoward medical occurrence in a subject or clinical
+7|study subject administered a medicinal product and which does not necessarily have a causal
+8|relationship with this treatment. An AE can therefore be any unfavourable and unintended sign
+9|He.g. an abnormal laboratory findingI, symptom Hfor example nausea, chest painI, or disease
+10|temporally associated with the use of a medicinal product, whether or not considered related to the
+11|medicinal product.
+12|The term AE is used to include both serious and non-serious AEs and can include a deterioration
+13|of a pre- existing medical occurrence. An AE may occur at any time, including run-in or washout
+14|periods, even if no Study treatment has been administered.
+15|B 2
+16|Definitions of serious adverse event
+17|A serious adverse event is an AE occurring during any study phase Hi.e., run-in, treatment,
+18|washout, follow-upI, that fulfils one or more of the following criteriaD
+19|
+20|Results in death
+21|
+22|
+23|Is immediately life-threatening
+24|
+25|
+26|Requires in-subject hospitalisation or prolongation of existing hospitalisation
+27|
+28|
+29|Results in persistent or significant disability or incapacity
+30|
+31|
+32|Is a congenital abnormality or birth defect
+33|
+34|
+35|Is an important medical event that may jeopardise the subject or may require medical
+36|treatment to prevent one of the outcomes listed above.
+37|B 3
+38|Life threatening
+39|YLife-threateningO means that the subject was at immediate risk of death from the AE as it occurred
+40|or it is suspected that use or continued use of the product would result in the subjectOs death. YLife-
+41|threateningO does not mean that had an AE occurred in a more severe form it might have caused
+42|death He.g., hepatitis that resolved without hepatic failureI.
+43|B 4
+44|Hospitalisation
+45|Outpatient treatment in an emergency room is not in itself a serious AE, although the reasons for
+46|it may be He.g., bronchospasm, laryngeal oedemaI. Hospital admissions andPor surgical operations
+47|planned before or during a study are not considered AEs if the illness or disease existed before the
+48|subject was enrolled in the study, provided that it did not deteriorate in an unexpected way during
+49|the study.
+50|B 5
+51|Important medical event or medical treatment

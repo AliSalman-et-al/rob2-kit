@@ -1,0 +1,24 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|1 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Clinical Study Protocol
+9|Drug Substance
+10|Dapagliflozin
+11|Study Code
+12|D169CC00001
+13|Version
+14|1.0
+15|Date
+16|24th April 2018
+17|An International, Double-blind, Randomised, Placebo-Controlled Phase III
+18|Study to Evaluate the Effect of Dapagliflozin on Reducing CV Death or
+19|Worsening Heart Failure in Patients with Heart Failure with Preserved Ejection
+20|Fraction (HFpEF)
+21|DELIVER - Dapagliflozin Evaluation to Improve the LIVEs of Patients with
+22|PReserved Ejection Fraction Heart Failure
+23|Sponsor: AVWUaZeneca AB, 151 85 S|deUWllje, SZeden
+24|Regulatory Agency Identifying Number(s):

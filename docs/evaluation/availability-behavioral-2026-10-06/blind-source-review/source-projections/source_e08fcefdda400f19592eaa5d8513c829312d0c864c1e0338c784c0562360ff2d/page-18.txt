@@ -1,0 +1,132 @@
+1|Cytokinetics
+2|Consultant
+3|Self
+4|DalCor Pharma
+5|Consultant
+6|Self
+7|GlaxoSmithKline
+8|Consultant
+9|Self
+10|Lexicon Pharmaceuticals, Inc.
+11|Consultant
+12|Self
+13|Lupin Pharmaceuticals, Inc
+14|Consultant
+15|Self
+16|Medpace
+17|Consultant
+18|Self
+19|Merck
+20|Consultant
+21|Self
+22|Novartis
+23|Grant / Contract
+24|Self
+25|Novartis
+26|Consultant
+27|Self
+28|Parexel
+29|Consultant
+30|Self
+31|Regeneron Pharmaceuticals
+32|Consultant
+33|Self
+34|Relypsa, Inc.
+35|Consultant
+36|Self
+37|Roche Diagnostics GmbH
+38|Consultant
+39|Self
+40|scpharma
+41|Consultant
+42|Self
+43|Sun Pharmaceutical Industries Inc.
+44|Consultant
+45|Self
+46|Additional Questions:
+47|Category: Consultant
+48|Description: Advisory Board
+49|Additional Information:
+50|Category: Consultant
+51|Description: CEC member for clinical trial
+52|Additional Information:
+53|Category: Consultant
+54|Description: Advisory Board
+55|Additional Information:
+56|Category: Consultant
+57|Description: Advisory Board Participation
+58|Additional Information:
+59|Category: Consultant
+60|Description: CME Course Participation
+61|Additional Information:
+62|Category: Consultant
+63|Description: CEC member
+64|Additional Information:
+65|Category: Consultant
+66|Description: Advisory Board
+67|Additional Information:
+68|Recipient Name: Brigham and Women's Hospital
+69|Recipient Type: Institution
+70|Grant / Contract Description: CEC for PARAGLIDE-HF Clinical Trial
+71|Grant / Contract Purpose: Research
+72|Additional Information:
+73|Category: Consultant
+74|Description: Consultant regarding clinical trials, CME course support
+75|Additional Information:
+76|Category: Consultant
+77|Description: MIRACLE Trial National Lead Investigator
+78|Additional Information:
+79|Category: Consultant
+80|Description: Consulting/Advisory Board
+81|Additional Information:
+82|Category: Consultant
+83|Description: Hyperkalemia Global Council Advisory Board
+84|Additional Information:
+85|Category: Consultant
+86|Description: Advisory Board
+87|Additional Information:
+88|Category: Consultant
+89|Description: Consultant/Lecture Honoraria
+90|Additional Information:
+91|Category: Consultant
+92|Description: CME Lecture
+93|Additional Information:
+94|1.
+95|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+96|No.
+97|
+98|[Extracted table 1]
+99||Column 1|Column 2|Column 3|
+100||---|---|---|
+101|||||
+102|||||
+103||Cytokinetics|Consultant|Self|
+104||Category: Consultant Description: Advisory Board<br>Additional Information:|||
+105||DalCor Pharma|Consultant|Self|
+106||Category: Consultant Description: CEC member for clinical trial<br>Additional Information:|||
+107||GlaxoSmithKline|Consultant|Self|
+108||Category: Consultant Description: Advisory Board<br>Additional Information:|||
+109||Lexicon Pharmaceuticals, Inc.|Consultant|Self|
+110||Category: Consultant Description: Advisory Board Participation<br>Additional Information:|||
+111||Lupin Pharmaceuticals, Inc|Consultant|Self|
+112||Category: Consultant Description: CME Course Participation<br>Additional Information:|||
+113||Medpace|Consultant|Self|
+114||Category: Consultant Description: CEC member<br>Additional Information:|||
+115||Merck|Consultant|Self|
+116||Category: Consultant Description: Advisory Board<br>Additional Information:|||
+117||Novartis|Grant / Contract|Self|
+118||Recipient Name: Brigham and Women's Hospital Recipient Type: Institution<br>Grant / Contract Description: CEC for PARAGLIDE-HF Clinical Trial Grant / Contract Purpose: Research<br>Additional Information:|||
+119||Novartis|Consultant|Self|
+120||Category: Consultant Description: Consultant regarding clinical trials, CME course support<br>Additional Information:|||
+121||Parexel|Consultant|Self|
+122||Category: Consultant Description: MIRACLE Trial National Lead Investigator<br>Additional Information:|||
+123||Regeneron Pharmaceuticals|Consultant|Self|
+124||Category: Consultant Description: Consulting/Advisory Board<br>Additional Information:|||
+125||Relypsa, Inc.|Consultant|Self|
+126||Category: Consultant Description: Hyperkalemia Global Council Advisory Board<br>Additional Information:|||
+127||Roche Diagnostics GmbH|Consultant|Self|
+128||Category: Consultant Description: Advisory Board<br>Additional Information:|||
+129||scpharma|Consultant|Self|
+130||Category: Consultant Description: Consultant/Lecture Honoraria<br>Additional Information:|||
+131||Sun Pharmaceutical Industries Inc.|Consultant|Self|
+132||Category: Consultant Description: CME Lecture<br>Additional Information:|||

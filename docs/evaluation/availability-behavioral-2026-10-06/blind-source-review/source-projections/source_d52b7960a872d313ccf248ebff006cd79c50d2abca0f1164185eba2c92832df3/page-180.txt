@@ -1,0 +1,103 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|87 of 95
+6|Dressing yourself
+7|❏
+8|❏
+9|❏
+10|❏
+11|❏
+12|❏
+13|ShoweringPBathing
+14|❏
+15|❏
+16|❏
+17|❏
+18|❏
+19|❏
+20|Qalking 1 block
+21|❏
+22|❏
+23|❏
+24|❏
+25|❏
+26|❏
+27|on level ground
+28|Doing yardwork,
+29|❏
+30|❏
+31|❏
+32|❏
+33|❏
+34|❏
+35|housework or
+36|carrying groceries
+37|Climbing a flight
+38|❏
+39|❏
+40|❏
+41|❏
+42|❏
+43|❏
+44|of stairs without
+45|stopping
+46|Hurrying or
+47|❏
+48|❏
+49|❏
+50|❏
+51|❏
+52|❏
+53|jogging Has if to
+54|catch a busI
+55|2. Compared with 2 weeks ago, have your symptoms of heart failure Hshortness of breath,
+56|fatigue, or ankle swellingI changed`
+57|My symptoms of heart failure have becomeG
+58|Much
+59|Slightly
+60|Not
+61|Slightly
+62|Much
+63|IOve had no symptoms
+64|worse
+65|worse
+66|changed
+67|better
+68|better
+69|over the last 2 weeGs
+70|❏
+71|❏
+72|❏
+73|❏
+74|❏
+75|❏
+76|3. Over the past 2 weeks, how many times did you have swelling in your feet, ankles or legs when
+77|you woke up in the morning`
+78|3 or more times
+79|Less than once a Never over the
+80|Every morning
+81|a weeG, but not
+82|1-2 times a weeG weeG
+83|past 2 weeGs
+84|every day
+85|❏
+86|❏
+87|❏
+88|❏
+89|❏
+90|4. Over the past 2 weeks, how much has swelling in your feet, ankles or legs bothered you`
+91|It has been ...
+92|Extremely
+93|Iuite a bit
+94|Moderately
+95|Slightly
+96|Not at all
+97|IOve had no
+98|bothersome
+99|bothersome
+100|bothersome
+101|bothersome
+102|bothersome
+103|swelling

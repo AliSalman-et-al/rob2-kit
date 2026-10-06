@@ -1,0 +1,97 @@
+1|Jul 05, 2022 19:24:15 EDT
+2|New England Journal of Medicine
+3|Chern-En Chiang
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Other
+11|Self
+12|Bayer
+13|Other
+14|Self
+15|Boehringer Ingelheim
+16|Other
+17|Self
+18|Daiichi Sankyo Company
+19|Other
+20|Self
+21|Eli Lilly and Company
+22|Other
+23|Self
+24|Merck
+25|Other
+26|Self
+27|Novartis
+28|Other
+29|Self
+30|Pfizer
+31|Other
+32|Self
+33|Sanofi
+34|Other
+35|Self
+36|Additional Questions:
+37|Certification
+38|I certify that the information provided in this disclosure is complete and accurate.
+39|Disclosure Purpose: 22-06286
+40|Category: Other
+41|Description: Receiving honorarium for lectures
+42|Additional Information:
+43|Category: Other
+44|Description: Receiving honorarium from lectures
+45|Additional Information:
+46|Category: Other
+47|Description: Receiving honorarium from lectures
+48|Additional Information:
+49|Category: Other
+50|Description: Receiving honorarium from lectures
+51|Additional Information:
+52|Category: Other
+53|Description: Receiving honorarium from lectures
+54|Additional Information:
+55|Category: Other
+56|Description: Receiving honorarium from lectures
+57|Additional Information:
+58|Category: Other
+59|Description: Receiving honorarium from lectures
+60|Additional Information:
+61|Category: Other
+62|Description: Receiving honorarium from lectures
+63|Additional Information:
+64|Category: Other
+65|Description: Receiving honorarium from lectures
+66|Additional Information:
+67|1.
+68|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+69|No.
+70|2.
+71|What is the manuscript title?
+72|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+73|3.
+74|Are you the corresponding author?
+75|No.
+76|
+77|[Extracted table 1]
+78||Entity|Type|Interest Held By|
+79||---|---|---|
+80||AstraZeneca|Other|Self|
+81||Category: Other Description: Receiving honorarium for lectures<br>Additional Information:|||
+82||Bayer|Other|Self|
+83||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+84||Boehringer Ingelheim|Other|Self|
+85||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+86||Daiichi Sankyo Company|Other|Self|
+87||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+88||Eli Lilly and Company|Other|Self|
+89||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+90||Merck|Other|Self|
+91||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+92||Novartis|Other|Self|
+93||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+94||Pfizer|Other|Self|
+95||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||
+96||Sanofi|Other|Self|
+97||Category: Other Description: Receiving honorarium from lectures<br>Additional Information:|||

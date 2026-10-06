@@ -1,0 +1,41 @@
+1|Sanifit
+2|Data And Safety Monitoring
+3|Self
+4|Tricidia
+5|Consultant
+6|Self
+7|Usona Institute
+8|Data And Safety Monitoring
+9|Self
+10|Additional Questions:
+11|Certification
+12|I certify that the information provided in this disclosure is complete and accurate.
+13|Category: Data And Safety Monitoring
+14|Description: Serve as part of DMC
+15|Additional Information:
+16|Category: Consultant
+17|Description: Served on Mock Panel
+18|Additional Information:
+19|Category: Data And Safety Monitoring
+20|Description: Serve as part of DMC
+21|Additional Information:
+22|1.
+23|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+24|No.
+25|2.
+26|What is the manuscript title?
+27|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+28|3.
+29|Are you the corresponding author?
+30|No.
+31|
+32|[Extracted table 1]
+33||Column 1|Column 2|Column 3|
+34||---|---|---|
+35|||||
+36||Sanifit|Data And Safety Monitoring|Self|
+37||Category: Data And Safety Monitoring Description: Serve as part of DMC<br>Additional Information:|||
+38||Tricidia|Consultant|Self|
+39||Category: Consultant Description: Served on Mock Panel<br>Additional Information:|||
+40||Usona Institute|Data And Safety Monitoring|Self|
+41||Category: Data And Safety Monitoring Description: Serve as part of DMC<br>Additional Information:|||

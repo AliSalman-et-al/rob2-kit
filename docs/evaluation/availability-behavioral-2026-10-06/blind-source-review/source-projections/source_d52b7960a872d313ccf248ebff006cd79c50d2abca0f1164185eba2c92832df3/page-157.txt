@@ -1,0 +1,40 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|64 of 95
+6|10.
+7|REFERENCES
+8|Ambrosy et al 2014
+9|Ambrosy AP, Gheorghiade M, Chioncel O, Mentz RB, Butler B. Global perspectives in hospitalised
+10|heart failureD regional and ethnic variation in patient characteristics, management, and outcomes.
+11|Curr Heart Fail Rep 2014 DecR11H4ID416-27.
+12|Borlaug and Paulus 2011
+13|Borlaug BA, Paulus QB. Heart failure with preserved ejection fractionD pathophysiology, diagnosis,
+14|and treatment. Eur Heart B 2011R32D670-9.
+15|Braunwald 2015
+16|Braunwald E. The war against heart failureD the Lancet lecture. Lancet 2015R385D812-24.
+17|Butler et al 2014
+18|Butler B, Fonarow GC, Zile MR, Lam CS, Roessig L, Schelbert EB, et al. Developing therapies for
+19|heart failure with preserved ejection fractionD current state and future directions. BACC Heart Fail
+20|2014 AprR2H2ID97-112.
+21|Cherney et al 2014
+22|Cherney DZ, Perkins BA, Soleymanlou N, Har R, Fagan N, Bohansen OE, et al. The effect of the
+23|empagliflozin on arterial stiffness and heart rate variability in subjects with uncomplicated type 1
+24|diabetes mellitus. Cardiovasc Diabetol 2014R13D28.
+25|Chilton et al 2015
+26|Chilton R, Tikkanen I, Cannon CP, Crowe S, Qoerle HB, Broedl LC, et al. Effects of empagliflozin
+27|on blood pressure and markers of arterial stiffness and vascular resistance in patients with type 2
+28|diabetes. Diabetes Obes Metabo 2015R17D1180-93.
+29|CooG et al 2014
+30|Cook C, Cole G, Asaria P, Babbour R, Francis DP. The annual global economic burden of heart
+31|failure. Int B Cardiol 2014 Feb 15R171H3ID368-76.
+32|EMA Guidance 2016
+33|EMA 2016R Guideline on clinical investigation of medicinal products for the treatment of chronic
+34|heart failure HdraftI, Committee for Medicinal Products for Human Lse HCHMPI.
+35|EMAPCHMPP392958P2015.
+36|FDA Draft Guidance for Industry 2016
+37|Food and Drug Administration. Lse of real-world evidence to support regulatory decision-making
+38|for medical devices. Draft Guidance for Industry and Food and Drug Administration Staff. 16
+39|September 2016.
+40|Fitchett et al 2016

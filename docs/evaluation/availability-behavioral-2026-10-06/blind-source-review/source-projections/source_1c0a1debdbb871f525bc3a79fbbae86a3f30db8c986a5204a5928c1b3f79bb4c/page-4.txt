@@ -1,0 +1,140 @@
+1|n engl j med 387;12 nejm.org september 22, 2022
+2|1092
+3|The new engl and jour nal of medicine
+4|death from any cause (hazard ratio, 0.94; 95%
+5|CI, 0.83 to 1.07) (Fig. 1D). The change from
+6|baseline to month 8 in the KCCQ total symptom
+7|score indicated a benefit with dapagliflozin as
+8|compared with placebo with respect to symp-
+9|toms of heart failure (win ratio, 1.11; 95% CI,
+10|1.03 to 1.21; P = 0.009; mean placebo-corrected
+11|difference between baseline and month 8 among
+12|survivors, 2.4 points; 95% CI, 1.5 to 3.4).
+13|The effect of dapagliflozin on the primary out-
+14|come was consistent across all prespecified sub-
+15|groups. These included the subgroups that were
+16|defined according to the presence or absence of
+17|type 2 diabetes mellitus; enrollment that oc-
+18|curred during or within 30 days after hospital-
+19|ization for heart failure or enrollment that did
+20|not occur during or within 30 days after hospi-
+21|talization for heart failure; and the presence or
+22|absence of a previous left ventricular ejection
+23|fraction of 40% or less that improved to more
+24|than 40% by the time of enrollment (Fig. 2). A
+25|prespecified Covid-19 sensitivity analysis in which
+26|Table 1. Characteristics of the Patients at Baseline.*
+27|Characteristic
+28|Dapagliflozin
+29|(N = 3131)
+30|Placebo
+31|(N = 3132)
+32|Age - yr
+33|71.8±9.6
+34|71.5±9.5
+35|Female sex - no. (%)
+36|1364 (43.6)
+37|1383 (44.2)
+38|Race - no. (%)†
+39|Asian
+40|630 (20.1)
+41|644 (20.6)
+42|Black
+43|81 (2.6)
+44|78 (2.5)
+45|White
+46|2214 (70.7)
+47|2225 (71.0)
+48|Other
+49|206 (6.6)
+50|185 (5.9)
+51|Geographic region - no. (%)
+52|North America
+53|428 (13.7)
+54|423 (13.5)
+55|Latin America
+56|602 (19.2)
+57|579 (18.5)
+58|Europe or Saudi Arabia
+59|1494 (47.7)
+60|1511 (48.2)
+61|Asia
+62|607 (19.4)
+63|619 (19.8)
+64|NYHA class - no. (%)‡
+65|II
+66|2314 (73.9)
+67|2399 (76.6)
+68|III
+69|807 (25.8)
+70|724 (23.1)
+71|IV
+72|10 (0.3)
+73|8 (0.3)
+74|Left ventricular ejection fraction
+75|Mean - %
+76|54.0±8.6
+77|54.3±8.9
+78|Distribution - no. (%)
+79|≤49%
+80|1067 (34.1)
+81|1049 (33.5)
+82|50-59%
+83|1133 (36.2)
+84|1123 (35.9)
+85|≥60%
+86|931 (29.7)
+87|960 (30.7)
+88|Medical history - no. (%)
+89|Type 2 diabetes mellitus
+90|1401 (44.7)
+91|1405 (44.9)
+92|Hypertension
+93|2755 (88.0)
+94|2798 (89.3)
+95|Previous left ventricular ejection fraction ≤40%
+96|572 (18.3)
+97|579 (18.5)
+98|Estimated GFR - ml/min/1.73 m2
+99|61±19
+100|61±19
+101|* Plus-minus values are means ±SD. Percentages may not total 100 because of rounding. GFR denotes glomerular filtra-
+102|tion rate.
+103|† Race was reported by the investigators.
+104|‡ One patient in the placebo group who had New York Heart Association (NYHA) class I disease at baseline was not
+105|included in the analysis of this variable.
+106|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+107|Downloaded from nejm.org on September 22, 2026.
+108|
+109|[Extracted table 1]
+110||Column 1|Column 2|Column 3|
+111||---|---|---|
+112||Table 1. Characteristics of the Patients at Baseline.*|||
+113||Dapagliflozin Placebo<br>Characteristic (N = 3131) (N = 3132)|||
+114||Age - yr|71.8±9.6|71.5±9.5|
+115||Female sex - no. (%) 1364 (43.6) 1383 (44.2)|||
+116||Race - no. (%)†|||
+117||Asian 630 (20.1) 644 (20.6)|||
+118||Black|81 (2.6)|78 (2.5)|
+119||White 2214 (70.7) 2225 (71.0)|||
+120||Other|206 (6.6)|185 (5.9)|
+121||Geographic region - no. (%)|||
+122||North America|428 (13.7)|423 (13.5)|
+123||Latin America 602 (19.2) 579 (18.5)|||
+124||Europe or Saudi Arabia|1494 (47.7)|1511 (48.2)|
+125||Asia 607 (19.4) 619 (19.8)|||
+126||NYHA class - no. (%)‡|||
+127||II 2314 (73.9) 2399 (76.6)|||
+128||III|807 (25.8)|724 (23.1)|
+129||IV 10 (0.3) 8 (0.3)|||
+130||Left ventricular ejection fraction|||
+131||Mean - % 54.0±8.6 54.3±8.9|||
+132||Distribution - no. (%)|||
+133||≤49% 1067 (34.1) 1049 (33.5)|||
+134||50-59%|1133 (36.2)|1123 (35.9)|
+135||≥60% 931 (29.7) 960 (30.7)|||
+136||Medical history - no. (%)|||
+137||Type 2 diabetes mellitus 1401 (44.7) 1405 (44.9)|||
+138||Hypertension|2755 (88.0)|2798 (89.3)|
+139||Previous left ventricular ejection fraction ≤40% 572 (18.3) 579 (18.5)|||
+140||Estimated GFR - ml/min/1.73 m2|61±19|61±19|

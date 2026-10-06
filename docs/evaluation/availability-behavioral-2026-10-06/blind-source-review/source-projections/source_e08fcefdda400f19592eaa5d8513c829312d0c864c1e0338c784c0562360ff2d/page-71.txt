@@ -1,0 +1,49 @@
+1|Relypsa, Inc.
+2|Consultant
+3|Self
+4|Roche Diagnostics Corporation
+5|Consultant
+6|Self
+7|SANOFI PASTEUR INC.
+8|Consultant
+9|Self
+10|Tricog Health
+11|Consultant
+12|Self
+13|Additional Questions:
+14|Certification
+15|I certify that the information provided in this disclosure is complete and accurate.
+16|Category: Consultant
+17|Description:
+18|Additional Information:
+19|Category: Consultant
+20|Description: Speaker Engagement and Research Grant
+21|Additional Information:
+22|Category: Consultant
+23|Description: Consultant and Research Grant
+24|Additional Information:
+25|Category: Consultant
+26|Description:
+27|Additional Information:
+28|1.
+29|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+30|No.
+31|2.
+32|What is the manuscript title?
+33|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+34|3.
+35|Are you the corresponding author?
+36|No.
+37|
+38|[Extracted table 1]
+39||Column 1|Column 2|Column 3|
+40||---|---|---|
+41|||||
+42||Relypsa, Inc.|Consultant|Self|
+43||Category: Consultant Description:<br>Additional Information:|||
+44||Roche Diagnostics Corporation|Consultant|Self|
+45||Category: Consultant Description: Speaker Engagement and Research Grant<br>Additional Information:|||
+46||SANOFI PASTEUR INC.|Consultant|Self|
+47||Category: Consultant Description: Consultant and Research Grant<br>Additional Information:|||
+48||Tricog Health|Consultant|Self|
+49||Category: Consultant Description:<br>Additional Information:|||

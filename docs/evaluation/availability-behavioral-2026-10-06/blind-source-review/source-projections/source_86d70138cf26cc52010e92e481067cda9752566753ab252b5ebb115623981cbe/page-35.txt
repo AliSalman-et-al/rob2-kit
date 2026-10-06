@@ -1,0 +1,67 @@
+1|
+2|
+3|
+4|
+5|34
+6|Median NT-proBNP (IQR) - pg/ml in patients in Atrial Fibrillation/Flutter
+7|1408 (956, 2256)
+8|1387 (965.5, 2180.5)
+9|Median NT-proBNP (IQR) - pg/ml in patients not in Atrial
+10|Fibrillation/Flutter
+11|729 (472, 1299)
+12|704 (467, 1265)
+13|Medical history - no. (%)
+14|Prior hospitalization for heart failure
+15|1270 (40.6)
+16|1269 (40.5)
+17|Atrial fibrillation/flutter history
+18|1758 (56.1)
+19|1794 (57.3)
+20|Baseline ECG atrial fibrillation or flutter
+21|1327 (42.4)
+22|1317 (42.1)
+23|Type 2 Diabetes mellitus
+24|1401 (44.7)
+25|1405 (44.9)
+26|Hypertension
+27|2755 (88.0)
+28|2798 (89.3)
+29|History of Prior LVEF  40%
+30|572 (18.3)
+31|579 (18.5)
+32|Mean eGFR - ml/min/1.73 m2
+33|61 ± 19
+34|61 ± 19
+35|eGFR <60 ml/min/1.73 m2 - no./total no. (%)
+36|1516 (48.4)
+37|1554 (49.6)
+38|
+39|
+40|Heart failure therapy - no. (%)
+41|
+42|
+43|Loop Diuretic
+44|2403 (76.7)
+45|2408 (76.9)
+46|ACE inhibitor
+47|1144 (36.5)
+48|1151 (36.7)
+49|Angiotensin receptor blocker
+50|1133 (36.2)
+51|1139 (36.4)
+52|Sacubitril-valsartan
+53|165 (5.3)
+54|136 (4.3)
+55|Beta-blocker
+56|2592 (82.8)
+57|2585 (82.5)
+58|Mineralocorticoid receptor antagonist
+59|1340 (42.8)
+60|1327 (42.4)
+61|* Plus-minus values are means ±SD. Percentages may not total 100 because of rounding. ACE denotes angiotensin-converting enzyme, GFR glomerular filtration rate, NT-proBNP
+62|LVEF, left ventricular ejection fraction; KCCQ, Kansas City Cardiomyopathy Questionnaire; N-terminal pro-B-type natriuretic peptide, and NYHA New York Heart Association.
+63|†Race was reported by the investigators.
+64|‡The body-mass index is the weight in kilograms divided by the square of the height in meters.
+65|** Baseline KCCQ-total symptom score was available in 2903 patients in the dapagliflozin group and 2892 patients in the placebo group
+66|
+67|

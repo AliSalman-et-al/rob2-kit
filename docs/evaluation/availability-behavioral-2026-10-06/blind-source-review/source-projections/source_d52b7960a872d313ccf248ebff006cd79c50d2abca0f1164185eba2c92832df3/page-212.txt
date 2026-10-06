@@ -1,0 +1,59 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|23 of 36
+7|Sex
+8|MaleH female
+9|Race
+10|WhiteH Black or AfricanH AsianH Other
+11|Geographic region
+12|Asia (ChinaH ZapanH TaiwanH Vietnam)
+13|Europe and Saudi Arabia (BelgiumH
+14| BulgariaH CDech RepublicH
+15| FranceH HungaryH NetherlandsH
+16| PolandH RomaniaH RussiaH
+17| Saudi ArabiaH Spain )
+18|North America (CanadaH US)
+19|Latin America (ArgentinaH BraDilH
+20| MexicoH Peru)
+21|NYHA class at enrolment
+22|IIH III/IV
+23|LVEF at enrollment (I)
+24|41-49H J50
+25|NT-proBNP at enrollment (pg/ml)
+26|EK medianH F median
+27|Randomised during hospitalisation for HF or
+28|within 21 days of discharge.
+29|YesH No
+30|eGFR at enrolment (ml/min/1.73m2 )
+31|E60H J60
+32|BMI at enrolment (kg/m2)
+33|E30H J30
+34|Type 2 diabetes at enrolmentT
+35|YesH No
+36|Systolic blood pressure at randomisation
+37|EK medianH F median
+38|Atrial fibrillation or flutter at enrolment
+39|ECG
+40|YesH No
+41|T The subgroup analysis by T2D status will be based on eCRF medical history record and exclude T2D as a
+42|stratification factor from the model.
+43|The subgroup analyses will be repeated for the CV death component of the primary composite
+44|endpoint.
+45|
+46|[Extracted table 1]
+47||Sex|MaleH female|
+48||---|---|
+49||Race|WhiteH Black or AfricanH AsianH Other|
+50||Geographic region|Asia (ChinaH ZapanH TaiwanH Vietnam)<br>Europe and Saudi Arabia (BelgiumH<br>BulgariaH CDech RepublicH<br>FranceH HungaryH NetherlandsH<br>PolandH RomaniaH RussiaH<br>Saudi ArabiaH Spain )<br>North America (CanadaH US)<br>Latin America (ArgentinaH BraDilH<br>MexicoH Peru)|
+51||NYHA class at enrolment|IIH III/IV|
+52||LVEF at enrollment (I)|41-49H J50|
+53||NT-proBNP at enrollment (pg/ml)|EK medianH F median|
+54||Randomised during hospitalisation for HF or<br>within 21 days of discharge.|YesH No|
+55||eGFR at enrolment (ml/min/1.73m2 )|E60H J60|
+56||BMI at enrolment (kg/m2)|E30H J30|
+57||Type 2 diabetes at enrolmentT|YesH No|
+58||Systolic blood pressure at randomisation|EK medianH F median|
+59||Atrial fibrillation or flutter at enrolment<br>ECG|YesH No|

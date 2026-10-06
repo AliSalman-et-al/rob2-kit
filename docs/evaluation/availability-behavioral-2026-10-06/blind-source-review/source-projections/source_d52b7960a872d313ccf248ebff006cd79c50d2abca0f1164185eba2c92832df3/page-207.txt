@@ -1,0 +1,42 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|18 of 36
+7|Efficacy endpoints (deaths and potential HF events) will be adjudicated. These events will be
+8|recorded as SAEs in the databaseH but will not be reported as SAEs to health authorities to
+9|avoid unnecessary unblinding. HoweverH if it is determined by the CEA committee that a
+10|potential endpoint does not meet the endpoint criteriaH the event will be reported to AZ patient
+11|safety data entry site and if applicable to the health authorities.
+12|For SAEs or DAEs reported by the Investigator as Diabetic Ketoacidosis (DKA) additional
+13|information will be recorded on specific eCRF pages in addition to the AE/SAE form.
+14|For myocardial infarctionsH unstable angina and stroke additional information will be recorded
+15|on specific eCRF pages in addition to the AE/SAE form.
+16|3.4
+17|Laboratory values and vital signs
+18|Blood samples will be taken for central laboratory assessment of creatinine and calculation of
+19|eGFR at enrolment visitH at the visits targeted 1H 4 months and 12 months following
+20|randomisationH then annually and at PTDV and SCV. eGFR will be calculated (in
+21|mL/min/1.73 m2) using the CKD-EPI formula (Levey at al 2009).
+22|Central laboratory assessment of NT-proBNP and HbA1c will be taken at visit 1.
+23|Systolic blood pressure (SBP)H diastolic blood pressure (DBP) and pulse rate will be measured
+24|at visit 1H visit 2H at 1 and 12 months visitH then annually and at PTDV and SCV.
+25|Weight will be measured at visit 1H at the 12 months visitH then annually and at PTDV and
+26|SCV.
+27|3.4.1
+28|Baseline laboratory values and vital signs
+29|In principle baseline will be defined as the last value on or prior to date of first dose of
+30|randomised study drugH or for patients who did not receive treatmentH the last value on or prior
+31|to date of randomisation. Except for cases of rescreening this will be visit 1 measurement of
+32|weightH NT-proBNPH eGFR and HbA1cH and visit 2 measurement of SBPH DBP and pulse rate.
+33|4
+34|ANALYSIS METHODS
+35|4.1
+36|General principles
+37|No multiplicity adjustment will be made to confidence intervals as they will be interpreted
+38|descriptively and used as a measure of precision. All p-values will be unadjusted. P-values for
+39|variables not included in the confirmatory testing seCuenceH or following a non-significant test
+40|in the seCuence will be regarded as nominal.
+41|Primary and secondary analyses of HF events and death include adjudicated events occurring
+42|on or prior to PACD.

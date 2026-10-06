@@ -1,0 +1,108 @@
+1|
+2|
+3|
+4|
+5|37
+6|Table S7. Serious Adverse Events, Adverse Events Leading to Discontinuation, and Other Adverse Events of Interest
+7|
+8|
+9|Table S7.1
+10|Number of Subjects with SAEs (≥ 0.5%) by Preferred Term - On Treatment (Safety Analysis Set)
+11|Preferred term
+12|Number (%) of subjects a
+13|Dapagliflozin 10 mg
+14|(N = 3126)
+15|Placebo
+16|(N = 3127)
+17|Subjects with any SAE
+18|1361 (43.5)
+19|1423 (45.5)
+20| Cardiac failure
+21|262 (8.4)
+22|343 (11.0)
+23| COVID-19
+24|165 (5.3)
+25|131 (4.2)
+26| Pneumonia
+27|97 (3.1)
+28|96 (3.1)
+29| COVID-19 pneumonia
+30|78 (2.5)
+31|81 (2.6)
+32| Ischemic stroke
+33|66 (2.1)
+34|60 (1.9)
+35| Atrial fibrillation
+36|57 (1.8)
+37|47 (1.5)
+38| Acute myocardial infarction
+39|51 (1.6)
+40|58 (1.9)
+41| Cardiac failure congestive
+42|51 (1.6)
+43|73 (2.3)
+44| Cardiac failure acute
+45|47 (1.5)
+46|55 (1.8)
+47| Acute kidney injury
+48|46 (1.5)
+49|50 (1.6)
+50| Angina unstable
+51|43 (1.4)
+52|59 (1.9)
+53| Death
+54|36 (1.2)
+55|38 (1.2)
+56| Cellulitis
+57|31 (1.0)
+58|18 (0.6)
+59| Urinary tract infection
+60|30 (1.0)
+61|32 (1.0)
+62| Sudden cardiac death
+63|23 (0.7)
+64|30 (1.0)
+65| Cardiac failure chronic
+66|22 (0.7)
+67|24 (0.8)
+68| Peripheral arterial occlusive disease
+69|22 (0.7)
+70|14 (0.4)
+71| Asymptomatic COVID-19
+72|21 (0.7)
+73|19 (0.6)
+74| Sudden death
+75|20 (0.6)
+76|18 (0.6)
+77| Angina pectoris
+78|17 (0.5)
+79|19 (0.6)
+80|
+81|[Extracted table 1]
+82||Column 1|Column 2|Column 3|
+83||---|---|---|
+84||Table S7.1 Number of Subjects with SAEs (≥ 0.5%) by Preferred Term - On Treatment (Safety Analysis Set)|||
+85|||Number (%) of subjects a||
+86|||Dapagliflozin 10 mg|Placebo|
+87||Preferred term|(N = 3126)|(N = 3127)|
+88||Subjects with any SAE|1361 (43.5)|1423 (45.5)|
+89||Cardiac failure|262 (8.4)|343 (11.0)|
+90||COVID-19|165 (5.3)|131 (4.2)|
+91||Pneumonia|97 (3.1)|96 (3.1)|
+92||COVID-19 pneumonia|78 (2.5)|81 (2.6)|
+93||Ischemic stroke|66 (2.1)|60 (1.9)|
+94||Atrial fibrillation|57 (1.8)|47 (1.5)|
+95||Acute myocardial infarction|51 (1.6)|58 (1.9)|
+96||Cardiac failure congestive|51 (1.6)|73 (2.3)|
+97||Cardiac failure acute|47 (1.5)|55 (1.8)|
+98||Acute kidney injury|46 (1.5)|50 (1.6)|
+99||Angina unstable|43 (1.4)|59 (1.9)|
+100||Death|36 (1.2)|38 (1.2)|
+101||Cellulitis|31 (1.0)|18 (0.6)|
+102||Urinary tract infection|30 (1.0)|32 (1.0)|
+103||Sudden cardiac death|23 (0.7)|30 (1.0)|
+104||Cardiac failure chronic|22 (0.7)|24 (0.8)|
+105||Peripheral arterial occlusive disease|22 (0.7)|14 (0.4)|
+106||Asymptomatic COVID-19|21 (0.7)|19 (0.6)|
+107||Sudden death|20 (0.6)|18 (0.6)|
+108||Angina pectoris|17 (0.5)|19 (0.6)|

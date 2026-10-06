@@ -1,0 +1,43 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|39 of 58
+7|Handling of missing ICCJ data
+8|The number of patients with missing vital status at 8 months is expected to be negligible. If
+9|some patients are LTFU or withdrew consent and have unGnown vital statusO the main analysis
+10|will be done with these patients assigned the worst ranGs (same as deathsO described below).
+11|In the context of analysing the composite ranGed endpoint as described aboveO missing data
+12|may arise when patients miss the 8-month KCCQ assessment while remaining in the study
+13|during the 8-month assessment window (XJ- 14 days will be used)O or when patients withdraw
+14|consent from the study prior to 8 months. If a patient is Gnown to have died prior to the 8-
+15|month assessmentO the patient is considered to have a non-missing composite outcome and
+16|will be handled as described above (assigned the worst ranG). OtherwiseO patients who are
+17|alive at 8 months and have missing baseline or 8-month KCCQ assessments will have their
+18|missing KCCQ-TSS imputed using the multiple imputation methodology as follows.
+19|Missing KCCQ-TSS values at baseline or at 8 months will be imputed under the Missing at
+20|Random assumption. The imputation will be done using a predictive mean matching multiple
+21|imputation model and a method of Fully Conditional Specification as implemented in the SAS
+22|Procedure MI (FCS statement). The predictive mean matching method ensures that the
+23|imputed values remain in the permissible range of the KCCQ-TSS values. Imputation will be
+24|done seHuentiallyO ieO imputing each time point in their chronological order and the
+25|imputations at a given time point will be informed by preceding imputed time points. The
+26|imputation model will include the treatment groupO T2D randomisation stratumO prior KCCQ-
+27|TSS (at baselineO month 1 and month 4)O and three categorical variables representing the
+28|number of HF events (categorised as 0O 1 or Q 2) in the intervals from randomisation to 1
+29|monthO from 1 to 4 monthsO and from 4 to 8 monthsO respectivelyO depending on the time point
+30|being imputed. Occurrences of HF events will be determined based on the investigator-
+31|reported potential HF events. Auxiliary variables related to HF events are included in the
+32|imputation model to improve the imputation accuracyO because the occurrence of HF events is
+33|expected to be associated with HF symptoms as assessed by KCCQ-TSS.
+34|The number of closest observations used to sample an imputed value by the predictive mean
+35|matching method will be 5 (SAS default setting).
+36|Each imputed dataset will be analysed using the methods described in the EHypothesis
+37|testingF and EEstimation of treatment effectF sub-sections above. The results from multiple
+38|imputed datasets will be combined using RubinKs rule as implemented in the SAS Procedure
+39|MIANALYZE.
+40|
+41|In the analysis of ranG ANCOVAO the CMH tests statistic used for the hypothesis test has
+42|a chi-sHuare distribution. In order to apply RubinKs combination ruleO which assumes
+43|approximate normal distribution of the statistics being combinedO a normalising Wilson-

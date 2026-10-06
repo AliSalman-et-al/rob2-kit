@@ -1,0 +1,47 @@
+1|
+2|
+3|
+4|
+5|10
+6|Hugo Arbanil, Hospital Nacional Dos de Mayo
+7|Walter Cabrera, Clinica Vesalio
+8|Angelica Valdivia, Hospital Militar Geriático
+9|Roger Correa, Clinica Providencia
+10|Henry Anchante, Hospital Nacional Cayetano Heredia
+11|Aldo Rodriguez, Hospital Alberto Sabogal Sologuren - ESSALUD
+12|Carlos Chavez, Hospital Daniel Alcides Carrion
+13|Elizabeth Garrido Carrasco, Clinica El Golf
+14|Victor Rodriguez, Hosp Central de la Fuerza Aerea de Peru
+15|
+16|Poland
+17|
+18|Krzysztof Cymerman, Indywidualna Specjalistyczna Praktyka Lekarska w Dz.Kard.
+19|Michał Ploch, Optima Medycyna S.A.
+20|Lidia Pawłowicz, Praktyka Lekarska Lidia Pawlowicz
+21|Bernadeta Gogola-Migdał, Centrum Usług Medycznych MaxMed Marek Maciaszek
+22|Romuald Korzeniak, MEDIKARD Specjalistyczna Przychodnia Lekarska
+23|Stanisław Mazur, Centrum Medyczne Medyk
+24|Jacek Lampart, Centrum Medyczne Pratia Katowice
+25|Paweł Miękus, NZOZ "PRO CORDIS" Sopockie Centrum Badań Kardiologicznych
+26|Adam Mądrzejewski, Centrum Medyczne Lukamed Joanna Łuka-Wendrowska
+27|Sławomir Szynal, Sławomir Szynal Indywidualna Praktyka Lekarska
+28|Robert Witek, Poradnia Chorób Metabolicznych w Wierzchoslawicach
+29|Andrzej Szuba, 4 Wojskowy Szpital Kliniczny z Polikliniką SPZOZ
+30|Grzegorz Drelich, CenterMed Lublin Sp. z o. o.
+31|Jarosław Drożdż, SPZOZ Centralny szpital Kliniczny Uniwersytetu Medycznego w Łodzi
+32|Jaroslaw Jurowiecki, Poradnia Kardiologiczna Jarosław Jurowiecki
+33|Ryszard Ściborski, Zespół Opieki Zdrowotnej w Oławie SP ZOZ
+34|Anna Lisowska, PANEKMED Indywidualna Praktyka Lekarska Bogusław Panek
+35|
+36|Romania
+37|
+38|Sirona Lupu, SC CARDIOMED SRL
+39|Ella Pintilei, Consultmed SRL
+40|Cristian Podoleanu, Cabinet Medical de Cardiologie si Medicina Interna
+41|Constantin Militaru, Spitalul Clinic Judetean de Urgenta Craiova
+42|Octavian ISTRATOAIE, Spitalul Clinic Judetean de Urgenta Craiova
+43|
+44|Russian Federation
+45|
+46|Dmitrii Pevzner, Russian Cardiology Research and Manufacturing Complex
+47|Zhanna Kobalava, Moscow, City Hospital No. 64

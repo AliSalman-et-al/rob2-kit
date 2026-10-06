@@ -1,0 +1,27 @@
+1|Jul 13, 2022 00:01:01 EDT
+2|New England Journal of Medicine
+3|Nataliia Zaozerska
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Employment
+11|Self
+12|Additional Questions:
+13|Certification
+14|I certify that the information provided in this disclosure is complete and accurate.
+15|Disclosure Purpose: 22-06286
+16|Title: GDMD
+17|Position Description: R&D clinical
+18|Additional Information:
+19|1.
+20|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+21|No.
+22|2.
+23|What is the manuscript title?
+24|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+25|3.
+26|Are you the corresponding author?
+27|No.

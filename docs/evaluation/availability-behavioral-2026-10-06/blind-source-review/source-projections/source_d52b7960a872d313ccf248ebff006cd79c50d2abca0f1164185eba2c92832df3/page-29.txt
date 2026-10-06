@@ -1,0 +1,41 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|27 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|4. Systolic blood pressure (BP) <95 mmHg on 2 consecutive measurements at 5-minute
+9|intervals, at Visit 1 or at Visit 2
+10|5. S\VWolic BP 160 mmHg if noW on WUeaWmenW ZiWh 3 blood SUeVVXUe loZeUing medicaWionV
+11|or 180 mmHg iUUeVSecWiYe of WUeaWmenWV, on 2 conVecXWiYe meaVXUemenWV aW 5-minute
+12|intervals, at Visit 1 or at Visit 2.
+13|6. MI, unstable angina, coronary revascularization (percutaneous coronary intervention (PCI)
+14|or coronary artery bypass grafting (CABG)), ablation of atrial flutter/fibrillation, valve
+15|repair/replacement within 12 weeks prior to enrolment. Before enrolment, these patients
+16|must have their qualifying echocardiography and/or cardiac MRI examination at least 12
+17|weeks after the event.
+18|7. Planned coronary revascularization, ablation of atrial flutter/fibrillation and valve
+19|repair/replacement.
+20|8. Stroke or transient ischemic attack (TIA) within 12 weeks prior to enrolment
+21|9. Probable alternative or concomitant diagnoses which in the opinion of the investigator
+22|could account for the patient's HF symptoms and signs (e.g. anaemia, hypothyroidism)
+23|10. Body mass index >50 kg/m2
+24|11. Primary pulmonary hypertension, chronic pulmonary embolism, severe pulmonary disease
+25|including COPD (i.e., requiring home oxygen, chronic nebulizer therapy or chronic oral
+26|steroid therapy, or hospitalisation for exacerbation of COPD requiring ventilatory assist
+27|within 12 months prior to enrolment)
+28|12. Previous cardiac transplantation, or complex congenital heart disease. Planned cardiac
+29|resynchronisation therapy.
+30|13. HF due to any of the following: known infiltrative cardiomyopathy (e.g. amyloid, sarcoid,
+31|lymphoma, endomyocardial fibrosis), active myocarditis, constrictive pericarditis, cardiac
+32|tamponade, known genetic hypertrophic cardiomyopathy or obstructive hypertrophic
+33|cardiomyopathy, arrhythmogenic right ventricular cardiomyopathy/dysplasia (ARVC/D),
+34|or uncorrected primary valvular disease
+35|14. A life expectancy of less than 2 years due to any non-cardiovascular condition, based on
+36|investigator's clinical judgement.
+37|15. Inability of the patient, in the opinion of the investigator, to understand and/or comply with
+38|study medications, procedures and/or follow-up OR any conditions that, in the opinion of
+39|the investigator, may render the patient unable to complete the study
+40|16. Active malignancy requiring treatment (with the exception of basal cell or squamous cell
+41|carcinomas of the skin).

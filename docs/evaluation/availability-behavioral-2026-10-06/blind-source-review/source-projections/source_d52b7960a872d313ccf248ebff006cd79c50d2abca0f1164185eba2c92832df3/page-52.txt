@@ -1,0 +1,47 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|50 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|pregnancy outcomes (e.g. spontaneous abortion, foetal death, stillbirth, congenital anomalies,
+9|ectopic pregnancy) are considered SAEs.
+10|8.6.2.1
+11|Maternal exposure
+12|Women of childbearing potential who are not using contraception as defined in Section 5.2;
+13|exclusion criterion number 18 are not allowed to be included in this study. Should a pregnancy
+14|still occur, the investigational product should be discontinued immediately and the pregnancy
+15|reported to AstraZeneca.
+16|Dapagliflozin must not be used in the second and third trimesters of pregnancy. In the time period
+17|corresponding to second and third trimester of pregnancy with respect to human renal maturation,
+18|maternal exposure to dapagliflozin in rat studies was associated with increased incidence and/or
+19|severity of renal pelvic and tubular dilatations in progeny.
+20|There are no adequate and well-controlled studies of dapagliflozin in pregnant women. When
+21|pregnancy is detected, investigational product(s) should be discontinued.
+22|8.6.3
+23|Overdose
+24|Dapagliflozin has been well tolerated at doses of up to 500 mg/day in single dose testing in healthy
+25|volunteers and up to 100 mg/day in repeat dose testing for 14 days in healthy volunteers and
+26|patients with T2D. Suspected single intake of more than 50 tablets of 10 mg dapagliflozin tablets
+27|or repeated intake of more than 10 tablets of 10 mg dapagliflozin tablets should be reported on the
+28|eCRF overdose module. If an overdose is suspected, monitoring of vital functions as well as
+29|treatment should be performed as appropriate.
+30|For further information regarding overdose, refer to the IB.
+31|x
+32|An overdose without associated symptoms is only recorded on the Overdose eCRF
+33|module
+34|x
+35|An overdose with associated AEs is recorded as the AE diagnosis/symptoms on the
+36|relevant AE modules in the eCRF and on the Overdose eCRF module
+37|If an overdose on an AstraZeneca IP occurs in the course of the study, then the investigator or
+38|other site personnel inform appropriate AstraZeneca representatives immediately, or no later than
+39|24 hours of when he or she becomes aware of it.
+40|The designated AstraZeneca representative works with the investigator to ensure that all relevant
+41|information is provided to the AstraZeneca Patient Safety data entry site.
+42|For overdoses associated with a SAE, the standard reporting timelines apply, see Section 8.5.2.
+43|For other overdoses, reporting must occur within 30 days.
+44|8.7
+45|Pharmacokinetics (not applicable)
+46|8.8
+47|Pharmacodynamics (not applicable)

@@ -1,0 +1,24 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|48 of 58
+7|RKdholm et al 2018
+8|RUdholm KO FigtreeO PerGovic VO Solomon SDO Mahaffey KWO et al. CanaglifloIin and Heart
+9|Failure in Type 2 Diabetes MellitusN Results From the CANVAS Program (CanaglifloIin
+10|Cardiovascular Assessment Study). Circulation. 2018T138N458W468.
+11|httpsNJJdoi.orgJ10.1161JCIRCULATIONAHA.118.034222
+12|Spertus et al 2005
+13|Spertus [O Peterson EO Conard MWO Heidenreich PAO KrumholI HMO [ones PO et al.
+14|Monitoring clinical changes in patients with heart failureN A comparison of methods. Am
+15|Heart [ 2005T150N707W15.
+16|Spiessen and Debois 2010
+17|Spiessen BO Debois M. Adjusted significance levels for subgroup analyses in clinical trials.
+18|Cont Clin Trials 2010T 31N647W656.
+19|Stokes et al 2012
+20|StoGes MEO Davis CSO Koch GG. Categorical Data Analysis Using the SAS System. CaryO
+21|NCN SAS Institute Inc.
+22|Wang and Pocock 2016
+23|Wang DO PococG S. A win ratio approach to comparing continuous non-normal outcomes in
+24|clinical trials. Pharmaceut. Statist. 2016T15N238W245.

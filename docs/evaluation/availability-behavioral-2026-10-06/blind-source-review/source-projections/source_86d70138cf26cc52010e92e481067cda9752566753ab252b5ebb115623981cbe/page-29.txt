@@ -1,0 +1,34 @@
+1|
+2|
+3|
+4|
+5|28
+6|4. Systolic blood pressure (BP) < 95 mmHg on 2 consecutive measurements at 5-minute
+7|intervals, at Visit 1 or at Visit 2.
+8|5. Systolic BP ≥160 mmHg if not on treatment with ≥ 3 blood pressure lowering medications or ≥
+9|180 mmHg irrespective of treatments, on 2 consecutive measurements at 5-minute intervals,
+10|at Visit 1 or at Visit 2.
+11|6. MI, unstable angina, coronary revascularization (percutaneous coronary intervention (PCI) or
+12|coronary artery bypass grafting (CABG)), ablation of atrial flutter/fibrillation, valve
+13|repair/replacement within 12 weeks prior to enrollment. Before enrollment, these patients
+14|must have their qualifying echocardiography and/or cardiac MRI examination at least 12
+15|weeks after the event.
+16|7. Planned coronary revascularization, ablation of atrial flutter/fibrillation and valve
+17|repair/replacement.
+18|8. Stroke or transient ischemic attack within 12 weeks prior to enrollment.
+19|9. Probable alternative or concomitant diagnoses which in the opinion of the investigator could
+20|account for the patient's HF symptoms and signs (e.g. anemia, hypothyroidism).
+21|10. Body mass index > 50 kg/m .
+22|11. World Health Organization Group 1 pulmonary hypertension, chronic pulmonary embolism,
+23|severe pulmonary disease, including COPD (i.e., requiring home oxygen, chronic nebulizer
+24|therapy or chronic oral steroid therapy, or hospitalization for exacerbation of COPD requiring
+25|ventilatory assist within 12 months prior to enrollment).
+26|12. Previous cardiac transplantation, or complex congenital heart disease. Planned cardiac
+27|resynchronization therapy.
+28|13. Heart failure due to any of the following: known infiltrative cardiomyopathy (e.g. amyloid,
+29|sarcoid, lymphoma, endomyocardial fibrosis), active myocarditis, constrictive pericarditis,
+30|cardiac tamponade, known genetic hypertrophic cardiomyopathy or obstructive hypertrophic
+31|cardiomyopathy, arrhythmogenic right ventricular cardiomyopathy/dysplasia, or uncorrected
+32|primary valvular disease.
+33|14. A life expectancy of less than 2 years due to any non-cardiovascular condition, based on
+34|investigator's clinical judgement.

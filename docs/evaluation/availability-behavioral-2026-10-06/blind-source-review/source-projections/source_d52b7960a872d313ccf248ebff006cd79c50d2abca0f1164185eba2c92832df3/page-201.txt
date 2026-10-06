@@ -1,0 +1,67 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|12 of 36
+7|Dapagliflozin 10 mg
+8|SoC
+9|Placebo
+10|SoC
+11|E
+12|R
+13|Visit
+14|1
+15|2
+16|3
+17|4
+18|5
+19|6
+20|7
+21|Day
+22|240
+23|4#0
+24|30
+25|120
+26|1
+27|$21
+28|360
+29|P%CD
+30|SCV
+31|&6 'ee(s
+32|)n pe*son +isits afte* 30 ,ays- 4 mont.s- t.e*eafte* e+e*y 4 mont.s afte* *an,omization/
+33|E0En*olment- R0Ran,omization- SoC0 Stan,a*, of Ca*e- P%CD0P*ima*y %nalysis Censo*ing Date- SCV0St1,y Clos1*e Visit- 2302ollo' 3p
+34|4ont.s
+35|#
+36|16
+37|1
+38|4
+39|12
+40|#
+41|600
+42|20
+43|It is estimated that approximately 8000 patients at approximately 400-500 sites in 20-25
+44|countries will be enrolled to reach the target of approximately 4700 randomised patients.
+45|In this event driven trialH study closure procedures will be initiated when the predetermined
+46|number of primary endpoints are predicted to have occurred (nK844)H i.e. the PACD (section
+47|1.2.1 and Figure 1). Patients should be scheduled for a Study Closure Visit (SCV) within
+48|6 weeks of the PACD. The anticipated total study duration is approximately 33 months
+49|dependent on randomisation rate and event rate. The number of patients randomisedH the study
+50|durationH or bothH may be changed if the randomisation rate or the event rate is different than
+51|anticipated.
+52|Figure 1
+53|Study design
+54|1.3.1
+55|Randomisation
+56|Patients will be randomised 1G1 to either dapaglifloDin 10 mg or placebo once daily. The
+57|treatment allocation in this study will be double-blind. Randomisation will be stratified by
+58|Type 2 diabetes (T2D) status at randomisation (2 levelsG with T2DL without T2D). For the
+59|purpose of stratificationH T2D is defined as established diagnosis of T2D or HbA1c J 6.5I
+60|(48 mmol/mol) at enrolment (visit 1L single measure) central laboratory test.
+61|Randomisation will be performed in balanced blocks of fixed siDe. The randomisation codes
+62|will be computer generated and loaded into the IxRS (Interactive Voice/Web Response
+63|System) database.
+64|The number of randomised patients with T2D will be monitored in order to ensure a minimum
+65|of 30I patients in each group of patients with and without T2D. Randomisation may be
+66|capped (i.e.H no more patients can be randomised in a specific sub-population) if the pre-
+67|determined limit is reached.

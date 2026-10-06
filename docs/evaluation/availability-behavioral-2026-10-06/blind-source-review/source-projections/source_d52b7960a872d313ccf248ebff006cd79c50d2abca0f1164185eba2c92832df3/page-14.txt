@@ -1,0 +1,47 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|12 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|1.2
+9|Synopsis
+10|
+11|International coordinating Investigator
+12|Scott D. Solomon, MD
+13|
+14|
+15|
+16|Harvard Medical School
+17|
+18|BUigham and Women V HoVSiWal
+19|75 Francis Street
+20|Boston, MA 02115
+21|US
+22|
+23|Protocol Title:
+24|An International, Double-blind, Randomised Placebo-Controlled Phase III Study
+25|to Evaluate the Effect of Dapagliflozin on Reducing CV Death or Worsening Heart Failure
+26|in Patients with Heart Failure with Preserved Ejection Fraction (HFpEF).
+27|
+28|Rationale:
+29|The prevalence of chronic heart failure (HF) continues to increase globally, and the annual global
+30|economic burden (several hundred billion dollars in 2012) will increase as the population ages.
+31|Approximately half of all heart failure patients have heart failure with preserved ejection fraction
+32|(HFpEF) representing a particularly significant unmet need given that no approved
+33|pharmacotherapy exists specifically for this condition. Patients with HFpEF generally receive
+34|diuretic treatment for symptom relief, and should receive guideline recommended therapies for
+35|concomitant diseases such as hypertension. Recent data from cardiovascular (CV) outcome trials
+36|of SGLT2 inhibitors (empagliflozin and canagliflozin) and real world studies (including patients
+37|treated with dapagliflozin) indicate that treatment with SGLT2 inhibitors can reduce the risk of
+38|CV death and hospitalisation due to HF in patients with Type 2 Diabetes (T2D) overall and in
+39|patients with T2D and concomitant HF. Limitations associated with the randomised clinical trials
+40|as well as the observational studies are that only patients with T2D were studied, and that the
+41|proportion of patients with HFrEF and HFpEF, respectively, is unknown. This study will test the
+42|hypothesis that dapagliflozin will reduce the composite of CV death and HF events (hospitalisation
+43|for HF or urgent HF visit) in patients with HF and preserved systolic function (LVEF >40%), with
+44|or without T2D.
+45|
+46|
+47|

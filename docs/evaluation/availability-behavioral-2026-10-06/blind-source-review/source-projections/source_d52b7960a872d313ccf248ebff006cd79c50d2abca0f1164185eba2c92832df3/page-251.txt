@@ -1,0 +1,42 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|26 of 58
+7|For SAEs or DAEs reported by the Investigator as potential DKAO additional information will
+8|be recorded on specific eCRF pages in addition to the AEJSAE form. All potential DKA
+9|events will be adjudicated by an independent committee and adjudicated outcomes will be
+10|considered the main analysis for DKA events.
+11|For myocardial infarctionsO unstable anginaO stroGeO major hypoglycaemic events and
+12|amputationsO additional information will be recorded on specific eCRF pages in addition to the
+13|AEJSAE form.
+14|H.4
+15|Laboratory Values and Vital Signs
+16|Blood samples will be taGen for central laboratory assessment of creatinine and calculation of
+17|eGFR at enrolment visitO at the visits targeted 1O 4O and 12 months following randomisationO
+18|then annually and at PTDV and SCV. eGFR will be calculated (in mLJminJ1.73 m2) using the
+19|CKD-EPI formula (Levey at al 2009).
+20|Central laboratory assessment of NT-proBNP and HbA1c will be taGen at Visit 1.
+21|Systolic blood pressureO DBPO and pulse rate will be measured at Visit 1O Visit 2O at 1 and
+22|12 months visitO then annually and at PTDV and SCV.
+23|Weight will be measured at Visit 1O at the 12 months visitO then annually and at PTDV and
+24|SCV.
+25|H.4.1
+26|Baseline Laboratory Values and Vital Signs
+27|In principleO baseline will be defined as the last value on or prior to date of first dose of
+28|randomised IPO or for patients who did not receive treatmentO the last value on or prior to date
+29|of randomisation. Except for cases of rescreening this will be Visit 1 measurement of weightO
+30|NT-proBNPO eGFR and HbA1cO and Visit 2 measurement of SBPO DBPO and pulse rate.
+31|4
+32|ANALYSIS METHODS
+33|4.1
+34|General Principles
+35|No multiplicity adjustment will be made to confidence intervals as they will be interpreted
+36|descriptively and used as a measure of precision. All p-values will be unadjusted. P-values for
+37|variables not included in the confirmatory testing seHuenceO or following a non-significant test
+38|in the seHuenceO will be regarded as nominal.
+39|Primary and secondary analyses of HF events and death include adjudicated events occurring
+40|on or prior to PACD.
+41|Stratification of analyses for T2D status will be performed using the stratification values as
+42|entered in IxRS to determine the randomisation assignment.

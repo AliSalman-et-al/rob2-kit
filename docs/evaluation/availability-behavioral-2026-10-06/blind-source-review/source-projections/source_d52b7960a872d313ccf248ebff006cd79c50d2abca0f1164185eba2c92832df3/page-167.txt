@@ -1,0 +1,54 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|74 of 95
+6|Medical and scientific judgement should be exercised in deciding whether a case is serious in
+7|situations where important medical events may not be immediately life threatening or result in
+8|death, hospitalisation, disability or incapacity but may jeopardize the subject or may require
+9|medical treatment to prevent one or more outcomes listed in the definition of serious. These should
+10|usually be considered as serious.
+11|Simply stopping the suspect drug does not mean that it is an important medical eventR medical
+12|judgement must be used.
+13|
+14|Angioedema not severe enough to require intubation but requiring iv hydrocortisone
+15|treatment
+16|
+17|
+18|Hepatotoxicity caused by paracetamol HacetaminophenI overdose requiring treatment
+19|with N-acetylcysteine
+20|
+21|
+22|Intensive treatment in an emergency room or at home for allergic bronchospasm
+23|
+24|
+25|Blood dyscrasias He.g. neutropenia or anaemia requiring blood transfusion, etc.I or
+26|convulsions that do not result in hospitalisation
+27|
+28|
+29|Development of drug dependency or drug abuse
+30|B 6
+31|Intensity rating scale:
+32|1.
+33|mild Hawareness of sign or symptom, but easily toleratedI
+34|2.
+35|moderate Hdiscomfort sufficient to cause interference with normal activitiesI
+36|3.
+37|severe Hincapacitating, with inability to perform normal activitiesI
+38|It is important to distinguish between serious and severe AEs. Severity is a measure of intensity
+39|whereas seriousness is defined by the criteria in Appendix B 2. An AE of severe intensity need not
+40|necessarily be considered serious. For example, nausea that persists for several hours may be
+41|considered severe nausea, but not a SAE unless it meets the criteria shown in Appendix B 2. On
+42|the other hand, a stroke that results in only a limited degree of disability may be considered a mild
+43|stroke but would be a SAE when it satisfies the criteria shown in Appendix B 2.
+44|B 7
+45|A Guide to Interpreting the Causality Iuestion
+46|Qhen assessing causality consider the following factors when deciding if there is a Yreasonable
+47|possibilityO that an AE may have been caused by the drug.
+48|
+49|Time Course. Exposure to suspect drug. Has the subject actually received the suspect
+50|drug` Did the AE occur in a reasonable temporal relationship to the administration of
+51|the suspect drug`
+52|
+53|Consistency with known drug profile. Qas the AE consistent with the previous
+54|knowledge of the suspect drug Hpharmacology and toxicologyI or drugs of the same

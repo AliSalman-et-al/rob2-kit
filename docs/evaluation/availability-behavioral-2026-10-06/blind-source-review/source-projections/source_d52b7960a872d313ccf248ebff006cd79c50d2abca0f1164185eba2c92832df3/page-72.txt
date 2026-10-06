@@ -1,0 +1,50 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|70 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|2.
+9|Definite evidence of myocardial ischemia on myocardial scintigraphy (clear reversible
+10|perfusion defect), stress echocardiography (reversible wall motion abnormality), or MRI
+11|(myocardial perfusion deficit under pharmacologic stress) that is believed to be responsible for the
+12|myocardial ischemic symptoms/signs.
+13|3.
+14|AngiogUaShic eYidence of 70% lesion and/or thrombus in an epicardial coronary artery
+15|that is believed to be responsible for the myocardial ischemic symptoms/signs.
+16|C 3
+17|Stroke
+18|Stroke is not an endpoint in this study but should be recorded as SAEs if serious criteria are met,
+19|with additional information e.g. classification of stroke type (ischaemic, haemorrhagic, or
+20|undetermined) collected in a specific eCRF.
+21|
+22|The diagnosis of stroke should be made according to standard clinical practice and align with the
+23|definition for stroke in the standardized definitions for endpoints (Hicks et al. 2018
+24|Hicks KA, Mahaffey KW, Mehran R, Nissen SE, et alCardiovascular and Stroke Endpoint
+25|Definitions for Clinical Trials. J Am Coll Cardiol 2018;71:1021±34) described in Appendix C 4
+26|and be differentiated vs Transient Ischaemic Attack (TIA).
+27|
+28|C 4
+29|Definition of Stroke and Transient Ischemic Attack
+30|The distinction between an Ischemic Stroke and a Transient Ischemic Attack is the presence of
+31|infaUcWion. PeUViVWence of V\mSWomV 24 hoXUV oU XnWil deaWh3 is an acceptable indicator of acute
+32|infarction in the absence of imaging evidence of infarction.
+33|Transient Ischemic Attack
+34|Transient ischemic attack (TIA) is defined as a transient episode of focal neurological dysfunction
+35|caused by brain, spinal cord, or retinal ischemia, without acute infarction.
+36|
+37|Stroke
+38|Stroke is defined as an acute episode of focal or global neurological dysfunction caused by brain, spinal
+39|cord, or retinal vascular injury as a result of haemorrhage or infarction.
+40|
+41|Classification:
+42|A. Ischemic Stroke
+43|Ischemic stroke is defined as an acute episode of focal cerebral, spinal, or retinal dysfunction caused
+44|by infarction of central nervous system tissue.
+45|Haemorrhage may be a consequence of ischemic stroke. In this situation, the stroke is an ischemic
+46|stroke with haemorrhagic transformation and not a haemorrhagic stroke.
+47|B. Haemorrhagic Stroke
+48|Haemorrhagic stroke is defined as an acute episode of focal or global cerebral or spinal dysfunction
+49|caused by non-traumatic intraparenchymal, intraventricular, or subarachnoid haemorrhage. NOTE:
+50|Subdural hematomas are intracranial haemorrhagic events and not strokes.

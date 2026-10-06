@@ -1,0 +1,43 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|22 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|4.
+9|STUDY DESIGN
+10|4.1
+11|Overall design
+12|This is an international, multicentre, parallel-group, event-driven, randomised, double-blind,
+13|placebo-controlled study in HFpEF patients, evaluating the effect of dapagliflozin 10 mg versus
+14|placebo, given once daily in addition to background regional standard of care therapy, including
+15|treatments to control co-morbidities, in reducing the composite of CV death or heart failure events.
+16|For an overview of the study design see Figure 1, Section 1.3. For details on treatments given
+17|during the study, see Section 6.1.
+18|For details on what is included in the efficacy and safety endpoints, see Section 3 Objectives and
+19|Endpoints.
+20|Adult patients with HFpEF (defined for the purposes of this study as LVEF >40% and evidence
+21|of structural heart disease) aged 40 \eaUV and ZiWh NYHA claVV II-IV who meet the inclusion
+22|criteria, and none of the exclusion criteria, will be randomised in a 1:1 ratio to receive either
+23|dapagliflozin 10 mg or placebo. Randomised treatment should be started as soon as possible and
+24|within 24 hours after randomisation. It is estimated that approximately 8000 patients at
+25|approximately 400-500 sites in 20-25 countries will be enrolled to reach the target of
+26|approximately 4700 randomised patients.
+27|Study closure procedures will be initiated when the predetermined number of primary endpoints
+28|are predicted to have occurred (n=844), i.e. the Primary Analysis Censoring Date (PACD). Patients
+29|should be scheduled for a Study Closure Visit (SCV) within 6 weeks of the PACD. The anticipated
+30|total study duration is approximately 33 months dependent on randomisation rate and event rate.
+31|The study duration, and the number of patients, may be changed if the randomisation rate or the
+32|event rate is different than anticipated. The study may be terminated early if a clear harmful effect
+33|of the study treatment is detected during the DMC review, or due to DMC recommendations
+34|following pre-specified interim analyses (see Section 9.5).
+35|Data on baseline characteristics, endpoints and AEs will be collected through a validated electronic
+36|data capture (EDC) system with electronic case report forms (eCRFs).
+37|4.2
+38|Scientific rationale for study design
+39|This is a randomised, multi-centre, double-blind, parallel-group study. Randomisation and double-
+40|blinding Zill minimiVe SoWenWial biaV. The WaUgeW SoSXlaWion inclXdeV adXlW (aged 40 years) male
+41|and female patients with HFpEF, which is defined in this study as individuals with an established
+42|diagnosis of heart failure and a LVEF >40% and structural heart disease who meet natriuretic
+43|peptide thresholds. The requirement of demonstrated structural heart disease (i.e. left ventricular

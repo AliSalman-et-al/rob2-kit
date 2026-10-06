@@ -1,0 +1,39 @@
+1|Jul 05, 2022 15:42:36 EDT
+2|New England Journal of Medicine
+3|Daniel Lindholm
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Employment
+11|Self
+12|AstraZeneca
+13|Stock Option
+14|Self
+15|Additional Questions:
+16|Certification
+17|I certify that the information provided in this disclosure is complete and accurate.
+18|Disclosure Purpose: 22-06286
+19|Title: Senior Global Development Medical Director
+20|Position Description:
+21|Additional Information:
+22|Additional Information:
+23|1.
+24|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+25|No.
+26|2.
+27|What is the manuscript title?
+28|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+29|3.
+30|Are you the corresponding author?
+31|No.
+32|
+33|[Extracted table 1]
+34||Entity|Type|Interest Held By|
+35||---|---|---|
+36||AstraZeneca|Employment|Self|
+37||Title: Senior Global Development Medical Director Position Description:<br>Additional Information:|||
+38||AstraZeneca|Stock Option|Self|
+39||Additional Information:|||

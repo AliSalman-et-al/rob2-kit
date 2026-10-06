@@ -1,0 +1,80 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|4 of 95
+6|Version 4.0, 12th November 2020
+7|Section
+8|changed
+9|Summary of change
+10|1.
+11|1.1D Schedule of
+12|Activities HSoAI
+13|Concomitant Medication check was added to Visit 1 HEnrolmentI to
+14|clarify screening eligibility checks.
+15|Clarification to BP, pulse, weight and creatinine assessments at Visit 6
+16|and 7 - onwards addedD EAssessments to be repeated every 12 months
+17|HVisit 6, Visit 9, Visit 12IF.
+18|Recording of COVID-19 testing results from Visit 2 onwards added to
+19|Safety Events.
+20|2.
+21|1.2 Synopsis
+22|Primary objective and first secondary objective were updated to include
+23|analysis of both the full study population and the subpopulation with
+24|LVEF J60K.
+25|Lrgent HF visits were added in addition to hospitalizations for HF as
+26|recurrent HF events to be evaluated for the first secondary objective.
+27|ETo determine whether dapagliflozin is superior to placebo in reducing
+28|CV deathF added to secondary objectives.
+29|ETo determine whether dapagliflozin is superior to placebo in reducing
+30|the proportion of patients with worsened NYHA classF moved from
+31|secondary to exploratory objectives.
+32|ETo compare the effect of dapagliflozin versus placebo on health status
+33|assessed by Patient global impression of severity HPGISI questionnairesF
+34|removed. Table 2 corrected accordingly.
+35|Exploratory objective ETo compare the effect of dapagliflozin versus placebo on
+36|EuroMol five-dimensional five-level questionnaire HEM- 5D-5LIF was
+37|updated toD
+38|ETo describe health status assessed by EuroMol five-dimensional five-
+39|level questionnaire HEM- 5D-5LIF.
+40|Estimated date of last patient completed changed toD M4 2021.
+41|Study duration was prolonged to 39 months.
+42|Number of primary endpoint events changed from 844 to 1117.
+43|Recruitment period prolonged up to 29 months.
+44|Statistical methods section updated to reflect the changes to the primary
+45|objective, multiple testing procedure and the increased event target.
+46|3.
+47|2.1 Study
+48|Rationale
+49|Section updated to reflect current amendment changes about the two
+50|hypotheses, that dapagliflozin is superior to placebo in reducing the
+51|composite of CV death and HF events Hhospitalisation for HF or urgent
+52|HF visitI in patients with HF and preserved systolic function HLVEF
+53|N40KI, with or without T2D, in H1I the full population and in H2I an LVEF
+54|J60K subpopulation.
+55|4.
+56|4.1 Overall
+57|Design
+58|Number of primary endpoints updated to 1117.
+59|Anticipated total study duration time updated to 39 months.
+60|It was added that Study Closure Visit HSCVI which should be hold within
+61|6 weeks of the PACD, can be extended if decided by Global Study Team.
+62|5.
+63|4.2 Scientific
+64|rationale for
+65|study design
+66|New paragraph added to justify the added testing of the treatment effect in
+67|patients with LVEF J60.
+68|
+69|[Extracted table 1]
+70||Column 1|Column 2|Column 3|
+71||---|---|---|
+72|||||
+73||Version 4.0, 12th November 2020|||
+74|||||
+75|||Section<br>changed|Summary of change|
+76||1.|1.1D Schedule of<br>Activities HSoAI|Concomitant Medication check was added to Visit 1 HEnrolmentI to<br>clarify screening eligibility checks.<br>Clarification to BP, pulse, weight and creatinine assessments at Visit 6<br>and 7 - onwards addedD EAssessments to be repeated every 12 months<br>HVisit 6, Visit 9, Visit 12IF.<br>Recording of COVID-19 testing results from Visit 2 onwards added to<br>Safety Events.|
+77||2.|1.2 Synopsis|Primary objective and first secondary objective were updated to include<br>analysis of both the full study population and the subpopulation with<br>LVEF J60K.<br>Lrgent HF visits were added in addition to hospitalizations for HF as<br>recurrent HF events to be evaluated for the first secondary objective.<br>ETo determine whether dapagliflozin is superior to placebo in reducing<br>CV deathF added to secondary objectives.<br>ETo determine whether dapagliflozin is superior to placebo in reducing<br>the proportion of patients with worsened NYHA classF moved from<br>secondary to exploratory objectives.<br>ETo compare the effect of dapagliflozin versus placebo on health status<br>assessed by Patient global impression of severity HPGISI questionnairesF<br>removed. Table 2 corrected accordingly.<br>Exploratory objective ETo compare the effect of dapagliflozin versus placebo on<br>EuroMol five-dimensional five-level questionnaire HEM- 5D-5LIF was<br>updated toD<br>ETo describe health status assessed by EuroMol five-dimensional five-<br>level questionnaire HEM- 5D-5LIF.<br>Estimated date of last patient completed changed toD M4 2021.<br>Study duration was prolonged to 39 months.<br>Number of primary endpoint events changed from 844 to 1117.<br>Recruitment period prolonged up to 29 months.<br>Statistical methods section updated to reflect the changes to the primary<br>objective, multiple testing procedure and the increased event target.|
+78||3.|2.1 Study<br>Rationale|Section updated to reflect current amendment changes about the two<br>hypotheses, that dapagliflozin is superior to placebo in reducing the<br>composite of CV death and HF events Hhospitalisation for HF or urgent<br>HF visitI in patients with HF and preserved systolic function HLVEF<br>N40KI, with or without T2D, in H1I the full population and in H2I an LVEF<br>J60K subpopulation.|
+79||4.|4.1 Overall<br>Design|Number of primary endpoints updated to 1117.<br>Anticipated total study duration time updated to 39 months.<br>It was added that Study Closure Visit HSCVI which should be hold within<br>6 weeks of the PACD, can be extended if decided by Global Study Team.|
+80||5.|4.2 Scientific<br>rationale for<br>study design|New paragraph added to justify the added testing of the treatment effect in<br>patients with LVEF J60.|

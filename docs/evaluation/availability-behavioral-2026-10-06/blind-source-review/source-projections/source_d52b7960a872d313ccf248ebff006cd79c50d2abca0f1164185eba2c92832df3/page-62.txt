@@ -1,0 +1,25 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|60 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Definition of Myocardial Infarction. Third Universal Definition of Myocardial Infarction. Global
+9|Heart Vol: 7 (4), 2012 Page: 275-295
+10|Wanner et al 2016
+11|Wanner Christoph; Inzucchi, Silvio E.; Lachin, John M; Fitchett, David; von Eynatten,
+12|Maximilian. Cardio metabolic Risk Factor Changes Observed in Diabetes Prevention Programs
+13|in US Settings: A Systematic Review and Meta-analysis. New England Journal of Medicine Vol:
+14|375 (4) 2016 Page: 323 - 334
+15|Zannad et al 2014
+16|Zannad F Garcia AA, Anker SD Armstrong PW Calvo G et al. Clinical outcome endpoints in heart
+17|failure trials: a European Society of Cardiology Heart Failure Association consensus document.
+18|Eur J Heart Failure 2013;15:1082±94.
+19|Zinman et al 2015
+20|Zinman B, Wanner C, Lachin JM, Fitchett D, Bluhmki E et al. Empagliflozin, cardiovascular
+21|outcomes, and mortality in type 2 diabetes. N Engl J Med 2015; 373:2117-2128.
+22|
+23|
+24|
+25|

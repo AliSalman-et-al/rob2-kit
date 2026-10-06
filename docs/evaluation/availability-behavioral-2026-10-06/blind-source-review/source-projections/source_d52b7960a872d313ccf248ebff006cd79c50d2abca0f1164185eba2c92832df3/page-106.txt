@@ -1,0 +1,130 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|13 of 95
+6|Visit
+7|1
+8|Enrolment
+9|2
+10|Randomisation
+11|3
+12|4
+13|5
+14|6
+15|7 C
+16|onwards
+17|Premature
+18|Treatment
+19|Discontinuation
+20|Visit
+21|Study
+22|Closure
+23|Visit
+24|For details
+25|see Section:
+26|DayDMonth
+27|Day -21 to
+28|Day -1
+29|Day 1
+30|Day 30
+31|(E7)
+32|Day 120
+33|(E7)
+34|Day 240
+35|(E7)
+36|Day 360
+37|(E7)
+38|Day 480 -
+39|onwards
+40|(every 120
+41|days E14
+42|days)
+43|F 6 weeGs
+44|after
+45|PACD
+46|C-lab NT-proBNP
+47|T
+48|5.1
+49|C-lab eGFR
+50|HcreatinineI
+51|T
+52|T
+53|T
+54|T3
+55|T3
+56|5.2, 8.4.4
+57|C-lab HbA1c
+58|T
+59|6.3.1.1
+60|Sample for genetic
+61|research, if
+62|applicable5
+63|T
+64|Appendix D
+65|CCCM
+66|T4
+67|T4
+68|T4
+69|T4
+70|T4
+71|T4
+72|8.3.3.1
+73|PGIS
+74|T4
+75|T4
+76|T4
+77|T4
+78|T4
+79|T4
+80|8.3.3.2
+81|EM-5D-5L
+82|T
+83|4
+84|T4
+85|T4
+86|T4
+87|8.3.3.3
+88|Local pregnancy test
+89|Hfemale patients with
+90|childbearing
+91|potential onlyI
+92|T
+93|5.1
+94|Randomisation
+95|T
+96|8.2.1
+97|Dispense
+98|investigational
+99|product HIPI
+100|T
+101|T
+102|T
+103|T
+104|T
+105|6
+106|Collect unused IPR
+107|check IP compliance
+108|T
+109|T
+110|T
+111|T
+112|T
+113|T
+114|6
+115|
+116|[Extracted table 1]
+117||Visit|1<br>Enrolment|2<br>Randomisation|3|4|5|6|7 C<br>onwards|Premature<br>Treatment<br>Discontinuation<br>Visit|Study<br>Closure<br>Visit|For details<br>see Section:|
+118||---|---|---|---|---|---|---|---|---|---|---|
+119||DayDMonth|Day -21 to<br>Day -1|Day 1|Day 30<br>(E7)|Day 120<br>(E7)|Day 240<br>(E7)|Day 360<br>(E7)|Day 480 -<br>onwards<br>(every 120<br>days E14<br>days)||F 6 weeGs<br>after<br>PACD||
+120||C-lab NT-proBNP|T|||||||||5.1|
+121||C-lab eGFR<br>HcreatinineI|T||T|T||3<br>T|3<br>T|||5.2, 8.4.4|
+122||C-lab HbA1c|T|||||||||6.3.1.1|
+123||Sample for genetic<br>research, if<br>5<br>applicable||T||||||||Appendix D|
+124||CCCM||4<br>T|4<br>T|4<br>T|4<br>T|||4<br>T|4<br>T|8.3.3.1|
+125||PGIS||4<br>T|4<br>T|4<br>T|4<br>T|||4<br>T|4<br>T|8.3.3.2|
+126||EM-5D-5L||4<br>T|||T<br>4|||T<br>4|T<br>4|8.3.3.3|
+127||Local pregnancy test<br>Hfemale patients with<br>childbearing<br>potential onlyI||T||||||||5.1|
+128||Randomisation||T||||||||8.2.1|
+129||Dispense<br>investigational<br>product HIPI||T||T|T|T|T|||6|
+130||Collect unused IPR<br>check IP compliance||||T|T|T|T|T|T|6|

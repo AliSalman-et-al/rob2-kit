@@ -1,0 +1,43 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|25 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Paulus 2011). Studies examining the highest approved dose for empagliflozin have reported
+9|improvements in aortic elasticity (Chilton et al 2015,Cherney et al 2014); similar studies are
+10|ongoing with dapagliflozin. In a completed placebo-controlled study, treatment with dapagliflozin
+11|10 mg resulted in improvements in parameters associated with arterial remodelling in addition to
+12|lowering blood pressure in patients with T2D (Ott et al 2017). This prior work suggests that
+13|selecting the 10-mg dose of dapagliflozin is reasonable from a mechanistic perspective to
+14|demonstrate a clinical effect.
+15|4.4
+16|End of study definition
+17|The end of study is defined as the last expected visit/contact of the last subject undergoing the
+18|study.
+19|The study may be terminated at individual study sites if the study procedures are not being
+20|performed according to GCP, or if no patients are recruited. Patients from terminated sites will
+21|have the opportunity to be transferred to another site to continue the study. AstraZeneca may also
+22|terminate the entire study prematurely if concerns for safety arise within this study or in any other
+23|study with dapagliflozin, or due to recommendation by the DMC. Regardless of the reason for
+24|termination, all data required by the protocol at the time of discontinuation of follow-up will be
+25|collected. In terminating the study, the Sponsor will ensure that adequate consideration is given to
+26|Whe SUoWecWion of Whe SaWienWV¶ inWeUeVWV.
+27|See Appendix A 6 for guidelines for the dissemination of study results.
+28|5.
+29|STUDY POPULATION
+30|Prospective approval of protocol deviations to recruitment and enrolment criteria, also known as
+31|protocol waivers or exemptions, is not permitted.
+32|In WhiV SUoWocol, μenUolled¶ SaWienWV aUe defined aV WhoVe Zho Vign Whe infoUmed conVenW foUm
+33|(ICF) and received E-Code. The ICF process is described in Appendix A 3. μRandomiVed¶
+34|patients are defined as those who undergo randomisation and receive a randomisation code.
+35|Patients are eligible to be randomised in the study only if all of the following inclusion criteria
+36|and none of the exclusion criteria apply. Enrolled patients who for any reason are not randomised
+37|are considered screen failures (see Section 5.4).
+38|5.1
+39|Inclusion criteria
+40|Subjects are eligible to be randomised in the study only if all of the following inclusion criteria
+41|and none of the exclusion criteria apply:
+42|1. Provision of signed informed consent prior to any study specific procedures.
+43|2. Male oU female SaWienWV age 40 \eaUV.

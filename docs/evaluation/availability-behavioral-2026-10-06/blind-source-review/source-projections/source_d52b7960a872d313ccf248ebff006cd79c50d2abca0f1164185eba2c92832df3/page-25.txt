@@ -1,0 +1,45 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|23 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|hypertrophy or left atrial enlargement1) and elevated natriuretic peptides aims to support the
+9|diagnosis of heart failure, since other common co-morbidities may cause overlapping symptoms.
+10|Most randomised patients will be out-patients. However, to address a specific need in a period
+11|with high risk for events, a proportion of patients will be enrolled and randomised during
+12|hospitalisation for heart failure or within 21 days of discharge from hospitalisation for heart failure
+13|(subacute subgroup).
+14|The study population will include patients both with and without T2D, as the beneficial
+15|haemodynamic effects of dapagliflozin appear to be independent of the glycaemic effect, and can
+16|therefore be expected in both groups. Enrolment in the study may be capped based on the
+17|proportion of patients with/without T2D, in certain LVEF categories, in each NYHA class,
+18|with/without atrial fibrillation, randomised during or early after HF hospitalisation (subacute
+19|subgroup), and geographic region.
+20|The control group will receive placebo; there are no approved pharmacological treatments for
+21|HFpEF that could be utilised as a comparator. All patients will be treated according to local
+22|guidelines on standard of care treatment for patients with HFpEF, focusing on treatment of HF
+23|symptoms (e.g. diuretics) and comorbidities (including treatment for high blood pressure,
+24|ischaemic heart disease, atrial fibrillation).
+25|The VWXd\ SoSXlaWion Zill inclXde SaWienWV ZiWh eGFR 25 ml/min/1.73m2. Patients with reduced
+26|renal function have a clinical picture with increased intra-glomerular pressure, hypertension,
+27|proteinuria and fluid/sodium overload and SGLT2 inhibition can improve all these abnormalities
+28|through metabolic-independent mechanisms. Thus, patients with heart failure and reduced renal
+29|function could be expected to benefit from treatment with dapagliflozin.
+30|The primary efficacy endpoints of the study are adjudicated CV death and HF events
+31|(hospitalisation for HF or urgent HF visit). The rationale for selecting CV death over all-cause
+32|death is the expectation that HF treatment will decrease CV death and not all potential causes of
+33|death (Zannad et al 2014). Heart failure events include both HF hospitalisations and unplanned HF
+34|visits requiring urgent treatment independently of whether the exacerbation of HF results in
+35|hospitalisation (according to CDISC definitions; Hicks et al 2014; Hicks et al. 2018
+36|Hicks KA, Mahaffey KW, Mehran R, Nissen SE, et alCardiovascular and Stroke Endpoint
+37|Definitions for Clinical Trials. J Am Coll Cardiol 2018;71:1021±34 These are the same endpoint
+38|
+39|
+40|
+41|
+42|1 LefW AWUial EnlaUgemenW defined b\ aW leaVW 1 of Whe folloZing: LA ZidWh (diameWeU) 3.8 cm oU LA
+43|lengWh 5.0 cm oU LA aUea 20 cm2 oU LA YolXme 55 mL oU LA YolXme inde[ 29 mL/m2. Left
+44|VenWUicXlaU H\SeUWUoSh\ defined b\ VeSWal WhickneVV oU SoVWeUioU Zall WhickneVV 1.1 cm
+45|

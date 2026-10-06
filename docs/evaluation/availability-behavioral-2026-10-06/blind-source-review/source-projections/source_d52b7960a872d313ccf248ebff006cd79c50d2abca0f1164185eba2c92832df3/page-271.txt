@@ -1,0 +1,37 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|46 of 58
+7|7
+8|REFERENCES
+9|Burman et al 2009
+10|Burman CFO Sonesson CO Guilbaud O. KF. A recycling frameworG for the construction of
+11|Bonferroni]based multiple tests. Stat Med. 2009T28N739W61.
+12|Coon and Cook 2018
+13|Coon CDO CooG KF. Moving from significance to real-world meaningN methods for
+14|interpreting change in clinical outcome assessment scores. Qual Life Res 2018 [anT27(1)N33W
+15|40.
+16|FDA 2020
+17|Statistical considerations for clinical trials during the COVID-19 public health emergency.
+18|Guidance for industry. [une 2020. US Department of Health and Human Services. Food and
+19|Drug Administration.
+20|Fitchett et al 2016
+21|Fitchett DO Zinman BO Wanner CO Lachin [MO Hantel SO Salsali AO et al. Heart failure outcomes
+22|with empaglifloIin in patients with type 2 diabetes at high cardiovascular risGN results of the
+23|EMPA-REG OUTCOME^ trial. Eur Heart [ 2016T14T37(19)N1526-34.
+24|Ghosh and Lin 2000
+25|Ghosh DO Lin DY. Nonparametric analysis of recurrent events and death. Biometrics 2000T
+26|56N554W562.
+27|Green et al 2000
+28|Green CPO Porter CBO Bresnahan DRO Spertus [A. Development and Evaluation of the Kansas
+29|City Cardiomyopathy QuestionnaireN A New Health Status Measure for Heart Failure. [ACCO
+30|2000 AprT35(5)N1245W55.
+31|Hicks et al 2018
+32|HicGs KAO Mahaffey KWO Mehran RO Nissen SEO et al. Cardiovascular and StroGe Endpoint
+33|Definitions for Clinical Trials. [ Am Coll Cardiol 2018T71N1021W34.
+34|Iawaguchi et al 2011
+35|Kawaguchi AO Koch GO Wang _. Stratified Multivariate Mann-Whitney Estimators for the
+36|Comparison of Two Treatments with RandomiIation Based Covariance Adjustment. Statistics
+37|in Biopharmaceutical ResearchO 2011T3(2)N217W231.

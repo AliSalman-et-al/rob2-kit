@@ -1,0 +1,44 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|22 of 36
+7|4.2.3
+8|Analysis of the primary efficacy variable
+9|The primary variable is the time to first event included in the primary composite endpoint.
+10|The primary analysis will be based on the ITT principle using the FASH including events with
+11|onset on or prior to PACDH adjudicated and confirmed by the CEA committee.
+12|In the analysis of the primary composite endpointH treatments (dapaglifloDin versus placebo)
+13|will be compared using a Cox proportional haDards model with a factor for treatment groupH
+14|stratified by T2D status at randomisation. The analysis will use WoCH non-CV deathH last
+15|clinical event assessment and PACD for censoring of patients without any primary event as
+16|described in Section 3.1. The Efron method for ties and p-value based on the score statistic
+17|will be used. Event ratesH p-valueH HRH and 95I confidence interval will be reported.
+18|The contribution of each component of the primary composite endpoint to the overall
+19|treatment effect will be examined. In the analysis of the componentsH all first event of the
+20|given type will be included irrespective of any preceding non-fatal composite event of a
+21|different type. ConseCuentlyH the sum of the number of patients with individual events in the
+22|component analysis will be larger than the number of patients with a composite outcome.
+23|Methods similar to those described for the primary analysis will be used to separately analyDe
+24|the time from randomisation to the first occurrence of each component of the primary
+25|composite endpoint.
+26|Kaplan-Meier estimates of the cumulative proportion of patients with event will be calculated
+27|and plottedH for the composite endpoint and for the individual components.
+28|4.2.3.1
+29|Subgroup analysis of the primary endpoint
+30|Exploratory subgroup analyses of the primary composite endpoint will be performed for the
+31|characteristics listed in Table 1. Cox proportional haDard model stratified for T2D with factors
+32|for treatment groupH the subgroup variable and the interaction between treatment and subgroup
+33|will be used to examine treatment effects within relevant subgroups separately. In addition to
+34|the number and percent of patients with eventH event rate estimateH HR with 95I confidence
+35|interval and p-value for each subgroupH the interaction p-value will be presented. HRs with
+36|confidence interval will be presented in a forest plotH also including the event rate and
+37|interaction p-value. The p-values for the subgroup analyses and interaction will not be
+38|adjusted for multiple comparisons as the tests are exploratory and will be interpreted
+39|descriptively.
+40|Table 1 Characteristics and categories for sub group analysis of the primary endpoint
+41|Characteristic
+42|Categories
+43|Age (years)
+44|EK medianH F median

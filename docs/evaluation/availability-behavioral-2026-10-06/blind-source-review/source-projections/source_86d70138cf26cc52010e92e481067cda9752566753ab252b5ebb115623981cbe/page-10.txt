@@ -1,0 +1,47 @@
+1|
+2|
+3|
+4|
+5|9
+6|Toru Kato, National Hospital Organization Tochigi Medical Center
+7|Masataka Fukue, Japanese Red Cross Koga Hospital
+8|Tsunekazu Kakuta, Tsuchiura Kyodo General Hospital
+9|Nobuyoshi Higa, Tokushukai Medical Corporation Chubu Tokushukai Hosp
+10|Tomohiko Teramoto, Ichinomiyanishi Hospital
+11|
+12|Mexico
+13|
+14|José Garza Ruíz, IMED Clin Trials
+15|Víctor González López, Centro Especializado de Investigación Medical Group
+16|Vicente Ruiz Ruiz, Clinstile S.A de C.V
+17|Melchor alpizar salazar, Centro Esp en Diabetes y Obes y Prev de Enf CV ́s
+18|Edmundo Bayram Llamas, Hospital Cardiologica Aguascalientes
+19|Guillermo Rivera Martinez, Centro Cardiológico Integral
+20|Elias Garcia Cantu, CardioLink Clin Trials
+21|Mauricio Zaragoza Pérez, ARKE Estudios Clínicos
+22|Gabriel Ramos Lopez, Private Clinic Dr. Gabriel Ramos
+23|Jorge Echeverri Rico, Sociedad de Metabolismo y Corazón, S.C.
+24|Marco Alcocer Gamba, Centro de Estudios Clínicos de Queretaro S.C.
+25|Guillermo Hernández Llamas, Estudios Clínicos de Vanguardia
+26|Carlos Hernandez Herrera, Instituto Cardiovascular de Monclova, S de RL de CV
+27|
+28|Netherlands
+29|
+30|Rudolf de Boer, Universitair Medisch Centrum Groningen
+31|Marco Van Gent, Albert Schweitzer Ziekenhuis
+32|Reginald Groutars, Onze Lieve Vrouwe Gasthuis
+33|Maria (Mireille) Emans, Ikazia Ziekenhuis
+34|Cornelis (Ron) de Nooijer, Maxima Medisch Centrum
+35|Ruud van de Wal, Bernhoven Ziekenhuis
+36|Tjeerd Römer, Alrijne Ziekenhuis Leiderdorp
+37|Jan Willem Borleffs, HAGA Ziekenhuis locatie Els Borst-Eilersplein
+38|Bastiaan Kietselaer, Zuyderland Medisch Centrum - Heerlen
+39|Pieter Hoogslag, Isala Diaconessenhuis
+40|Ron Pisters, Rijnstate Ziekenhuis
+41|
+42|Peru
+43|
+44|Armando Godoy, Instituto Nacional del Corazon EsSalud
+45|Luisa Cardoza, Centro de Investigación Clínica Belén
+46|Helard Manrique, Centro de Expertos en Diabetes, Obesidad y Nutricion
+47|Victor Sanchez, Hospital de Chancay

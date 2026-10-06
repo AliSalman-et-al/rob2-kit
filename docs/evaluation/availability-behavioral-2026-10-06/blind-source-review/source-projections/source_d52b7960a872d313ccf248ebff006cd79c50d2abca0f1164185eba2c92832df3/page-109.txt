@@ -1,0 +1,67 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|16 of 95
+6|Table 2
+7|Objectives and Endpoints
+8|Primary objective:
+9|EndpointDvariable:
+10|To determine whether dapagliflozin is superior
+11|to placebo, when added to standard of care, in
+12|reducing the composite of CV death and HF
+13|events Hhospitalisation for HF or urgent HF visitI
+14|in patients with HF and preserved systolic
+15|function in
+16|
+17|full study population
+18|
+19|subpopulation with LVEF J60K
+20|Time to the first occurrence of any of the
+21|components of this compositeD
+22|1.
+23|CV death
+24|2.
+25|Hospitalisation for HF
+26|3.
+27|Lrgent HF visit He.g., emergency
+28|department or outpatients visitI
+29|Secondary objective:
+30|EndpointDvariable:
+31|To determine whether dapagliflozin is superior
+32|to placebo in reducing the total number of HF
+33|events Hhospitalisation for HF or urgent HF visitI
+34|and CV death in
+35|
+36|full study population
+37|
+38|subpopulation with LVEF J60K
+39|Total number of HF events Hfirst and
+40|recurrentI and CV death
+41|To determine whether dapagliflozin is superior
+42|to placebo in improving Patient Reported
+43|Outcomes measured by CCCM
+44|Change from baseline in the total symptom
+45|score HTSSI of the CCCM at 8 months
+46|To determine whether dapagliflozin is superior
+47|to placebo in reducing CV death
+48|Time to the occurrence of CV death
+49|To determine whether dapagliflozin is superior
+50|to placebo in reducing all-cause mortality
+51|Time to the occurrence of death from any
+52|cause
+53|Safety objective:
+54|To evaluate the safety and tolerability of
+55|dapagliflozin compared to placebo in patients
+56|with HFpEF
+57|Serious adverse events HSAEsI, adverse
+58|events leading to treatment discontinuation
+59|HDAEsI, amputations, adverse events HAEsI
+60|leading to amputation and potential risk
+61|factor AEs for amputations affecting lower
+62|limbs
+63|Exploratory Objective:
+64|To determine whether dapagliflozin is superior
+65|to placebo in reducing all-cause hospitalisation
+66|Time to the first occurrence of hospitalisation
+67|from any cause

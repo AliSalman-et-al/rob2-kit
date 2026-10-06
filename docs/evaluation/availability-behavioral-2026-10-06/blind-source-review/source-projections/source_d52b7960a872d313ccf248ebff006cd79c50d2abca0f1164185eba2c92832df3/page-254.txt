@@ -1,0 +1,108 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|29 of 58
+7|sided nominal p-value threshold D1 depends on the proportion of events in the LVEF < 60C
+8|subpopulation at the final analysis. R and SAS code for calculating D1 is provided in
+9|Appendix B.
+10|Table 2
+11|Level of C1 Depending on Proportion of Events in LVEF F 60%
+12|Subpopulation
+13|Patients
+14|with event
+15|(LVEF
+16|F 60% G
+17|overall)
+18|Proportion
+19|(95% CI)
+20|Correlation
+21|= sDrt of
+22|lower
+23|confidence
+24|limit
+25|Two-sided alpha (%) for primary endpoint
+26|Interim analysis
+27|Full population
+28|Final analysis (C2)
+29|Full population
+30|Final analysis (C1)
+31|Subpopulation
+32|LVEF F 60%
+33|780J1117
+34|0.698
+35|(0.671O 0.725)
+36|0.819
+37|0.2
+38|2.4
+39|3.647
+40|790J1117
+41|0.707
+42|(0.681O 0.734)
+43|0.825
+44|0.2
+45|2.4
+46|3.674
+47|800J1117
+48|0.716
+49|(0.690O 0.743)
+50|0.831
+51|0.2
+52|2.4
+53|3.701
+54|810J1117
+55|0.725
+56|(0.699O 0.751)
+57|0.836
+58|0.2
+59|2.4
+60|3.730
+61|820J1117
+62| 0.734
+63|(0.708O 0.760)
+64|0.842
+65|0.2
+66|2.4
+67|3.758
+68|830J1117
+69|0.743
+70|(0.717O 0.769)
+71|0.847
+72|0.2
+73|2.4
+74|3.788
+75|CIO Confidence intervalT LVEFO left ventricular ejection fractionT sHrt sHuare root.
+76|
+77|If both the primary null hypotheses can be rejectedO the following hypotheses in each
+78|branch will be tested at 2.4CO in the order described in Figure 2.
+79|
+80|The following will apply if only one of the tests of the primary endpoint can be rejected at
+81|respective levels 2.4C (in the full population) and D (in the LVEF < 60C subpopulation)N
+82|the remaining hypotheses in the branch where the primary hypothesis was rejected will be
+83|tested in fixed seHuence at the following two-sided significance levels
+84|
+85|4.8C W 2.4C S 2.4C in the left branch only (in case the primary endpoint in the
+86|subpopulation was significant at level D but not in the full population at level 2.4C)
+87|
+88|4.8C W D in the right branch only (in case the primary endpoint in the full
+89|population was significant at level 2.4C but not in the subpopulation at level D )
+90|
+91|If all hypotheses in one branch are rejectedO alpha will be recycled to the other branchO
+92|where remaining unrejected hypotheses can be tested at full alpha adjusted for interim
+93|analysis (ieO 4.8C) in the order described in Figure 2.
+94|
+95|If the first secondary hypothesis (recurrent HF events and CV death) in full study
+96|population is rejected in one of the branchesO it does not have to be re-tested in the other
+97|branch. If the primary hypothesis is rejected in both branches and the first secondary
+98|
+99|[Extracted table 1]
+100||Patients<br>with event<br>(LVEF<br>F 60% G<br>overall)|Proportion<br>(95% CI)|Correlation<br>= sDrt of<br>lower<br>confidence<br>limit|Two-sided alpha (%) for primary endpoint|||
+101||---|---|---|---|---|---|
+102|||||Interim analysis<br>Full population|Final analysis (C )<br>2<br>Full population|Final analysis (C )<br>1<br>Subpopulation<br>LVEF F 60%|
+103||780J1117|0.698<br>(0.671O 0.725)|0.819|0.2|2.4|3.647|
+104||790J1117|0.707<br>(0.681O 0.734)|0.825|0.2|2.4|3.674|
+105||800J1117|0.716<br>(0.690O 0.743)|0.831|0.2|2.4|3.701|
+106||810J1117|0.725<br>(0.699O 0.751)|0.836|0.2|2.4|3.730|
+107||820J1117|0.734<br>(0.708O 0.760)|0.842|0.2|2.4|3.758|
+108||830J1117|0.743<br>(0.717O 0.769)|0.847|0.2|2.4|3.788|

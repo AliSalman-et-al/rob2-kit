@@ -1,0 +1,47 @@
+1|
+2|
+3|
+4|
+5|13
+6|Mark Fasulo, DiscoveResearch Inc
+7|Leslie Forgosh, HealthEast St Josephs Hospital
+8|Antwan Robinson, The Jackson Clinic
+9|Matthew Janik, PMG Research of Wilmington
+10|Ahmed Arif, Apex Medical Research of Flint PC
+11|Christopher Bianco, West Virginia University School of Medicine
+12|Mayank Kansal, Jesse Brown VA Medical Center
+13|James Liu, OnSite Clinical Solutions LLC
+14|Mohammad Tahir, Saint Louis Heart and Vascular
+15|Modele Ogunniyi, Emory University
+16|Diego Torres, Ormond Beach Clinical Research
+17|Preethi William, Banner University of Arizona Medical Center
+18|John Blair, The University of Chicago
+19|Dinesh Gupta, Tennessee Center for Clinical Trials
+20|Sharan Mahal, Advanced Heart Care, LLC
+21|Shahab Ghafghazi, University of Louisville Hospital
+22|Jagadeesh Ganji, Medication Management, LLC
+23|Gregory Lewis, Massachusetts General Hospital
+24|David Hotchkiss, Charlotte Cardiovascular Institute
+25|Daniel Lee, Bay Regional Medical Center
+26|Dwayne Schmidt, Hightower Clinical
+27|Akbar Nikfarjam, Sanitas Research
+28|Albert Ridgeway, Syed Research Consultants, LLC
+29|John Agaiby, Clinical Investigation Specialists, Inc.
+30|Norman Lepor, Westside Medical Associates of Los Angeles
+31|Lauren Gilstrap Milley, Dartmouth Hitchcock Medical Center
+32|Sheldon Litwin, Medical University of South Carolina IRB
+33|Jay Amin, Clearwater Cardiovascular Interventional Consultants
+34|Peter Fail, Cardiovascular Institute of the South
+35|Thomas Baumgarten, Clinical Research Associates of Central PA LLC
+36|Michael Nassif, St Luke's Hospital
+37|Edward Portnay, Cardiology Associates of Fairfield County, P.C.
+38|Jeffrey Whittle, Zablocki VA Medical Center
+39|Lan Luo, Ocala Cardiovascular Research
+40|Tariq Haddad, Virginia Heart
+41|Ghiath Mikdadi, Heart Clinic of Hammond, LLC
+42|Sumeet Mitter, Mount Sinai
+43|
+44|Vietnam
+45|
+46|Hai Nguyen, Gia Dinh People Hospital
+47|Huan Do, HCMC Heart Institute

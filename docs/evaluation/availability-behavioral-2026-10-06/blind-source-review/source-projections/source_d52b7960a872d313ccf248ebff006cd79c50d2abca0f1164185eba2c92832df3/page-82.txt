@@ -1,0 +1,75 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|80 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Appendix I
+9|Abbreviations
+10|Abbreviation or
+11|special term
+12|Explanation
+13|AE
+14|Adverse Event
+15|BP
+16|Blood Pressure
+17|CEA
+18|Clinical Event Adjudication
+19|COPD
+20|Chronic Obstructive Pulmonary Disease
+21|CSA
+22|Clinical study Agreement
+23|CV
+24|Cardiovascular
+25|DAE
+26|Adverse Event leading to discontinuation of investigational product
+27|DKA
+28|Diabetic Ketoacidosis
+29|DMC
+30|Data Monitoring Committee
+31|eCRF
+32|Electronic Case Report Form
+33|EC
+34|Ethics Committee, synonymous to Institutional Review Board (IRB) and
+35|Independent Ethics Committee (IEC)
+36|ECG
+37|Electrocardiogram
+38|EDC
+39|Electronic Data Capture
+40|EHRs
+41|Electronic Health Records
+42|FAS
+43|Full Analysis Set
+44|GCP
+45|Good Clinical Practice
+46|HF
+47|Heart Failure
+48|HFpEF
+49|Heart Failure with Preserved Ejection Fraction
+50|HR
+51|Hazard Ratio
+52|ICF
+53|Informed Consent Form
+54|ICH
+55|International Conference on Harmonisation
+56|International
+57|Co-ordinating
+58|Investigator
+59|If a study is conducted in several countries the International Co-ordinating
+60|Investigator is the Investigator co-ordinating the Investigators and/or
+61|activities internationally.
+62|IxRS
+63|Interactive Voice/Web Response System
+64|KCCQ
+65|Kansas City Cardiomyopathy Questionnaire
+66|LAE
+67|Left Atrial Enlargement
+68|LSLV
+69|Last Subject Last Visit
+70|LVEF
+71|Left Ventricular Ejection Fraction
+72|MI
+73|Myocardial Infarction
+74|NYHA
+75|New York Heart Association

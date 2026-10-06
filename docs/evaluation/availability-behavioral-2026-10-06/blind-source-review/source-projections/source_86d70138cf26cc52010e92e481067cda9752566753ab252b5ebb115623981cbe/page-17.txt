@@ -1,0 +1,41 @@
+1|
+2|
+3|
+4|
+5|16
+6|dead without any evidence supporting a specific non-cardiovascular cause of death
+7|(information regarding the patient's clinical status preceding death should be provided, if
+8|available)
+9|General Considerations
+10|
+11|- Unless additional information suggests an alternate specific cause of death (i.e. Death due
+12|to Other Cardiovascular Causes), if a patient is seen alive ≤ 24 hours of being found dead, sudden
+13|cardiac death (criterion 2f) should be recorded. For patients who were not observed alive within 24
+14|hours of death, undetermined cause of death should be recorded (e.g., a subject found dead in
+15|bed, but who had not been seen by family for > 24 hours).
+16|3. Death due to Heart Failure refers to a death in association with clinically worsening symptoms
+17|and/or signs of HF regardless of HF etiology. Deaths due to HF can have various etiologies, including
+18|single or recurrent MIs, ischemic or non-ischemic cardiomyopathy, hypertension, or valvular
+19|disease.
+20|4. Death due to Stroke refers to death after a stroke that is either a direct consequence of the stroke
+21|or a complication of the stroke. Acute stroke should be verified to the extent possible by the
+22|diagnostic criteria outlined for stroke.
+23|5. Death due to Cardiovascular Procedures refers to death caused by the immediate complications
+24|of a cardiac procedure.
+25|6. Death due to Cardiovascular Hemorrhage refers to death related to hemorrhage such as a non-
+26|stroke intracranial hemorrhage (e.g., subdural hematoma), non-procedural
+27|or non-traumatic vascular rupture (e.g., aortic aneurysm), or hemorrhage causing cardiac
+28|tamponade.
+29|7. Death due to Other Cardiovascular Causes refers to a CV death not included in the above
+30|categories but with a specific, known cause (e.g., pulmonary embolism or peripheral arterial
+31|disease).
+32|B. Non-Cardiovascular Death
+33|
+34|Non-cardiovascular death is defined as any death with a specific cause that is not thought to be CV in
+35|nature. Non-cardiovascular deaths will be further classified into the following categories:
+36|• Pulmonary
+37|• Renal death due to ESRD where dialysis treatment was deliberately withheld (dialysis was not
+38|started or discontinued) for any reason. E.g., patient refuses dialysis, treating physician considers
+39|the dialysis futile, or dialysis is not available. If death is related to other causes than ESRD, the death
+40|will NOT be adjudicated as renal cause of death.
+41|• Gastrointestinal - Death due to GI-related abnormalities unrelated to liver or pancreas

@@ -1,0 +1,69 @@
+1|Jul 06, 2022 12:15:34 EDT
+2|New England Journal of Medicine
+3|Jaroslaw Drozdz
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Grant / Contract
+11|Self
+12|Bayer Healthcare
+13|Other
+14|Self
+15|Boehringer Ingelheim
+16|Other
+17|Self
+18|Novartis
+19|Other
+20|Self
+21|Servier Affaires Medicales
+22|Grant / Contract
+23|Self
+24|Additional Questions:
+25|Certification
+26|I certify that the information provided in this disclosure is complete and accurate.
+27|Disclosure Purpose: 22-06286
+28|Recipient Name: Jaroslaw Drozdz
+29|Recipient Type: Individual
+30|Grant / Contract Description: Research and lecture grants
+31|Grant / Contract Purpose: Research
+32|Additional Information:
+33|Category: Other
+34|Description: Speaking Engagement
+35|Additional Information:
+36|Category: Other
+37|Description: Speaking Engagement
+38|Additional Information:
+39|Category: Other
+40|Description: Speaking Engagement
+41|Additional Information:
+42|Recipient Name: Jarosław Drozdz
+43|Recipient Type: Individual
+44|Grant / Contract Description: Travel grant for ESC Congress Barcelona 2022
+45|Grant / Contract Purpose: Research
+46|Additional Information:
+47|1.
+48|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+49|No.
+50|2.
+51|What is the manuscript title?
+52|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+53|3.
+54|Are you the corresponding author?
+55|No.
+56|
+57|[Extracted table 1]
+58||Entity|Type|Interest Held By|
+59||---|---|---|
+60||AstraZeneca|Grant / Contract|Self|
+61||Recipient Name: Jaroslaw Drozdz Recipient Type: Individual<br>Grant / Contract Description: Research and lecture grants Grant / Contract Purpose: Research<br>Additional Information:|||
+62||Bayer Healthcare|Other|Self|
+63||Category: Other Description: Speaking Engagement<br>Additional Information:|||
+64||Boehringer Ingelheim|Other|Self|
+65||Category: Other Description: Speaking Engagement<br>Additional Information:|||
+66||Novartis|Other|Self|
+67||Category: Other Description: Speaking Engagement<br>Additional Information:|||
+68||Servier Affaires Medicales|Grant / Contract|Self|
+69||Recipient Name: Jarosław Drozdz Recipient Type: Individual<br>Grant / Contract Description: Travel grant for ESC Congress Barcelona 2022 Grant / Contract Purpose: Research<br>Additional Information:|||

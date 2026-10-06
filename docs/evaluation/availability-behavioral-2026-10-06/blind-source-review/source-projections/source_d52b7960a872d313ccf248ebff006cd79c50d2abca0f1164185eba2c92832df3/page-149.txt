@@ -1,0 +1,44 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|56 of 95
+6|fulfil any of the SAE criteria or are the reason for discontinuation of treatment of IP, and the
+7|associated vital sign will be considered as additional information.
+8|8.5.8
+9|Disease-under study (DUS) (not applicable)
+10|8.5.9
+11|Disease progression (not applicable)
+12|8.6
+13|Safety reporting and medical management
+14|8.6.1
+15|Reporting of serious adverse events
+16|All SAEs have to be reported, whether or not considered causally related to the investigational
+17|product, or to the study procedureHsI. All SAEs will be recorded in the eCRF.
+18|If any SAE occurs in the course of the study, then Investigators or other site personnel inform the
+19|appropriate AstraZeneca representatives within one day i.e., immediately but no later than 24
+20|hours of when he or she becomes aware of it.
+21|The designated AstraZeneca representative works with the Investigator to ensure that all the
+22|necessary information is provided to the AstraZeneca Patient Safety data entry site within 1
+23|calendar day of initial receipt for fatal and life-threatening events and within 5 calendar days of
+24|initial receipt for all other SAEs.
+25|For fatal or life-threatening adverse events where important or relevant information is missing,
+26|active follow-up is undertaken immediately. Investigators or other site personnel inform
+27|AstraZeneca representatives of any follow-up information on a previously reported SAE within
+28|one calendar day i.e., immediately but no later than 24 hours of when he or she becomes aware
+29|of it.
+30|Once the Investigators or other site personnel indicate an AE is serious in the EDC system, an
+31|automated email alert is sent to the designated AstraZeneca representative.
+32|If the EDC system is not available, then the Investigator or other study site staff reports a SAE to
+33|the appropriate AstraZeneca representative by telephone.
+34|The AstraZeneca representative will advise the InvestigatorPstudy site staff how to proceed.
+35|Investigators or other site personnel send relevant CRF modules by fax to the designated
+36|AstraZeneca representative.
+37|For further guidance on the definition of a SAE, see Appendix B of the Clinical Study Protocol.
+38|8.6.1.1
+39|Reporting of SAEs considered to be potential endpoints
+40|In order to avoid unnecessary unblinding of efficacy endpoint events, certain SAEs which are also
+41|potential endpoints Hi.e., fatal AEs and HF eventsI will not be reported to health authorities. Clinical
+42|data for the above mentioned events will be recorded as AEsPSAEs as well as on separate event
+43|forms in the eCRF. Recording of a suspected endpoint should be done within the same timeframes
+44|as defined for SAEs Hsee Section 8.6.1I.

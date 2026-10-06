@@ -1,0 +1,89 @@
+1|Jul 06, 2022 15:40:59 EDT
+2|New England Journal of Medicine
+3|jose francisco SARAIVA
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|Amgen
+10|Consultant
+11|Self
+12|AstraZeneca
+13|Consultant
+14|Self
+15|Bayer Healthcare
+16|Consultant
+17|Self
+18|Boehringer Ingelheim
+19|Consultant
+20|Self
+21|Daiichi Sankyo Company
+22|Consultant
+23|Self
+24|Eli Lilly and Company
+25|Consultant
+26|Self
+27|Laboratorios Pfizer Ltda.
+28|Consultant
+29|Self
+30|Novo Nordisk
+31|Consultant
+32|Self
+33|Additional Questions:
+34|Certification
+35|I certify that the information provided in this disclosure is complete and accurate.
+36|Disclosure Purpose: 22-06286
+37|Category: Consultant
+38|Description: fee for ad board , lectures
+39|Additional Information: hourly rate
+40|Category: Consultant
+41|Description: Fee for conferences and advisory board clinical research fee
+42|Additional Information: Independent contractor hourly rate
+43|Category: Consultant
+44|Description: fee for lectures and national leaders activities
+45|Additional Information: hourly rate
+46|Category: Consultant
+47|Description: consultant ,advisory board and conferences fees
+48|Additional Information: hourly rater
+49|Category: Consultant
+50|Description: fee for study coordination,lectures and advisory board
+51|Additional Information: hourly rate
+52|Category: Consultant
+53|Description: Fee for lectures ,Ad boards
+54|Additional Information: hourly rate
+55|Category: Consultant
+56|Description: fee for lectures ,clinical research activities
+57|Additional Information: hourly rate
+58|Category: Consultant
+59|Description: fees for conferences ,Ad boards and National Leader clinical trials
+60|Additional Information: hourly rate
+61|1.
+62|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+63|No.
+64|2.
+65|What is the manuscript title?
+66|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+67|3.
+68|Are you the corresponding author?
+69|No.
+70|
+71|[Extracted table 1]
+72||Entity|Type|Interest Held By|
+73||---|---|---|
+74||Amgen|Consultant|Self|
+75||Category: Consultant Description: fee for ad board , lectures<br>Additional Information: hourly rate|||
+76||AstraZeneca|Consultant|Self|
+77||Category: Consultant Description: Fee for conferences and advisory board clinical research fee<br>Additional Information: Independent contractor hourly rate|||
+78||Bayer Healthcare|Consultant|Self|
+79||Category: Consultant Description: fee for lectures and national leaders activities<br>Additional Information: hourly rate|||
+80||Boehringer Ingelheim|Consultant|Self|
+81||Category: Consultant Description: consultant ,advisory board and conferences fees<br>Additional Information: hourly rater|||
+82||Daiichi Sankyo Company|Consultant|Self|
+83||Category: Consultant Description: fee for study coordination,lectures and advisory board<br>Additional Information: hourly rate|||
+84||Eli Lilly and Company|Consultant|Self|
+85||Category: Consultant Description: Fee for lectures ,Ad boards<br>Additional Information: hourly rate|||
+86||Laboratorios Pfizer Ltda.|Consultant|Self|
+87||Category: Consultant Description: fee for lectures ,clinical research activities<br>Additional Information: hourly rate|||
+88||Novo Nordisk|Consultant|Self|
+89||Category: Consultant Description: fees for conferences ,Ad boards and National Leader clinical trials<br>Additional Information: hourly rate|||

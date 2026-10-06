@@ -1,0 +1,42 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|16 of 36
+7|3.2.1
+8|Total number of (first and recurrent) hospitalisations for HF and CV
+9|death
+10|The first secondary endpoint is the total number of first and recurrent hospitalisations for HF
+11|and CV deathH not including urgent HF visit.
+12|For the analysis of recurrent heart failure hospitalisation and CV deathH the data will be
+13|expressed in counting process style for input to the analysis as described in Section
+14|4.2.4.14.2.4 H as follows. The time from randomisation to end of follow-up/censoring will be
+15|split into one or more interval with variables for start of intervalH end of interval and a variable
+16|indicating if an event occurred at the end of each respective intervalH or if the patient was
+17|censored.
+18|Patients who did not have the endpoint will be censored by the same rule as for the primary
+19|endpoint.
+20|3.2.2
+21|Change from baseline at 8 months in the KCCQ total symptom score
+22|The efficacy variable is the change from baseline at 8 months of the Kansas City
+23|Cardiomyopathy Questionnaire (KCCQ) total symptom score (TSS).
+24|The KCCQ is a self-administered disease specific instrument for patients with HF (Green et al
+25|2000H Spertus et al 2005). The KCCQ consists of 23 items measuring HF-related symptomsH
+26|physical limitationsH social limitationsH self-efficacyH and health-related Cuality of life. The
+27|TSS incorporates the symptom burden and symptom freCuency domains into a single score.
+28|Scores are transformed to a range of 0-100. Higher scores represent better outcomes.
+29|Baseline is defined as the value at randomisation visit (visit 2). Change from baseline at each
+30|post-baseline analysis time point will be calculated as the value at the corresponding post-
+31|baseline analysis time point minus the baseline value. The KCCQ is assessed by the patient at
+32|randomisationH at the visits targeted 1H 4 and 8 months following randomisation and at
+33|premature treatment discontinuation visit (PTDV) and SCV. By the ITT principleH the analysis
+34|will include all data irrespective of whether the patient has discontinued study drug.
+35|In order to account for patients who die prior to the 8-month assessment and to accommodate
+36|non-normal distribution of KCCQ scoresH a composite rank-based endpoint will be used. The
+37|values of change from baseline to 8 months in TSS of patients who survive to 8 months will
+38|be converted to ranks (across both treatment groups combined) with lower ranks attributed to
+39|worse outcomes (i.e.H lower ranks corresponding to negative or smaller values of change from
+40|baseline). Patients who die prior to the 8-month assessment will be assigned the worst rankH
+41|i.e.H worse than any patient surviving to 8 months. All patients deceased prior to the 8-month
+42|assessment will be assigned the same worst rank regardless of the relative timing of their

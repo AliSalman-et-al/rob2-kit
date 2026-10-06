@@ -1,0 +1,98 @@
+1|
+2|
+3|
+4|
+5|39
+6|Table S7.2
+7|Number of Subjects with AEs (≥ 0.2%) With Outcome of Death, by Preferred Term - On and Off Treatment (Safety
+8|Analysis Set)
+9|Preferred term
+10|Number (%) of subjects a
+11|Dapagliflozin 10 mg
+12|(N = 3126)
+13|Placebo
+14|(N = 3127)
+15|Subjects with AE with outcome of death
+16|507 (16.2)
+17|529 (16.9)
+18| Cardiac failure
+19|61 (2.0)
+20|61 (2.0)
+21| Death
+22|54 (1.7)
+23|52 (1.7)
+24| COVID-19 pneumonia
+25|42 (1.3)
+26|36 (1.2)
+27| Sudden cardiac death
+28|26 (0.8)
+29|37 (1.2)
+30| Sudden death
+31|24 (0.8)
+32|26 (0.8)
+33| COVID-19
+34|23 (0.7)
+35|16 (0.5)
+36| Pneumonia
+37|20 (0.6)
+38|17 (0.5)
+39| Cardiac arrest
+40|17 (0.5)
+41|15 (0.5)
+42| Ischemic stroke
+43|17 (0.5)
+44|15 (0.5)
+45| Septic shock
+46|13 (0.4)
+47|12 (0.4)
+48| Acute respiratory failure
+49|9 (0.3)
+50|6 (0.2)
+51| Acute myocardial infarction
+52|8 (0.3)
+53|8 (0.3)
+54| Myocardial infarction
+55|8 (0.3)
+56|12 (0.4)
+57| Sepsis
+58|8 (0.3)
+59|12 (0.4)
+60| Cardiac failure acute
+61|7 (0.2)
+62|4 (0.1)
+63| Suspected COVID-19
+64|7 (0.2)
+65|5 (0.2)
+66|a Number (%) of subjects with AE with outcome of death, sorted by descending frequency of preferred term in Dapagliflozin 10 mg group.
+67|Subjects with multiple events are counted once for each preferred term.
+68|This table includes events with an onset date on or after date of first dose and up to and including 30 days following last dose of the investigational product, with
+69|a frequency of ≥ 0.2% in the dapagliflozin treatment group
+70|Percentages are based on the total numbers of subjects in the treatment group (N).
+71|MedDRA version 24.1.
+72|AE, adverse event; N, number of subjects in treatment group
+73|
+74|[Extracted table 1]
+75||Column 1|Column 2|Column 3|
+76||---|---|---|
+77||Table S7.2 Number of Subjects with AEs (≥ 0.2%) With Outcome of Death, by Preferred Term - On and Off Treatment (Safety|||
+78||Analysis Set)|||
+79|||Number (%) of subjects a||
+80|||Dapagliflozin 10 mg|Placebo|
+81||Preferred term|(N = 3126)|(N = 3127)|
+82||Subjects with AE with outcome of death|507 (16.2)|529 (16.9)|
+83||Cardiac failure|61 (2.0)|61 (2.0)|
+84||Death|54 (1.7)|52 (1.7)|
+85||COVID-19 pneumonia|42 (1.3)|36 (1.2)|
+86||Sudden cardiac death|26 (0.8)|37 (1.2)|
+87||Sudden death|24 (0.8)|26 (0.8)|
+88||COVID-19|23 (0.7)|16 (0.5)|
+89||Pneumonia|20 (0.6)|17 (0.5)|
+90||Cardiac arrest|17 (0.5)|15 (0.5)|
+91||Ischemic stroke|17 (0.5)|15 (0.5)|
+92||Septic shock|13 (0.4)|12 (0.4)|
+93||Acute respiratory failure|9 (0.3)|6 (0.2)|
+94||Acute myocardial infarction|8 (0.3)|8 (0.3)|
+95||Myocardial infarction|8 (0.3)|12 (0.4)|
+96||Sepsis|8 (0.3)|12 (0.4)|
+97||Cardiac failure acute|7 (0.2)|4 (0.1)|
+98||Suspected COVID-19|7 (0.2)|5 (0.2)|

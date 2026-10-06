@@ -1,0 +1,47 @@
+1|
+2|
+3|
+4|
+5|8
+6|Béla Herczeg, Jász-Nagykun-Szolnok Megyei Hetényi Géza Kórház-Rendelőintézet
+7|
+8|Japan
+9|
+10|Atsushi Kawasaki, National Hospital Organization Mie Chuo Medical Center
+11|Takashi Takenaka, NHO Hokkaido Medical Center
+12|Keiki Yoshida, Saga-Ken Medical Centre Koseikan
+13|Shujiro Inoue, Iizuka Hospital
+14|Daisuke Maebuchi, Shin-Kuki General Hospital
+15|Akihito Sasaki, Nishiarai Heart Central Clinic
+16|Kenjiro Kitasato, Chiba Tokushukai Hospital
+17|Masatoshi Shimizu, National Hospital Organization Kobe Medical Center
+18|Masato Ohnishi, NHO Higashi-Ohmi General Medical Center
+19|Masaharu Akao, National Hospital Organization Kyoto Medical Center
+20|Harukazu Iseki, Agricultural Cooperatives, Sagamihara Kyodo Hospital
+21|Shinichiro Uchikawa, Japanese Red Cross Society Azumino Hospital
+22|Yasuaki Koga, Oita Prefectural Hospital
+23|Hiroyuki Takase, JA Shizuoka Koseiren Enshu Hospital
+24|Chisato Izumi, National Cerebral and Cardiovascular Center Hospital
+25|Takeshi Akasaka, Shonan Fujisawa Tokushukai Hospital
+26|Shintaro Akashi, National Hospital Organization Hamada Medical Center
+27|Arihiro Kiyosue, Tokyo Eki Center-Building Clinic
+28|Takuro Takagi, Tokyo Shinagawa Hospital Medical Corp. Tokyokyojuno-kai
+29|Satoru Sakagami, National Hospital Organization Kanazawa Medical Center
+30|Mitsuhiro Shimomura, National Hospital Organization Ureshino Medical Center
+31|Hiroshi Sugino, National Hospital Organization Kure Medical Center
+32|Yoshiki Hata, Minamino Cardiovascular Hospital
+33|Masanori Asakura, Hyogo College of Medicine Hospital
+34|Shinichi Higashiue, Kishiwada Tokushukai Hospital
+35|Tetsuo Sakai, Koukan Clinic
+36|Noritaka Fujimoto, National Hospital Organization Beppu Medical Center
+37|Junji Kanda, Asahi General Hospital
+38|Koichiro Kuwahara, Shinshu University Hospital
+39|Yusuke Katayama, National Hospital Organization Iwakuni Clinical Center
+40|Wataru Takahashi, National Hospital Organization Shinshu Ueda Medical Center
+41|Masaya Shinbo, Tokushukai Takasago Seibu Hospital
+42|Kengo Tsukahara, Fujisawa City Hospital
+43|Eijiro Hattori, JA Toride Medical Center
+44|Yuichiro Takagi, Federation of National Public Service Takamatsu Hospital
+45|Hideki Ueno, Medical corporation tokushukai, HAYAMA HEART CENTER
+46|Ryosuke Kametani, Nagoya Tokusyukai General Hospital
+47|Motoaki Higuchi, Mito Saiseikai General Hospital

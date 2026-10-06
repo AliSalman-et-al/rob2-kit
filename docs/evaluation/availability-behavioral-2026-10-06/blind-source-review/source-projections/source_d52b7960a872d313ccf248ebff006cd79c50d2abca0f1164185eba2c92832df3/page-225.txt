@@ -1,0 +1,9 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|36 of 36
+7|Wang and PococC 2016
+8|Wang DH Pocock S. A win ratio approach to comparing continuous non-normal outcomes in
+9|clinical trials. Pharmaceut. Statist. 2016H 15 238P245

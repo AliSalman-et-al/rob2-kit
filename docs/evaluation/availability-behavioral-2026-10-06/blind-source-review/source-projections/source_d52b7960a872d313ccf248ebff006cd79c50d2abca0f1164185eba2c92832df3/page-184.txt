@@ -1,0 +1,31 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|91 of 95
+6|Appendix K
+7|EI-5D-5L Iuestionnaire
+8|Health Muestionnaire
+9|Lnder each heading, please check the ONE box that best describes your health TODAY
+10|MOBILITY
+11|I have no problems walking
+12|
+13|I have slight problems walking
+14|
+15|I have moderate problems walking
+16|
+17|I have severe problems walking
+18|
+19|I am unable to walk
+20|
+21|SELF-CARE
+22|I have no problems washing or dressing myself
+23|
+24|I have slight problems washing or dressing myself
+25|
+26|I have moderate problems washing or dressing myself
+27|
+28|I have severe problems washing or dressing myself
+29|
+30|I am unable to wash or dress myself
+31|

@@ -1,0 +1,26 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|56 of 58
+7|MCID for KCCQ-TSS in patients with HFpEF. The MCID will not be used to inform
+8|responder analysesO as the MCID is not based on within-patient change and is therefore not
+9|appropriate for assessing an individualKs EresponseF.
+10|Table AH
+11|Distribution-Based Cut-offs for a Minimal Clinically Important
+12|Difference in the ICCJ-TSS
+13|N1
+14|One-half SD
+15|N2
+16|1 SEM
+17|Baseline ICCJ-TSS
+18|4730
+19|11.0
+20|4562
+21|8.6
+22|N1 The SD is based on the number of patients with an observed baseline KCCQ-TSS.
+23|N2 The SEM is based on the number of patients with an observed scorable responses to each of the items in the
+24|KCCQ-TSS.
+25|KCCQO Kansas City Cardiomyopathy QuestionnaireT NO number of patients in treatment groupT SDO standard
+26|deviationO SEMO standard error of measurementT TSSO total symptom score

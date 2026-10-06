@@ -1,0 +1,48 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|49 of 58
+7|Appendix A
+8|Estimation of Clinically Meaningful Thresholds for ICCJ
+9|Total Symptom Score
+10|A 1
+11|Methods
+12|Thresholds for CMWPC will be estimated according to predefined algorithms using an
+13|anchor-based approachO supplemented with graphical visualisations of the distribution across
+14|anchor categories. Clinically meaningful thresholds will be estimated for change from
+15|baseline KCCQ-TSS at 8 months.
+16|This appendix describes the methods which were applied to blinded study data prior to
+17|database locG and unblinding of the studyO with results and derived thresholds presented in this
+18|SAP prior to the interim analysis. The threshold analyses were performed on the FAS
+19|population used in the main analysis for KCCQ (the population with patients who had a
+20|planned Visit 5O ieO at 8 monthsO prior to the major COVID-19 outbreaGT see 4.2.4.2)O on
+21|blinded study data across both treatment arms only including patients with complete data at
+22|baseline and 8 months.
+23|Anchor-based approaches
+24|Anchor-based approaches estimate a threshold by VanchoringK the results on a separate
+25|variableO often a patient-reported outcome. The anchor-based analysis will employ the PGIS in
+26|HF symptoms. Meaningful change will be evaluated using observed scores according to a
+27|predefined algorithm. The responses to PGIS at baseline and 8 months will be used in the
+28|analysis.
+29|Categorisation of anchors
+30|The change from baseline PGIS at 8 months will be categoriIed and categories will be
+31|collapsed in different waysO to provide a clearer distinction between patients who have and
+32|have not experienced a meaningful change according to this anchor.
+33|The ordinal responses to PGIS at baseline and 8 months will be assigned the following
+34|numeric valuesN
+35|
+36|1 (Vno symptomsK)
+37|
+38|2 (Vvery mildK)
+39|
+40|3 (VmildK)
+41|
+42|4 (VmoderateK)
+43|
+44|5 (VsevereK)
+45|
+46|6 (Vvery severeK)
+47|Change from baseline PGIS at 8 months will be categoriIed as smallO moderate or large
+48|improvementJdeterioration or stable as defined in Table A1.

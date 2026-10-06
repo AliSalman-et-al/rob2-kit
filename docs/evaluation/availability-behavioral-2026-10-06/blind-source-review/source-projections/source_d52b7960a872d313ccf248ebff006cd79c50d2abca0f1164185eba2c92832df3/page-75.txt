@@ -1,0 +1,45 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|73 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Exclusion criteria
+9|Exclusion from this genetic research may be for any of the exclusion criteria specified in the main
+10|study or any of the following:
+11|x
+12|Previous allogeneic bone marrow transplant
+13|x
+14|Non-leukocyte depleted whole blood transfusion in 120 days of genetic sample
+15|collection
+16|Withdrawal of consent for genetic research:
+17|Subjects may withdraw from this genetic research at any time, independent of any decision
+18|concerning participation in other aspects of the main study. Voluntary withdrawal will not
+19|prejudice further treatment. Procedures for withdrawal are outlined in Section Error! Reference
+20|source not found. of the main Clinical Study Protocol.
+21|Collection of samples for genetic research
+22|The blood sample for genetic research will be obtained from the subjects at Visit 2. Although
+23|DNA is stable, early sample collection is preferred to avoid introducing bias through excluding
+24|subjects who may withdraw due to an adverse event (AE), such subjects would be important to
+25|include in any genetic analysis. If for any reason the sample is not drawn at Visit 2, it may be
+26|taken at any visit until the last study visit. Only one sample should be collected per subject for
+27|genetics during the study. Samples will be collected, labelled, stored, and shipped as detailed in
+28|the Laboratory Manual.
+29|Coding and storage of DNA samples
+30|The processes adopted for the coding and storage of samples for genetic analysis are important to
+31|maintain subject confidentiality. Samples will be stored for a maximum of 15 years, from the date
+32|of last subject last visit, after which they will be destroyed. DNA is a finite resource that is used
+33|up during analyses. Samples will be stored and used until no further analyses are possible or the
+34|maximum storage time has been reached.
+35|An additional second code will be assigned to the blood sample either before or at the time of DNA
+36|extraction replacing the information on the sample tube. Thereafter, the sample will be identifiable
+37|only by the second, unique number. This number is used to identify the sample and corresponding
+38|data at the AstraZeneca genetics laboratories, or at the designated organisation. No personal details
+39|identifying the individual will be available to any person (AstraZeneca employee or designated
+40|organisations working with the DNA).
+41|The link between the subject enrolment/randomisation code and the second number will be
+42|maintained and stored in a secure environment, with restricted access at AstraZeneca or designated
+43|organisations. The link will be used to identify the relevant DNA samples for analysis, facilitate
+44|correlation of genotypic results with clinical data, allow regulatory audit, and permit tracing of
+45|samples for destruction in the case of withdrawal of consent.

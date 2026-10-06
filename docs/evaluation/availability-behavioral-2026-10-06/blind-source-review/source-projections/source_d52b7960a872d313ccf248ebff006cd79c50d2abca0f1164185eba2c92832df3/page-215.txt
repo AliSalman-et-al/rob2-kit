@@ -1,0 +1,39 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|26 of 36
+7|placebo. More specificallyH each patient in the dapaglifloDin group is compared with each
+8|patient in the placebo group and each pair is labelled as RwinnerSH RloserSH or RtieSH depending
+9|on whether the patient on dapaglifloDin has a more favourableH less favourableH or the same
+10|outcomeH respectivelyH with respect to the composite ranked endpoint compared to the patient
+11|on placebo. Win ratio is defined as the ratio of the number of RwinnerS pairs to the number of
+12|RlooserS pairs for the dapaglifloDin arm. If the estimated win ratio is greater than 1 then the
+13|treatment effect is in favour of dapaglifloDin.
+14|The win ratio statistic adjusted for the randomiDation stratification factor and baseline TSS
+15|will be obtained using the methodology in (Kawaguchi et al 2011) for the stratified Mann-
+16|Whitney estimators for the comparison of two treatments with randomiDation based
+17|covariance adjustment. The win ratio statistic will be calculated as Mann-Whitney oddsH i.e.H
+18|WRKMW[((1-MW) )H where MW is the adjusted Mann-Whitney estimate. The 95I
+19|confidence interval for the win ratio will be obtained as
+20|exp{ln( ) ± 1.96 ∗ (ln( ))}
+21|where the standard error of the logarithm of WR is obtained as
+22| (ln( )) = ( ) ( ∗(1 - ))
+23|⁄
+24|and the ( ) is the standard error of the adjusted Mann-Whitney estimate. The adjusted
+25|Mann-Whitney estimates and its standard error will be obtained using the RsanonS package in
+26|R (Kawaguchi and Koch 2015).
+27|Responder analysisG
+28|Number and percentage of patients in each treatment group will be summariDed across the
+29|following categoriesG
+30|5 point improvement from baseline to 8 months in TSS vs no significant improvementG
+31|- Change from baseline in TSS J 5 pointsH vs
+32|- Death prior to the 8 months assessment or change from baseline in TSS E 5 points.
+33|5 point deterioration from baseline to 8 months in TSS vs no significant deteriorationG
+34|- Death prior to the 8 months assessment or change from baseline in TSS \ -5 pointsH vs
+35|- Change from baseline to 8 months in TSS F -5 points.
+36|Cumulative distribution function (CDF) plots will be presented by treatment group to
+37|summariDe the distribution of change from baseline to 8 months in TSS valuesH where patients
+38|who die prior to the 8-month assessment will be represented with the value of -101 (a value
+39|below the worst possible change from baseline).

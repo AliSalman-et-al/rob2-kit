@@ -1,0 +1,53 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|39 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|x
+9|Review and recording of any cardiac and HF related procedures
+10|x
+11|Review of potential efficacy and safety events
+12|x
+13|If the patient has experienced any potential endpoints, SAEs, DAEs and/or amputations,
+14|adverse events (AEs) leading to amputation and potential risk factor AEs for
+15|amputations affecting lower limbs since the last visit, this will be recorded in the eCRF.
+16|x
+17|IP will be dispensed via IxRS to the patient. Drug accountability of the returned IP will
+18|be checked. The patient will be instructed to take the IP in accordance with protocol
+19|and without interruptions.
+20|8.2.5
+21|ViViW 6 (Da\ 360 7 da\V)
+22|At Visit 6, the following assessments and procedures will be conducted:
+23|x
+24|Vital signs (BP, pulse), and weight will be assessed and recorded
+25|x
+26|Review and updating of concomitant medication and recording of relevant medications
+27|x
+28|Review and recording of any cardiac and HF related procedures
+29|x
+30|Review of potential efficacy and safety events.
+31|x
+32|If the patient has experienced any potential endpoints, SAEs, DAEs and/or
+33|amputations, adverse events (AEs) leading to amputation and potential risk factor AEs
+34|for amputations affecting lower limbs since the last visit, this will be recorded in the
+35|eCRF.
+36|x
+37|IP will be dispensed via IxRS to the patient. Drug accountability of the returned IP will
+38|be checked. The patient will be instructed to take the IP in accordance with protocol
+39|and without interruptions.
+40|x
+41|Blood samples will be taken for creatinine (for calculation of eGFR) assessment
+42|(central laboratory)
+43|8.2.6
+44|ViViW 7 aQd RQZaUdV (Da\ 480 aQd eYeU\ 120 da\V 14 da\V)
+45|At visit 7 and subsequent visits, the following assessments and procedures will be conducted:
+46|x
+47|Vital signs (BP, pulse), and weight will be assessed and recorded every 12 months
+48|x
+49|Review and updating of concomitant medication and recording of relevant medications
+50|x
+51|Review and recording of any cardiac and HF related procedures
+52|x
+53|Review of potential efficacy and safety events.

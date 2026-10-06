@@ -1,0 +1,41 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|92 of 95
+6|USUAL ACTIVITIES (e.g. work, study, housework,
+7|family or leisure activities)
+8|I have no problems doing my usual activities
+9|
+10|I have slight problems doing my usual activities
+11|
+12|I have moderate problems doing my usual activities
+13|
+14|I have severe problems doing my usual activities
+15|
+16|I am unable to do my usual activities
+17|
+18|PAIN D DISCOMFORT
+19|I have no pain or discomfort
+20|
+21|I have slight pain or discomfort
+22|
+23|I have moderate pain or discomfort
+24|
+25|I have severe pain or discomfort
+26|
+27|I have extreme pain or discomfort
+28|
+29|ANPIETY D DEPRESSION
+30|I am not anxious or depressed
+31|
+32|I am slightly anxious or depressed
+33|
+34|I am moderately anxious or depressed
+35|
+36|I am severely anxious or depressed
+37|
+38|I am extremely anxious or depressed
+39|
+40|
+41|

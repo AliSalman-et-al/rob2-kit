@@ -1,0 +1,43 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|29 of 36
+7|4.2.4.3
+8|Analysis of worsened NYHA class from baseline to 8 months
+9|The proportion of patients with worsened (higher) NYHA class at 8 months compared to
+10|baselineH including patients who died prior to 8 months in the worsened categoryH versus
+11|patient with improved or unchanged NYHA classH will be analyDed by logistic regression with
+12|treatment groupH baseline NYHA class and T2D status randomiDation as factors. The odds
+13|ratio between treatment groups and its 95I confidence interval and corresponding two-sided
+14|p-value will be presented. FreCuencies of NYHA class and change from baseline as well as
+15|the odds ratio for treatment effect will be presented for all post baseline visits with scheduled
+16|NYHA class evaluation. The p-value for the test of treatment effect at 8 months will be used
+17|for the confirmatory testing of the secondary endpoint in the multiple testing procedure
+18|described in section 4.1.3.
+19|Missing NYHA assessments will be handled with the same multiple imputation methodology
+20|as described above for the analysis of KCCQ TSS in section 4.2.4.2
+21|To assess the impact of a treatment effect of deathH a sensitivity analysis will be performed
+22|where the last NYHA assessment prior to death will be carried forward.
+23|4.2.4.4
+24|Analysis of all-cause mortality
+25|The 4th secondary endpointH time to death from any cause will be analysed using Cox
+26|regression in the same manner as the primary composite endpointH with stratification for T2D
+27|status at randomisation. The analysis will include deaths occurring on or prior to PACD.
+28|Patients who are alive will be censored at PACDH or for any patients who are LTFUH at last
+29|date known to be alive.
+30|4.2.5
+31|Analysis of safety variables
+32|Analysis set
+33|For safety analysesH all summaries will be based on the safety analysis set (Section 2.1.2).
+34|Exposure
+35|The total exposure to study drug will be defined as the length of period on study drugH
+36|calculated for each patient as date of last dose P date of first dose Q1.
+37|An alternative measure where days of interruption are removed will be calculated and termed
+38|actual exposure.
+39|Total and actual exposure will be presented descriptively.
+40|Treatment periods
+41|The summaries for the on-treatment period will include events with an onset date on or after
+42|first dose of randomiDed study drug and on or before 30 days after last dose of study drug.
+43|Additional presentations will include all events with onset on or after first dose of study drug

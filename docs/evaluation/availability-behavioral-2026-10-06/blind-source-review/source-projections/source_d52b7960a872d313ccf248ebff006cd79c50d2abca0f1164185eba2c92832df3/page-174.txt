@@ -1,0 +1,40 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|81 of 95
+6|An additional second code will be assigned to the blood sample either before or at the time of DNA
+7|extraction replacing the information on the sample tube. Thereafter, the sample will be identifiable
+8|only by the second, unique number. This number is used to identify the sample and corresponding
+9|data at the AstraZeneca genetics laboratories, or at the designated organisation. No personal details
+10|identifying the individual will be available to any person HAstraZeneca employee or designated
+11|organisations working with the DNAI.
+12|The link between the subject enrolmentPrandomisation code and the second number will be
+13|maintained and stored in a secure environment, with restricted access at AstraZeneca or designated
+14|organisations. The link will be used to identify the relevant DNA samples for analysis, facilitate
+15|correlation of genotypic results with clinical data, allow regulatory audit, and permit tracing of
+16|samples for destruction in the case of withdrawal of consent.
+17|Ethical and regulatory reJuirements
+18|The principles for ethical and regulatory requirements for the study, including this genetics
+19|research component, are outlined in Appendix A.
+20|Informed consent
+21|The genetic component of this study is optional and the subject may participate in other
+22|components of the main study without participating in the genetic component. To participate in the
+23|genetic component of the study the subject must sign and date both the consent form for the main
+24|study and the genetic component of the study. Copies of both signed and dated consent forms must
+25|be given to the subject and the original filed at the study centre. The Principal InvestigatorHsI is
+26|responsible for ensuring that consent is given freely and that the subject understands that they may
+27|freely withdrawal from the genetic aspect of the study at any time.
+28|Subject data protection
+29|AstraZeneca will not provide individual genotype results to subjects, any insurance company, any
+30|employer, their family members, general physician unless required to do so by law.
+31|Extra precautions are taken to preserve confidentiality and prevent genetic data being linked to the
+32|identity of the subject. In exceptional circumstances, however, certain individuals might see both
+33|the genetic data and the personal identifiers of a subject. For example, in the case of a medical
+34|emergency, an AstraZeneca Physician or an investigator might know a subjectOs identity and also
+35|have access to his or her genetic data. In addition, Regulatory authorities may require access to the
+36|relevant files, though the subjectOs medical information and the genetic files would remain
+37|physically separate.
+38|Data management
+39|Any genotype data generated in this study will be stored at a secure system at AstraZeneca andPor
+40|designated organizations to analyse the samples.

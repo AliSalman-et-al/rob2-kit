@@ -1,0 +1,93 @@
+1|n engl j med 387;12 nejm.org september 22, 2022
+2|1097
+3|Dapagliflozin in Heart Failure with Preserved EF
+4|patient-years in DAPA-HF), and DELIVER was
+5|not powered to assess the effect of dapagliflozin
+6|on cardiovascular death alone. Trials in higher-
+7|risk populations, or of longer duration, or
+8|pooled analyses of several trials would be need-
+9|ed for robust evaluation of benefits with respect
+10|to mortality.
+11|This trial has some limitations. The use of
+12|specific inclusion and exclusion criteria may have
+13|limited the generalizability of our findings. Less
+14|than 5% of the patients enrolled were Black, al-
+15|though this percentage was proportional to the
+16|population percentage on a regional basis (Table
+17|S8). Owing to the Covid-19 pandemic, assess-
+18|ment of symptom burden was limited to patients
+19|for whom an 8-month assessment was planned
+20|or performed before March 11, 2020, although
+21|results were similar in all patients for whom
+22|data were available. Because all the subgroups in
+23|the DELIVER trial were underpowered, within-
+24|subgroup results should be interpreted cau-
+25|tiously.
+26|Among patients with heart failure and a
+27|mildly reduced or preserved ejection fraction,
+28|dapagliflozin resulted in a lower risk of the pri-
+29|mary composite outcome (worsening heart fail-
+30|ure or cardiovascular death), in fewer worsening
+31|heart failure events and cardiovascular deaths,
+32|and in a lower symptom burden, with no excess
+33|of adverse events. Findings were consistent
+34|across prespecified subgroups, including those
+35|defined according to left ventricular ejection
+36|fraction. These data provide further evidence to
+37|support the use of an SGLT2 inhibitor as es-
+38|sential therapy in patients with heart failure,
+39|regardless of the presence or absence of type 2
+40|diabetes mellitus or left ventricular ejection
+41|fraction.
+42|Supported by AstraZeneca.
+43|Disclosure forms provided by the authors are available with
+44|the full text of this article at NEJM.org.
+45|A data sharing statement provided by the authors is available
+46|with the full text of this article at NEJM.org.
+47|Appendix
+48|The authors' full names and academic degrees are as follows: Scott D. Solomon, M.D., John J.V. McMurray, M.D., Brian Claggett, Ph.D.,
+49|Rudolf A. de Boer, M.D., David DeMets, Ph.D., Adrian F. Hernandez, M.D., Silvio E. Inzucchi, M.D., Mikhail N. Kosiborod, M.D.,
+50|Carolyn S.P. Lam, M.D., Felipe Martinez, M.D., Sanjiv J. Shah, M.D., Akshay S. Desai, M.D., Pardeep S. Jhund, M.B., Ch.B., Ph.D., Jan
+51|Belohlavek, M.D., Chern-En Chiang, M.D., C. Jan Willem Borleffs, M.D., Josep Comin-Colet, M.D., Ph.D., Dan Dobreanu, M.D., Jaro-
+52|slaw Drozdz, M.D., Ph.D., James C. Fang, M.D., Marco Antonio Alcocer-Gamba, M.D., Waleed Al Habeeb, M.D., Yaling Han, M.D.,
+53|Jose Walter Cabrera Honorio, M.D., Stefan P. Janssens, M.D., Tzvetana Katova, M.D., Masafumi Kitakaze, M.D., Béla Merkely, M.D.,
+54|Ph.D., Eileen O'Meara, M.D., Jose Francisco Kerr Saraiva, M.D., Ph.D., Sergey N. Tereshchenko, M.D., Jorge Thierer, M.D., Muthiah
+55|Vaduganathan, M.D., M.P.H., Orly Vardeny, Pharm.D., Subodh Verma, M.D., Vinh Nguyen Pham, M.D., Ulrica Wilderäng, Ph.D., Na-
+56|talia Zaozerska, M.D., Ph.D., Erasmus Bachus, M.D., Ph.D., Daniel Lindholm, M.D., Ph.D., Magnus Petersson, M.D., Ph.D., and
+57|Anna Maria Langkilde, M.D., Ph.D.
+58|The authors' affiliations are as follows: the Cardiovascular Division, Brigham and Women's Hospital, Harvard Medical School, Bos-
+59|ton (S.D.S., B.C., A.S.D., M.V.); the British Heart Foundation Glasgow Cardiovascular Research Centre, School of Cardiovascular and
+60|Metabolic Health, University of Glasgow, Glasgow, Scotland, United Kingdom (J.J.V.M., P.S.J.); the Department of Cardiology, Univer-
+61|sity Medical Center Groningen, University of Groningen, Groningen (R.A.B., C.S.P.L.), and Haga Teaching Hospital, the Hague
+62|(C.J.W.B.) - both in the Netherlands; the University of Wisconsin, Madison (D. DeMets); Duke University Medical Center, Durham,
+63|NC (A.F.H.); Yale School of Medicine, New Haven, CT (S.E.I.); Saint Luke's Mid America Heart Institute, University of Missouri, Kansas
+64|City, Kansas City (M.N.K.); National Heart Center Singapore and Duke-National University of Singapore, Singapore (C.S.P.L.); Na-
+65|tional University of Cordoba, Cordoba (F.M.), and Jefe de Unidad de Insuficiencia Cardíaca, Centro de Educación Médica e Investiga-
+66|ciones Clínicas Norberto Quirno, Buenos Aires (J.T.) - both in Argentina; Northwestern University Feinberg School of Medicine,
+67|Chicago (S.J.S.); General University Hospital, Charles University, Prague, Czech Republic (J.B.); General Clinical Research Center and
+68|the Division of Cardiology, Taipei Veterans General Hospital and National Yang Ming Chiao Tung University, Taipei, Taiwan (C.-E.C.);
+69|the Department of Cardiology, Bellvitge University Hospital and Bellvitge Biomedical Research Institute, University of Barcelona,
+70|L'Hospitalet de Llobregat, Barcelona (J.C.-C.); George Emil Palade University of Medicine, Pharmacy, Science, and Technology, Târgu
+71|Mureş, Romania (D. Dobreanu); the Department of Cardiology, Medical University Lodz, Lodz, Poland (J.D.); University of Utah Medi-
+72|cal Center, Salt Lake City (J.C.F.); Centro de Estudios Clínicos de Querétaro, Querétaro, Mexico (M.A.A.-G.); the Cardiac Sciences De-
+73|partment, King Saud University, Riyadh, Saudi Arabia (W.A.H.); the Cardiovascular Research Institute and Department of Cardiology,
+74|Figure 2 (facing page). Primary Outcome in Prespecified
+75|Subgroups.
+76|The primary outcome was a composite of worsening
+77|heart failure, which was defined as either an unplanned
+78|hospitalization for heart failure or an urgent visit for
+79|heart failure, or cardiovascular death. Race was reported
+80|by the investigators. The body-mass index is the weight
+81|in kilograms divided by the square of the height in meters.
+82|The size of the boxes is proportional to the number of
+83|patients in the subgroup, and arrows on the confidence
+84|interval bars indicate that the upper or lower boundary
+85|of the confidence interval is off the scale. One patient
+86|in the placebo group who had New York Heart Associa-
+87|tion (NYHA) class I disease at baseline was not included
+88|in the analysis of NYHA class at enrollment. ECG denotes
+89|electrocardiography, GFR glomerular filtration rate, LVEF
+90|left ventricular ejection fraction, and NT-proBNP N-termi-
+91|nal pro-B-type natriuretic peptide.
+92|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+93|Downloaded from nejm.org on September 22, 2026.

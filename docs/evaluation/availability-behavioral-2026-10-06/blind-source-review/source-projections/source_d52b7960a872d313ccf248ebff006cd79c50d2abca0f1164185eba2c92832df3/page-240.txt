@@ -1,0 +1,56 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|15 of 58
+7|Date
+8|Brief description of change
+9|Version 5.0
+10|08 December 2021
+11|Formatting updated throughout entire document.
+12|L3.3 Safety VariablesM
+13|Minor clarifications added
+14|L4.1.3 Confirmatory Testing ProcedureM
+15|Sentence addedN
+16|EFor the calculation of C1, the correlation will be based on the sDuare root of the
+17|lower bound of a two-sided 95% confidence interval for the proportion of events
+18|in the subpopulation with LVEFEFE60%, using a normal approximation
+19|confidence interval for the proportion.F
+20|Table 1 updated presenting number of events in LVEF < 60C subpopulation and full
+21|population instead of presenting proportion of events in the subpopulation. Confidence
+22|intervals added and numbers for D1 in the different scenarios updated.
+23|Last bullet in the list clarified.
+24|L4.1.5 Vital Status and Follow-up of EndpointsM
+25|Clarified that non-CV death includes undetermined.
+26|L4.2.3.1 Subgroup Analysis of the Primary EndpointM
+27|Updated that subgroup analysis will be done both for full population and LVEF < 60C
+28|subpopulation.
+29|L4.2.3.2 Sensitivity Analysis of the Primary EndpointM
+30|Added description of a sensitivity analysis where patients with premature censoring
+31|have imputed time to event information and more detailed information about the
+32|planned tipping point analysis.
+33|Added sensitivity analysis where patients and events are censored at the onset date of
+34|AE associated with COVID-19 infection.
+35|L4.2.4.1 Analysis of Total Number of HF Events (First and Recurrent) and CV DeathM
+36|Added sensitivity analysis where patients and events are censored at the onset date of
+37|AE associated with COVID-19 infection.
+38|L4.2.4.2 Analysis of Change from Baseline at 8 Months in the KCCQ Total Symptom
+39|ScoreM
+40|Added that both planned and performed 8 month assessments are to be included in
+41|COVID-19 supplementary analysis for KCCQ TSS.
+42|L4.2.4.3 Analysis of CV DeathM
+43|Added sensitivity analysis where patients and events are censored at the onset date of
+44|AE associated with COVID-19 infection.
+45|L4.2.5.1 Adverse EventsM
+46|Clarification that on-treatment period will be used for primary analysis of all safety
+47|variablesO except for amputations and preceding events.
+48|Added that MedDRA 24.1 will be used.
+49|Information previously in section E4.2.5.4 Specific adverse eventsF added to this
+50|section.
+51|L4.2.5.4 Specific Adverse EventsM
+52|Text moved to be included in Section 4.2.5.1 and section removed.
+53|L4.2.6 Analysis of Explorative ObjectivesM
+54|Updated that KCCQ QoL will be reported descriptively only.
+55|LAppendix BM
+56|Updated to include R and SAS code.

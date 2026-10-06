@@ -1,0 +1,10 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|75 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|statistical evaluation or whether only descriptive statistics will be generated. A Statistical Analysis
+9|Plan may be prepared where appropriate.
+10|

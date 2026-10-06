@@ -1,0 +1,57 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|35 of 95
+6|6.
+7|STUDY TREATMENTS
+8|Study treatment is defined as any investigational productHsI Hincluding marketed product
+9|comparator and placeboI or medical deviceHsI intended to be administered to a study participant
+10|according to the study protocol. Study treatment in this study refers to dapagliflozin or matching
+11|placebo.
+12|6.1
+13|Treatments administered
+14|Table 4
+15|Study Treatments
+16|Dapagliflozin
+17|Placebo
+18|Investigational Product name
+19|Dapagliflozin 10 mg
+20|Matching placebo 10 mg
+21|Dosage formulation
+22|Green, diamond shaped,
+23|film coated tablets 10 mg
+24|Green, diamond shaped, film
+25|coated tablets 10 mg
+26|placebo
+27|Route of administration
+28|Oral
+29|Oral
+30|Dosing instructions
+31|Once daily
+32|Once daily
+33|PacGaging and labeling
+34|Investigational Product will
+35|be provided in bottles. Each
+36|bottle will be labelled in
+37|accordance with Good
+38|Manufacturing Practice
+39|Annex 13 and per country
+40|regulatory requirements
+41|Investigational Product will
+42|be provided in bottles. Each
+43|bottle will be labelled in
+44|accordance with Good
+45|Manufacturing Practice
+46|Annex 13 and per country
+47|regulatory requirements
+48|Provider
+49|AstraZeneca
+50|AstraZeneca
+51|The tablets contain lactose, in quantities not likely to cause discomfort in lactose-intolerant
+52|individuals.
+53|6.2
+54|PreparationDhandlingDstorageDaccountability
+55|The investigator or designee must confirm appropriate temperature conditions have been
+56|maintained during transit for all study treatment received and any discrepancies are reported and
+57|resolved before use of the study treatment.

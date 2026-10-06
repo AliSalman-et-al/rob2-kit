@@ -1,0 +1,44 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|52 of 95
+6|8.5
+7|Collection of adverse events
+8|The Principal Investigator is responsible for ensuring that all staff involved in the study are familiar
+9|with the content of this section.
+10|The definitions of an AE or SAE can be found in Appendix B.
+11|AE will be reported by the patient Hor, when appropriate, by a caregiver, surrogate, or the patientZs
+12|legally authorised representativeI.
+13|The Investigator and any designees are responsible for detecting, documenting, and recording
+14|events that meet the definition of a SAEs and DAEs, amputation and events potentially placing the
+15|patient at risk for a lower limb amputation Hpreceding eventsI. For information on how to follow-
+16|up AEs see Section 8.5.3.
+17|8.5.1
+18|Method of detecting AEs and SAEs
+19|Care will be taken not to introduce bias when detecting SAEs or DAEs. Open-ended and non-
+20|leading verbal questioning of the patient is the preferred method to inquire about AE occurrences.
+21|Safety information on SAEs and DAEs, amputations, adverse events HAEsI leading to amputation
+22|and potential risk factor AEs for amputations affecting lower limbs will be collected and entered
+23|into eCRFs by site personnel according to the study visit schedule.
+24|If the potential efficacy event fulfils SAE criteria Hsee Appendix B 2I the site is to record and report
+25|these events to the Sponsor or designee within timelines described in Section 8.6.1.
+26|8.5.1.1
+27|Adverse events (AEs) leading to amputation and potential risG factor AEs for
+28|amputations affecting lower limbs (Kpreceding eventsL)
+29|To ensure that data on amputations is systematically collected, amputations and underlying
+30|conditions relevant to amputation will be recorded on a specific eCRF page. The adverse event
+31|leading to amputation should be recorded in the eCRF as AEPSAE.
+32|In addition to amputation, non-serious and serious events potentially placing the patient at risk for
+33|a lower limb amputation HEpreceding eventsFI should also be recorded in the eCRF as AEPSAE
+34|whether or not an amputation has taken place. The lower limb amputation Epreceding eventsF of
+35|interest include diabetic foot related conditions, vascular, volume depletion, woundsPinjuryPtrauma,
+36|infection and neuropathy. If any of these or other potentially relevant events have occurred, relevant
+37|information must be provided Hthis will be collected on a dedicated eCRF page - for details see
+38|eCRF instructionIF.
+39|8.5.1.2
+40|Capture of DKA events
+41|For SAEs or DAEs reported by the Investigator as Diabetic Cetoacidosis HDCA - see definition
+42|belowI additional information will be recorded on specific eCRF pages in addition to the AEPSAE
+43|form. All potential events of DCA will be submitted to an independent DCA Adjudication
+44|Committee, see Section 8.5.1.2.2I

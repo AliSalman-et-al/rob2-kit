@@ -1,0 +1,69 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|20 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|2.3.2
+9|Potential benefits to patients
+10|All patients in the study are expected to be optimally treated according to regional standard of care
+11|therapy, including treatments to control co-morbidities, and dapagliflozin or placebo will be
+12|administered on top of this treatment.
+13|All patients participating in clinical trials irrespective of whether treated with active treatment or
+14|not, generally receive closer medical attention than those in ordinary clinical practice which may
+15|be to their advantage.
+16|2.3.3
+17|Conclusion
+18|Considering the non-clinical and clinical experience with dapagliflozin and the precautions
+19|included in the study protocol, participation in this study should present a minimal and thus
+20|acceptable risk to eligible patients. Although hypothesis-generating data suggest beneficial effects
+21|of SGLT2 inhibitors in patients with T2D with heart failure, at the time of writing of this clinical
+22|study protocol, no available SGLT2 inhibitor has a treatment indication for patients with HFpEF.
+23|The proposed clinical study will test the hypothesis that dapagliflozin reduces the risk of CV death
+24|and HF events in patients with HFpEF, with or without T2D, in a rigorous fashion. The results
+25|could potentially offer substantial benefit to patients with HFpEF, a patient population with a large
+26|medical need for effective treatments.
+27|3.
+28|OBJECTIVES AND ENDPOINTS
+29|Table 3
+30|Study objectives
+31|
+32|Primary objective:
+33|Endpoint/variable:
+34|To determine whether dapagliflozin is superior to
+35|placebo, when added to standard of care, in
+36|reducing the composite of CV death and HF
+37|events (hospitalisation for HF or urgent HF visit)
+38|in patients with HF and preserved systolic
+39|function.
+40|Time to the first occurrence of any of the
+41|components of this composite:
+42|1.
+43|CV death
+44|2.
+45|Hospitalisation for HF
+46|3.
+47|Urgent HF visit (e.g., emergency
+48| department or outpatient visit)
+49|Secondary objective:
+50|Endpoint/variable:
+51|To determine whether dapagliflozin is superior to
+52|placebo in reducing the total number of recurrent
+53|HF hospitalisations and CV death
+54|Total number of (first and recurrent)
+55|hospitalisations for HF and CV death
+56|To determine whether dapagliflozin is superior to
+57|placebo
+58|in
+59|improving
+60|Patient
+61|Reported
+62|Outcomes measured by KCCQ
+63|Change from baseline in the total symptom
+64|score (TSS) of the KCCQ at 8 months
+65|To determine whether dapagliflozin is superior to
+66|placebo in reducing the proportion of patients
+67|with worsened NYHA class
+68|Proportion of patients with worsened
+69|NYHA class from baseline to 8 months

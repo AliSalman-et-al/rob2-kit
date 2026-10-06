@@ -1,0 +1,219 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|9 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Table 1
+9|Study of Assessments
+10|Visit
+11|
+12|1
+13|Enrolment
+14|2
+15|Randomisation
+16|3
+17|
+18|4
+19|5
+20|6
+21|7 ±
+22|onwards
+23|Premature
+24|Treatment
+25|Discontinuation
+26|Visit
+27|Study
+28|Closure
+29|Visit
+30|For details
+31|see Section:
+32|Day/Month
+33|Day -21 to
+34|Day -1
+35|Day 1
+36|Day 30
+37|( 7)
+38|Day 120
+39|( 7)
+40|Day 240
+41|( 7)
+42|Day 360
+43|( 7)
+44|Day 480 -
+45|onwards
+46|(every 120
+47|da\V 14
+48|days)
+49|
+50| 6 ZeekV
+51|after
+52|PACD
+53|
+54|Informed consent
+55|X6
+56|
+57|
+58|
+59|
+60|
+61|
+62|
+63|
+64|5.1, A 3
+65|Inclusion/exclusion
+66|criteria
+67|X
+68|X
+69|
+70|
+71|
+72|
+73|
+74|
+75|
+76|5.1, 5.2
+77|Demographics
+78|X
+79|
+80|
+81|
+82|
+83|
+84|
+85|
+86|
+87|5.15.1
+88|Medical history
+89|X
+90|X
+91|
+92|
+93|
+94|
+95|
+96|
+97|
+98|5.15.1
+99|Concomitant
+100|medication
+101|
+102|X
+103|X
+104|X
+105|X
+106|X
+107|X
+108|X
+109|X
+110|6.5
+111|Cardiac and HF
+112|related procedures
+113|
+114|
+115|X
+116|X
+117|X
+118|X
+119|X
+120|X
+121|X
+122|8.5.1.4
+123|Physical exam
+124|X
+125|X
+126|
+127|
+128|
+129|
+130|
+131|
+132|X
+133|8.4.1
+134|Systolic and
+135|diastolic BP
+136|X
+137|X
+138|X
+139|
+140|
+141|X
+142|X3
+143|X
+144|X
+145|5.2, 8.4.2
+146|Pulse
+147|X
+148|X
+149|X
+150|
+151|
+152|X
+153|X3
+154|X
+155|X
+156|5.2, 8.4.2
+157|Weight
+158|X
+159|
+160|
+161|
+162|
+163|X
+164|X3
+165|X
+166|X
+167|8.4.6.1
+168|Height
+169|X
+170|
+171|
+172|
+173|
+174|
+175|
+176|
+177|
+178|8.4.6.1
+179|NYHA classification
+180|X
+181|X
+182|X
+183|X
+184|X
+185|
+186|
+187|X
+188|X
+189|5.1,
+190|Appendix J
+191|12-lead ECG
+192|X
+193|
+194|
+195|
+196|
+197|
+198|
+199|
+200|
+201|8.4.3
+202|
+203|[Extracted table 1]
+204||Visit|1<br>Enrolment|2<br>Randomisation|3|4|5|6|7 ±<br>onwards|Premature<br>Treatment<br>Discontinuation<br>Visit|Study<br>Closure<br>Visit|For details<br>see Section:|
+205||---|---|---|---|---|---|---|---|---|---|---|
+206||Day/Month|Day -21 to<br>Day -1|Day 1|Day 30<br>( 7)|Day 120<br>( 7)|Day 240<br>( 7)|Day 360<br>( 7)|Day 480 -<br>onwards<br>(every 120<br>da\V 14<br>days)|| 6 ZeekV<br>after<br>PACD||
+207||Informed consent|X6|||||||||5.1, A 3|
+208||Inclusion/exclusion<br>criteria|X|X||||||||5.1, 5.2|
+209||Demographics|X|||||||||5.15.1|
+210||Medical history|X|X||||||||5.15.1|
+211||Concomitant<br>medication||X|X|X|X|X|X|X|X|6.5|
+212||Cardiac and HF<br>related procedures|||X|X|X|X|X|X|X|8.5.1.4|
+213||Physical exam|X|X|||||||X|8.4.1|
+214||Systolic and<br>diastolic BP|X|X|X|||X|X3|X|X|5.2, 8.4.2|
+215||Pulse|X|X|X|||X|X3|X|X|5.2, 8.4.2|
+216||Weight|X|||||X|X3|X|X|8.4.6.1|
+217||Height|X|||||||||8.4.6.1|
+218||NYHA classification|X|X|X|X|X|||X|X|5.1,<br>Appendix J|
+219||12-lead ECG|X|||||||||8.4.3|

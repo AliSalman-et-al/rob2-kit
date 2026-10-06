@@ -1,0 +1,76 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|21 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|To determine whether dapagliflozin is superior to
+9|placebo in reducing all-cause mortality
+10|Time to the occurrence of death from any
+11|cause
+12|Safety objective:
+13|Endpoint/variable:
+14|To evaluate the safety and tolerability of
+15|dapagliflozin compared to placebo in patients
+16|with HFpEF
+17|Serious adverse events (SAEs), adverse
+18|events leading to treatment discontinuation
+19|(DAEs), amputations, adverse events (AEs)
+20|leading to amputation and potential risk
+21|factor AEs for amputations affecting lower
+22|limbs
+23|Exploratory Objective:
+24|Endpoint/Variable:
+25|To determine whether dapagliflozin is superior to
+26|placebo in reducing all-cause hospitalisation
+27|Time
+28|to
+29|the
+30|first
+31|occurrence
+32|of
+33|hospitalisation from any cause
+34|To compare the effect of dapagliflozin versus
+35|placebo on health status assessed by EuroQol
+36|five-dimensional
+37|five-level
+38|questionnaire
+39|(EQ- 5D-5L) to support health economic analysis
+40|and health technology assessment
+41|Changes in health status measured by
+42|EQ-5D-5L
+43|
+44|To compare the effect of dapagliflozin versus
+45|placebo on health status assessed by Patient
+46|global
+47|impression
+48|of
+49|severity
+50|(PGIS)
+51|questionnaires
+52|Changes in health status measured by PGIS
+53|
+54|To determine whether dapagliflozin compared
+55|with placebo will have an effect on systolic BP
+56|Change in systolic BP from baseline
+57|To determine whether dapagliflozin compared
+58|with placebo will have an effect on body weight
+59|Change in body weight from baseline
+60|To determine whether dapagliflozin compared
+61|with placebo will have an effect on eGFR
+62|Change in eGFR from baseline
+63|To explore whether dapagliflozin compared to
+64|placebo improves KCCQ summary scores,
+65|subscores of TSS (Symptom frequency and
+66|symptom burden) and domains
+67|Change in Clinical summary score, TSS
+68|sub-scores, Overall summary score, QoL
+69|score
+70|To collect and store blood samples for future
+71|exploratory genetic research
+72|Not applicable. Results will be reported
+73|separately
+74|BP Blood pressure; CV Cardiovascular; EQ-5D-5L EuroQol five-dimensional five-level questionnaire
+75|HF Heart failure; HFrEF Heart failure with reduced ejection fraction; KCCQ Kansas City Cardiomyopathy
+76|Questionnaire NYHA New York Heart Association

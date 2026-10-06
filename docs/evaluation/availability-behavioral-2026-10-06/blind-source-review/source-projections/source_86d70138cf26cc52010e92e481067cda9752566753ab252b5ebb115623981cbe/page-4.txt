@@ -1,0 +1,48 @@
+1|
+2|
+3|
+4|
+5|3
+6|Finnian McCausland,MD, Brigham and Women's Hospital
+7|Eugene Connolly,MD, Universtiy of Glasgow
+8|Ninian Lang,MD, University of Glasgow
+9|Mark Petrie,MD, University of Glasgow
+10|
+11|
+12|
+13|Diabetic Ketoacidosis Committee
+14|
+15|Christian Ruff, MD (Chair), Brigham and Women's Hospital
+16|Sara Alexanian, MD, Boston Medical Center
+17|Rajesh K. Garg, MD, University of Miami Miller School of Medicine
+18|Marie E. McDonnell, MD, Brigham and Women's Hospital
+19|
+20|
+21|National Lead Investigators
+22|
+23|Adrian Hernandez, Duke University (Lead National Lead Investigator)
+24|
+25|Argentina, Jorge Thierer , Centro de Educación Médica e Investigaciones Clínicas "Norberto Quirno" (CEMIC); Argentina
+26|Belgium , Stefan P. Janssens, University Hospitals Leuven, Belgium
+27|Brazil, Jose Francisco Kerr Saraiva, Cardiovascular Division, Instituto de Pesquisa Clínica de Campinas, Campinas SP,
+28|Brazil
+29|Bulgaria, Tsvetana Katova, National Cardiology Hospital, Sofia, Bulgaria
+30|Canada, Subodh Verma, St. Michael's Hospital, University of Toronto
+31|Canada, Eileen O'Meara, Institut de Cardiologie de Montréal, Université de Montréal, Montréal
+32|China, Yaling Han, Cardiovascular Research Institute, General Hospital of Northern Theater Command, Shenyang, China
+33|Czech Rep, Jan Belohlavek, General University Hospital in Prague,
+34|First Faculty of Medicine, Charles University
+35|Hungary, Bela Merkely , Heart and Vascular Center, Semmelweis University, Budapest
+36|Japan, Masafumi Kitakaze, Kinshukai Hanwa Daini Senboku Hospital
+37|Osaka, Japan
+38|Mexico, Marco Antonio Alcocer Gamba, Centro de Estudios Clínicos de Querétaro(CECLIQ), Querétaro, México.
+39|Netherlands, C. Jan Willem Borleffs, HagaZiekenhuis, Department of Cardiology, Els Borst-Eilersplein 275, 2545 AA Den
+40|Haag, Netherlands
+41|Peru, Jose Walter Cabrera Honorio, Clínica Vesalio, San Borja, Peru
+42|Poland, Jaroslaw Drozdz, 2nd Department of Cardiology, Central University Hospital, Medical University of Lodz, Łódź,
+43|Poland.
+44|Romania, Dan Dobreanu, University of Medicine Pharmacy Science and Technology "G.E. Palade" of Târgu Mures, ,
+45|Târgu Mures, Romania
+46|Russia, Sergey N. Tereschenko, Department of Myocardial Disease and Heart Failure, National Medical Research Center
+47|of Cardiology, Moscow, Russia
+48|Saudi Arabia, Waleed Al Habeeb, Cardiac Sciences Department, King Saud University, Riyadh, Saudi Arabia.

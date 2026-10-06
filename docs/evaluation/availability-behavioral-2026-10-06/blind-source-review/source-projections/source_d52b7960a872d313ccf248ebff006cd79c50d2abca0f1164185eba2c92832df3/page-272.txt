@@ -1,0 +1,41 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|47 of 58
+7|Ioch et al 1998
+8|Koch GGO Tangen CMO [ung [WO Amara IA. Issues for covariance analysis of dichotomous
+9|and ordered categorical data from randomiIed clinical trials and non-parametric strategies for
+10|addressing them. Statist. Med 1998T17(15-16)N1863W1892.
+11|Iristensen et al 2015
+12|Kristensen SLO [hund PSO K`ber LO McKelvie RSO Zile MRO Anand ISO et al. Relative
+13|importance of history of heart failure hospitalisation and N-terminal ProWB-type natriuretic
+14|peptide level as predictors of outcomes in patients With heart failure and preserved ejection
+15|fraction. [ACC Heart Fail 2015 [unT3(6)N478W86.
+16|Iristensen et al 2017
+17|Kristensen SLO Mogensen UMO [hund PSO Petrie MCO Preiss DO Win SO et al. Clinical and
+18|echocardiographic characteristics and cardiovascular outcomes according to diabetes status in
+19|patients with heart failure and preserved ejection fractionN a report from the I-Preserve Trial
+20|(Irbesartan in Heart Failure With Preserved Ejection Fraction). Circulation. 2017T135(8)N724W
+21|35.
+22|Levey at al 2009
+23|Levey ASO Stevens LAO Schmid CHO Zhang YLO Castro AF 3rdO Feldman HIO KuseG [WO
+24|Eggers PO VanLente FO Greene TO Coresh [T CKD-EPI (Chronic Kidney Disease Epidemiology
+25|Collaboration). A new eHuation to estimate glomerular filtration rate. Ann Intern Med. 2009
+26|May 5T150(9)N604W12.
+27|Lin et al 2000
+28|Lin DYO Wei L[O Yang IO Ying Z. Semiparametric regression for the mean and rate functions
+29|of recurrent events. [ournal of the Royal Statistical SocietyN Series B (Statistical
+30|Methodology) 2000T62(4)N711W730.
+31|Pfeffer et al 2015
+32|Pfeffer MAO Claggett BO Assmann SFO Boineau RO Anand ISO Clausell NO et al. Regional
+33|Variation in Patients and Outcomes in the Treatment of Preserved Cardiac Function Heart
+34|Failure With an Aldosterone Antagonist (TOPCAT) Trial. Circulation. 2015T131N34W42.
+35|Ratitch et al 201H
+36|Ratitch BO LipGovich IO OKKelly M. Combining Analysis Results from Multiply Imputed
+37|Categorical Data. PharmaSUG 2013 W Paper SP03
+38|Rogers et al 2016
+39|[ennifer K RogersO Alex YaroshinsGyO Stuart [ PococGO David StoGar and [anice Pogoda.
+40|Analysis of recurrent events with an associated informative dropout timeN Application of the
+41|joint frailty model. Statist. Med. 2016T35N2195W2205.

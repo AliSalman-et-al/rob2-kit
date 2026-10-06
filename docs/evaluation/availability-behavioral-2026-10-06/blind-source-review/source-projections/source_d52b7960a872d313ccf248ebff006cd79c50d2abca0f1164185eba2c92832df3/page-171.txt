@@ -1,0 +1,38 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|78 of 95
+6|C 3
+7|StroGe
+8|Stroke is not an endpoint in this study but should be recorded as SAEs if serious criteria are met,
+9|with additional information e.g. classification of stroke type Hischaemic, haemorrhagic, or
+10|undeterminedI collected in a specific eCRF.
+11|The diagnosis of stroke should be made according to standard clinical practice and align with the
+12|definition for stroke in the standardized definitions for endpoints HHicks et al 2018I described in
+13|Appendix C 4 and be differentiated vs Transient Ischaemic Attack HTIAI.
+14|C 4
+15|Definition of StroGe and Transient Ischemic AttacG
+16|The distinction between an Ischemic Stroke and a Transient Ischemic Attack is the presence of
+17|infarction. Persistence of symptoms U24 hours or until death3 is an acceptable indicator of acute
+18|infarction in the absence of imaging evidence of infarction.
+19|Transient Ischemic AttacG
+20|Transient ischemic attack HTIAI is defined as a transient episode of focal neurological dysfunction
+21|caused by brain, spinal cord, or retinal ischemia, without acute infarction.
+22|StroGe
+23|Stroke is defined as an acute episode of focal or global neurological dysfunction caused by brain, spinal
+24|cord, or retinal vascular injury as a result of haemorrhage or infarction.
+25|Classification:
+26|A. Ischemic StroGe
+27|Ischemic stroke is defined as an acute episode of focal cerebral, spinal, or retinal dysfunction caused
+28|by infarction of central nervous system tissue.
+29|Haemorrhage may be a consequence of ischemic stroke. In this situation, the stroke is an ischemic
+30|stroke with haemorrhagic transformation and not a haemorrhagic stroke.
+31|B. Haemorrhagic StroGe
+32|Haemorrhagic stroke is defined as an acute episode of focal or global cerebral or spinal dysfunction
+33|caused by non-traumatic intraparenchymal, intraventricular, or subarachnoid haemorrhage. NOTED
+34|Subdural hematomas are intracranial haemorrhagic events and not strokes.
+35|C. Undetermined StroGe
+36|Lndetermined stroke is defined as an acute episode of focal or global neurological dysfunction caused by
+37|presumed brain, spinal cord, or retinal vascular injury as a result of haemorrhage or infarction but with
+38|insufficient information to allow categorization as either ischemic or haemorrhagic.

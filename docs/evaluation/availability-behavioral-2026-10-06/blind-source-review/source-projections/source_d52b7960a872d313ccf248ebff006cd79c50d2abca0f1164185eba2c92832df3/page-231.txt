@@ -1,0 +1,113 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|6 of 58
+7|LIST OF ABBREVIATIONS
+8|Abbreviation or special
+9|term
+10|Explanation
+11|AE
+12|Adverse event
+13|ATC
+14|Anatomical therapeutic chemical
+15|BP
+16|Blood pressure
+17|CDF
+18|Cumulative distribution function
+19|CEA
+20|Clinical event adjudication
+21|CKD-EPI
+22|Chronic Gidney disease epidemiology collaboration eHuation
+23|CMH
+24|Cochran-Mantel-HaensIel test
+25|CMWPC
+26|Clinically meaningful within-patient change
+27|COVID-19
+28|Corona Virus Disease 2019
+29|CSP
+30|Clinical study protocol
+31|CV
+32|Cardiovascular
+33|DAE
+34|Adverse events leading to discontinuation of investigational product
+35|DBP
+36|Diastolic blood pressure
+37|DKA
+38|Diabetic Getoacidosis
+39|DMC
+40|Data monitoring committee
+41|eCDF
+42|Empirical cumulative distribution function
+43|eCRF
+44|Electronic case report form
+45|eGFR
+46|Estimated glomerular filtration rate
+47|FAS
+48|Full analysis set
+49|HbA1c
+50|Haemoglobin A1c
+51|HF
+52|Heart failure
+53|HFpEF
+54|Heart failure with preserved ejection fraction
+55|HR
+56|HaIard ratio
+57|IP
+58|Investigational product (dapaglifloIin or matching placebo)
+59|ITT
+60|Intention to treat
+61|IxRS
+62|Interactive VoiceJWeb Response System
+63|KCCQ
+64|Kansas City Cardiomyopathy Questionnaire
+65|KM
+66|Kaplan-Meier
+67|LTFU
+68|Lost to follow-up
+69|LVEF
+70|Left ventricular ejection fraction
+71|MCID
+72|Minimal clinically important difference
+73|MedDRA
+74|Medical dictionary for regulatory activities
+75|MMRM
+76|Mixed Model Repeated Measures
+77|
+78|[Extracted table 1]
+79||Abbreviation or special<br>term|Explanation|
+80||---|---|
+81||AE|Adverse event|
+82||ATC|Anatomical therapeutic chemical|
+83||BP|Blood pressure|
+84||CDF|Cumulative distribution function|
+85||CEA|Clinical event adjudication|
+86||CKD-EPI|Chronic Gidney disease epidemiology collaboration eHuation|
+87||CMH|Cochran-Mantel-HaensIel test|
+88||CMWPC|Clinically meaningful within-patient change|
+89||COVID-19|Corona Virus Disease 2019|
+90||CSP|Clinical study protocol|
+91||CV|Cardiovascular|
+92||DAE|Adverse events leading to discontinuation of investigational product|
+93||DBP|Diastolic blood pressure|
+94||DKA|Diabetic Getoacidosis|
+95||DMC|Data monitoring committee|
+96||eCDF|Empirical cumulative distribution function|
+97||eCRF|Electronic case report form|
+98||eGFR|Estimated glomerular filtration rate|
+99||FAS|Full analysis set|
+100||HbA1c|Haemoglobin A1c|
+101||HF|Heart failure|
+102||HFpEF|Heart failure with preserved ejection fraction|
+103||HR|HaIard ratio|
+104||IP|Investigational product (dapaglifloIin or matching placebo)|
+105||ITT|Intention to treat|
+106||IxRS|Interactive VoiceJWeb Response System|
+107||KCCQ|Kansas City Cardiomyopathy Questionnaire|
+108||KM|Kaplan-Meier|
+109||LTFU|Lost to follow-up|
+110||LVEF|Left ventricular ejection fraction|
+111||MCID|Minimal clinically important difference|
+112||MedDRA|Medical dictionary for regulatory activities|
+113||MMRM|Mixed Model Repeated Measures|

@@ -1,0 +1,48 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|10 of 58
+7|Date
+8|Brief description of change
+9|Added adjudication of potential DKA events.
+10|Added major hypoglycaemic events to list of safety variables.
+11|L4.1.1 Estimand for primary and secondary outcomesM
+12|Added estimand for KCCQ TSS.
+13|L4.1.2 HypothesesM
+14|Added dual primary hypotheses.
+15|L4.1.3 Confirmatory testing procedureM
+16|Updated with handling of alpha for split primary analyses.
+17|Added Figure 2.
+18|L4.2.3.2 Sensitivity analysis of the primary endpointM
+19|Updated with information that sensitivity analyses related to impact of COVID-19 will
+20|be added at next SAP update prior to interim analysis.
+21|L4.2.4.1 Analysis of recurrent HF events and CV deathM
+22|Updated definition of HF eventsO including urgent HF visits.
+23|Added handling on priority of events occurring on the same day.
+24|L4.2.4.2 Analysis of change from baseline to 8 months in the KCCQ total symptom
+25|scoreM
+26|Added information on how to handle analysis under COVID-19 pandemic.
+27|Added information on ranGing.
+28|Added information on handling of missing response for reasons other than death.
+29|Estimation of treatment effect updated.
+30|Added update on handling of ceiling and floor effects.
+31|Information on imputation updated.
+32|Updated information on TSS responder analyses.
+33|L4.2.4.3 NYHAM
+34|Section removed and moved to 4.2.6 Analysis of exploratory objectives.
+35|L4.2.4.3 CV deathM
+36|Section on analysis of CV death added.
+37|L4.2.5.4 Amputations and preceding eventsM
+38|Section renamed to ESpecific adverse eventsF and paragraphs on DKAO major
+39|hypoglycaemic events and genital infections added.
+40|L4.2.6 Analysis of exploratory objectivesM
+41|Section on NYHA added (moved from previous Section 4.2.4.3).
+42|Section on PGIS removed.
+43|L5 Interim analysisM
+44|Removed futility analysis.
+45|LReferenceM
+46|Added referencesN FDA guidance during COVID-19 2020 and Spiessen and Debois
+47|2010
+48|Removed referencesN Kawaguchi and Koch 2015 and Neal et al 2017

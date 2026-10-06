@@ -1,0 +1,54 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|47 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|visit). Serious adverse events are recorded from the time of signing of informed consent form
+9|throughout the treatment period until and including the patient's last visit.
+10|All SAEs will be recorded and reported to the sponsor or designee within 24 hours, as indicated
+11|in Appendix B. The Investigator will submit any updated SAE data to the sponsor within
+12|24 hours of it being available.
+13|The method of recording, evaluating, and assessing causality of AE and SAE and the procedures
+14|for completing and transmitting SAE reports are provided in Appendix BAppendix B.
+15|8.5.3
+16|Follow-up of AEs and SAEs
+17|After the initial AE/SAE report, the Investigator is required to proactively follow each patient at
+18|subsequent visits/contacts. All SAE and events of amputation and potential preceding events will
+19|be followed until resolution, stabilization, the event is otherwise explained, or the patient is lost to
+20|follow-up.
+21|An\ AEV WhaW aUe XnUeVolYed aW Whe SaWienW¶V laVW YiViW in Whe VWXd\ aUe folloZed XS b\ Whe
+22|Investigator for as long as medically indicated, but without further recording in the CRF.
+23|AstraZeneca retains the right to request additional information for any patient with ongoing
+24|AE(s)/SAE(s) at the end of the study, if judged necessary.
+25|8.5.4
+26|Adverse event data collection
+27|The following variables will be collect for each AE;
+28|x
+29|AE (verbatim)
+30|x
+31|The date when the AE started and stopped
+32|x
+33|Maximum intensity (mild/moderate/severe)
+34|x
+35|Whether the AE is serious or not
+36|x
+37|Investigator causality rating against the Investigational Product(s) (yes or no)
+38|x
+39|Action taken with regard to IP
+40|x
+41|Outcome
+42|In addition, the following variables will be collected for SAEs:
+43|x
+44|Date AE met criteria for serious AE
+45|x
+46|Date Investigator became aware of serious AE
+47|x
+48|AE is serious due to
+49|x
+50|Date of hospitalisation
+51|x
+52|Date of discharge
+53|x
+54|Probable cause of death

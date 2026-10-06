@@ -1,0 +1,41 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|31 of 58
+7|4.1.5
+8|Vital Status and Follow-up of Endpoints
+9|Potential HF endpoints and deaths will be collected and adjudicated from randomisation
+10|throughout the study until and including the patientKs last visit. The investigator will attempt
+11|to collect vital status (dead or alive) at the end of the study for all patientsO including vital
+12|status from publicly available sources for patients who have withdrawn consentO in
+13|compliance with local privacy lawsJpractices.
+14|Known vital status at the end of the study will be defined when the patient is dead or has date
+15|last Gnow alive on or after the PACD. In patient disposition the number of patients who are
+16|deadO alive or with unGnown vital status will be reported separately for patients who didJdid
+17|not withdraw consent. The term LTFU will be limited to only patients with unGnown vital
+18|status.
+19|Follow-up of the primary endpoint will be defined in terms of completion of the event
+20|assessment Huestion for a potential HF event as described for censoring in Section 3.1. ThusO a
+21|patient that is not LTFUO ieO with Gnown vital statusO may have incomplete follow-up of
+22|endpoints.
+23|Complete follow up of the primary endpoint will be defined when the patient had a primary
+24|endpoint eventO died from non-CV death (including undetermined death) or had complete
+25|event assessment on or after the PACD (ieO the patient was not censored due to incomplete
+26|follow-up of endpoints).
+27|In addition to the number and percent of patients with complete follow-upO the proportion of
+28|total patient time with complete follow-up will be reported per treatment group.
+29|Patient time with complete follow-up will be defined as time from randomisation until the
+30|earliest of first primary endpoint eventO deathO WoCO censoring where last complete event
+31|assessment is prior to PACD or PACD. The denominatorO representing maximum complete
+32|follow-upO will be the time from randomisation until the earliest of first primary endpoint
+33|eventO death or PACD.
+34|4.2
+35|Analysis Methods
+36|4.2.1
+37|Demographics and Baseline Characteristics
+38|Demographic and baseline characteristicsO including medical historyO will be summariIedO
+39|using freHuency distributions and summary statistics based on the FASO for each treatment
+40|group as well as for all patients combined. No statistical test will be performed for comparison
+41|of any baseline measurement among treatment groups.

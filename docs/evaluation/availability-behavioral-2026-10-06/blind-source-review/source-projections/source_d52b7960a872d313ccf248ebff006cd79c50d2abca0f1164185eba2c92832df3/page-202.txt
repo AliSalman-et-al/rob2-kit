@@ -1,0 +1,41 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|13 of 36
+7|Randomisation of patients based on geographic region will be monitored to ensure global
+8|representation. LVEF valueH NYHA classH subacute/non-subacute groupH and atrial fibrillation
+9|status at visit 1 may be capped in IxRS to avoid over- or under-representation of these patient
+10|subgroups.
+11|1.4
+12|Number of subjects
+13|The primary objective of the study is to determine the superiority of dapaglifloDin versus
+14|placebo added to standard of care in reducing the composite of CV death and heart failure
+15|events (hospitalisation for HF or urgent HF visit). Assuming a true haDard ratio (HR) of 0.80
+16|between dapaglifloDin and placeboH using a two-sided alpha of 5IH 844 primary endpoint
+17|events will provide a statistical power of 90I for the test of the primary composite endpoint.
+18|This is based on an overall 1G1 allocation between dapaglifloDin and placebo.
+19|The HR was chosen as a conservative assumption based on the observed HR 0.72 (95I
+20|confidence interval 0.50-1.04) for the composite of HF hospitalisation and CV death in
+21|patients with HF at baseline in the EMPA-REG OUTCOME trial (Fitchett et al 2016) and HR
+22|0.61 (0.46-0.80) for patients with history of HF in the CANVAS program (RMdholm et al
+23|2018) considering that these were post-hoc analyses in subgroups with limited documentation
+24|of baseline HF diagnosisH not characterised by ejection fraction.
+25|The event rate assumptions are based on sub analyses of the TOPCAT and I-PRESERVE
+26|studies by geographic regionH NT-proBNP levelsH prior hospitalisation for HFH and T2D status
+27|(Pfeffer et al 2015H Kristensen et al 2015 Kristensen et al 2017). The sample siDe calculation
+28|builds on the assumption of an annual event rate of 9I in the placebo group for the majority
+29|of prevalent HFpEF patientsH importantly all with NT-proBNP J300 pg/ml by inclusion
+30|criterion. AdditionallyH a subgroup of patients due to be discharged or recently discharged
+31|from a HF hospitalisation (here denoted NsubacuteO patients) with a higher event rate is
+32|planned to be included. Assuming 20I of patients from the subacute category with an annual
+33|event rate of 24I during the first year and 9I thereafter for the remainder of the studyH
+34|(corresponding to an annualised rate of approximately 17I for sub-acute patients)H
+35|approximately 4700 patients are estimated to provide the reCuired number of 844 patients with
+36|a primary event during an anticipated recruitment period of 18 months and a minimal follow-
+37|up period of 15 months (total study duration 33 monthsH average follow-up 24 months). The
+38|study is event driven and the number of patients or duration may change if the event rate is
+39|lower or higher than anticipated.
+40|In additionH the expected number of patients who will be lost to follow-up is expected to be
+41|smallL henceH these are not considered in the determination of the sample siDe.

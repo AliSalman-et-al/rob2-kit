@@ -1,0 +1,46 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|20 of 95
+6|2.
+7|INTRODUCTION
+8|2.1
+9|Study rationale
+10|The prevalence of chronic HF continues to increase globally. An estimated 38 million people are
+11|affected worldwide HBraunwald 2015I, with over 1 million hospitalisations annually in both the
+12|Lnited States and Europe HAmbrosy et al 2014I. The annual global economic burden in 2012 was
+13|estimated to be V108 billion, HCook et al 2014IR this will increase dramatically as the population
+14|ages.
+15|Heart failure is a complex syndrome caused by structural andPor functional abnormalities. It is
+16|characterised by dyspnoea, fatigue, and pulmonary congestion andPor peripheral oedema due to
+17|fluid retention. Patients with signs and symptoms of HF are categorised, based on measurement of
+18|left-ventricular ejection fraction HLVEFI, as having HF with reduced LVEF HHFrEFI or HF with
+19|preserved LVEF HHFpEFI.
+20|Approximately half of all heart failure patients have HFpEF HOktay et al 2013I. Risk of death for
+21|HFpEF patients is high, with annualised mortality rate up to 15K in community settings H Lam et
+22|al 2011I. In controlled clinical trials, patients with HFpEF tend to be older and have a higher
+23|prevalence of hypertension as compared to patients with HFrEF, although major clinical outcomes
+24|are similarly dominated by CV death and HF hospitalisation, the yearly event rates appear to be
+25|lower than in HFrEF HSolomon et al 2005I. However, patients with HFpEF have a particularly
+26|significant unmet medical need given that outcome studies hitherto performed have not resulted in
+27|any approved pharmacotherapy specifically for this condition. Conversely, outcome studies have
+28|provided evidence for treatments for HFrEF that hence can improve symptoms and
+29|haemodynamics as well as reduce hospitalisations for heart failure and mortality. These treatments
+30|include diuretics, angiotensin converting enzyme inhibitors, angiotensin II receptor blockers,
+31|angiotensin II receptor blocker neprilysin inhibitors, mineralocorticoid receptor antagonists, and
+32|beta-blockers HIwaz et al 2016I.
+33|Recent data from cardiovascular HCVI outcome trials of SGLT2 inhibitors Hempagliflozin and
+34|canagliflozinI indicate that treatment with SGLT2 inhibitors can reduce the risk of CV death and
+35|hospitalisation due to HF in patients with T2D overall, and in patients with T2D and concomitant
+36|HF HZinman et al 2015R Fitchett et al 2016R Neal et al 2017R RWdholm et al 2018I.
+37|Results from real-world observational studies are broadly consistent with the randomised clinical
+38|trials in supporting the benefits of SGLT2 inhibitors in reducing risk of HF hospitalisation and CV
+39|death. The CVD-REAL study, consisting of more than 300000 patients with T2D, both with and
+40|without established CV disease, across 6 countries found that patients treated with SGLT2
+41|inhibitors compared to patients treated with other glucose lowering drugs was associated with a
+42|relative risk reduction in hospitalisation due to HF H39KI, all-cause death H51KI, and the composite
+43|of hospitalisation due to HF or CV death H46KI HCosiborod et al 2017aI.
+44|Limitations associated with the randomised clinical trials as well as the observational studies are
+45|that only patients with T2D were studied, and that the proportion of patients with HFrEF and
+46|HFpEF, respectively, is unknown.

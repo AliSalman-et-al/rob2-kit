@@ -1,0 +1,37 @@
+1|
+2|
+3|
+4|
+5|27
+6|Supplementary Tables
+7|Table S1. Detailed Inclusion and Exclusion Criteria
+8|Inclusion Criteria
+9|1. Ability to give written informed consent.
+10|2. Men and women age 40 years or greater.
+11|3. Documented diagnosis of symptomatic heart failure (New York Heart Association [NYHA] class
+12|II-IV) at enrollment, and a medical history of typical symptoms/signs of heart failure ≥ 6 weeks
+13|before enrollment with at least intermittent need for diuretic treatment (requiring recurrent
+14|intermittent dosing) .
+15|4. Left Ventricular Ejection Fraction (LVEF) > 40% and evidence of structural heart disease (i.e.
+16|left ventricular hypertrophy or left atrial enlargement) documented by the most recent
+17|echocardiogram, and/or cardiac MRI within the last 12 months prior to enrollment. For
+18|patients with prior acute cardiac events or procedures that may reduce LVEF, e.g. as defined
+19|in exclusion criterion, qualifying cardiac imaging assessment at least 12 weeks following the
+20|procedure/event is required. Structural heart disease will be defined as:
+21|•
+22|Left atrial (LA) enlargement with at least one of the following: LA width (diameter) ≥
+23|3.8 cm or LA length ≥ 5.0 cm, or LA area ≥ 20cm, or LA volume ≥ 55mL or LA volume
+24|index ≥ 29mL/m.
+25|•
+26|Left ventricular hypertrophy with septal thickness or posterior wall thickness ≥ 1.1 cm
+27|5. NT-pro BNP ≥ 300 pg/mL at Visit 1 for patients without ongoing atrial fibrillation/flutter. If
+28|ongoing atrial fibrillation/flutter at Visit 1, NT-pro BNP must be ≥ 600 pg/mL.
+29|6. Patients may be ambulatory, or hospitalized; patients must be off intravenous heart failure
+30|therapy (including diuretics) for at least 12 hours prior to enrollment and 24 hours prior to
+31|randomization.
+32|
+33|Exclusion Criteria
+34|1. Receiving therapy with an SGLT2 inhibitor within 4 weeks prior to randomization or previous
+35|intolerance to an SGLT2 inhibitor.
+36|2. Type 1 diabetes mellitus.
+37|3. eGFR <25 mL/min/1.73 m2 (CKD-EPI formula) at Visit 1.

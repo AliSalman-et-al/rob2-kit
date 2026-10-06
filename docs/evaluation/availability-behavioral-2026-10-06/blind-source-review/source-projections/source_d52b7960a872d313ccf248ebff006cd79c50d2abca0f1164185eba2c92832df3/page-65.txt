@@ -1,0 +1,48 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|63 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Executive Committee will be comprised of designated international academic leaders and
+9|nonvoting members of the Sponsor, and will operate under an Executive Committee charter.
+10|
+11|National Lead Investigator (NLI) Committee
+12|The National Lead Investigator (NLI) Committee will be comprised of NLIs from each country
+13|where the study is conducted and supervised by the Executive Committee. Members of the
+14|committee will be responsible for providing clinical guidance on study implementation,
+15|recruitment and study conduct in their respective country.
+16|
+17|Data Monitoring Committee (DMC)
+18|An independent DMC will be appointed and will report to the Executive Committee. The DMC
+19|will be responsible for safeguarding the interests of the patients in the outcome study by assessing
+20|the safety of the intervention during the study, and for reviewing the overall conduct of the study.
+21|The DMC will have access to the individual treatment codes and be able to merge these with the
+22|collected study data while the study is ongoing. A DMC charter will be prepared to detail precise
+23|roles and responsibilities and procedures to ensure maintenance of the blinding and integrity of the
+24|study in the review of accumulating data and interactions with the Executive Committee.
+25|
+26|Clinical Event Adjudication (CEA) Committee
+27|The role of the CEA committee is to independently review, interpret and adjudicate potential
+28|endpoints that are experienced by the patients. Endpoints will be identified preliminary by the
+29|investigators, and also by AZ personnel or in the CEA process as specified in the CEA charter.
+30|The CEA committee members will not have access to individual treatment codes for any patient
+31|or clinical efficacy endpoint and safety event. The precise responsibilities and procedures
+32|applicable for CEA will be detailed in the CEA charter.
+33|
+34|A 6
+35|Dissemination of clinical study data
+36|A description of this clinical trial will be available on http://astrazenecaclinicaltrials.com and
+37|http://www.clinicaltrials.gov as will the summary of the main study results when they are
+38|available. The clinical trial and/or summary of main study results may also be available on other
+39|websites according to the regulations of the countries in which the main study is conducted.
+40|
+41|A 7
+42|Data quality assurance
+43|All subject data relating to the study will be recorded on printed or electronic CRF unless
+44|transmitted to the sponsor or designee electronically (e.g. laboratory data). The Investigator is
+45|responsible for verifying that data entries are accurate and correct by physically or electronically
+46|signing the CRF.
+47|The Investigator must maintain accurate documentation (source data) that supports the information
+48|entered in the CRF.

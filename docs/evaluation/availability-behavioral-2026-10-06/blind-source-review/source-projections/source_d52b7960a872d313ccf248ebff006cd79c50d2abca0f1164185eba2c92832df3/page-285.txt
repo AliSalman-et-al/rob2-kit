@@ -1,0 +1,55 @@
+1|
+2|
+3|DELIVER Academic SAP v. 1.3
+4|
+5|4
+6|
+7|1.
+8|INTRODUCTION
+9|DELIVER is an international, multicentre, parallel group, event-driven, randomized, double-
+10|blind trial in patients with chronic heart failure and left ventricular ejection fraction (LVEF)
+11|>40%, comparing the effect of dapagliflozin 10 mg once daily, vs. placebo, in addition to
+12|standard of care. Patients with or without diabetes, with signs and symptoms of heart failure, a
+13|LVEF >40%, elevation in natriuretic peptides and evidence of structural heart disease are
+14|eligible. The primary endpoint is time-to-first cardiovascular death or worsening heart failure
+15|event (heart failure hospitalization or urgent heart failure visit), and will be assessed in dual
+16|primary analyses ± the full population and in those with LVEF <60%. The study is event-driven
+17|and will target 1117 primary events. A total of 6,263 patients have been randomized.
+18|
+19|The DELIVER executive committee has developed this academic statistical analysis plan
+20|(ASAP) that describes pre-specified analyses that were not described in the DELIVER regulatory
+21|SAP (rSAP). General principles outlined in the regulatory SAP will be followed unless specified
+22|otherwise here. This document is meant to supplement and complement the regulatory SAP and
+23|delineate all analyses that were pre-specified prior to database lock. When relevant, analyses will
+24|be conducted based on the pooled DAPA-HF and DELIVER dataset to examine the effects of
+25|dapagliflozin in a broad range of patients with HF.
+26|
+27|2.
+28|CLINICAL ENDPOINTS OF INTEREST
+29|In addition to the efficacy and safety variables listed in the rSAP, the effect of dapagliflozin on
+30|the following endpoints will be explored. These events that are imbalanced between arms may be
+31|analyzed as time-to-event to better understand the time course. All endpoints will be assessed in
+32|the full cohort and in the LVEF < 60% subgroup. These include:
+33|
+34|x Days alive and out of the hospital
+35|x Quality of life-adjusted days alive and out of the hospital
+36|x Investigator reported vs. CEC-adjudicated endpoints
+37|x Time to onset of benefit of dapagliflozin
+38|x New diuretic initiation, discontinuation, and dose changes
+39|x New onset atrial fibrillation
+40|x In the T2D subgroup, new glucose lowering therapy initiation and changes in insulin dose
+41|(in those on insulin at baseline)
+42|x In the non-T2D subgroup, new diagnosis of diabetes
+43|x Signs and symptoms of HF
+44|x Patient Global Impression of Severity
+45|
+46|x Target risk factor control (for blood pressure, smoking, antiplatelet/anticoagulant
+47|therapy)
+48|x Cardiac ischemic events including myocardial infarction, unstable angina, unplanned
+49|coronary revascularization, and stroke
+50|x Hyperkalemia as a reported adverse event and initiation of new potassium-lowering
+51|therapy
+52|x Acute kidney injury as a reported adverse event and initiation of dialysis
+53|x Anemia and requirement for blood transfusion as reported adverse events
+54|x Gout as an adverse event and initiation of new uric acid-lowering therapy
+55|x KCCQ Overall Summary Score at 1, 4 and 8 months

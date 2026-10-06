@@ -1,0 +1,15 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|2 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|VERSION HISTORY
+9|Version 1.0, 24th April 2018
+10|Initial creation
+11|
+12|This Clinical Study Protocol has been subject to a peer review according to AstraZeneca Standard
+13|procedures. The Clinical Study Protocol is publicly registered and the results are disclosed and/or
+14|published according to the AstraZeneca Global Policy on Bioethics and in compliance with
+15|prevailing laws and regulations.

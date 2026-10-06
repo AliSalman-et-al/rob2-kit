@@ -1,0 +1,92 @@
+1|Clinical Study Protocol ± Version 1, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|83 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Appendix K The KC Cardiomyopathy Questionnaire
+9|
+10|The KC Cardiomyopathy Questionnaire
+11|The following questions refer to your heart failure and how it may affect your life. Please read and
+12|complete the following questions. There are no right or wrong answers. Please mark the answer that
+13|best applies to you.
+14|
+15|1. Heart failure affects different people in different ways. Some feel shortness of breath while
+16|others feel fatigue. Please indicate how much you are limited by heart failure (shortness of
+17|breath or fatigue) in your ability to do the following activities over the past 2 weeks.
+18|
+19|Place an X in one box on each line
+20|Activity
+21|Extremely
+22|Limited
+23|Quite a bit
+24|Limited
+25|Moderately
+26|Limited
+27|Slightly
+28|Limited
+29|Not at
+30|all
+31|Limited
+32|Limited for
+33|other reasons
+34|or did not do
+35|the activity
+36|Dressing yourself
+37|❏
+38|❏
+39|❏
+40|❏
+41|❏
+42|❏
+43|Showering/Bathing
+44|❏
+45|❏
+46|❏
+47|❏
+48|❏
+49|❏
+50|Walking 1 block
+51|on level ground
+52|❏
+53|❏
+54|❏
+55|❏
+56|❏
+57|❏
+58|Doing yardwork,
+59|housework or
+60|carrying groceries
+61|❏
+62|❏
+63|❏
+64|❏
+65|❏
+66|❏
+67|Climbing a flight
+68|of stairs without
+69|stopping
+70|❏
+71|❏
+72|❏
+73|❏
+74|❏
+75|❏
+76|Hurrying or
+77|jogging (as if to
+78|catch a bus)
+79|❏
+80|❏
+81|❏
+82|❏
+83|❏
+84|❏
+85|
+86|
+87|
+88|
+89|
+90|
+91|
+92|

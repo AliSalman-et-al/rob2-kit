@@ -1,0 +1,49 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|61 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|11.
+9|SUPPORTING DOCUMENTATION AND OPERATIONAL
+10|CONSIDERATIONS
+11|Appendix A Regulatory, ethical and study oversight considerations
+12|A 1
+13|Regulatory and ethical considerations
+14|This study will be conducted in accordance with the protocol and with the following:
+15|x
+16|Consensus ethical principles derived from international guidelines including the
+17|Declaration of Helsinki and Council for International Organizations of Medical
+18|Sciences (CIOMS) International Ethical Guidelines
+19|x
+20|Applicable ICH Good Clinical Practice (GCP) Guidelines
+21|x
+22|Applicable laws and regulations
+23|The protocol, protocol amendments, ICF, Investigator Brochure, and other relevant documents
+24|(e.g. advertisements) must be submitted to an IRB/IEC by the investigator and reviewed and
+25|approved by the IRB/IEC before the study is initiated.
+26|Any amendments to the protocol will require IRB/IEC approval before implementation of changes
+27|made to the study design, except for changes necessary to eliminate an immediate hazard to study
+28|subjects.
+29|The investigator will be responsible for the following:
+30|x
+31|Providing written summaries of the status of the study to the IRB/IEC annually or more
+32|frequently in accordance with the requirements, policies, and procedures established by
+33|the IRB/IEC
+34|x
+35|Notifying the IRB/IEC of SAEs or other significant safety findings as required by
+36|IRB/IEC procedures
+37|x
+38|Providing oversight of the conduct of the study at the site and adherence to requirements
+39|of 21 CFR, ICH guidelines, the IRB/IEC, European regulation 536/2014 for clinical
+40|studies (if applicable), and all other applicable local regulations
+41|The study will be performed in accordance with the AstraZeneca policy on Bioethics and Human
+42|Biological Samples.
+43|A 2
+44|Financial disclosure
+45|Investigators and sub-investigators will provide the sponsor with sufficient, accurate financial
+46|information as requested to allow the sponsor to submit complete and accurate financial
+47|certification or disclosure statements to the appropriate regulatory authorities. Investigators are
+48|responsible for providing information on financial interests during the course of the study and for
+49|1 year after completion of the study.

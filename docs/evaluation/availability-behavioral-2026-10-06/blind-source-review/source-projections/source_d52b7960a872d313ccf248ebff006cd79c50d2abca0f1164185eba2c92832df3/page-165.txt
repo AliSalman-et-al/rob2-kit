@@ -1,0 +1,43 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|72 of 95
+6|The Investigator must maintain accurate documentation Hsource dataI that supports the information
+7|entered in the CRF.
+8|The Investigator must permit study-related monitoring, audits, IRBPIEC review, and regulatory
+9|agency inspections and provide direct access to source data documents.
+10|The sponsor or designee is responsible for the data management of this study including quality
+11|checking of the data.
+12|Study monitors will perform ongoing source data verification to confirm that data entered into the
+13|CRF by authorised site personnel are accurate, complete, and verifiable from source documentsR
+14|that the safety and rights of subjects are being protectedR and that the study is being conducted in
+15|accordance with the currently approved protocol and any other study agreements, ICH GCP, and
+16|all applicable regulatory requirements.
+17|Records and documents, including signed ICFs, pertaining to the conduct of this study must be
+18|retained by the Investigator for 15 years after study completion unless local regulations or
+19|institutional policies require a longer retention period. No records may be destroyed during the
+20|retention period without the written approval of the sponsor. No records may be transferred to
+21|another location or party without written notification to the sponsor.
+22|A 8
+23|Source documents
+24|Source documents provide evidence for the existence of the subject and substantiate the integrity
+25|of the data collected. Source documents are filed at the InvestigatorOs site.
+26|Data reported on the CRF that are transcribed from source documents must be consistent with the source
+27|documents or the discrepancies must be explained. The Investigator may need to request previous medical
+28|records or transfer records, depending on the study. Also, current medical records must be available.
+29|A 9
+30|Publication policy
+31|The results of this study may be published or presented at scientific meetings. If this is foreseen,
+32|the investigator agrees to submit all manuscripts or abstracts to the sponsor before submission. This
+33|allows the sponsor to protect proprietary information and to provide comments.
+34|The sponsor will comply with the requirements for publication of study results. In accordance with
+35|standard editorial and ethical practice, the sponsor will generally support publication of multicentre
+36|studies only in their entirety and not as individual site data. In this case, a coordinating investigator
+37|will be designated by mutual agreement.
+38|Authorship will be determined by mutual agreement and in line with International Committee of
+39|Medical Bournal Editors authorship requirements.
+40|Appendix B
+41|Adverse event definitions and additional safety information
+42|B 1
+43|Definition of adverse events

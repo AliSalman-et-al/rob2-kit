@@ -1,0 +1,39 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|77 of 95
+6|C 2
+7|Diagnosis of MI and Unstable Angina
+8|Myocardial infarction (MI)
+9|The diagnosis of an MI should be made according to standard clinical practice but is expected to
+10|align with the criteria from Third Lniversal Definition of MI, i.e. detection of a rise andPor fall of
+11|cardiac biomarkers such as troponin and at least one of the followingD typical clinical symptoms,
+12|ischaemic ECG findings, imaging evidence of myocardial injury, or detection of an intracoronary
+13|thrombus by angiography or autopsy HThygesen et al 2012I.
+14|The diagnosis should be made by, or in consultation with, a cardiologist. The findings supporting
+15|the diagnosis should be documented in the description of the SAE in the eCRF.
+16|Unstable Angina (UAI
+17|Lnstable Angina HLAI is not an endpoint in this study but should be recorded as SAEs Hand DAEs
+18|when appropriateI. The diagnosis of an LA should be made according to standard clinical practice
+19|but is expected to align with the following definitionD
+20|The diagnosis of unstable angina will require ischemic chest pain Hor equivalentI at rest 10
+21|minutes in duration considered to be myocardial ischemia upon final diagnosis and prompting
+22|hospitalisation within 24 hours of the most recent symptoms, and without elevation in cardiac
+23|biomarkers of necrosis, and the presence of objective evidence of ischemia as defined by at least 1
+24|of the following criteriaD
+25|1.
+26|New or worsening ST or T wave changes in U2 anatomically contiguous leads on
+27|a resting ECG Hin the absence of LVH and LBBBID
+28|aI transient HJ20 minutesI ST elevation at the B point U 0.2 mV in men HN 0.25 mV in men J 40
+29|years oldI or U 0.15 mV in women in leads V2-V3 andPor U 0.1 mV in other leads, or
+30|bI horizontal or down-sloping ST depression U 0.10 mV, or
+31|cI T-wave inversion U 0.2 mV
+32|2.
+33|Definite evidence of myocardial ischemia on myocardial scintigraphy Hclear reversible
+34|perfusion defectI, stress echocardiography Hreversible wall motion abnormalityI, or MRI
+35|Hmyocardial perfusion deficit under pharmacologic stressI that is believed to be responsible for the
+36|myocardial ischemic symptomsPsigns.
+37|3.
+38|Angiographic evidence of U 70K lesion andPor thrombus in an epicardial coronary artery
+39|that is believed to be responsible for the myocardial ischemic symptomsPsigns.

@@ -1,0 +1,42 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|35 of 36
+7|Levey at al 200D
+8|Levey ASH Stevens LAH Schmid CHH Zhang YLH Castro AF 3rdH Feldman HIH Kusek ZWH
+9|Eggers PH VanLente FH Greene TH Coresh ZL CKD-EPI (Chronic Kidney Disease Epidemiology
+10|Collaboration). A new eCuation to estimate glomerular filtration rate. Ann Intern Med. 2009
+11|May 5L 150(9)G604-12
+12|Lin et al 2000
+13|Lin DYH Wei LZH Yang IH Ying Z. Semiparametric regression for the mean and rate functions
+14|of recurrent events. Zournal of the Royal Statistical SocietyG Series B (Statistical Methodology)
+15|2000L 62(4)G711P730.
+16|Neal et al 2017
+17|Neal BH Perkovic VH Mahaffey KWH de Zeeuw DH Fulcher GH Erondu NH et alH for the CANVAS
+18|Program Collaborative Group. CanaglifloDin and cardiovascular and renal events in type
+19|2 diabetes. N Engl Z Med 2017L 377G 644-657.
+20|Pfeffer et al 2015
+21|Pfeffer MAH Claggett BH Assmann SFH Boineau RH Anand ISH Clausell NH et al. Regional
+22|Variation in Patients and Outcomes in the Treatment of Preserved Cardiac Function Heart
+23|Failure With an Aldosterone Antagonist (TOPCAT) Trial. Circulation. 2015L131G34-42.
+24|Ratitch et al 2013
+25|Ratitch BH Lipkovich IH OOKelly M. Combining Analysis Results from Multiply Imputed
+26|Categorical Data. PharmaSUG 2013 - Paper SP03
+27|Rogers et al 2016
+28|Zennifer K RogersH Alex YaroshinskyH Stuart Z PocockH David Stokar and Zanice Pogoda.
+29|Analysis of recurrent events with an associated informative dropout timeG Application of the
+30|joint frailty model. Statist. Med. 2016H 35 2195P2205
+31|REdholm et al 2018
+32|RMdholm KH FigtreeH Perkovic VH Solomon SDH Mahaffey KWH et al. CanaglifloDin and Heart
+33|Failure in Type 2 Diabetes MellitusG Results From the CANVAS Program (CanaglifloDin
+34|Cardiovascular Assessment Study). Circulation. 2018L137
+35|httpsG//doi.org/10.1161/CIRCULATIONAHA.118.034222
+36|Spertus et al 2005
+37|Spertus ZH Peterson EH Conard MWH Heidenreich PAH KrumholD HMH Zones PH et al. Monitoring
+38|clinical changes in patients with heart failureG A comparison of methods. Am Heart Z
+39|2005L150G707-15.
+40|StoCes et al 2012
+41|Stokes MEH Davis CSH Koch GG.Categorical Data Analysis Using the SAS System. CarryH
+42|NCG SAS Institute Inc.

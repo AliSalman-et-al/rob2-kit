@@ -1,0 +1,48 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|67 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|x
+9|Consistency with known drug profile. Was the AE consistent with the previous
+10|knowledge of the suspect drug (pharmacology and toxicology) or drugs of the same
+11|pharmacological class? Or could the AE be anticipated from its pharmacological
+12|properties?
+13|x
+14|De-challenge experience. Did the AE resolve or improve on stopping or reducing the
+15|dose of the suspect drug?
+16|x
+17|No alternative cause. The AE cannot be reasonably explained by another aetiology such
+18|as the underlying disease, other drugs, other host or environmental factors.
+19|x
+20|Re-challenge experience. Did the AE reoccur if the suspected drug was reintroduced
+21|after having been stopped? AstraZeneca would not normally recommend or support
+22|a re-challenge.
+23|x
+24|Laboratory tests. A specific laboratory investigation (if performed) has confirmed the
+25|relationship.
+26|In difficult cases, other factors could be considered such as:
+27|x
+28|Is this a recognized feature of overdose of the drug?
+29|x
+30|Is there a known mechanism?
+31|CaXValiW\ of μUelaWed¶ iV made if folloZing a UeYieZ of Whe UeleYanW daWa, WheUe iV eYidence foU
+32|a μreasonable SoVVibiliW\¶ of a causal relationship for the individual case. The expression
+33|μUeaVonable SoVVibiliW\¶ of a causal relationship is meant to convey, in general, that there are facts
+34|(evidence) or arguments to suggest a causal relationship.
+35|The causality assessment is performed based on the available data including enough information
+36|to make an informed judgment. With limited or insufficient information in the case, it is likely
+37|WhaW Whe eYenW(V) Zill be aVVeVVed aV μnoW UelaWed¶.
+38|Causal relationship in cases where the disease under study has deteriorated due to lack of effect
+39|should be classified as no reasonable possibility.
+40|B 8
+41|Medication Error
+42|For the purposes of this clinical study a medication error is an unintended failure or mistake in the
+43|treatment process for an AstraZeneca investigational product that either causes harm to the
+44|participant or has the potential to cause harm to the participant.
+45|A medication error is not lack of efficacy of the drug, but rather a human or process related failure
+46|while the drug is in control of the study site staff or participant.
+47|
+48|

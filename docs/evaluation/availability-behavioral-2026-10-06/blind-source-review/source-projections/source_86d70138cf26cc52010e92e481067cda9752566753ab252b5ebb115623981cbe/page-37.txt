@@ -1,0 +1,48 @@
+1|
+2|
+3|
+4|
+5|36
+6|Table S6. Sensitivity Analysis of Primary and Secondary Endpoints Censored for Individual Patients at the Time They Were Diagnosed
+7|with COVID-19
+8|
+9|Endpoint
+10|Dapagliflozin
+11|Events/N
+12|Placebo
+13|Events/N
+14|Hazard Ratio (95% CI)
+15|
+16|N = 3131
+17|N = 3132
+18|
+19|Primary Endpoint
+20|497
+21|598
+22|0.81 (0.72, 0.91)
+23|Worsening HF (HF Hospitalization or
+24|Urgent HF Visit)
+25|358
+26|448
+27|0.78 (0.68, 0.89)
+28|HF Hospitalization
+29|319
+30|409
+31|0.76 (0.66, 0.88)
+32|Urgent HF Visit
+33|59
+34|78
+35|0.75 (0.53, 1.05)
+36|Cardiovascular Death
+37|222
+38|251
+39|0.88 (0.74, 1.06)
+40|All-Cause Mortality
+41|405
+42|452
+43|0.89 (0.78, 1.02)
+44|
+45|
+46|CI, confidence intervals HF, heart failure
+47|
+48|

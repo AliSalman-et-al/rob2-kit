@@ -1,0 +1,87 @@
+1|Eli Lilly and Company
+2|Consultant
+3|Self
+4|Intercept Pharmaceuticals, Inc.
+5|Data And Safety Monitoring
+6|Self
+7|Merck
+8|Grant / Contract
+9|Self
+10|Merck
+11|Consultant
+12|Self
+13|Novartis
+14|Grant / Contract
+15|Self
+16|Novartis
+17|Consultant
+18|Self
+19|Novo Nordisk
+20|Consultant
+21|Self
+22|Verily
+23|Grant / Contract
+24|Self
+25|Additional Questions:
+26|Certification
+27|I certify that the information provided in this disclosure is complete and accurate.
+28|Category: Consultant
+29|Description: Heart failure/diabetes
+30|Additional Information:
+31|Category: Data And Safety Monitoring
+32|Description: NASH
+33|Additional Information:
+34|Recipient Name: Duke University
+35|Recipient Type: Institution
+36|Grant / Contract Description: VICTORIA trial
+37|Grant / Contract Purpose: Research
+38|Additional Information:
+39|Category: Consultant
+40|Description: heart failure
+41|Additional Information:
+42|Recipient Name: Duke University
+43|Recipient Type: Institution
+44|Grant / Contract Description: CONNECT-HF; PARAGLIDe
+45|Grant / Contract Purpose: Research
+46|Additional Information:
+47|Category: Consultant
+48|Description: HF and atherosclerosis
+49|Additional Information:
+50|Category: Consultant
+51|Description: Consultant on pragmatic clinical trials
+52|Additional Information:
+53|Recipient Name: Duke University
+54|Recipient Type: Institution
+55|Grant / Contract Description: Project Baseline Research Grant
+56|Grant / Contract Purpose: Research
+57|Additional Information:
+58|1.
+59|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+60|No.
+61|2.
+62|What is the manuscript title?
+63|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+64|3.
+65|Are you the corresponding author?
+66|No.
+67|
+68|[Extracted table 1]
+69||Column 1|Column 2|Column 3|
+70||---|---|---|
+71|||||
+72||Eli Lilly and Company|Consultant|Self|
+73||Category: Consultant Description: Heart failure/diabetes<br>Additional Information:|||
+74||Intercept Pharmaceuticals, Inc.|Data And Safety Monitoring|Self|
+75||Category: Data And Safety Monitoring Description: NASH<br>Additional Information:|||
+76||Merck|Grant / Contract|Self|
+77||Recipient Name: Duke University Recipient Type: Institution<br>Grant / Contract Description: VICTORIA trial Grant / Contract Purpose: Research<br>Additional Information:|||
+78||Merck|Consultant|Self|
+79||Category: Consultant Description: heart failure<br>Additional Information:|||
+80||Novartis|Grant / Contract|Self|
+81||Recipient Name: Duke University Recipient Type: Institution<br>Grant / Contract Description: CONNECT-HF; PARAGLIDe Grant / Contract Purpose: Research<br>Additional Information:|||
+82||Novartis|Consultant|Self|
+83||Category: Consultant Description: HF and atherosclerosis<br>Additional Information:|||
+84||Novo Nordisk|Consultant|Self|
+85||Category: Consultant Description: Consultant on pragmatic clinical trials<br>Additional Information:|||
+86||Verily|Grant / Contract|Self|
+87||Recipient Name: Duke University Recipient Type: Institution<br>Grant / Contract Description: Project Baseline Research Grant Grant / Contract Purpose: Research<br>Additional Information:|||

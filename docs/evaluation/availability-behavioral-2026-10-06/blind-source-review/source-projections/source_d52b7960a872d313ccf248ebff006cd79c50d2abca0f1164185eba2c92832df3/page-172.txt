@@ -1,0 +1,44 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|79 of 95
+6|References:
+7|Hicks CA et al. 2017 Cardiovascular and Stroke Endpoint Definitions for Clinical Trials. B Am Coll
+8|Cardiol 2018R71D1021-34 httpsDPPdoi.orgP10.1016Pj.jacc.2017.12.048
+9|Draft Definitions for CDISC August 20, 2014
+10|Sacco RL, Casner SE, Broderick BP, Caplan LR, Connors BB, Culebras A, Elkind MSV, George MG,
+11|Hamdan AD, Higashida RT, Hoh BL, Banis LS, Case CS, Cleindorfer DO, Lee B-M, Moseley ME,
+12|Peterson ED, Turan TN, Valderrama AL, Vinters HVR on behalf of the American Heart Association
+13|Stroke Council, Council on Cardiovascular Surgery and Anesthesia, Council on Cardiovascular
+14|Radiology and Intervention, Council on Cardiovascular and Stroke Nursing, Council on Epidemiology
+15|and Prevention, Council on Peripheral Vascular Disease, and Council on Nutrition, Physical Activity
+16|and Metabolism. An updated definition of stroke for the 21st centuryD a statement for healthcare
+17|professionals from the American Heart AssociationPAmerican Stroke
+18|Association. Stroke.
+19|2013R44D2064-2089.
+20|Appendix D
+21|Genetics
+22|D 1
+23|UseDanalysis of DNA
+24|Genetic variation may impact a subjectOs response to therapy, susceptibility to, and severity and
+25|progression of disease. Variable response to therapy may be due to genetic determinants that impact
+26|drug absorption, distribution, metabolism, and excretionR mechanism of action of the drugR disease
+27|aetiologyR andPor molecular subtype of the disease being treated. Therefore, where local regulations
+28|and IRBPIEC allow, a blood sample will be collected for DNA analysis from consenting subjects.
+29|AstraZeneca intends to collect and store DNA for genetic research to explore how genetic
+30|variations may affect clinical parameters, risk and prognosis of diseases, and the response to
+31|medications. Genetic research may lead to better understanding of diseases, better diagnosis of
+32|diseases or other improvements in health care and to the discovery of new diagnostics, treatments
+33|or medications.
+34|In addition, collection of DNA samples from populations with well described clinical
+35|characteristics may lead to improvements in the design and interpretation of clinical trials and,
+36|possibly, to genetically guided treatment strategies.
+37|Genetic research may consist of the analysis of the structure of the subject[s DNA, i.e. the entire
+38|genome.
+39|The results of genetic analyses may be reported in the clinical study report HCSRI or in a separate
+40|study summary.
+41|The sponsor will store the DNA samples in a secure storage space with adequate measures to
+42|protect confidentiality.
+43|The samples will be retained while research on heart failure with preserved ejection fraction
+44|continues but no longer than 15 years or other period as per local requirements.

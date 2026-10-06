@@ -1,0 +1,102 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|2 of 95
+6|VERSION HISTORY
+7|Version 1.0, 24th April 2018
+8|Initial creation
+9|Version 2.0, 09th May 2018
+10|Section
+11|changed
+12|Previous Version
+13|Current Version
+14|Reason for change
+15|1. Title page
+16|Regulatory Agency
+17|Identifying
+18|Number(s):
+19|Regulatory Agency
+20|Identifying
+21|Number(s):
+22|Eudra CT number:
+23|2018-000802-46
+24|Missing information
+25|added
+26|2. Appendix A -
+27|Section A3
+28|A subject who is
+29|rescreened is not
+30|required to sign another
+31|ICF.
+32|A subject who is
+33|rescreened is required
+34|to sign another ICF.
+35|Correction of typo
+36|error
+37|3. Appendix D -
+38|Section D2
+39|Correction of
+40|cross
+41|referencing
+42|error
+43|Withdrawal of consent
+44|for genetic research:
+45|Subjects may withdraw
+46|from this genetic
+47|research at any time,
+48|independent of any
+49|decision concerning
+50|participation in other
+51|aspects of the main
+52|study. Voluntary
+53|withdrawal will not
+54|prejudice further
+55|treatment. Procedures
+56|for withdrawal are
+57|outlined in Section 7 of
+58|the main Clinical Study
+59|Protocol.
+60|Withdrawal of consent
+61|for genetic research:
+62|Subjects may withdraw
+63|from this genetic
+64|research at any time,
+65|independent of any
+66|decision concerning
+67|participation in other
+68|aspects of the main
+69|study. Voluntary
+70|withdrawal will not
+71|prejudice further
+72|treatment. Procedures
+73|for withdrawal are
+74|outlined in Section 7 of
+75|the main Clinical Study
+76|Protocol.
+77|Cross-reference
+78|link was updated
+79|4. Mislabelling of
+80|Appendices
+81|Mislabelling of
+82|Appendices A, B, C, D,
+83|E, G, H, I, B, C, L, M
+84|Correction of
+85|mislabelling of
+86|Appendices A, B, C, D,
+87|E, F, G, H, I, B, C, L
+88|Typo error
+89|
+90|[Extracted table 1]
+91||Column 1|Column 2|Column 3|Column 4|Column 5|
+92||---|---|---|---|---|
+93||th<br>Version 1.0, 24 April 2018|||||
+94||Initial creation|||||
+95|||||||
+96||th<br>Version 2.0, 09 May 2018|||||
+97|||||||
+98|||Section<br>changed|Previous Version|Current Version|Reason for change|
+99||1.|Title page|Regulatory Agency<br>Identifying<br>Number(s):|Regulatory Agency<br>Identifying<br>Number(s):<br>Eudra CT number:<br>2018-000802-46|Missing information<br>added|
+100||2.|Appendix A -<br>Section A3|A subject who is<br>rescreened is not<br>required to sign another<br>ICF.|A subject who is<br>rescreened is required<br>to sign another ICF.|Correction of typo<br>error|
+101||3.|Appendix D -<br>Section D2<br>Correction of<br>cross<br>referencing<br>error|Withdrawal of consent<br>for genetic research:<br>Subjects may withdraw<br>from this genetic<br>research at any time,<br>independent of any<br>decision concerning<br>participation in other<br>aspects of the main<br>study. Voluntary<br>withdrawal will not<br>prejudice further<br>treatment. Procedures<br>for withdrawal are<br>outlined in Section 7 of<br>the main Clinical Study<br>Protocol.|Withdrawal of consent<br>for genetic research:<br>Subjects may withdraw<br>from this genetic<br>research at any time,<br>independent of any<br>decision concerning<br>participation in other<br>aspects of the main<br>study. Voluntary<br>withdrawal will not<br>prejudice further<br>treatment. Procedures<br>for withdrawal are<br>outlined in Section 7 of<br>the main Clinical Study<br>Protocol.|Cross-reference<br>link was updated|
+102||4.|Mislabelling of<br>Appendices|Mislabelling of<br>Appendices A, B, C, D,<br>E, G, H, I, B, C, L, M|Correction of<br>mislabelling of<br>Appendices A, B, C, D,<br>E, F, G, H, I, B, C, L|Typo error|

@@ -1,0 +1,50 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|50 of 95
+6|8.3.3.4
+7|Administration of electronic PROs
+8|Each site must allocate the responsibility for the administration of the ePROs to a specific
+9|individual and, if possible, assign a backup person to cover if that individual is absent. A key aspect
+10|of study success is to have high PRO compliance. Therefore, it is essential to follow SoA and that
+11|sites make sure the device is charged and fully functional at all times in order to minimize missing
+12|data.
+13|It is important that the site staff explains the value and relevance of PRO dataD to hear directly from
+14|patients how they feel. The following best practice guidelines should be followedD
+15|
+16|Patient must not receive help from relatives, friends, or site personnel to answer or
+17|clarify the PRO questionnaires in order to avoid bias. If a patient uses visual aids He.g.,
+18|spectacles or contact lensesI for reading and does not have them at hand, the patient will
+19|be exempted from completing the PROs questionnaires on that visit
+20|
+21|
+22|Before any other study procedures are conducted at a given visit Hexcept the Visit 2D
+23|eligibility confirmation before the CCCMI
+24|
+25|
+26|Before being seen by the investigator
+27|
+28|PRO questionnaires must be completed by the patient in private
+29|
+30|The appointed site personnel should also stress that the information is confidential.
+31|Therefore, if the patient has any medical problems, he or she should discuss them with
+32|the doctor or research nurse separately from the ePRO assessment
+33|
+34|
+35|The appointed site personnel must show patients how to use the ePRO device, in
+36|accordance with the instructions provided
+37|
+38|
+39|The appointed site personnel should remind patients that there are no right or wrong
+40|answers, and the patient should be given sufficient time to complete the PRO
+41|questionnaires at hisPher own speed
+42|If a site is affected by COVID-19 pandemic and on-site visits are not possible, phone collection of
+43|ePRO is an alternative solution to maintain continuity of the assessments. The details of the
+44|procedure will be provided in a separate instruction.
+45|If the patient is unable to read the questionnaire He.g., is blind or illiterateI, the patient will be
+46|exempted from completing the PRO questionnaires and may still participate in the study. Patients
+47|exempted in this regard should be flagged appropriately by the site personnel.
+48|8.4
+49|Safety assessment
+50|Planned time points for all safety assessments are provided in the schedule of activities HTable 1I.

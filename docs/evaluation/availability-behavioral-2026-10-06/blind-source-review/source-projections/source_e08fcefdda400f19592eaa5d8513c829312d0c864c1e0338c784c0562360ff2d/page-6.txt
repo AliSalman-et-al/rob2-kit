@@ -1,0 +1,49 @@
+1|Jul 09, 2022 04:16:17 EDT
+2|New England Journal of Medicine
+3|C. Jan Willem Borleffs
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Other
+11|Self
+12|Boehringer Ingelheim
+13|Other
+14|Self
+15|Novartis
+16|Other
+17|Self
+18|Additional Questions:
+19|Certification
+20|I certify that the information provided in this disclosure is complete and accurate.
+21|Disclosure Purpose: 22-06286
+22|Category: Other
+23|Description: Honorarium for lecture
+24|Additional Information:
+25|Category: Other
+26|Description: Honorarium for lecture
+27|Additional Information:
+28|Category: Other
+29|Description: Honorarium for lecture
+30|Additional Information:
+31|1.
+32|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+33|No.
+34|2.
+35|What is the manuscript title?
+36|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+37|3.
+38|Are you the corresponding author?
+39|No.
+40|
+41|[Extracted table 1]
+42||Entity|Type|Interest Held By|
+43||---|---|---|
+44||AstraZeneca|Other|Self|
+45||Category: Other Description: Honorarium for lecture<br>Additional Information:|||
+46||Boehringer Ingelheim|Other|Self|
+47||Category: Other Description: Honorarium for lecture<br>Additional Information:|||
+48||Novartis|Other|Self|
+49||Category: Other Description: Honorarium for lecture<br>Additional Information:|||

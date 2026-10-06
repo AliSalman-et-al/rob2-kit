@@ -1,0 +1,45 @@
+1|
+2|
+3|
+4|
+5|20
+6|Supplementary Methods
+7|
+8|General methods in detail
+9|
+10|METHODS
+11|Trial Design and Oversight
+12|DELIVER was an international, multicenter, parallel-group, event-driven, randomized, double-blind trial in patients with
+13|chronic heart failure and LVEF greater than 40%, comparing the effect of dapagliflozin 10 mg once daily, vs. placebo, in
+14|addition to standard of care. The Steering Committee designed and oversaw the conduct and analysis of the trial in
+15|collaboration with the sponsor. The trial was conducted and reported in accordance with the protocol and the statistical
+16|analysis plan (see below). The trial was approved by local or central institutional review boards for each center. The
+17|safety of patients was overseen by an independent data safety monitoring committee. The analysis was conducted both
+18|by the sponsor and independently by the academic group at Brigham and Women's Hospital who had complete
+19|unrestricted access to the full study database. The first draft of the manuscript was prepared by the first author, who had
+20|unrestricted access to the data, and was reviewed and edited by all authors. All authors decided to submit the
+21|manuscript for publication and vouch for the fidelity of the trial to the protocol and those authors with direct access to
+22|the full dataset vouch for the accuracy and integrity of the analysis (SDS, JJVM, BC, PJ, MV, OB, UW).
+23|
+24|Patients
+25|Eligibility requirements included patients with or without T2DM who were at least 40 years of age and had a LVEF more
+26|than 40% confirmed within the 12 months prior to enrollment (without an intercurrent event that might lower LVEF).
+27|Patients were also required to have evidence of structural heart disease (either left atrial enlargement or left ventricular
+28|hypertrophy) and elevation in natriuretic peptides (NTproBNP ≥300 pg/ml for those in sinus rhythm or ≥600 pg/ml in the
+29|setting of atrial fibrillation/flutter on the baseline ECG). Patients could be enrolled either as outpatients or during heart
+30|failure hospitalization following stabilization; those with a prior history of LVEF 40% or less were eligible provided the
+31|qualifying LVEF had increased to above 40% by enrollment. While patients were required to be on at least intermittent
+32|diuretic therapy at enrollment, no specific background therapy for heart failure was mandated during the trial.
+33|Concomitant use of an SGLT2 inhibitor with study medication was prohibited for the study duration. Detailed inclusion
+34|and exclusion criteria have been previously published1 and are listed in Table S1.
+35|
+36|Trial Procedures
+37|All patients provided written informed consent, and those who fulfilled the inclusion and exclusion criteria were
+38|randomly assigned to receive dapagliflozin (at a dose of 10 mg once daily) or matching placebo using an interactive voice
+39|or web-based response system. Randomization was performed in balanced blocks and stratified based on T2DM status.
+40|Following randomization, study visits, either in person or virtual, occurred at approximately day 30, day 120, and every
+41|120 days thereafter, with unscheduled visits as needed. During the coronavirus disease-2019 (COVID-19) pandemic,
+42|several adaptations were made to the protocol to ensure data quality, integrity and patient safety, including the
+43|possibility of converting in-person visits to telephone and virtual visits, remote data collection for patient-reported
+44|outcomes, reporting of COVID-19 related adverse events, and collecting information on COVID-19-relatedness for death
+45|events.

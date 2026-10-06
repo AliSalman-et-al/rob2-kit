@@ -1,0 +1,73 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|85 of 95
+6|Appendix H
+7|Abbreviations
+8|Abbreviation or
+9|Explanation
+10|special term
+11|AE
+12|Adverse Event
+13|BP
+14|Blood Pressure
+15|CEA
+16|Clinical Event Adjudication
+17|COPD
+18|Chronic Obstructive Pulmonary Disease
+19|COVID-19
+20| Coronavirus Disease 2019
+21|CSA
+22|Clinical study Agreement
+23|CV
+24|Cardiovascular
+25|DAE
+26|Adverse Event leading to discontinuation of investigational product
+27|DCA
+28|Diabetic Cetoacidosis
+29|DMC
+30|Data Monitoring Committee
+31|eCRF
+32|Electronic Case Report Form
+33|EC
+34|Ethics Committee, synonymous to Institutional Review Board HIRBI and
+35|Independent Ethics Committee HIECI
+36|ECG
+37|Electrocardiogram
+38|EDC
+39|Electronic Data Capture
+40|EHRs
+41|Electronic Health Records
+42|FAS
+43|Full Analysis Set
+44|GCP
+45|Good Clinical Practice
+46|HF
+47|Heart Failure
+48|HFpEF
+49|Heart Failure with Preserved Ejection Fraction
+50|HR
+51|Hazard Ratio
+52|ICF
+53|Informed Consent Form
+54|ICH
+55|International Conference on Harmonisation
+56|International
+57|If a study is conducted in several countries the International Co-ordinating
+58|Co-ordinating
+59|Investigator is the Investigator co-ordinating the Investigators andPor
+60|Investigator
+61|activities internationally.
+62|IxRS
+63|Interactive VoicePQeb Response System
+64|CCCM
+65|Cansas City Cardiomyopathy Muestionnaire
+66|LAE
+67|Left Atrial Enlargement
+68|LSLV
+69|Last Subject Last Visit
+70|LVEF
+71|Left Ventricular Ejection Fraction
+72|MI
+73|Myocardial Infarction

@@ -1,0 +1,37 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|7 of 36
+7|Abbreviation or special
+8|term
+9|Explanation
+10|AE
+11|Adverse event
+12|ATC
+13|Anatomical Therapeutic Chemical
+14|SAE
+15|Serious adverse event
+16|SCV
+17|Study Closure Visit
+18|SOC
+19|MedDRA system organ class
+20|T2D
+21|Type 2 diabetes
+22|TSS
+23|KCCQ total symptom score
+24|WoC
+25|Withdrawal of consent
+26|
+27|[Extracted table 1]
+28||Abbreviation or special<br>term|Explanation|
+29||---|---|
+30||AE|Adverse event|
+31||ATC|Anatomical Therapeutic Chemical|
+32||SAE|Serious adverse event|
+33||SCV|Study Closure Visit|
+34||SOC|MedDRA system organ class|
+35||T2D|Type 2 diabetes|
+36||TSS|KCCQ total symptom score|
+37||WoC|Withdrawal of consent|

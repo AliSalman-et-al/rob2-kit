@@ -1,0 +1,15 @@
+1|Additional Questions:
+2|Certification
+3|I certify that the information provided in this disclosure is complete and accurate.
+4|Category: Consultant
+5|Description: I served on the steering committee for the United Therapeutics SOUTHPAW trial
+6|Additional Information:
+7|1.
+8|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+9|No.
+10|2.
+11|What is the manuscript title?
+12|Dapagliflozin in Heart Failure with Mildly Reduced and Preserved Ejection Fraction
+13|3.
+14|Are you the corresponding author?
+15|No.

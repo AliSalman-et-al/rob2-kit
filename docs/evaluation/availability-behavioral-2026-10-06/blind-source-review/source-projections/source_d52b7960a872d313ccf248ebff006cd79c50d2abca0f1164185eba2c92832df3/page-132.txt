@@ -1,0 +1,50 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|39 of 95
+6|6.5.5
+7|Other concomitant treatment
+8|Medications other than described above, which is considered necessary for the patientOs safety
+9|and wellbeing, may be given at the discretion of the Investigator.
+10|6.6
+11|Dose modification (not applicable)
+12|6.7
+13|Treatment after the end of the study
+14|The patients will stop taking IP at the study closure visit HSCVI. Remaining IP will be collected at
+15|that time. Post-study treatment will not be provided by the Sponsor. Patients should receive
+16|standard of care therapy after the SCV, at the discretion of the Investigator.
+17|7.
+18|DISCONTINUATION OF TREATMENT AND SUBJECT
+19|WITHDRAWAL
+20|7.1
+21|Discontinuation of study treatment
+22|Discontinuation from study treatment is NOT the same thing as a withdrawal from the study. If the
+23|patient temporarily or permanently discontinues IP, the patient should remain in the study and it is
+24|important that the scheduled study visits and data collection continue according to the study
+25|protocol until study closure.
+26|Patients may be discontinued from IP in the following situationsD
+27|
+28|Contraindication to further dosing with IP, in the opinion of the Investigator, such as
+29|Adverse event or other safety reasons.
+30|
+31|
+32|Severe non-compliance with the study protocol.
+33|
+34|
+35|Diabetic ketoacidosis HDCAI. Consider temporarily interrupting IP if DCA is suspected.
+36|If DCA is confirmed, IP should be discontinued permanently.
+37|
+38|
+39|Positive pregnancy test Hdiscontinue IP and notify Sponsor representativeI.
+40|
+41|
+42|Patient decision. The patient is at any time free to discontinue treatment, without
+43|prejudice to further treatment.
+44|See the Table 1 for data to be collected at the time of treatment discontinuation and follow-up and
+45|for any further evaluations that need to be completed.
+46|7.1.1
+47|Temporary discontinuation
+48|Every attempt should be made to maintain patients on IP during the course of the study. If IP has
+49|been interrupted, it should be re-introduced as soon as, in the opinion of the Investigator, the
+50|patientOs condition is stable.

@@ -1,0 +1,50 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|41 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|x
+9|KCCQ, PGIS and EQ-5D-5L questionnaire will be completed
+10|x
+11|NYHA Functional Classification will be evaluated
+12|x
+13|A physical examination will be conducted
+14|x
+15|Vital signs (BP, pulse) and weight will be assessed and recorded.
+16|x
+17|Review and updating of concomitant medication and recording of relevant medications
+18|x
+19|Review and recording of any cardiac and HF related procedures
+20|x
+21|Review of potential efficacy and safety events
+22|x
+23|If the patient has experienced any potential endpoints, SAEs, DAEs and/or amputations,
+24|adverse events (AEs) leading to amputation and potential risk factor AEs for
+25|amputations affecting lower limbs since the last visit, this will be recorded in the eCRF
+26|x
+27|Drug accountability of the returned IP will be checked
+28|8.2.9
+29|Unscheduled visits
+30|An unscheduled on-site or telephone visit may occur in-between scheduled on-site visits (for
+31|example assessment of potential endpoint events or safety events).
+32|8.3
+33|Efficacy assessments
+34|8.3.1
+35|Efficacy event capture
+36|Efficacy events (i.e. death, hospitalisation or urgent visits for HF) will be collected by site
+37|personnel according to the study visit schedule. All potential efficacy events should be recorded
+38|as an AE and on additional event modules in the eCRF. If the potential efficacy event fulfils SAE
+39|criteria (see Appendix B 2) the site is to record and report these events to the sponsor or designee
+40|within timelines described in Section 8.6.
+41|NYHA classification will be done by the Investigators and recorded in the eCRF. PROs will be
+42|collected for all patients throughout the study period via a hand-held electronic device. All-cause
+43|hospitalisations will be derived from SAE reports.
+44|8.3.2
+45|Efficacy event adjudication
+46|A Clinical Events Adjudication (CEA) Committee will be established for this trial and adjudicate
+47|primary efficacy events in accordance with adjudication criteria detailed in the CEA charter.
+48|Events to be adjudicated include components of the primary efficacy endpoint: deaths,
+49|hospitalisation for HF, and urgent HF visits. All deaths will be adjudicated to determine if they are
+50|CV or non-CV deaths. All adjudication will be done on an ongoing basis throughout the trial.

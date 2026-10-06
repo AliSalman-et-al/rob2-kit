@@ -1,0 +1,53 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|48 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|x
+9|Date of death
+10|x
+11|Autopsy performed
+12|x
+13|Causality assessment in relation to Study procedure(s) and/or other medication
+14|x
+15|Description of AE
+16|8.5.5
+17|Causality collection
+18|The Investigator will assess causal relationship between the IP and each AE and anVZeU μ\eV¶ oU
+19|μno¶ Wo Whe TXeVWion μDo \oX conVideU WhaW WheUe iV a UeaVonable SoVVibiliW\ WhaW Whe eYenW ma\ haYe
+20|been caXVed b\ Whe inYeVWigaWional SUodXcW?¶
+21|For SAEs, causal relationship will also be assessed for other medication and study procedures.
+22|Note that for SAEs that could be associated with any study procedure the causal relationship is
+23|imSlied aV μ\eV¶.
+24|A guide to the interpretation of the causality question is found in Appendix B to the Clinical Study
+25|Protocol.
+26|8.5.6
+27|Adverse events based on signs and symptoms
+28|All AEs spontaneously reported by the patient or reported in response to the open question from
+29|Whe VWXd\ SeUVonnel: μHaYe \oX had an\ healWh SUoblemV Vince Whe previous visit/you were last
+30|aVked?¶ oU UeYealed b\ obVeUYaWion Zill be collecWed and UecoUded in Whe eCRF if Whe\ fXlfil Whe
+31|criteria specified in Section 8.5.2. When collecting AEs, the recording of diagnoses is preferred
+32|(when possible) to recording a list of signs and symptoms. However, if a diagnosis is known and
+33|there are other signs or symptoms that are not generally part of the diagnosis, the diagnosis and
+34|each sign or symptom will be recorded separately.
+35|8.5.7
+36|Adverse events based on examinations and tests
+37|The results from the Clinical Study Protocol mandated vital signs and laboratory values will be
+38|summarised in the clinical study report. Deterioration as compared with baseline in protocol-
+39|mandated vital signs should therefore only be reported as AEs if they fulfil any of the SAE criteria
+40|or are the reason for discontinuation of treatment with the IP. If deterioration in a vital sign is
+41|associated with clinical signs and symptoms, the sign or symptom will be reported as an AE if they
+42|fulfil any of the SAE criteria or are the reason for discontinuation of treatment of IP, and the
+43|associated vital sign will be considered as additional information.
+44|8.5.8
+45|Disease-under study (DUS) (not applicable)
+46|8.5.9
+47|Disease progression (not applicable)
+48|8.6
+49|Safety reporting and medical management
+50|8.6.1
+51|Reporting of serious adverse events
+52|All SAEs have to be reported, whether or not considered causally related to the investigational
+53|product, or to the study procedure(s). All SAEs will be recorded in the eCRF.

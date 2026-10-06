@@ -1,0 +1,125 @@
+1|Jul 05, 2022 11:12:24 EDT
+2|New England Journal of Medicine
+3|Muthiah Vaduganathan
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|American Regent
+10|Consultant
+11|Self
+12|Amgen Inc.
+13|Consultant
+14|Self
+15|AstraZeneca
+16|Consultant
+17|Self
+18|BAXTER HEALTHCARE
+19|Consultant
+20|Self
+21|Bayer
+22|Consultant
+23|Self
+24|Boehringer Ingelheim
+25|Consultant
+26|Self
+27|Brigham and Women's Hospital
+28|Employment
+29|Self
+30|Cytokinetics
+31|Consultant
+32|Self
+33|Galmed
+34|End Point Review Committee
+35|Self
+36|Impulse Dynamics (USA) Inc.
+37|Other
+38|Self
+39|Lexicon Pharmaceuticals, Inc.
+40|Consultant
+41|Self
+42|Novartis
+43|End Point Review Committee
+44|Self
+45|Occlutech
+46|Other
+47|Self
+48|Pharmacosmos Therapeutics Inc.
+49|Consultant
+50|Self
+51|Disclosure Purpose: 22-06286
+52|Category: Consultant
+53|Description: Consultant
+54|Additional Information:
+55|Category: Consultant
+56|Description: Consultant and Research Grant
+57|Additional Information:
+58|Category: Consultant
+59|Description: Consultant and Research Grant
+60|Additional Information:
+61|Category: Consultant
+62|Description: Consultant
+63|Additional Information:
+64|Category: Consultant
+65|Description: Consultant
+66|Additional Information:
+67|Category: Consultant
+68|Description: Consultant and Research Grant
+69|Additional Information:
+70|Title: Cardiologist
+71|Position Description: Full time cardiologist
+72|Additional Information:
+73|Category: Consultant
+74|Description: Consultant
+75|Additional Information:
+76|Category: End Point Review Committee
+77|Description: Clinical Trial Committee
+78|Additional Information:
+79|Category: Other
+80|Description: Clinical trial committee
+81|Additional Information:
+82|Category: Consultant
+83|Description: Consultant
+84|Additional Information:
+85|Category: End Point Review Committee
+86|Description: Clinical Trial Committee, Speaker Engagement, and Research Grant
+87|Additional Information:
+88|Category: Other
+89|Description: Steering Committee
+90|Additional Information:
+91|Category: Consultant
+92|Description: Consultant
+93|Additional Information:
+94|
+95|[Extracted table 1]
+96||Entity|Type|Interest Held By|
+97||---|---|---|
+98||American Regent|Consultant|Self|
+99||Category: Consultant Description: Consultant<br>Additional Information:|||
+100||Amgen Inc.|Consultant|Self|
+101||Category: Consultant Description: Consultant and Research Grant<br>Additional Information:|||
+102||AstraZeneca|Consultant|Self|
+103||Category: Consultant Description: Consultant and Research Grant<br>Additional Information:|||
+104||BAXTER HEALTHCARE|Consultant|Self|
+105||Category: Consultant Description: Consultant<br>Additional Information:|||
+106||Bayer|Consultant|Self|
+107||Category: Consultant Description: Consultant<br>Additional Information:|||
+108||Boehringer Ingelheim|Consultant|Self|
+109||Category: Consultant Description: Consultant and Research Grant<br>Additional Information:|||
+110||Brigham and Women's Hospital|Employment|Self|
+111||Title: Cardiologist Position Description: Full time cardiologist<br>Additional Information:|||
+112||Cytokinetics|Consultant|Self|
+113||Category: Consultant Description: Consultant<br>Additional Information:|||
+114||Galmed|End Point Review Committee|Self|
+115||Category: End Point Review Committee Description: Clinical Trial Committee<br>Additional Information:|||
+116||Impulse Dynamics (USA) Inc.|Other|Self|
+117||Category: Other Description: Clinical trial committee<br>Additional Information:|||
+118||Lexicon Pharmaceuticals, Inc.|Consultant|Self|
+119||Category: Consultant Description: Consultant<br>Additional Information:|||
+120||Novartis|End Point Review Committee|Self|
+121||Category: End Point Review Committee Description: Clinical Trial Committee, Speaker Engagement, and Research Grant<br>Additional Information:|||
+122||Occlutech|Other|Self|
+123||Category: Other Description: Steering Committee<br>Additional Information:|||
+124||Pharmacosmos Therapeutics Inc.|Consultant|Self|
+125||Category: Consultant Description: Consultant<br>Additional Information:|||

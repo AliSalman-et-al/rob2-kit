@@ -1,0 +1,46 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|59 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|(PARADIGM-HF). Circulation. 2016 Jun 7;133(23):2254-62. doi:
+9|10.1161/CIRCULATIONAHA.115.020729. Epub 2016 Apr 20. PubMed PMID: 27143684.Oktay
+10|AA, Rich JD, Shah SJ. The emerging epidemic of heart failure with preserved ejection fraction.
+11|Curr Heart Fail Rep 2013;10(4):401-10.
+12|Ott et al 2017
+13|Ott C, Jumar A, Striepe K, Friedrich S, Karg MV, Bramlage P, et al. A randomised study of the
+14|impact of the SGLT2 inhibitor dapagliflozin on microvascular and macrovascular circulation.
+15|Cardiovasc Diabetol 2017;16:26.
+16|Pfeffer et al 2015
+17|Pfeffer MA, Claggett B, Assmann SF, Boineau R, Anand IS, Clausell N, et al. Regional Variation
+18|in Patients and Outcomes in the Treatment of Preserved Cardiac Function Heart Failure With an
+19|Aldosterone Antagonist (TOPCAT) Trial. Circulation. 2015;131:34-42.
+20|RndhRlm eW al 2018
+21|Rndholm K, Figtree, Perkovic V, Solomon SD, Mahaffey KW, et al. Canagliflozin and Heart
+22|Failure in Type 2 Diabetes Mellitus: Results From the CANVAS Program (Canagliflozin
+23|Cardiovascular Assessment Study). Circulation. 2018;137
+24|https://doi.org/10.1161/CIRCULATIONAHA.118.034222
+25|Shigiyama et al 2017
+26|Shigiyama F, Kumashiro N, Miyagi M, Ikehara K, Kanda E, Uchino H, et al. Effectiveness of
+27|dapagliflozin on vascular endothelial function and glycemic control in patients with early-stage
+28|type 2 diabetes mellitus: DEFENCE study. Cardiovasc Diabetol 2017;16:84. DOI
+29|10.1186/s12933-017-0564-0.
+30|Skali et al 2014
+31|Skali H, Dwyer EM, Goldstein R, Haigney M, Krone R, Kukin M, Lichstein E, McNitt S, Moss
+32|AJ, Pfeffer MA, Solomon SD. Prognosis and response to therapy of first inpatient and outpatient
+33|heart failure event in a heart failure clinical trial: MADIT-CRT. Eur J Heart Fail. 2014
+34|May;16(5):560-5. doi: 10.1002/ejhf.71. Epub 2014 Feb 27. PubMed PMID: 24578164.
+35|
+36|Solomon et al 2005
+37|Solomon SD, Anavekar N, Skali H, McMurray JJ, Swedberg K, Yusuf S, Granger CB, Michelson
+38|EL, Wang D, Pocock S, Pfeffer MA; Candesartan in Heart Failure Reduction in Mortality
+39|(CHARM) Investigators. Influence of ejection fraction on cardiovascular outcomes in a broad
+40|spectrum of heart failure patients. Circulation 2005 Dec 13;112(24):3738-44
+41|Spertus et al 2005
+42|Spertus J Am Heart J 2005. Monitoring clinical changes in patients with heart failure: A
+43|comparison of methods. Multicenter Study
+44|Thygesen et al 2012
+45|Thygesen Kristian, Alpert Joseph S., Jaffe Allan S., Simoons Maarten L, Chaitman ,White Harvey
+46|D. Writing Group on behalf of the Joint ESC/ACCF/AHA/WHF Task Force for the Universal

@@ -1,0 +1,89 @@
+1|SANOFI PASTEUR INC.
+2|Consultant
+3|Self
+4|Sarepta Therapeutics, Inc.
+5|Consultant
+6|Self
+7|tenaya
+8|Consultant
+9|Self
+10|Theracos
+11|Grant / Contract
+12|Self
+13|Theracos
+14|Consultant
+15|Self
+16|Tremeau
+17|Consultant
+18|Self
+19|us2.ai
+20|Grant / Contract
+21|Self
+22|Additional Questions:
+23|Certification
+24|I certify that the information provided in this disclosure is complete and accurate.
+25|Grant / Contract Description:
+26|Grant / Contract Purpose:
+27|Additional Information:
+28|Category: Consultant
+29|Description:
+30|Additional Information:
+31|Category: Consultant
+32|Description:
+33|Additional Information:
+34|Category: Consultant
+35|Description:
+36|Additional Information:
+37|Recipient Name:
+38|Recipient Type:
+39|Grant / Contract Description:
+40|Grant / Contract Purpose:
+41|Additional Information:
+42|Category: Consultant
+43|Description:
+44|Additional Information:
+45|Category: Consultant
+46|Description:
+47|Additional Information:
+48|Recipient Name: Brigham and Women's hospital
+49|Recipient Type: Institution
+50|Grant / Contract Description: Contract for research
+51|Grant / Contract Purpose:
+52|Additional Information:
+53|1.
+54|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+55|No.
+56|2.
+57|What is the manuscript title?
+58|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+59|3.
+60|Are you the corresponding author?
+61|Yes.
+62|a.
+63|Please list the other authors' names here.
+64|John J.V. McMurray, MDb, Brian Claggett, PhDa, Rudolf A. de Boer, MDc, David DeMets, PHDd, Adrian F. Hernandez, MDe, Silvio E. Inzucchi, MDf, Mikhail N. Kosiborodg, Carolyn S.P. Lam,
+65|MD,c,h Felipe Martinez, MD,i Sanjiv J. Shah, MD,j Akshay S. Desai, MD,a Pardeep Jhund, MD,b Jan Belohlavek, MD,k Chern-En Chiang, MD,l C. Jan Willem Borleffs, MD,m Josep Comin-Colet,
+66|MD,PhD,n Dan Dobreanu, MD,o Jaroslaw Drozdz, MD,p James C. Fang, MD,q Marco Antonio Alcocer Gamba, MD,r Waleed Al Habeeb, MD,s Yaling Han, MD,t Jose Walter Cabrera Honorio,
+67|MD,u Stefan P. Janssens, MD,v Tsvetana Katova, MD,w Masafumi Kitakaze, MD,x Bela Merkely, MD, PhD,y Eileen O'Meara, MD,z Jose Francisco Kerr Saraiva, MD,aa Sergey N. Tereshchenko,
+68|MD,bb Jorge Thierer, MD,cc Muthiah Vaduganathan, MD MPH,a Orly Vardeny, PharmD, MS,dd Subodh Verma, MD,ee Pham Nguyen Vinh, MD,ff Ulrica Wilderäng, PHD,gg Natalia Zaozerska,
+69|PhD,gg, Erasmus Bachus, MD, PhD gg, Daniel Lindholm, MD, PhD, gg Magnus Petersson, MD, PhD,gg, Anna Maria Langkilde, MDgg
+70|
+71|[Extracted table 1]
+72||Column 1|Column 2|Column 3|
+73||---|---|---|
+74|||||
+75||Grant / Contract Description: Grant / Contract Purpose:<br>Additional Information:|||
+76||SANOFI PASTEUR INC.|Consultant|Self|
+77||Category: Consultant Description:<br>Additional Information:|||
+78||Sarepta Therapeutics, Inc.|Consultant|Self|
+79||Category: Consultant Description:<br>Additional Information:|||
+80||tenaya|Consultant|Self|
+81||Category: Consultant Description:<br>Additional Information:|||
+82||Theracos|Grant / Contract|Self|
+83||Recipient Name: Recipient Type:<br>Grant / Contract Description: Grant / Contract Purpose:<br>Additional Information:|||
+84||Theracos|Consultant|Self|
+85||Category: Consultant Description:<br>Additional Information:|||
+86||Tremeau|Consultant|Self|
+87||Category: Consultant Description:<br>Additional Information:|||
+88||us2.ai|Grant / Contract|Self|
+89||Recipient Name: Brigham and Women's hospital Recipient Type: Institution<br>Grant / Contract Description: Contract for research Grant / Contract Purpose:<br>Additional Information:|||

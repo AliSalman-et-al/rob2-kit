@@ -1,0 +1,45 @@
+1|
+2|
+3|
+4|
+5|21
+6|
+7|Outcomes
+8|The primary outcome was a composite of worsening heart failure, defined as either an unplanned hospitalization or an
+9|urgent visit requiring intravenous therapy for heart failure, or cardiovascular death. The primary outcome was analyzed
+10|concurrently in both the full population and in patients with LVEF < 60% with alpha split between these analyses. The
+11|dual primary analyses were introduced in a protocol amendment on November 4, 2020. Secondary objectives were to
+12|determine whether dapagliflozin was superior to placebo in reducing the total number of worsening heart failure events
+13|(hospitalization for heart failure and urgent heart failure visits) and cardiovascular death in the full study population and
+14|the sub-population with LVEF < 60%, in improving patient-reported outcomes measured by the Kansas City
+15|Cardiomyopathy Questionnaire (KCCQ) total symptom score (TSS) (scores range from 0 to 100, with higher scores
+16|indicating fewer symptoms and physical limitations), in reducing cardiovascular death, and in reducing all-cause
+17|mortality. The primary KCCQ-TSS analysis was changed in the statistical analysis plan on November 6th, 2020 to include
+18|only patients who had their 8-month assessment planned or performed before March 11, 2020. All potential primary
+19|events were adjudicated by an independent clinical events committee blinded to treatment assignment based on
+20|prespecified criteria2.
+21|In light of the prior extensive safety data regarding dapagliflozin, only collection of serious adverse events and adverse
+22|events leading to discontinuation were required. Additionally, events related to volume depletion, major hypoglycemic
+23|events, diabetic ketoacidosis, amputation, and renal adverse events were collected.
+24|
+25|
+26|General Statistical Considerations
+27|The dual primary analyses (time to first occurrence of cardiovascular death or worsening heart failure) were conducted
+28|concurrently in the overall population and in patients with a LVEF < 60% (See below and Figure S1). Accounting for one
+29|interim analysis, the total alpha used in the final analysis was 0.048, with 0.024 allocated to the analysis of the full
+30|population, and 0.038 allocated to the analysis of patients with an LVEF < 60% (see below for details). Other than the
+31|unblinded statisticians and programmers at the independent statistics group, Statistics Collaborative Inc., performing the
+32|analysis for the Data Monitoring Committee, no one, either at the sponsor or academic leadership, was unblinded for
+33|the interim analysis or knew the results other than the recommendation to continue the trial. A sample size of 6100
+34|patients followed for at least 13.5 and up to 39 months was estimated to provide 1117 events, resulting in 93% power to
+35|detect a 20% relative risk reduction for the primary endpoint in the full population with a two-sided alpha of 0.024. The
+36|relative risk reduction was based on data from the EMPAREG Outcomes trial3. We included data from all patients who
+37|underwent randomization in the analyses of the primary and secondary outcomes according to the intention-to-treat
+38|principle. Safety analyses were conducted in all patients who received at least one dose of dapagliflozin or placebo. For
+39|the primary analyses, time-to-event data were evaluated using Kaplan-Meier estimates and Cox proportional hazards
+40|models, stratified according to T2DM status, with the treatment-group assignment as a fixed-effect factor. Secondary
+41|analyses were performed using a closed testing procedure including a pre-specified hierarchical ordering of the primary
+42|and secondary endpoints (Figure S1). After initially analyzing the dual primary endpoints, subsequent testing was
+43|performed in a prespecified hierarchy allocating alpha for each test, with the possibility to recycle alpha to the
+44|alternative pathway. A composite of cardiovascular death, total heart failure hospitalizations, and urgent heart failure
+45|visits were analyzed utilizing the semiparametric proportional rates method of Lin et al 4. We analyzed the total

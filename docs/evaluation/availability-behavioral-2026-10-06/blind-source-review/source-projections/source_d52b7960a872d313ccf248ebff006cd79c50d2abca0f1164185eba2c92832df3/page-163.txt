@@ -1,0 +1,41 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|70 of 95
+6|responsible for providing information on financial interests during the course of the study and for
+7|1 year after completion of the study.
+8|A 3
+9|Informed consent process
+10|The Investigator or hisPher representative will explain the nature of the study to the subject or
+11|hisPher legally authorised representative and answer all questions regarding the study.
+12|Subjects must be informed that their participation is voluntary. Subjects or their legally authorised
+13|representative will be required to sign a statement of informed consent that meets the requirements
+14|of 21 CFR 50, local regulations, ICH guidelines, Health Insurance Portability and Accountability
+15|Act HHIPAAI requirements, where applicable, and the IRBPIEC or study centre.
+16|The medical record must include a statement that written informed consent was obtained before
+17|the subject was enrolled in the study and the date the written consent was obtained. The authorised
+18|person obtaining the informed consent must also sign the ICF.
+19|Subjects must be re-consented to the most current version of the ICFHsI during their participation
+20|in the study.
+21|A copy of the ICFHsI must be provided to the subject or the subjectOs legally authorised
+22|representative.
+23|A subject who is rescreened is required to sign another ICF.
+24|A 4
+25|Data protection
+26|Each subject will be assigned a unique identifier by the sponsor. Any subject records or data sets
+27|transferred to the sponsor will contain only the identifierR subject names or any information which
+28|would make the subject identifiable will not be transferred.
+29|The subject must be informed that hisPher personal study- related data will be used by the sponsor
+30|in accordance with local data protection law. The level of disclosure must also be explained to the
+31|subject.
+32|The subject must be informed that hisPher medical records may be examined by Clinical Muality
+33|Assurance auditors or other authorised personnel appointed by the sponsor, by appropriate
+34|IRBPIEC members, and by inspectors from regulatory authorities.
+35|A 5
+36|Committees structure
+37|Executive Committee
+38|Together with AZ, the Executive Committee will be responsible for the final overall study design,
+39|including the development of the study protocol and eCRF, supervision of the study conduct and
+40|progress, development of any protocol amendments needed during the study, liaison with the CEA
+41|committee and DMC committee as needed, development of the statistical analysis plan,

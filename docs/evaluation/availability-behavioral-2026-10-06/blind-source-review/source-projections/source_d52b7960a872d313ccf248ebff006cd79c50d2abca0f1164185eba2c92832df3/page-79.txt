@@ -1,0 +1,55 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|77 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|E 3
+9|International Airline Transportation Association (IATA) 6.2
+10|Guidance Document
+11|LABELLING AND SHIPMENT OF BIOHAZARD SAMPLES
+12|International Airline Transportation Association (IATA) classifies biohazardous agents into 3
+13|categories (http://www.iata.org/whatwedo/cargo/dangerous_goods/infectious_substances.htm).
+14|For transport purposes the classification of infectious substances according to risk groups was
+15|removed from the Dangerous Goods Regulations in the 46th edition (2005). Infectious
+16|substances are now classified either as Category A, Category B or Exempt. There is no direct
+17|relationship between Risk Groups and Categories A and B.
+18|Category A Infectious Substances are infectious substances in a form that, when exposure to it
+19|occurs, is capable of causing permanent disability, life-threatening or fatal disease in otherwise
+20|healthy humans or animals. Category A pathogens are e.g., Ebola, Lassa fever virus:
+21|x
+22|Are to be packed and shipped in accordance with IATA Instruction 602.
+23|Category B Infectious Substances are infectious Substances that do not meet the criteria for
+24|inclusion in Category A. Category B pathogens are e.g., Hepatitis A, B, C, D, and E viruses,
+25|Human immunodeficiency virus types 1 and 2. They are assigned the following UN number and
+26|proper shipping name:
+27|x
+28|UN 3373 ± Biological Substance, Category B
+29|x
+30|Are to be packed in accordance with UN3373 and IATA 650
+31|Exempt - all other materials with minimal risk of containing pathogens
+32|x
+33|Clinical trial samples will fall into Category B or exempt under IATA
+34|regulations
+35|x
+36|Clinical trial samples will routinely be packed and transported at ambient
+37|x
+38|Temperature in IATA 650 compliant packaging
+39|(http://www.iata.org/whatwedo/cargo/dangerous_goods/infectious_substances.ht
+40|m)
+41|x
+42|Biological samples transported in dry ice require additional dangerous
+43|goods specification for the dry-ice content
+44|x
+45|IATA compliant courier and packaging materials should be used for packing and
+46|transportation and packing should be done by an IATA certified person, as
+47|applicable
+48|x
+49|Samples routinely transported by road or rail are subject to local regulations
+50|which require that they are also packed and transported in a safe and appropriate
+51|way to contain any risk of infection or contamination by using approved couriers
+52|and packaging/containment materials at all times. The IATA 650 biological
+53|sample containment standards are encouraged wherever possible when road or
+54|rail transport is used.
+55|

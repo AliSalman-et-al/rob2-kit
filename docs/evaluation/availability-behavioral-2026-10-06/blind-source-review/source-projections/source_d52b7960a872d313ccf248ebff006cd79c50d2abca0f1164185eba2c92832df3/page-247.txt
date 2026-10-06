@@ -1,0 +1,43 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|22 of 58
+7|2
+8|ANALYSIS SETS
+9|2.1
+10|Definition of Analysis Sets
+11|2.1.1
+12|Full Analysis Set
+13|All patients who have been randomised to IP will be included in the FAS irrespective of their
+14|protocol adherence and continued participation in the study. Patients will be analysed
+15|according to their randomised IP assignmentO irrespective of the treatment actually received.
+16|The FAS will be considered the primary analysis set for the ITT analysis of primary and
+17|secondary variables and for the exploratory efficacy variables. A subset of the FAS consisting
+18|of patients with baseline LVEF of < 60C (or LVEF < 60C subpopulation) will be analysed
+19|separately as part of the confirmatory statistical testing procedure (see CSP Section 4.2 for
+20|justification of testing LVEF < 60C subpopulation).
+21|2.1.2
+22|Safety Analysis Set
+23|All randomised patients who received at least 1 dose of randomised treatment will be included
+24|in the SAS. Patients will be analysed according to the treatment actually received. For any
+25|patients given incorrect treatmentO ieO randomised to one of the treatment groupsO but actually
+26|given the other treatmentO the treatment group will be allocated as followsN Patients who got
+27|both incorrect and correct treatment will be analysed according to their randomised treatment.
+28|Patients who got only the incorrect treatment will be analysed according to that treatment.
+29|The SAS will be considered the primary analysis set for all safety variables.
+30|2.2
+31|Violations and Deviations
+32|The important protocol deviations listed below will be summarised by randomised treatment
+33|group
+34|
+35|Patients who were randomised but did not meet inclusion criteriaO or met exclusion
+36|criteria
+37|
+38|Patients who received the wrong IP at any time during the study.
+39|
+40|Patients who received prohibited concomitant medicationO which for this study is limited
+41|to open label SGLT2 inhibitors taGen in combination with IP.
+42|As the primary analysis is ITT analysisO protocol deviation will not imply exclusion from the
+43|primary analysis.

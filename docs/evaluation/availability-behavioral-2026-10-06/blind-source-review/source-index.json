@@ -1,0 +1,56 @@
+{
+  "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c": {
+    "label": "NEJMoa2206286.pdf",
+    "media_type": "application/pdf",
+    "page_count": 10,
+    "sha256": "sha256:e0ebc04bc7f19c0fd8ef6b8dcf23168c75f83cd35dd16b9714bc13b3065ee389",
+    "projection_hash": "sha256:0b3f23804e50facea65cd1396181b135e77a9ece93e901480fc0f0110008a1fd",
+    "role": "main_article",
+    "origin": "local_dossier"
+  },
+  "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe": {
+    "label": "nejmoa2206286_appendix.pdf",
+    "media_type": "application/pdf",
+    "page_count": 44,
+    "sha256": "sha256:6d07f0425b3d4f715b3a3e5105700d482335c46df12ac24298fce2ed59b015cb",
+    "projection_hash": "sha256:22f0d9f0d134df7d783eb0af6f7285672eeb1aae493006922a8e777698ae73b9",
+    "role": "supplement",
+    "origin": "local_dossier"
+  },
+  "source_a475edbe3fac6ae2202af7ddeecbc60bd10217757168206317f6de5e253d58fe": {
+    "label": "nejmoa2206286_data-sharing.pdf",
+    "media_type": "application/pdf",
+    "page_count": 2,
+    "sha256": "sha256:6376811d3d49071d896a72ad1d39708b101a38ddffa9d98224755dfb9e05633e",
+    "projection_hash": "sha256:3c58f7f5dd7c887385cf5c02cae5dcc18c2f1d049301c415267cd235cb4dcedd",
+    "role": "supplement",
+    "origin": "local_dossier"
+  },
+  "source_e08fcefdda400f19592eaa5d8513c829312d0c864c1e0338c784c0562360ff2d": {
+    "label": "nejmoa2206286_disclosures.pdf",
+    "media_type": "application/pdf",
+    "page_count": 77,
+    "sha256": "sha256:59e352bb88de7aa1c7f7b09557beb3fa0a552dab71cae02afdda4c1f0acd0436",
+    "projection_hash": "sha256:5c5619948adb5f26a12701beeb919b9bb43102709f24d4e25aa716272fa600e7",
+    "role": "supplement",
+    "origin": "local_dossier"
+  },
+  "source_d52b7960a872d313ccf248ebff006cd79c50d2abca0f1164185eba2c92832df3": {
+    "label": "nejmoa2206286_protocol.pdf",
+    "media_type": "application/pdf",
+    "page_count": 304,
+    "sha256": "sha256:e4430897f72b7abb309c9b54cfda36e60f3da7173c5953192d63ea642ed685a3",
+    "projection_hash": "sha256:b981d45515140765fa4f3a16a3553609b769f4654230d572f49d6a3dc53b9fc3",
+    "role": "supplement",
+    "origin": "local_dossier"
+  },
+  "source_858d4ba1707db4e6c637bc3b7f4d735e6c17a1b16aa570cd1d3ab8257631f270": {
+    "label": "ClinicalTrials.gov NCT03619213",
+    "media_type": "application/json",
+    "page_count": 1,
+    "sha256": "sha256:34f5716eebc228fb26dcc58ee6ea06cc8f702e870c6125a841e3a37a3cef8796",
+    "projection_hash": "sha256:31c56548880387b6d8345df494830dd5b93cbf69e6d060709a417e676a970d7e",
+    "role": "registry",
+    "origin": "registry"
+  }
+}

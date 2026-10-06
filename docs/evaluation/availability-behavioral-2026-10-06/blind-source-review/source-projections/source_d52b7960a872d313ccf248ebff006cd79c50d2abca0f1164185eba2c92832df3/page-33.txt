@@ -1,0 +1,47 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|31 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|6.3.1.1
+9|Stratification
+10|Randomisation will be stratified in IxRS based on patients with and without T2D at the time of
+11|randomisation in order to ensure approximate balance between treatment groups within each
+12|sub-population. Stratification on T2D at the time of randomisation is based on:
+13|x Established diagnosis of T2D
+14|OR
+15|x HbA1c 6.5% (48 mmol/mol) VhoZn aW cenWUal laboratory test at enrolment (Visit 1)
+16|6.3.1.2
+17|Capping
+18|The intent is to enrol a typical cross-section of patients with HFpEF and to include representative
+19|proportions of diabetic and non-diabetic patients. The number of randomised patients with and
+20|without T2D will be monitored in order to ensure a minimum of 30% in each sub-population.
+21|Randomisation may be capped (i.e., no more patients can be randomised in a specific
+22|sub-population) if the pre-determined limit is reached.
+23|Randomisation of patients based on geographic region will be monitored to ensure global
+24|representation. LVEF value, NYHA class, subacute subgroup (i.e. randomised in-hospital or
+25|within 21 days from discharge) and atrial fibrillation status at Visit 1 may be capped in IxRS to
+26|avoid over- or under-representation of these patient subgroups.
+27|6.4
+28|Treatment compliance
+29|The administration of all IP should be recorded in the appropriate sections of the eCRF. Any
+30|change from the dosing schedule should be recorded in the eCRF.
+31|Patients will be asked to return all unused IP and empty packages to the clinic at the site visit
+32|except Visit 3. At each visit, any patient found to be non-compliant will be counselled on the
+33|importance of taking their IP as prescribed. The investigator or delegate will enter the number of
+34|returned tablets in the eCRF.
+35|The Investigational Product Storage Manager is responsible for managing IP from receipt by the
+36|study site until the destruction or return of all unused IP. The Investigator(s) is responsible for
+37|ensuring that the patient has returned all unused IP.
+38|6.5
+39|Concomitant therapy
+40|All patients should be treated according to regional standard of care of HFpEF and existing
+41|comorbidities (including treatment of hypertension, ischemic heart disease, atrial fibrillation,
+42|diabetes, hyperlipidaemia). Background medications should be part of clinical practice and will
+43|not be provided by the Sponsor.
+44|6.5.1
+45|Prohibited medication
+46|Concomitant treatment (i.e., treatment in combination with IP) with open label SGLT2 inhibitors
+47|e.g., dapagliflozin, empagliflozin, canagliflozin, ertugliflozin, tofogliflozin and luseogliflozin and

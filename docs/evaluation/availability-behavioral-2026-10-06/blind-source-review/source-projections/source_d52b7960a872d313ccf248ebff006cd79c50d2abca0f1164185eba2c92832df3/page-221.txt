@@ -1,0 +1,40 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|32 of 36
+7|EQ-5D-5L derived utility score will be summarised by descriptive statistics by visit and
+8|treatment groupH and will be used to support modelling in a separate health economic report.
+9|Patient global impression of severity (PGIS) will be tabulated by visit and treatment groupH
+10|and will be used in anchor based analyses to support threshold for clinically important change
+11|of KCCQ total symptom score.
+12|5
+13|INTERIM ANALYSES
+14|An interim analysis is planned to be performed including approximately 67I of the target
+15|number of patients with adjudicated primary endpoint events. There will in principle be one
+16|planned interim analysis for efficacyH with the possibility of the data monitoring committee
+17|(DMC) to conduct subseCuent interim analysis if they deem necessary. The significance level
+18|for final analysis will be determined by the Haybittle-Peto function based on the actual
+19|number of interim analysesH using the East software (Copyright U Cytel Inc). The interim
+20|analysis will assess superiority of dapaglifloDin to placebo. The interim analysis will have a
+21|nominal two-sided alpha level of 0.2I. At the interim analysisH the primary composite
+22|endpoint will be tested first at the specified alpha level. If superiority is achieved for the
+23|primary endpointH then the superiority of dapaglifloDin to placebo on CV deaths will be tested
+24|at a two-sided level of 0.2I. If CV death is significantH then an action is triggered whereby the
+25|DMC will evaluate the totality of the efficacy data and safety dataH to determine if benefit is
+26|uneCuivocal and overwhelming such that the DMC recommends ending the study.
+27|If the interim analysis leads to a decision to terminate the study early based on pre-defined
+28|stopping guidelinesH the interim analysis database will become the basis of statistical inference
+29|for the primary endpoint and CV death. Following such a decisionH the executive committee
+30|will define a PACDH on or after which study closure visits will commence. Analysis based on
+31|the final database will be conducted to support the full reporting of the study. The consistency
+32|between the interim analysis database and the subseCuently locked database will be assessed.
+33|If the study is stopped in the efficacy interim analysisH testing of secondary endpoints will be
+34|performed on the final database with the same testing procedure as described in section 4.1.3
+35|with two-sided significance level 0.002.
+36|A futility analysis is planned to be performed at the same time as the planned interim analysis.
+37|The study may be stopped for futility if the observed HR for the primary endpoint is F 0.946H
+38|corresponding to a predictive power of 5I. If the futility criterion of the primary endpoint is
+39|metH then DMC will evaluate the totality of dataH including potential benefits on patient
+40|reported outcomes to consider recommending ending the study for futility.

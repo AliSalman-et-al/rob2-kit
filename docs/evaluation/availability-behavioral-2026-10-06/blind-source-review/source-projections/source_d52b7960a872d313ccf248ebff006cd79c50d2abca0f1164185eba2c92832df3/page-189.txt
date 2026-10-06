@@ -1,0 +1,39 @@
+1|SIGNATURE PAGE
+2|This is a representation of an electronic record that was signed
+3|electronically and this page is the manifestation of the electronic signature
+4|Document Name: d169cc00001-csp-v4
+5|Document Title:
+6|D169CC00001 Clinical Study Protocol version 4
+7|Document ID:
+8|Doc ID-003827083
+9|Version Label:
+10|6.0 CURRENT LATEST APPROVED
+11|Server Date
+12|(dd-MMM-yyyy HH:mm 'UTC'Z)
+13|Signed by
+14|Meaning of Signature
+15|13-Nov-2020 13:23 UTC
+16|Content Approval
+17|16-Nov-2020 16:15 UTC
+18|Content Approval
+19|13-Nov-2020 07:36 UTC
+20|Content Approval
+21|16-Nov-2020 08:56 UTC
+22|Content Approval
+23|13-Nov-2020 08:29 UTC
+24|Qualified Person Approval
+25|Notes: (1) Document details as stored in ANGEL, an AstraZeneca document management system.
+26|
+27|[Extracted table 1]
+28||Column 1|Column 2|Column 3|
+29||---|---|---|
+30||Document Name: d169cc00001-csp-v4|||
+31||Document Title:|D169CC00001 Clinical Study Protocol version 4||
+32||Document ID:|Doc ID-003827083||
+33||Version Label:|6.0 CURRENT LATEST APPROVED||
+34||Server Date<br>(dd-MMM-yyyy HH:mm 'UTC'Z)|Signed by|Meaning of Signature|
+35||13-Nov-2020 13:23 UTC||Content Approval|
+36||16-Nov-2020 16:15 UTC||Content Approval|
+37||13-Nov-2020 07:36 UTC||Content Approval|
+38||16-Nov-2020 08:56 UTC||Content Approval|
+39||13-Nov-2020 08:29 UTC||Qualified Person Approval|

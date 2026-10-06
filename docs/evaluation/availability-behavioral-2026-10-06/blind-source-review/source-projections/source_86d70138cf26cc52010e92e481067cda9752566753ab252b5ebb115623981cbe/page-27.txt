@@ -1,0 +1,38 @@
+1|
+2|
+3|
+4|
+5|26
+6|Figure S2. Patient flow.
+7|
+8|
+9|
+10|
+11|Assessed for eligibility (n=10418)
+12|Excluded (n=4155)
+13|Not meeting eligibility criteria (n=3955)
+14|Declined to participate (n=170)
+15|Died (n=8)
+16|Adverse Event (n=8)
+17|Other reasons (n=14)
+18|Discontinued intervention (n=444)
+19|Incomplete follow-up for primary endpoint (n=29)
+20|Survival status unknown (n=2)
+21|•
+22|Lost to follow-up (n=2)
+23|•
+24|Withdrawal of consent (n=0)
+25|Allocated to Dapagliflozin (n=3131)
+26| ̈ Received allocated intervention (n=3126)
+27| ̈ Did not receive allocated intervention (n=5)
+28|Discontinued intervention (n=442)
+29|Incomplete follow-up for primary endpoint (n=23)
+30|Survival status unknown (n=2)
+31|•
+32|Lost to follow-up (n=1)
+33|•
+34|Withdrawal of consent (n=1)
+35|Allocated to Placebo (n=3132)
+36| ̈ Received allocated intervention (n= 3127)
+37| ̈ Did not receive allocated intervention (n=5)
+38|Randomized (n=6263)

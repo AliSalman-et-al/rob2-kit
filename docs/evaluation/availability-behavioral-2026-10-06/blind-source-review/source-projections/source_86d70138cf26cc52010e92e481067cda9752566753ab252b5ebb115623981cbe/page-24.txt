@@ -1,0 +1,38 @@
+1|
+2|
+3|
+4|
+5|23
+6|•
+7|If all hypotheses in one branch were rejected, alpha was recycled to the other branch, where remaining unrejected
+8|hypotheses could be tested at full alpha adjusted for interim analysis (ie, 4.8%) in the order described in Figure S1.
+9|
+10|In the final data, 821 patients with a primary endpoint in the LVEF < 60 subgroup and 1122 in the full
+11|population, resulted in α1 =3.8%. Since both primary null hypotheses were rejected at alpha of 2.4% and 3.8%
+12|for the full study population and in the subpopulation with LVEF < 60%, respectively, the subsequent
+13|hypotheses in each branch (Figure S1) were tested at 2.4%. Further, because all hypotheses in the left branch
+14|were rejected, alpha was recycled to the right branch, where remaining unrejected hypotheses were re-tested
+15|at full alpha adjusted for interim analysis (ie, 4.8%). Note however that the alpha split utilizing the correlation
+16|and recycling had no impact on the outcome of the statistical testing as all p-vales were either clearly below or
+17|above 0.05.
+18|
+19|
+20|Safety Data Collection
+21|Serious adverse events (SAE) and adverse events leading to discontinuation of study drug (DAE) were collected. In
+22|addition, prespecified AEs were events of volume depletion, renal events, diabetes ketoacidosis, major hypoglycemia
+23|and lower limb amputations. The Data source for the safety events listed in table 2 of the manuscript are as follows:
+24|Adjudicated: Diabetic ketoacidosis (definite or probable)
+25|Case report forms were used to analyze major hypoglycemia and events leading to lower limbs amputations .
+26|Pre-defined preferred term lists for DAE (AEs leading to treatment discontinuation) /SAE of volume depletion
+27|events and renal events
+28|Major hypoglycemia was defined as an event where all the following criteria were confirmed by the investigator:
+29|(1) the patient experienced symptoms of severe impairment in consciousness or behavior; (2) the patient
+30|needed external assistance; (3) intervention was needed to treat the hypoglycemia; and (4) there was prompt
+31|recovery of acute symptoms following the intervention.
+32|The independent, blinded diabetic ketoacidosis (DKA) adjudication committee consisting of content experts in the
+33|medical area of interest, adjudicated all events of potential diabetic ketoacidosis and reported events are those
+34|adjudicated to be definite or probable DKA.
+35|A separate DKA Adjudication Manual defined and described the procedures for the collection of DKA information,
+36|handling, adjudication criteria and reporting of these events.
+37|
+38|

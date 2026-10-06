@@ -1,0 +1,46 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|11 of 36
+7|1.2.2
+8|Withdrawal of consent
+9|Withdrawal of consent (WoC) should only occur if the patient has received appropriate
+10|information about options for modified study follow-up and does not agree to any kind of
+11|further assessment or follow-up. Information regarding vital status (dead or alive) at the end of
+12|the study will be collected from public sourcesH to be included in the analysis of death from
+13|any cause as a sole outcome and in patient disposition summaries.
+14|1.2.3
+15|Discontinuation from study drug
+16|Discontinuation from study drug does not mean discontinuation from study follow-up or
+17|WoC. Patients who discontinue from study drug should continue study visits according to plan
+18|until study closure. If the patient does not agree to this approachH modified follow-up
+19|capturing the essential information for the objectives of the study should be arranged. Data
+20|will be included in the ITT analyses irrespective of whether the event occurred before or
+21|following discontinuation of study drug.
+22|1.2.4
+23|Vital Status
+24|Known vital status at the end of the study will be defined when the patient is dead or has date
+25|last know alive on or after the PACD.
+26|For patients who have withdrawn consentH the investigator will attempt to collect vital status
+27|from publicly available sources at study closure in compliance with local privacy
+28|laws/practices.
+29|1.2.5
+30|Lost to follow-up
+31|The term lost to follow-up (LTFU) will be limited to patients with unknown vital status at the
+32|end of the study as defined in section 1.2.4. Other measures will be used to describe
+33|completeness of follow-up of the primary endpoint (section 4.1.5)
+34|1.3
+35|Study design
+36|This is an internationalH multicentreH parallel-groupH event-drivenH randomisedH double-blindH
+37|placebo-controlled study in patients with heart failure with preserved ejection fraction
+38|(HFpEF)H evaluating the effect of dapaglifloDin 10 mg versus placeboH given once daily in
+39|addition to background regional standard of care therapyH including treatments to control co-
+40|morbiditiesH in reducing the composite of CV death or heart failure events.
+41|HFpEF is defined for the purposes of this study as left ventricular ejection fraction (LVEF)
+42|F40I and evidence of structural heart disease. Adult patients with HFpEFH aged J40 years
+43|and with NYHA class II-IV will be randomised in a 1G1 ratio to receive either dapaglifloDin
+44|10 mg or placebo once daily. A proportion of patientsH here denoted as the subacute groupH
+45|will be randomised during hospitalisation for heart failure or within 21 days of discharge from
+46|hospitalisation for heart failure.

@@ -1,0 +1,43 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|27 of 36
+7|Handling of missing data
+8|The number of patients with missing vital status at 8 months is expected to be negligible. If
+9|some patients are LTFU or patients who withdrew consent have unknown vital statusH the
+10|main analysis will be done with these patients assigned the worst ranks (same as deaths).
+11|In the context of analysing the composite ranked endpoint as described aboveH missing data
+12|may arise when patients miss the 8-month KCCQ assessment while remaining in the study
+13|during the 8-month assessment windowH or when patients withdraw consent from the study
+14|prior to 8 months. If a patient is known to have died prior to the 8-month assessmentH the
+15|patient is considered to have a non-missing composite outcome and will be handled as
+16|described above (assigned the worst rank). OtherwiseH patients who are alive at 8 months and
+17|have missing baseline or 8-month KCCQ assessments will have their missing TSS imputed
+18|using the multiple imputation (MI) methodology as follows.
+19|Missing TSS values at baseline or at 8 months will be imputed under the Missing at Random
+20|(MAR) assumption. The imputation will be done using a predictive mean matching multiple
+21|imputation model and a method of Fully Conditional Specification as implemented in the SAS
+22|Procedure MI (FCS statement). The predictive mean matching method ensures that the
+23|imputed values remain in the permissible range of the TSS values. The imputation model will
+24|include the treatment groupH T2D randomiDation stratumH TSS at baselineH month 1H 4H and 8H
+25|and three auxiliary binary variables representing occurrences of any HF events in the intervals
+26|from randomiDation to 1 monthH from 1 to 4 monthsH and from 4 to 8 monthsH respectively.
+27|Occurrences of HF events will be determined based on the investigator-reported potential HF
+28|events. Auxiliary variables related to HF events are included in the imputation model to
+29|improve the imputation accuracyH because the occurrence of HF events is associated with
+30|Cuality of life assessed by KCCQ.
+31|The number of closest observations used to sample an imputed value by the predictive mean
+32|matching method will be 5 (SAS default setting).
+33|Each imputed dataset will be analysed using the methods described in the RHypothesis
+34|testingS and REstimation of treatment effectS sub-sections above. The results from multiple
+35|imputed datasets will be combined using RubinOs rule as implemented in the SAS Procedure
+36|MIANALYZE.
+37|
+38|In the analysis of rank ANCOVAH the CMH tests statistic used for the hypothesis test
+39|has a chi-sCuare distribution. In order to apply RubinOs combination ruleH which
+40|assumes approximate normal distribution of the statistics being combinedH a
+41|normaliDing Wilson-Hilferty transformation will be applied to the CMH test statistics
+42|from each imputed dataset (Ratitch et al 2013). The standardiDed transformed statistic
+43|will be computed as followsG

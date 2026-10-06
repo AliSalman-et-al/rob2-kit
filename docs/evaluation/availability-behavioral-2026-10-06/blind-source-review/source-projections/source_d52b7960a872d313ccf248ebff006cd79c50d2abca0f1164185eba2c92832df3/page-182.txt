@@ -1,0 +1,78 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|89 of 95
+6|9. Over the past 2 weeks, on average, how many times have you been forced to sleep sitting up in
+7|a chair or with at least 3 pillows to prop you up because of shortness of breath`
+8|Every
+9|3 or more times per
+10|1-2 times a
+11|Less than
+12|Never over the
+13|night
+14|weeG, but not every day weeG
+15|once a weeG
+16|past 2 weeGs
+17|❏
+18|❏
+19|❏
+20|❏
+21|❏
+22|10. Heart failure symptoms can worsen for a number of reasons. How sure are you that you
+23|know what to do, or whom to call, if your heart failure gets worse`
+24|Not at
+25|Not very
+26|Somewhat
+27|Mostly
+28|Completely
+29|all sure
+30|sure
+31|sure
+32|sure
+33|❏
+34|sure
+35|❏
+36|❏
+37|❏
+38|❏
+39|11. How well do you understand what things you are able to do to keep your heart failure
+40|symptoms from getting worse` Hfor example, weighing yourself, eating a low salt diet etc.I
+41|Do not
+42|Do not understand
+43|Somewhat
+44|Mostly understand Completely
+45|understand at all
+46|very well
+47|understand
+48|❏
+49|understand
+50|❏
+51|❏
+52|❏
+53|❏
+54|12. Over the past 2 weeks, how much has your heart failure limited your enjoyment of life`
+55|It has extremely
+56|It has limited my
+57|It has
+58|moderately
+59|It has slightly
+60|It has not
+61|limited my
+62|limited my
+63|enjoyment of life
+64|limited my
+65|limited my
+66|enjoyment of
+67|life
+68|enjoyment of life
+69|Juite a bit
+70|enjoyment of life enjoyment of life
+71|at all
+72|❏
+73|❏
+74|❏
+75|❏
+76|❏
+77|13. If you had to spend the rest of your life with your heart failure the way it is right now, how
+78|would you feel about this`

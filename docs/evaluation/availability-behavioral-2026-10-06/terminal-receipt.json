@@ -1,0 +1,897 @@
+{
+  "scope": "Exactly two new native D3-only sessions; no retries, full benchmark or full-case accuracy claim.",
+  "runner_summary_limitation": "Immutable runner accepted/finalized flag is false: detector looked for save_domain, while actual thin API is save_domain_judgment. This supplemental receipt verifies native successful save, checkpoint and canonical integrity; original outputs untouched.",
+  "arms": {
+    "control": {
+      "session_id": "01a111b7-106a-7f52-895e-8a72c669511a",
+      "returncode": 0,
+      "elapsed_seconds": 192.85505954903783,
+      "native_d3_saved": true,
+      "canonical_integrity": true,
+      "question_3_1": "probably_yes",
+      "judgment": "low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "usage": {
+        "input_tokens": 1416843,
+        "cached_input_tokens": 1286400,
+        "output_tokens": 3332,
+        "reasoning_output_tokens": 198
+      },
+      "uncached_input_tokens": 130443,
+      "response_count": 19,
+      "native_calls": [
+        {
+          "tool": "get_status",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_status",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_status",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "render_page",
+          "status": "completed",
+          "outcome": null
+        },
+        {
+          "tool": "render_page",
+          "status": "completed",
+          "outcome": null
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "save_domain_judgment",
+          "status": "completed",
+          "outcome": "success"
+        }
+      ],
+      "original_outputs_freeze_sha256": "d7e2df297051875c39db40dda0d5bb4633ecc1403f805128f0b1c428ff3a011c",
+      "supplemental_save_receipt_sha256": "3cac49a40dc6ae7bfac24bf56979c29e27be0d73bcabfcac69d309f9a712274b",
+      "representation": {
+        "observed": [
+          null,
+          null
+        ],
+        "unavailable": [
+          null,
+          null
+        ],
+        "completed": [
+          3102,
+          3109
+        ]
+      },
+      "canonical_reconciled_rows": [
+        {
+          "scope": {
+            "arm": "dapagliflozin",
+            "population": "All randomized participants",
+            "time_point": "Randomization through primary analysis cutoff",
+            "unit": "participants"
+          },
+          "randomized": 3131,
+          "completed": 3102,
+          "unavailable": null,
+          "observed": null,
+          "missing": null,
+          "missing_bounds": {
+            "kind": "bound",
+            "lower": 0,
+            "upper": 3131
+          },
+          "missing_fraction": null
+        },
+        {
+          "scope": {
+            "arm": "placebo",
+            "population": "All randomized participants",
+            "time_point": "Randomization through primary analysis cutoff",
+            "unit": "participants"
+          },
+          "randomized": 3132,
+          "completed": 3109,
+          "unavailable": null,
+          "observed": null,
+          "missing": null,
+          "missing_bounds": {
+            "kind": "bound",
+            "lower": 0,
+            "upper": 3132
+          },
+          "missing_fraction": null
+        }
+      ],
+      "actual_read_actions": [
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "SKILL.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/codex.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/missing.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/evidence.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/read-main-report.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/result-account.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 64
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 111
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 107
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 140
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 182
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 318
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 105
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 226
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 9,
+                "start_line": 1,
+                "end_line": 93
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 86
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 5,
+                "start_line": 144,
+                "end_line": 182
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 318
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 105
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 226
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 9,
+                "start_line": 1,
+                "end_line": 93
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 86
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 9,
+                "start_line": 55,
+                "end_line": 93
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 86
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_86d70138cf26cc52",
+            "pages": [
+              27
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "render_page",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_86d70138cf26cc52",
+            "page": 27
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "render_page",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_86d70138cf26cc52",
+            "page": 27
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_d52b7960a872d313",
+                "page": 204,
+                "start_line": 1,
+                "end_line": 41
+              },
+              {
+                "source_id": "sh_d52b7960a872d313",
+                "page": 210,
+                "start_line": 1,
+                "end_line": 30
+              },
+              {
+                "source_id": "sh_d52b7960a872d313",
+                "page": 213,
+                "start_line": 1,
+                "end_line": 28
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_d52b7960a872d313",
+            "pages": [
+              248,
+              254,
+              257
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_d52b7960a872d313",
+            "pages": [
+              256,
+              259
+            ]
+          },
+          "status": "completed"
+        }
+      ]
+    },
+    "intervention": {
+      "session_id": "01a111b7-3a35-73b0-8aaf-16b1ac8389f9",
+      "returncode": 0,
+      "elapsed_seconds": 120.73329280194594,
+      "native_d3_saved": true,
+      "canonical_integrity": true,
+      "question_3_1": "probably_yes",
+      "judgment": "low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "usage": {
+        "input_tokens": 1179233,
+        "cached_input_tokens": 1075968,
+        "output_tokens": 2648,
+        "reasoning_output_tokens": 77
+      },
+      "uncached_input_tokens": 103265,
+      "response_count": 18,
+      "native_calls": [
+        {
+          "tool": "get_status",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_guidance",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_domain_context",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_status",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "render_page",
+          "status": "completed",
+          "outcome": null
+        },
+        {
+          "tool": "search_sources",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "read_pages",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "get_status",
+          "status": "completed",
+          "outcome": "success"
+        },
+        {
+          "tool": "save_domain_judgment",
+          "status": "failed",
+          "outcome": null
+        },
+        {
+          "tool": "save_domain_judgment",
+          "status": "completed",
+          "outcome": "success"
+        }
+      ],
+      "original_outputs_freeze_sha256": "d77819df6ea3e490fa06649da2931d1c6ac9f5bd40992473ba06eaefdd4280dc",
+      "supplemental_save_receipt_sha256": "b563dc8d834be074ae9acdd80e42776d24a603b851f64f32025411624ee0e137",
+      "representation": {
+        "observed": [
+          null,
+          null
+        ],
+        "unavailable": [
+          29,
+          23
+        ],
+        "completed": [
+          null,
+          null
+        ]
+      },
+      "canonical_reconciled_rows": [
+        {
+          "scope": {
+            "arm": "dapagliflozin",
+            "population": "All randomized participants",
+            "time_point": "Randomization through primary analysis censoring date",
+            "unit": "participants"
+          },
+          "randomized": 3131,
+          "completed": null,
+          "unavailable": 29,
+          "observed": null,
+          "missing": 29,
+          "missing_bounds": {
+            "kind": "exact",
+            "lower": 29,
+            "upper": 29
+          },
+          "missing_fraction": 0.009262216544235069
+        },
+        {
+          "scope": {
+            "arm": "placebo",
+            "population": "All randomized participants",
+            "time_point": "Randomization through primary analysis censoring date",
+            "unit": "participants"
+          },
+          "randomized": 3132,
+          "completed": null,
+          "unavailable": 23,
+          "observed": null,
+          "missing": 23,
+          "missing_bounds": {
+            "kind": "exact",
+            "lower": 23,
+            "upper": 23
+          },
+          "missing_fraction": 0.007343550446998723
+        }
+      ],
+      "actual_read_actions": [
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "SKILL.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/codex.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/missing.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/evidence.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/result-account.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_guidance",
+          "arguments": {
+            "document": "references/read-main-report.md"
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 64
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 111
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 107
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 140
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 182
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 318
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 105
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 226
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 9,
+                "start_line": 1,
+                "end_line": 93
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 86
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 5,
+                "start_line": 144,
+                "end_line": 182
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 318
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 105
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 226
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 9,
+                "start_line": 1,
+                "end_line": 93
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 86
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "windows": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 9,
+                "start_line": 55,
+                "end_line": 93
+              },
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 86
+              }
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_86d70138cf26cc52",
+            "pages": [
+              27
+            ]
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "render_page",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_86d70138cf26cc52",
+            "page": 27
+          },
+          "status": "completed"
+        },
+        {
+          "tool": "read_pages",
+          "arguments": {
+            "trial_id": "deliver",
+            "source_id": "sh_d52b7960a872d313",
+            "pages": [
+              259,
+              256
+            ]
+          },
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "conclusion": "Both arms saved D3 Low via Probably yes; source-grounded control complements count as successful accounting. Intervention demonstrated the explicit unavailable field without inventing observed counts. No label/accuracy gain; scientific warrant quality awaits independent review."
+}

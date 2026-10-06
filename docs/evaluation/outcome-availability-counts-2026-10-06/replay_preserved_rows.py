@@ -109,7 +109,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--expected-inventory", type=Path, default=Path(__file__).with_name("preserved-row-replay.json"))
+    parser.add_argument(
+        "--expected-inventory",
+        type=Path,
+        default=Path(__file__).with_name("preserved-row-replay.json"),
+    )
     args = parser.parse_args()
     receipt = replay(args.state_root, args.expected_inventory)
     args.output.write_text(json.dumps(receipt, indent=2) + "\n")

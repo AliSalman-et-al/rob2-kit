@@ -1,0 +1,93 @@
+1|Esperion Therapeutics, Inc.
+2|Consultant
+3|Self
+4|Janssen Global Services, LLC
+5|Consultant
+6|Self
+7|Lexicon Pharmaceuticals, Inc.
+8|Consultant
+9|Self
+10|Merck
+11|Consultant
+12|Self
+13|Novo Nordisk
+14|Consultant
+15|Self
+16|Novo Nordisk
+17|Travel
+18|Self
+19|Pharmacosmos Therapeutics Inc.
+20|Consultant
+21|Self
+22|SANOFI US SERVICES INC.
+23|Consultant
+24|Self
+25|Vifor Pharma
+26|Consultant
+27|Self
+28|Additional Questions:
+29|Certification
+30|I certify that the information provided in this disclosure is complete and accurate.
+31|Category: Consultant
+32|Description:
+33|Additional Information:
+34|Category: Consultant
+35|Description:
+36|Additional Information:
+37|Category: Consultant
+38|Description:
+39|Additional Information:
+40|Category: Consultant
+41|Description:
+42|Additional Information:
+43|Category: Consultant
+44|Description:
+45|Additional Information:
+46|Category: Consultant
+47|Description:
+48|Additional Information:
+49|Location(s):
+50|Purpose:
+51|Additional Information:
+52|Category: Consultant
+53|Description:
+54|Additional Information:
+55|Category: Consultant
+56|Description:
+57|Additional Information:
+58|Category: Consultant
+59|Description:
+60|Additional Information:
+61|1.
+62|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+63|No.
+64|2.
+65|What is the manuscript title?
+66|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+67|3.
+68|Are you the corresponding author?
+69|No.
+70|
+71|[Extracted table 1]
+72||Column 1|Column 2|Column 3|
+73||---|---|---|
+74|||||
+75||Category: Consultant Description:<br>Additional Information:|||
+76||Esperion Therapeutics, Inc.|Consultant|Self|
+77||Category: Consultant Description:<br>Additional Information:|||
+78||Janssen Global Services, LLC|Consultant|Self|
+79||Category: Consultant Description:<br>Additional Information:|||
+80||Lexicon Pharmaceuticals, Inc.|Consultant|Self|
+81||Category: Consultant Description:<br>Additional Information:|||
+82||Merck|Consultant|Self|
+83||Category: Consultant Description:<br>Additional Information:|||
+84||Novo Nordisk|Consultant|Self|
+85||Category: Consultant Description:<br>Additional Information:|||
+86||Novo Nordisk|Travel|Self|
+87||Location(s): Purpose:<br>Additional Information:|||
+88||Pharmacosmos Therapeutics Inc.|Consultant|Self|
+89||Category: Consultant Description:<br>Additional Information:|||
+90||SANOFI US SERVICES INC.|Consultant|Self|
+91||Category: Consultant Description:<br>Additional Information:|||
+92||Vifor Pharma|Consultant|Self|
+93||Category: Consultant Description:<br>Additional Information:|||

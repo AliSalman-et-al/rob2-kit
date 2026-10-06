@@ -1,0 +1,38 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|25 of 95
+6|To determine whether dapagliflozin is superior
+7|to placebo in reducing the proportion of patients
+8|with worsened NYHA class
+9|Proportion of patients with worsened NYHA
+10|class from baseline to 8 months
+11|To describe health status assessed by EuroMol
+12|five-dimensional five-level questionnaire HEM-
+13|5D-5LI to support health economic analysis and
+14|health technology assessment
+15|Results will be reported separately in a health
+16|economic report
+17|To determine whether dapagliflozin compared
+18|with placebo will have an effect on systolic BP
+19|Change in systolic BP from baseline
+20|To determine whether dapagliflozin compared
+21|with placebo will have an effect on body
+22|weight
+23|Change in body weight from baseline
+24|To determine whether dapagliflozin compared
+25|with placebo will have an effect on eGFR.
+26|Change in eGFR from baseline
+27|To explore whether dapagliflozin compared to
+28|placebo improves CCCM summary scores,
+29|subscores of TSS HSymptom frequency and
+30|symptom burdenI and domains
+31|Change in Clinical summary score, TSS
+32|subscores, Overall summary score, MoL score
+33|To collect and store blood samples for future
+34|exploratory genetic research
+35|Not applicable. Results will be reported separately
+36|BP Blood pressureR CV CardiovascularR EM-5D-5L EuroMol five-dimensional five-level questionnaire
+37|HF Heart failureR HFrEF Heart failure with reduced ejection fractionR CCCM Cansas City Cardiomyopathy
+38|Muestionnaire NYHA New York Heart Association

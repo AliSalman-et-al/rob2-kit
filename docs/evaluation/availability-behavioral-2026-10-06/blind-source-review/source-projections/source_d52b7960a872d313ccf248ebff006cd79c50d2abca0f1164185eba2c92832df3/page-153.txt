@@ -1,0 +1,57 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|60 of 95
+6|9.3
+7|Populations for analyses
+8|For purposes of analysis, the following populations are definedD
+9|Table 5
+10|Population for analysis
+11|Population
+12|Description
+13|Enrolled
+14|All patients who sign the ICF
+15|Full Analysis Set HFASI
+16|All patients who have been randomised to study treatment, irrespective
+17|of their protocol adherence and continued participation in the study.
+18|Patients will be analysed according to their randomised investigational
+19|product assignment, irrespective of the treatment actually received. The
+20|FAS will be considered the primary analysis set for the intention to
+21|treat analysis of primary and secondary variables. A subset of the full
+22|analysis set consisting of patients with baseline LVEF of J60K Hor
+23|LVEF J60K subpopulationI will be analysed separately as part of the
+24|confirmatory statistical testing procedure.
+25|Safety analysis set
+26|All patients randomly assigned to Study treatment and who take at
+27|least 1 dose of investigational product. Patients will be analysed
+28|according to the treatment actually received. The Safety analysis set
+29|will be considered the primary analysis set for all safety variables
+30|9.4
+31|Statistical analyses
+32|All personnel involved with the analysis of the study will remain blinded until database lock and
+33|Clinical Study Protocol deviations identified.
+34|Analyses will be performed by AstraZeneca or its representatives.
+35|A comprehensive statistical analysis plan HSAPI will be developed prior to first patient randomised
+36|and any subsequent amendments will be documented, with final amendments finalised before
+37|database lock. This section is a summary of the planned statistical analyses of the primary and
+38|secondary endpoints. Any deviations from this plan will be reported in the clinical study report.
+39|9.4.1
+40|Efficacy analyses
+41|9.4.1.1
+42|Analysis of the primary variable
+43|The primary variable is the time from randomisation to first event included in the primary
+44|composite endpoint. Two hypotheses will be tested simultaneously Hi.e., dual primary endpoint
+45|analysesID H1I in the full population and H2I in an LVEF J60K subpopulation, with alpha allocated
+46|to each test. The primary analysis will be based on the ITT principle using the FAS, including
+47|events occurring on or prior to the PACD, adjudicated by the CEA committee.
+48|In the analysis of the primary composite endpoint, treatments Hdapagliflozin versus placeboI will
+49|be compared using a Cox proportional hazards model with a factor for treatment group, stratified
+50|by T2D status at randomisation. The p-value, HR and 95K confidence interval will be reported.
+51|
+52|[Extracted table 1]
+53||Population|Description|
+54||---|---|
+55||Enrolled|All patients who sign the ICF|
+56||Full Analysis Set HFASI|All patients who have been randomised to study treatment, irrespective<br>of their protocol adherence and continued participation in the study.<br>Patients will be analysed according to their randomised investigational<br>product assignment, irrespective of the treatment actually received. The<br>FAS will be considered the primary analysis set for the intention to<br>treat analysis of primary and secondary variables. A subset of the full<br>analysis set consisting of patients with baseline LVEF of J60K Hor<br>LVEF J60K subpopulationI will be analysed separately as part of the<br>confirmatory statistical testing procedure.|
+57||Safety analysis set|All patients randomly assigned to Study treatment and who take at<br>least 1 dose of investigational product. Patients will be analysed<br>according to the treatment actually received. The Safety analysis set<br>will be considered the primary analysis set for all safety variables|

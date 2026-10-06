@@ -1,0 +1,29 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|81 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|Abbreviation or
+9|special term
+10|Explanation
+11|PACD
+12|Primary Analysis Censoring Date
+13|PTDV
+14|Premature Treatment Discontinuation Visit
+15|PI
+16|Principal Investigator
+17|SAE
+18|Serious Adverse Event
+19|SAP
+20|Statistical Analysis Plan
+21|SCV
+22|Study Closure Visit
+23|SoA
+24|Schedule of Activities
+25|T2D
+26|Type 2 Diabetes Mellitus
+27|
+28|
+29|

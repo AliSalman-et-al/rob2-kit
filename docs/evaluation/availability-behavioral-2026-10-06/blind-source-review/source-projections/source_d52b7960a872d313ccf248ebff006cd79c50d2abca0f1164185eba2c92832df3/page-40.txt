@@ -1,0 +1,55 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|38 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|x
+9|Vital signs (BP, pulse) will be assessed and recorded
+10|x
+11|Review and updating of concomitant medication and recording of relevant medications
+12|x
+13|Review and recording of any cardiac and HF related procedures
+14|x
+15|Review of potential efficacy and safety events.
+16|x
+17|If the patient has experienced any potential endpoints, SAEs, DAEs and/or amputations,
+18|adverse events (AEs) leading to amputation and potential risk factor AEs for
+19|amputations affecting lower limbs since the last visit, this will be recorded in the eCRF
+20|x
+21| Blood samples will be taken for creatinine (for calculation of eGFR) assessment
+22|(central laboratory)
+23|8.2.3
+24|ViViW 4 (Da\ 120 7 da\V):
+25|At Visit 4, the following assessments and procedures will be conducted:
+26|x
+27|KCCQ and PGIS questionnaires will be completed
+28|x
+29|NYHA Functional Classification will be evaluated and recorded
+30|x
+31|Review and updating of concomitant medication and recording of relevant medications
+32|x
+33|Review and recording of any cardiac and HF related procedures
+34|x
+35|Review of potential efficacy and safety events.
+36|x
+37|If the patient has experienced any potential endpoints, SAEs, DAEs and/or amputations,
+38|adverse events (AEs) leading to amputation and potential risk factor AEs for
+39|amputations affecting lower limbs since the last visit, this will be recorded in the eCRF.
+40|x
+41|Blood samples will be taken for creatinine (for calculation of eGFR) assessment (central
+42|laboratory)
+43|x
+44|IP will be dispensed via IxRS to the patient. Drug accountability of the returned IP will
+45|be checked. The patient will be instructed to take the IP in accordance with protocol
+46|and without interruptions
+47|8.2.4
+48|ViViW 5 (Da\ 240 7 da\V)
+49|At Visit 5, the following assessments and procedures will be conducted:
+50|x
+51|KCCQ, PGIS and EQ-5D-5L questionnaires will be completed
+52|x
+53|NYHA Functional Classification will be evaluated and recorded
+54|x
+55|Review and updating of concomitant medication and recording of relevant medications

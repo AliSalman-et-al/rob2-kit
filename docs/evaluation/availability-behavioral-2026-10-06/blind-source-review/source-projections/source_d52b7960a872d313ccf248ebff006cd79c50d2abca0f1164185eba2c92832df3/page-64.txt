@@ -1,0 +1,50 @@
+1|Clinical Study Protocol ± Version 1.0, 24th April 2018
+2|AstraZeneca
+3|D169CC00001 ± Dapa HFpEF
+4|
+5|CONFIDENTIAL AND PROPRIETARY
+6|62 (91)
+7|Form Doc Number: AZDoc0070547 Parent Doc Number: AZDoc0017426
+8|A 3
+9|Informed consent process
+10|The Investigator or his/her representative will explain the nature of the study to the subject or
+11|his/her legally authorised representative and answer all questions regarding the study.
+12|
+13|Subjects must be informed that their participation is voluntary. Subjects or their legally authorised
+14|representative will be required to sign a statement of informed consent that meets the requirements
+15|of 21 CFR 50, local regulations, ICH guidelines, Health Insurance Portability and Accountability
+16|Act (HIPAA) requirements, where applicable, and the IRB/IEC or study centre.
+17|
+18|The medical record must include a statement that written informed consent was obtained before
+19|the subject was enrolled in the study and the date the written consent was obtained. The authorised
+20|person obtaining the informed consent must also sign the ICF.
+21|Subjects must be re-consented to the most current version of the ICF(s) during their participation
+22|in the study.
+23|
+24|A copy of the ICF(s) must be provided to the subject or the subject¶V legall\ aXWhoUiVed
+25|representative.
+26|
+27|A subject who is rescreened is not required to sign another ICF.
+28|
+29|A 4
+30|Data protection
+31|Each subject will be assigned a unique identifier by the sponsor. Any subject records or data sets
+32|transferred to the sponsor will contain only the identifier; subject names or any information which
+33|would make the subject identifiable will not be transferred.
+34|The subject must be informed that his/her personal study-related data will be used by the sponsor
+35|in accordance with local data protection law. The level of disclosure must also be explained to the
+36|subject.
+37|The subject must be informed that his/her medical records may be examined by Clinical Quality
+38|Assurance auditors or other authorised personnel appointed by the sponsor, by appropriate
+39|IRB/IEC members, and by inspectors from regulatory authorities.
+40|A 5
+41|Committees structure
+42|Executive Committee
+43|Together with AZ, the Executive Committee will be responsible for the final overall study design,
+44|including the development of the study protocol and eCRF, supervision of the study conduct and
+45|progress, development of any protocol amendments needed during the study, liaison with the CEA
+46|committee and DMC and DKA committee as needed, development of the statistical analysis plan,
+47|interpretation of the final data and reporting (presentations at international congresses and
+48|publications in peer reviewed journals) of the study.
+49|The Executive Committee will make recommendations to AstraZeneca with regards to early
+50|stopping or modifications of the study based on the information received from the DMC. The

@@ -1,0 +1,47 @@
+1|
+2|
+3|
+4|
+5|5
+6|David Derthoo, AZ Groeninge
+7|
+8|Brazil
+9|
+10|Adrian Paulo Moralles Kormann, MK Blumenau Pesquisa Clínica
+11|Fabio Tuche, Instituto Brasil De Pesquisa Clinica S.A
+12|Renner Lariucci, Dr. Consulta
+13|Mauro Esteves Hernandes, Santa Casa de Misericordia of Votuporanga
+14|Paulo Ernesto Leaes, Irmandade Santa Casa de Misericórdia de Porto Alegre
+15|Dalton Bertolim Precoma, Sociedade Hopitalar Angelina Caron
+16|Maria Helena Vidotti, Loema - Instituto de Pesquisa Clínica
+17|Lidia Zytynski Moura, Núcleo de Pesquisa Clínica da Escola de Medicina da PUCPR
+18|Jose Francisco Kerr Saraiva, Instituto de Pesquisa clinica de Campinas
+19|Fernando Carvalho Neuenschwander, Instituto Orizonti
+20|Adamastor Humberto Pereira, Hospital de Clinicas de Porto Alegre
+21|Gilmar Reis, Cardioresearch Cardiologia Assistencial e de Pesquisa
+22|Wladmir Faustino Saporito, Pesquisare Saude S/S Ltda
+23|
+24|Bulgaria
+25|
+26|Nikolai Runev, UMHAT Aleksandrovska EAD
+27|Nikolay Iliev, MHAT Sveti Pantaleymon - Pleven OOD, Pleven
+28|Yuliyana Ivanova, DCC "Focus 5 - LZIP EOOD
+29|Atanas Mihov, MHAT "Sveta Ekaterina"
+30|Maria Milanova, UMHATEM N. I. Pirogov
+31|Tsvetelina Damyanova, MC Synexus Sofia EOOD
+32|Vladimir Zhelev, MC Synexus Sofia EOOD, Branch Stara Zagora
+33|Antoni Gogov, MHAT Haskovo AD
+34|Dimitar Karageorgiev, MHAT Sveta Karidad EAD
+35|Georgi Stanchev, MHAT Pazardzhik AD
+36|Daniela Tsonkova-Dobreva, Medical centers Fi Health AD
+37|Tsvetana Katova, MHAT National Cardiology Hospital EAD
+38|Ralitsa Vatova, Medical Center - Zdrave1
+39|Danail Avramov, MHAT National Cardiology Hospital EAD
+40|
+41|Canada
+42|
+43|Timothy Salter, LMC Manna Research Burlington North
+44|Ying Tung Sia, CIUSSS de la Mauricie-et-du-Centre-du-Québec
+45|Subodh Verma, North York Diagnostic and Cardiac Centre
+46|Ram Vijayaraghavan, Heart Health Institute
+47|Helene Mayrand, Cite de la Sante de Laval

@@ -1,0 +1,31 @@
+1|Jul 06, 2022 17:28:15 EDT
+2|New England Journal of Medicine
+3|John McMurray
+4|Summary of Interests
+5|Company or Organization
+6|Entity
+7|Type
+8|Interest Held By
+9|AstraZeneca
+10|Grant /
+11|Contract
+12|Other - My employer, Glasgow University, has been paid by AstraZeneca (who market dapagliflozin) for my time spent as Principal Investigator of DAPA-HF and Co-principal
+13|Investigator of DELIVER and DETERMINE (trials using dapagliflozin) in heart failure
+14|Additional Questions:
+15|Certification
+16|I certify that the information provided in this disclosure is complete and accurate.
+17|Disclosure Purpose: 22-06286
+18|Recipient Name: University of Glasgow
+19|Recipient Type: Institution
+20|Grant / Contract Description: Consultancy
+21|Grant / Contract Purpose: Research
+22|Additional Information:
+23|1.
+24|Are there other relationships or activities that readers could perceive to have influenced, or that give the appearance of potentially influencing, what you wrote in the submitted work?
+25|No.
+26|2.
+27|What is the manuscript title?
+28|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
+29|3.
+30|Are you the corresponding author?
+31|No.

@@ -1,0 +1,52 @@
+1|
+2|
+3|
+4|
+5|22
+6|symptom score on the KCCQ as a composite outcome based on the rank of change in score from baseline to 32 weeks,
+7|with worst rank assigned to patients who died prior to 32 weeks, using the rank analysis of covariance method5, with
+8|corresponding win ratio used to estimate the magnitude of treatment effect6,7. Missing data in patients alive at 32 weeks
+9|was handled by multiple imputation. Mean change in the KCCQ TSS was calculated between baseline and 32 weeks in
+10|survivors without imputation in a post-hoc analysis. Cardiovascular death and death from any cause were assessed using
+11|Cox proportional hazards models. We assessed the consistency of the treatment effect on the primary outcome among
+12|prespecified subgroups. A sensitivity analysis was performed in which patients were censored at the time of COVID-19
+13|diagnosis, and we assessed for competing risk of non-cardiovascular death8. The proportional hazards assumption was
+14|assessed via Schoenfeld residuals and visual inspection of the "log-log" survival plot, and alternative robust model free
+15|alternative assessments of the treatment effect were performed in sensitivity analyses. Analyses were performed using
+16|Stata, version 16(College Station TX, USA) and R version 3.5.1 (R Foundation for Statistical Computing, Vienna, Austria).
+17|
+18|Dual Primary Endpoint Analysis and Allocation of Alpha
+19|
+20|Statistical significance was assessed in two branches in the pre-specified hierarchical order of the endpoints and
+21|populations as specified in Figure S1, controlling the Type I error at an overall two-sided 5% level across primary and
+22|secondary endpoints, accounting for the planned interim analysis. The total significance level, alpha, was split for the
+23|two primary analyses of the primary endpoint, allocating α1 to test the subpopulation and α2 to test the full population.
+24|For derivation of the two-sided nominal p-value thresholds α1 and α2, a two-sided alpha of 0.2% was allocated to the
+25|interim analysis and 4.8% to the final analysis. The two-sided significance level α2 (for the primary analysis in the full
+26|population) was fixed at 2.4%. The inherent correlation structure between the full population and the LVEF < 60%
+27|subpopulation, where the corresponding test statistics for the primary endpoint are bivariate normal with correlation
+28|equal to the proportion of events in the LVEF < 60% subpopulation, was taken into account when calculating α1 9. The
+29|correlation was based on the square root of the lower bound of a two-sided 95% confidence interval for the proportion
+30|of events in the subpopulation with LVEF < 60%, using a normal approximation confidence interval for the proportion.
+31|The threshold α1 was such that for α2 = 2.4% two-sided; the two-sided probability of rejecting at least one true null
+32|hypothesis at the final analysis was 4.8%. Table S2 shows how the two-sided nominal p-value threshold α1 depends on
+33|the proportion of events in the LVEF < 60% subpopulation at the final analysis.
+34|•
+35|If both the primary null hypotheses could be rejected, the following hypotheses in each branch were tested at 2.4%,
+36|in the order described in Figure S1.
+37|•
+38|If only one of the tests of the primary endpoint could be rejected at respective levels 2.4% (full population) and α1
+39|(LVEF < 60% subpopulation), the remaining hypotheses in the branch where the primary hypothesis was rejected
+40|were to be tested in fixed sequence at the following two-sided significance levels
+41|-
+42|4.8% - 2.4% = 2.4% in the left branch only (in case the primary endpoint in the subpopulation was significant at
+43|level α1 but not in the full population at level 2.4%)
+44|-
+45| 4.8% - α1 in the right branch only (in case the primary endpoint in the full population was significant at level
+46|2.4% but not in the subpopulation at level α1)
+47|
+48|[Extracted table 1]
+49||equal to the proportion of events in the LVEF < 60% subpopulation, was taken into account when calculating α 9. T<br>1||he||
+50||---|---|---|---|
+51||correlation was based on the square root of the lower bound of a two-sided 95% confidence interval for the proportion||||
+52||of events in the subpopulation with LVEF < 60%,|using a normal approximation confidence interval for the proportion.|||

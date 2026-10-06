@@ -1,0 +1,56 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|54 of 95
+6|8.5.1.5
+7|Capture of additional laboratory values
+8|Any additional safety laboratory assessments during the study period, including creatinine, will be
+9|obtained per the InvestigatorOs medical judgment in the course of standard care using local
+10|laboratories. Laboratory values would be recorded only on SAE eCRFs as part of narrative
+11|information, per the InvestigatorOs judgment.
+12|8.5.2
+13|Time period and freJuency for collecting AE and SAE information
+14|Non-serious adverse events as defined per protocol will be collected from randomisation HVisit 2I,
+15|throughout the treatment period until and including the patientOs last visit Hthe study closure visitI.
+16|Serious adverse events are recorded from the time of signing of informed consent form throughout
+17|the treatment period until and including the patientZs last visit.
+18|All SAEs will be recorded and reported to the sponsor or designee within 24 hours, as indicated in
+19|Appendix B. The Investigator will submit any updated SAE data to the sponsor within
+20|24 hours of it being available.
+21|The method of recording, evaluating, and assessing causality of AE and SAE and the procedures
+22|for completing and transmitting SAE reports are provided in Appendix B.
+23|8.5.3
+24|Follow-up of AEs and SAEs
+25|After the initial AEPSAE report, the Investigator is required to proactively follow each patient at
+26|subsequent visitsPcontacts. All SAE and events of amputation and potential preceding events will
+27|be followed until resolution, stabilization, the event is otherwise explained, or the patient is lost to
+28|follow-up.
+29|Any AEs that are unresolved at the patientOs last visit in the study are followed up by the
+30|Investigator for as long as medically indicated, but without further recording in the CRF.
+31|AstraZeneca retains the right to request additional information for any patient with ongoing
+32|AEHsIPSAEHsI at the end of the study, if judged necessary.
+33|8.5.4
+34|Adverse event data collection
+35|The following variables will be collect for each AER
+36|
+37|AE HverbatimI
+38|
+39|
+40|The date when the AE started and stopped
+41|
+42|
+43|Maximum intensity HmildPmoderatePsevereI
+44|
+45|
+46|Qhether the AE is serious or not
+47|
+48|
+49|Investigator causality rating against the Investigational ProductHsI Hyes or noI
+50|
+51|
+52|Action taken with regard to IP
+53|
+54|
+55|Outcome
+56|

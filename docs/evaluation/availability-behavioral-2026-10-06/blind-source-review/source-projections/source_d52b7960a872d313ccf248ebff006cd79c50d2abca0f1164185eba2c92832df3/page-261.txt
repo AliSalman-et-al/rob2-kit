@@ -1,0 +1,43 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 5.0
+4|8 December 2021
+5|CONFIDENTIAL AND PROPRIETARY
+6|36 of 58
+7|4.2.4.2
+8|Analysis of Change from Baseline at 8 Months in the ICCJ Total Symptom
+9|Score
+10|Hypothesis testing
+11|The composite ranG-based endpoint representing the patientsK vital status at 8 months and the
+12|change from baseline at 8 months in KCCQ-TSS in surviving patientsO as defined in Section
+13|3.2.2O will be analysed using the ranG ANCOVA method (StoGes et al 2012) to test the null
+14|hypothesis of no difference in the distributions of ranGed outcomes between the two treatment
+15|groups. Analysis will be stratified by T2D status at randomisationO and adjusted for the
+16|baseline KCCQ-TSS value as follows.
+17|First the change from baseline at 8 months in KCCQ-TSS and vital status at 8 monthsO as well
+18|as values of the baseline KCCQ-TSS covariate will be transformed to standardised ranGs
+19|within each T2D randomisation stratumO using fractional ranGs and mean method for ties.
+20|RanGing for the composite endpoint will be done so that patients who died prior to the 8-
+21|month assessment are assigned the worst ranGs within each stratum. Among the deceasedO the
+22|relative ranGing will be based on their last value of change from baseline in KCCQ-TSS while
+23|alive before deriving fractional ranGs. In the ranGingO patients who die prior to the first follow-
+24|up visit where KCCQ-TSS is assessedO at 1 monthO will be defined as having a Iero change
+25|from baseline while alive. ThenO separate regression models will be fit to the ranGed data for
+26|each randomisation stratum using a regression model for the ranGed composite variable as
+27|dependent variableO adjusting for the ranGed baseline covariate. Residuals from this regression
+28|model will be captured for testing of differences between treatment groups. The CMH testO
+29|stratified by T2D status at randomisationO using the values of the residuals as scores will be
+30|used to compare treatment groups.
+31|KCCQ data missing for reasons other than death will be imputed as described in Section
+32|EHandling of missing KCCQ dataF.
+33|The p-value from the CMH test of treatment effect at 8 months will be the used for the
+34|confirmatory testing of the secondary endpoint in the MTP described in Section 4.1.3.
+35|COVID-19
+36|Due to COVID-19 pandemicO on-site assessments could not be performed in a substantial
+37|number of sitesO where some were done remotely and some cancelled. FurthermoreO it could
+38|be assumed that locG-downs and other measures could impact PRO assessments. As a
+39|conseHuenceO the main analysis of this endpoint includes the population with patients who had
+40|a planned or performed 8 month assessment (Visit 5) prior to the major COVID-19 outbreaGO
+41|defined as 11th March 2020 (the date when WHO declared COVID-19 a pandemic) thus
+42|unaffected by the pandemicKs possible impact on health-related Huality of life (FDA 2020).
+43|The KCCQ-TSS in the presence of COVID-19 pandemic will be described.

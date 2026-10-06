@@ -1,0 +1,46 @@
+1|
+2|
+3|
+4|
+5|2
+6|Study Personnel
+7|
+8|Steering Committee
+9|
+10|Scott D. Solomon, MD (Chair), Brigham and Women's Hospital; John J.V. McMurray, MD, (co-Chair) University
+11|of Glasgow; Rudolf A. de Boer, MD, University of Groningen; David DeMets, PHD, University of Wisconsin;
+12|Adrian F. Hernandez, MD, Duke University; Silvio E. Inzucchi, MD, Yale University; Mikhail N. Kosiborod, MD,
+13|Mid-America Heart Institute; Carolyn S.P. Lam, MD, Duke University National University of Singapore; Felipe
+14|Martinez, MD, University of Cordoba; Sanjiv J. Shah, MD, Northwestern University
+15|
+16|
+17|Sponsor Leadership (AstraZeneca)
+18|
+19|
+20|Anna Maria Langkilde, MD, PhD (BioPharmaceuticals R&D, AstraZeneca, Gothenburg, Sweden)
+21|Magnus Petersson, MD, PhD (BioPharmaceuticals R&D, AstraZeneca, Gothenburg, Sweden)
+22|Daniel Lindholm, MD, PhD (BioPharmaceuticals R&D, AstraZeneca, Gothenburg, Sweden)
+23|Ulrica Wilderäng, PhD (BioPharmaceuticals R&D, AstraZeneca, Gothenburg, Sweden)
+24|Olof Bengtsson, PhLic (BioPharmaceuticals R&D, AstraZeneca, Gothenburg, Sweden)
+25|Ann Nilsson (BioPharmaceuticals R&D, AstraZeneca, Gothenburg, Sweden)
+26|Barbara Kucharczuk-Filipek (BioPharmaceuticals R&D, AstraZeneca, Warzaw, Poland)
+27|
+28|Data Safety Monitoring Committee
+29|
+30|Marc Pfeffer,MD, PhD, Brigham and Women's Hospital (Chair)
+31|Stuart Pocock,MD, London School of Hygeine and Tropical Medicine
+32|Karl Swedberg,MD, University of Gothenburg
+33|Jean L. Rouleau,MD, University of Montreal
+34|Nish Chaturvedi,MD, University College London
+35|Peter Ivanovich, MD (deceased), Northwestern University
+36|Andrew Levey,MD, Tufts Medical Center
+37|
+38|
+39|Clinical Events Committee
+40|
+41|Akshay Desai,MD, Brigham and Women's Hospital (Chair)
+42|Pardeep Jhund,MD, University of Glasgow (Co-Chair)
+43|Peter Finn,MD, Brigham and Women's Hospital
+44|Abdel Brahimi,MD, Brigham and Women's Hospital
+45|Martina McGrath,MD, Brigham and Women's Hospital
+46|Ebrahim Barkoudah,MD, Brigham and Women's Hospital

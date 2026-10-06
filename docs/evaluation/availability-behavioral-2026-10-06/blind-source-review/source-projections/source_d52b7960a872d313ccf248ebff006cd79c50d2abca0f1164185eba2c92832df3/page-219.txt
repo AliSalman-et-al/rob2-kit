@@ -1,0 +1,40 @@
+1|Statistical Analysis Plan
+2|AstraZeneca
+3|D169CC00001 1.0
+4|27/August/2018
+5|CONFIDENTIAL AND PROPRIETARY
+6|30 of 36
+7|regardless of whether patients are on or off study treatment at the time of the event (the Non
+8|Qoff N treatment period.). Patients who complete the study on study drug will discontinue
+9|treatment on the SCV. Thus there will in general be no events after completion of the study
+10|drug periodH and censoring of events for on-treatment analysis affects only patients who
+11|prematurely and permanently discontinue study drug.
+12|All summaries of AEs described in Section 4.2.5.1 to 4.2.5.4 below will be presented for the
+13|on-treatment period. Additional summaries based on the onQoff treatment period will be
+14|presented for SAEsH amputations and preceding events as defined in Section 3.3.
+15|4.2.5.1
+16|Adverse events
+17|Summaries of AEs will primarily be based on the on-treatment period.
+18|In addition to SAEsH the collection of AEs that are not serious is limited to DAEsH AEs leading
+19|to interruption of IPH amputations and preceding events (see section 3.3) . ThusH summaries of
+20|AEs will be limited to these categories and general summaries of all non-serious AEs are not
+21|planned.
+22|AEs will be classified according to MedDRA by the medical coding team at AstraZeneca data
+23|management centreH using the most current version of MedDRA.
+24|Summaries by system organ class (SOC) and preferred term (PT) will be sorted by
+25|international order for SOC and by descending order of PT in the dapaglifloDin treatment
+26|group.
+27|No statistical tests to compare crude AE freCuencies between treatment groups are planned.
+28|A summary table of the total number and percent of patients with SAEH DAEH AE leading to
+29|temporary interruptionH amputations and preceding events per treatment group will be
+30|provided.
+31|4.2.5.2
+32|Serious adverse events
+33|SAEs will be presented as described below both on treatment and onQoff treatment.
+34|The number and percent of patients with SAEs will be presented by SOCH PT and treatment
+35|group. The most common SAEs will also be presented by PT only.
+36|AEs with outcome death will be presented separately by SOC and PT.
+37|4.2.5.3
+38|Adverse events leading to discontinuation or interruption of IP
+39|The number and percent of patients will be presented by SOC and PT for AEs leading
+40|discontinuation of IP and AEs leading to temporary interruption (separately for the two

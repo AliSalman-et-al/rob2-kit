@@ -1,0 +1,182 @@
+1|n engl j med 387;12 nejm.org september 22, 2022
+2|1093
+3|Dapagliflozin in Heart Failure with Preserved EF
+4|Table 2. Primary and Secondary Cardiovascular Outcomes and Safety Outcomes in the Overall Population.*
+5|Variable
+6|Dapagliflozin
+7|(N = 3131)
+8|Placebo
+9|(N = 3132)
+10|Hazard or Rate Ratio
+11|or Win Ratio
+12|(95% CI)
+13|P Value
+14|values
+15|events/
+16| 100 patient-yr
+17|values
+18|events/
+19| 100 patient-yr
+20|Efficacy outcomes
+21|Primary composite outcome - no. (%)
+22|512 (16.4)
+23|7.8
+24|610 (19.5)
+25|9.6
+26|0.82 (0.73-0.92)
+27|<0.001
+28|Hospitalization for heart failure or an urgent visit for heart failure
+29|368 (11.8)
+30|5.6
+31|455 (14.5)
+32|7.2
+33|0.79 (0.69-0.91)
+34|NA
+35|Hospitalization for heart failure
+36|329 (10.5)
+37|5.0
+38|418 (13.3)
+39|6.5
+40|0.77 (0.67-0.89)
+41|NA
+42|Urgent visit for heart failure
+43|60 (1.9)
+44|0.9
+45|78 (2.5)
+46|1.1
+47|0.76 (0.55-1.07)
+48|NA
+49|Cardiovascular death†
+50|231 (7.4)
+51|3.3
+52|261 (8.3)
+53|3.8
+54|0.88 (0.74-1.05)
+55|NA
+56|Secondary outcomes
+57|Total no. of worsening heart failure events and cardiovascular deaths‡
+58|815
+59|11.8
+60|1057
+61|15.3
+62|0.77 (0.67-0.89)
+63|<0.001
+64|Change in KCCQ total symptom score at mo 8§
+65|-
+66|-
+67|-
+68|-
+69|1.11 (1.03-1.21)
+70|0.009
+71|Mean change in KCCQ total symptom score at mo 8 among survivors
+72|-
+73|-
+74|-
+75|-
+76|2.4 (1.5-3.4)
+77|NA
+78|Death from any cause - no. (%)
+79|497 (15.9)
+80|7.2
+81|526 (16.8)
+82|7.6
+83|0.94 (0.83-1.07)
+84|NA
+85|Safety outcomes - no./total no. (%)¶
+86|Any serious adverse event
+87|1361/3126 (43.5)
+88|-
+89|1423/3127 (45.5)
+90|-
+91|-
+92|-
+93|Any adverse event that led to discontinuation of dapagliflozin or placebo
+94|182/3126 (5.8)
+95|-
+96|181/3127 (5.8)
+97|-
+98|-
+99|-
+100|Any adverse event that led to interruption of dapagliflozin or placebo
+101|436/3126 (13.9)
+102|-
+103|494/3127 (15.8)
+104|-
+105|-
+106|-
+107|Any amputation
+108|19/3126 (0.6)
+109|-
+110|25/3127 (0.8)
+111|-
+112|-
+113|-
+114|Any adverse event that potentially placed a patient at risk for a lower-limb
+115|amputation
+116|188/3126 (6.0)
+117|-
+118|199/3127 (6.4)
+119|-
+120|-
+121|-
+122|Any definite or probable diabetic ketoacidosis
+123|2/3126 (0.1)
+124|-
+125|0
+126|-
+127|-
+128|-
+129|Any major hypoglycemic event‖
+130|6/3126 (0.2)
+131|-
+132|7/3127 (0.2)
+133|-
+134|-
+135|-
+136|Any serious adverse event or adverse event that led to discontinuation of
+137|dapagliflozin or placebo that was suggestive of volume depletion
+138|42/3126 (1.3)
+139|-
+140|32/3127 (1.0)
+141|-
+142|-
+143|-
+144|Any renal serious adverse event or adverse event that led to discontinua-
+145|tion of dapagliflozin or placebo
+146|73/3126 (2.3)
+147|-
+148|79/3127 (2.5)
+149|-
+150|-
+151|-
+152|Fournier's gangrene
+153|0
+154|-
+155|0
+156|-
+157|-
+158|-
+159|* All treatment effects are shown as hazard ratios, except for the total number of hospitalizations for heart failure and cardiovascular deaths, which is reported as a rate ratio, and the change
+160|in Kansas City Cardiomyopathy Questionnaire (KCCQ) total symptom score at month 8, which is reported as a win ratio. The total symptom scores on the KCCQ range from 0 to 100, with
+161|higher scores indicating fewer symptoms and physical limitations. NA denotes not applicable because P values for efficacy outcomes are reported only for outcomes that were included in
+162|the hierarchical-testing strategy.
+163|† Cardiovascular death was also a prespecified secondary outcome.
+164|‡ Worsening heart failure events were defined as hospitalization for heart failure or an urgent visit for heart failure. The total number of worsening heart failure events included first and
+165|recurrent events.
+166|§ The results of the assessment of the KCCQ total symptom score in a sensitivity analysis in which data were not censored after March 11, 2020, were similar to those shown (win ratio,
+167|1.11; 95% CI, 1.05 to 1.18).
+168|¶ A total of 10 patients (5 in the dapagliflozin group and 5 in the placebo group) were excluded from the safety analyses because they did not receive any dose of dapagliflozin or placebo.
+169|Safety outcomes were events with an onset date on or after the date of the first dose and up to and including 30 days after the last dose of dapagliflozin or placebo.
+170|‖ Major hypoglycemic events are defined in the Supplementary Methods section in the Supplementary Appendix.
+171|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+172|Downloaded from nejm.org on September 22, 2026.
+173|
+174|[Extracted table 1]
+175||Table 2. Primary and Secondary Cardiovascular Outcomes and Safety Outcomes in the Overall Population.*|Hazard or Rate Ratio Dapagliflozin Placebo or Win Ratio Variable (N = 3131) (N = 3132) (95% CI) P Value values events/ values events/ 100 patient-yr 100 patient-yr||Primary composite outcome - no. (%) 512 (16.4) 7.8 610 (19.5) 9.6 0.82 (0.73-0.92) <0.001|NA|Hospitalization for heart failure 329 (10.5) 5.0 418 (13.3) 6.5 0.77 (0.67-0.89) NA|NA|Cardiovascular death† 231 (7.4) 3.3 261 (8.3) 3.8 0.88 (0.74-1.05) NA||Total no. of worsening heart failure events and cardiovascular deaths‡ 815 11.8 1057 15.3 0.77 (0.67-0.89) <0.001|0.009|Mean change in KCCQ total symptom score at mo 8 among survivors - - - - 2.4 (1.5-3.4) NA|NA|- no./total no. (%)¶ Safety outcomes|-|Any adverse event that led to discontinuation of dapagliflozin or placebo 182/3126 (5.8) - 181/3127 (5.8) - - -|-|Any amputation 19/3126 (0.6) - 25/3127 (0.8) - - -|-|Any definite or probable diabetic ketoacidosis 2/3126 (0.1) - 0 - - -|-|Any serious adverse event or adverse event that led to discontinuation of 42/3126 (1.3) - 32/3127 (1.0) - - - dapagliflozin or placebo that was suggestive of volume depletion|-|Fournier's gangrene 0 - 0 - - -|
+176||---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+177||||||0.79 (0.69-0.91)||0.76 (0.55-1.07)||||1.11 (1.03-1.21)||0.94 (0.83-1.07)||-||-||-||-||-||
+178||||||7.2||1.1||||-||7.6||-||-||-||-||-||
+179||||||455 (14.5)||78 (2.5)||||-||526 (16.8)||1423/3127 (45.5)||494/3127 (15.8)||199/3127 (6.4)||7/3127 (0.2)||79/3127 (2.5)||
+180||||||5.6||0.9||||-||7.2||-||-||-||-||-||
+181||||||368 (11.8)||60 (1.9)||||-||497 (15.9)||1361/3126 (43.5)||436/3126 (13.9)||188/3126 (6.0)||6/3126 (0.2)||73/3126 (2.3)||
+182||||Efficacy outcomes||Hospitalization for heart failure or an urgent visit for heart failure||Urgent visit for heart failure||Secondary outcomes||Change in KCCQ total symptom score at mo 8§||Death from any cause - no. (%)||Any serious adverse event||Any adverse event that led to interruption of dapagliflozin or placebo||Any adverse event that potentially placed a patient at risk for a lower-limb amputation||Any major hypoglycemic event‖||Any renal serious adverse event or adverse event that led to discontinua- tion of dapagliflozin or placebo||

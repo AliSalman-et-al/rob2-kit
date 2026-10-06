@@ -1,0 +1,37 @@
+1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
+2|AstraZeneca
+3|D169CC00001 - Dapa HFpEF
+4|CONFIDENTIAL AND PROPRIETARY
+5|31 of 95
+6|5.1
+7|Inclusion criteria
+8|Subjects are eligible to be randomised in the study only if all of the following inclusion criteria
+9|and none of the exclusion criteria applyD
+10|1. Provision of signed informed consent prior to any study specific procedures.
+11|2. Male or female patients age U40 years.
+12|3. Documented diagnosis of symptomatic heart failure HNYHA class II-IVI at enrolment,
+13|and a medical history of typical symptomsPsigns2 of heart failure U6 weeks before
+14|enrolment with at least intermittent need for diuretic treatment.
+15|4. Left Ventricular Ejection Fraction HLVEFI N40K and evidence of structural heart
+16|disease Hi.e. left ventricular hypertrophy or left atrial enlargement3I documented by the
+17|most recent echocardiogram, andPor cardiac MR within the last 12 months prior to
+18|enrolment. For patients with prior acute cardiac events or procedures that may reduce
+19|LVEF, e.g. as defined in exclusion criterion 6, qualifying cardiac imaging assessment
+20|at least 12 weeks following the procedurePevent is required.
+21|5. NT-pro BNP U300 pgPml at Visit 1 for patients without ongoing atrial fibrillationPflutter.
+22|If ongoing atrial fibrillationPflutter at Visit 1, NT-pro BNP must be U600 pgPmL.
+23|6. Patients may be ambulatory, or hospitalizedR patients must be off intravenous heart
+24|failure therapy Hincluding diureticsI for at least 12 hours prior to enrolment and 24 hours
+25|prior to randomisation.
+26|2 Typical symptoms associated with heart failureD breathlessness, orthopnoea, paroxysmal nocturnal dyspnoea,
+27|reduced exercise tolerance, fatigue, tiredness, increased time to recover after exercise, ankle swellingR
+28|Signs associated with Heart FailureD
+29|More specificD elevated jugular venous pressure, hepatojugular reflex, third heart sound Hgallop rhythmI, laterally
+30|displaced apical impulse
+31|Less specificD weight gain HN2 kgPweekI, weight loss Hin advanced HFI, tissue wasting HcachexiaI, cardiac murmur,
+32|peripheral oedema Hankle, sacral, scrotalI, pulmonary crepitations, reduced air entry and dullness to percussion at lung
+33|bases Hpleural effusionI, tachycardia, irregular pulse, tachypnoea, cheyne stokes respiration, hepatomegaly, ascites,
+34|cold extremities, oliguria, narrow pulse pressure
+35|3 Left Atrial Enlargement defined by at least 1 of the followingD LA width HdiameterI U3.8 cm or LA length U5.0 cm
+36|or LA area U20 cm2 or LA volume U55 mL or LA volume index U29 mLPm2. Left Ventricular Hypertrophy defined by
+37|septal thickness or posterior wall thickness U1.1 cm
