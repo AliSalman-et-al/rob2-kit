@@ -1,0 +1,74 @@
+{
+  "case": "monaleesa-2",
+  "runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10ffe-9508-7380-999e-9b5153798e03",
+    "elapsed_seconds": 284.86775027099065,
+    "finalized_batch_observed": false,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "assessment_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10ffe-9508-7380-999e-9b5153798e03",
+    "elapsed_seconds": 705.470698780031,
+    "finalized_batch_observed": true,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "artifact": "diagnostics/final-medium-verifier-cutover-20261006/cases/monaleesa-2/technical-proposal-recovery-01/workspace-run/.rob2-kit/finalized/ccc2c285880b7a5f1168fe1853e6e8db6c316c3456ca7ed608df1d4a13c87748.rob2.zip",
+  "artifact_sha256": "3444868e6ec54786ecf55ed0a33813eab1742143a5fbcb3b11cd7b73e10cafca",
+  "product_verifier": true,
+  "standalone_verifier_exit": 0,
+  "source_warrant_review": "pending; structural verification does not certify scientific support",
+  "projection_sha256": "d929a0bcc42a0b8828ba98739baf036c2bb0a9a29132da2e2a4c71a2acc10d69",
+  "session_sha256": "2505ac192a1f7706807eb4afd86bbedd3a26b2bd93ceaf39e86ba8efe8390c91",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 64,
+    "tokens": {
+      "input_tokens": 7141022,
+      "cached_input_tokens": 6754432,
+      "output_tokens": 20281,
+      "reasoning_output_tokens": 1185
+    },
+    "dollars": null
+  },
+  "accuracy_gain_claimed": false,
+  "all_attempts_preserved": true,
+  "original_proposal_terminal": {
+    "returncode": 0,
+    "reason": "no active tool and no observable productive progress for 300 seconds",
+    "session_id": "01a10ffe-9508-7380-999e-9b5153798e03",
+    "elapsed_seconds": 315.4318633520161,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "technical_proposal_recovery": "Same-session resume after original idle with zero completed responses; no source or result feedback",
+  "original_workspace": "diagnostics/final-medium-verifier-cutover-20261006/cases/monaleesa-2"
+}
