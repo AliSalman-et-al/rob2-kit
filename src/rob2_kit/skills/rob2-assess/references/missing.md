@@ -61,7 +61,8 @@ Keep these quantities distinct for each arm and time point:
 
 - randomized participants;
 - participants reported to complete study or follow-up (`completed`);
-- participants with the outcome observed;
+- participants with the outcome observed (`observed`);
+- the reported total with unavailable outcome data (`unavailable`), when its scope is established;
 - participants included in the reported analysis;
 - participants whose outcomes were imputed; and
 - post-randomization exclusions; and
@@ -84,8 +85,8 @@ only to narrow or add to the answer's Evidence. The server calculates
 differences and fractions only after scopes match and preserves conflicting
 reports without choosing the scientific answer. For D2.3 and D2.6, these rows
 describe deviations or analysis populations; they do not become observed
-outcomes. Only an explicit `observed` count participates in missing-count
-arithmetic.
+outcomes. Explicit `observed` or `unavailable` outcome quantities participate in
+missing-count arithmetic; generic censoring does not.
 
 When participant-count comparisons support the 3.1 answer, retain the
 source-supported `missing_data` rows in `save_domain_judgment`. Give each row its
@@ -103,8 +104,10 @@ not an additional mandatory call. Retain the chosen rows with the answer; omit
 row `basis` there only to reuse answer Evidence that supports those counts.
 
 Check each input against its source passage before using the arithmetic. The
-helper subtracts supplied observed counts from randomized counts; it does not
-extract counts or sum grouped departures. Keep unknown observed counts unknown.
+helper derives `randomized - observed`, or uses a supplied total `unavailable`
+count with a compatible randomized denominator. It does not extract counts or
+sum grouped departures. Supplying `unavailable` does not synthesize `observed`;
+keep unknown observed counts unknown.
 Skip the preview when an explicit ascertainment statement resolves availability
 without arithmetic.
 
@@ -114,8 +117,14 @@ means that every participant's outcome was observed. `analyzed`, `safety`, and
 `per_protocol` roles are denominators or populations, not availability. Keep
 administrative censoring, loss to follow-up, treatment change, imputation, and
 post-randomization exclusions as distinct facts. The server preserves these
-fields and only derives `randomized - observed`; it does not decide whether a
-censored participant is informative.
+fields and derives exact missingness only from explicit availability quantities.
+For a source-defined time-to-first-event outcome, `unavailable` may retain a
+reported total with incomplete endpoint follow-up despite unknown event times.
+First check that definition: follow-up after an observed first event, known
+competing death and complete administrative censoring are distinct from loss
+before first-event ascertainment. Keep unknown overlap unknown and do not add
+component-status counts automatically. The arithmetic does not decide whether
+censoring is informative or choose a signalling answer.
 
 ## Draft and submit
 

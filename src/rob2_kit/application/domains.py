@@ -717,6 +717,7 @@ def _comparison_cards(
             "approved_outcome",
             "randomized",
             "observed",
+            "unavailable",
             "follow_up_availability",
             "censoring",
             "missingness_reason",
@@ -933,7 +934,7 @@ def _comparison_cards(
             answer = {"missing_data": missing_data}
         if isinstance(answer, dict) and isinstance(answer.get("missing_data"), dict):
             missing_data = answer["missing_data"]
-            for field in ("randomized", "observed"):
+            for field in ("randomized", "observed", "unavailable"):
                 rows = [
                     row
                     for row in missing_data.get("rows", [])
@@ -3130,6 +3131,7 @@ def get_domain_context(
                             "treated",
                             "completed",
                             "observed",
+                            "unavailable",
                             "analyzed",
                             "imputed",
                             "excluded",

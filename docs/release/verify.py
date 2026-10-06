@@ -164,6 +164,9 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
             "read_pages",
             "basis",
             "randomized - observed",
+            "`observed` or `unavailable`",
+            "does not synthesize `observed`",
+            "generic censoring does not",
             "scoped",
         )
     ):
@@ -202,6 +205,12 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
     descriptions = {str(item.uri): (item.description or "").strip() for item in resource_items}
     if descriptions != contract["resource_descriptions"]:
         raise ValueError("MCP resource descriptions differ")
+    skill_resource = await client.read_resource("rob2://guidance/SKILL")
+    missing_resource = await client.read_resource("rob2://guidance/missing")
+    _verify_packaged_skill(
+        "\n".join(item.text for item in skill_resource if hasattr(item, "text")),
+        "\n".join(item.text for item in missing_resource if hasattr(item, "text")),
+    )
     current = await client.read_resource("rob2://current-batch")
     if len(current) != 1 or not getattr(current[0], "text", None):
         raise ValueError("current-batch resource is unreadable")

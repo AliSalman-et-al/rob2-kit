@@ -1,0 +1,130 @@
+{
+  "baseline_commit": "77926d48047e6a632a36d5960c0240039069f2c8",
+  "baseline_module_sha256": "e72c9f2c48a00201a81c6ff4eea3eea508df8b2af6f725e6df836977072c9e63",
+  "current_module_sha256": "751b30199619941baf2339289f351ec33552b64f72850154f2cd109d10276fbf",
+  "replay_script_sha256": "d2118cf08bff5535730f2a492fc18bc2f017d52f86465980057474c9fe062511",
+  "comparison": "Exact equality of whole reconciliation outputs: normalized source quantities, scope, semantics, evidence identities, missingness, fractions, bounds and conflicts.",
+  "state_count": 11,
+  "row_count": 24,
+  "states": [
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/beerendonk-1999/assessment-terminal-state.json",
+      "state_sha256": "9d45e7a67627009f5647d0a68d0f4a6a8d1d161bcec313e63041ad781ea39d78",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "6aa3f488f3bb6fbfd42c922d168cfd6c1da77fb08fb6db671c322d8e3c9fcf1f",
+          "current_output_sha256": "6aa3f488f3bb6fbfd42c922d168cfd6c1da77fb08fb6db671c322d8e3c9fcf1f"
+        }
+      ]
+    },
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/bendix-1996/assessment-terminal-state.json",
+      "state_sha256": "016921d71c97a0692c94e43685852ce44d462fca265bf391ee48593f0140dc02",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "b42df61dcc5ca55bf86a91ee0f53d43800177a9354381ce951e15a898523e550",
+          "current_output_sha256": "b42df61dcc5ca55bf86a91ee0f53d43800177a9354381ce951e15a898523e550"
+        }
+      ]
+    },
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/chua-2022/assessment-terminal-state.json",
+      "state_sha256": "d1af9e58439f68eef8dcff62064faa9cb0d1622f8c8aa5e1b532fc2a5a3c6e9c",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "87277b7737c726782dbe9f99a45b86ff6c564d5add9ea213538260b61340253a",
+          "current_output_sha256": "87277b7737c726782dbe9f99a45b86ff6c564d5add9ea213538260b61340253a"
+        }
+      ]
+    },
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/fr-as-2018/assessment-terminal-state.json",
+      "state_sha256": "e6362e20443d1077e0cb1b26bdab345e237a885cbd6e03fb0fc06b719f899e98",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 6,
+          "baseline_output_sha256": "4534876f26333933a2e2499cf7e2a4a3f85ddc5fb4fe3379121320766751fb99",
+          "current_output_sha256": "4534876f26333933a2e2499cf7e2a4a3f85ddc5fb4fe3379121320766751fb99"
+        }
+      ]
+    },
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/sanctuary/assessment-terminal-state.json",
+      "state_sha256": "a7fc3e59a7cae01133f2f7be9edf299edba1cea93e050149925ebdd342e4cf58",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 4,
+          "baseline_output_sha256": "50c6db700961ea006b3c08b3a078ba8b31a7bdc56b5e38c58ea6ee2b95fc6ffe",
+          "current_output_sha256": "50c6db700961ea006b3c08b3a078ba8b31a7bdc56b5e38c58ea6ee2b95fc6ffe"
+        }
+      ]
+    },
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/stop-igan/assessment-terminal-state.json",
+      "state_sha256": "ef0622bdba64ef862b5d85174c7cf9d1807664ab76e740f1840e35ae54e66fc7",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "eb7915201107d0bd1e1341539f34d67b73d24c99cbf539f4821966ee951aafb4",
+          "current_output_sha256": "eb7915201107d0bd1e1341539f34d67b73d24c99cbf539f4821966ee951aafb4"
+        }
+      ]
+    },
+    {
+      "path": "final-medium-verifier-cutover-20261006/cases/testing/assessment-terminal-state.json",
+      "state_sha256": "04311579105b1a49ca56bbbe385937a450d1b77203bb162f8216a161f591b26a",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "f992ce02f9ff797b6105720886ee75b10488c79cd132d8b37d45c5a2b481ef93",
+          "current_output_sha256": "f992ce02f9ff797b6105720886ee75b10488c79cd132d8b37d45c5a2b481ef93"
+        }
+      ]
+    },
+    {
+      "path": "evidence-weighting-paired-low-20261006/control/cases/dapa-hf/attempt-02/assessment-terminal-state.json",
+      "state_sha256": "ac7fa04a29b3cbf00ad9c944881fcc2ecc6817e196f81a2eacffe67ac4d99731",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "d31fd877376f945eeffb9cb98a344bc6a2f4b76b01f44b29fbfa5d9dfd0d895d",
+          "current_output_sha256": "d31fd877376f945eeffb9cb98a344bc6a2f4b76b01f44b29fbfa5d9dfd0d895d"
+        }
+      ]
+    },
+    {
+      "path": "evidence-weighting-paired-low-20261006/control/cases/testing/attempt-02/assessment-terminal-state.json",
+      "state_sha256": "552828330c0bc3e98eea406f4b883f8376029081bf6985664947be126fa6b5e3",
+      "comparisons": []
+    },
+    {
+      "path": "evidence-weighting-paired-low-20261006/intervention/cases/dapa-hf/attempt-02/assessment-terminal-state.json",
+      "state_sha256": "f4c8693ecfef113f8b0338afce9344626bda06773af1313693c470330a991fe4",
+      "comparisons": [
+        {
+          "question_id": "sq:missing:data-available",
+          "row_count": 2,
+          "baseline_output_sha256": "a121f1771c66e7336340a6611f4ccf68123c2d6a758fdfb6570f74c18211d21c",
+          "current_output_sha256": "a121f1771c66e7336340a6611f4ccf68123c2d6a758fdfb6570f74c18211d21c"
+        }
+      ]
+    },
+    {
+      "path": "evidence-weighting-paired-low-20261006/intervention/cases/testing/attempt-02/assessment-terminal-state.json",
+      "state_sha256": "34bb4a7308eaaff6e64acf58f8d3f92861bed0f53f3564d2e92ed52f7b3d14b3",
+      "comparisons": []
+    }
+  ],
+  "result": "PASS"
+}

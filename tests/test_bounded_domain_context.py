@@ -1543,3 +1543,64 @@ def test_unavailable_count_is_visible_in_production_preview(tmp_path: Path) -> N
     ]
     assert counts and all(row["value"] == 3 for row in counts)
     assert all(row["passages"] for row in counts)
+
+
+def test_saved_unavailable_count_survives_fresh_context_cache_loss_and_recovery(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    _wire_context(workspace, {"trial_id": "trial", "domain_id": "domain:missing"})
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    answer = next(a for a in draft["answers"] if a["question_id"] == "sq:missing:data-available")
+    answer["missing_data"] = [
+        {
+            "arm": "A",
+            "population": "randomized",
+            "unit": "participants",
+            "time_point": "primary endpoint follow-up",
+            "randomized": 20,
+            "unavailable": 3,
+        }
+    ]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success"
+    canonical = copy.deepcopy(_state(workspace))
+
+    def fresh() -> tuple[dict, dict]:
+        first, _ = _wire_context(
+            workspace,
+            {"trial_id": "trial", "domain_id": "domain:missing", "max_response_bytes": 32_768},
+            drain=False,
+        )
+        pages = [first]
+        while pages[-1]["data"]["context_page"]["next_cursor"]:
+            page, _ = _wire_context(
+                workspace, {"cursor": pages[-1]["data"]["context_page"]["next_cursor"]}, drain=False
+            )
+            pages.append(page)
+        cards = [c for p in pages for c in p["data"].get("comparison_cards", [])]
+        rows = [r for c in cards for r in (c.get("missing_data") or {}).get("rows", [])]
+        assert rows and all(r["unavailable"] == 3 for r in rows)
+        assert all(r["observed"] is None for r in rows)
+        assert all(r["missing_bounds"] == {"lower": 3, "upper": 3, "kind": "exact"} for r in rows)
+        counts = [
+            r for c in cards for r in c.get("participant_flow", []) if r["kind"] == "unavailable"
+        ]
+        assert counts and all(r["value"] == 3 and r["passages"] for r in counts)
+        slots = [s for c in cards for s in c.get("slots", []) if s["name"] == "unavailable"]
+        assert slots and all(s["status"] == "supported" and s["passages"] for s in slots)
+        recovered, _ = _wire_context(
+            workspace,
+            {"cursor": first["data"]["context_page"]["stable_recovery"]["cursor"]},
+            drain=False,
+        )
+        return first, recovered
+
+    first, recovered = fresh()
+    assert first["data"] == recovered["data"]
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        connection.execute("DELETE FROM domain_context_views")
+        connection.execute("DELETE FROM domain_context_delivery")
+    restarted, _ = fresh()
+    assert restarted["data"]["domain_id"] == "domain:missing"
+    assert _state(workspace) == canonical

@@ -17,3 +17,17 @@ Unknown event times and loss reasons remain separate uncertainties. The count do
 Generic offline controls cover an event preceding later loss, known competing death, loss before first event, complete administrative censoring and unknown overlap. Additional controls preserve incompatible reports, prevent invented observed counts, check conflicting reports and reject tampering in both verifiers. A real MCP client checks the new quantity and its source passages in the paged comparison-card preview.
 
 This is a representation improvement, not demonstrated behavioral or accuracy improvement. No paid rerun, reference-label tuning, full benchmark or merge is part of this checkpoint. A later experiment must test whether the assessor actually uses the source-specific definition to preserve known availability extent, while retaining the contrasting censoring cases above.
+
+## Integration audit and reproducible preservation check
+
+Independent review found and corrected two additional seams: the saved-row restoration whitelist omitted `unavailable`, and the packaged D3 reference still described observed-only arithmetic. The new quantity now survives save → fresh paged context → stable recovery → derivative-cache loss → rebuilt context, with exact bounds and source passages. D3 comparison slots also expose it explicitly. Canonical state remains unchanged by these reads. The packaged reference now describes both typed availability inputs, while preserving the official text. Release verification reads the actual MCP guidance resources from the installed server.
+
+The audit checked normalization, canonical/source-row reconstruction, reconciliation, conflict comparison, participant-flow and slot projections, typed public serialization, working result-step count verification, Trial review availability diagnostics, and both canonical verifiers. Generic event and censoring quantities remain separate.
+
+The original 24-row claim is backed by [the exact state inventory and comparison hashes](preserved-row-replay.json) and [the replay script](replay_preserved_rows.py). The receipt includes each private state path relative to the diagnostics root, its byte hash, per-question row count and equal whole-output hashes; private state contents are not published. From this checkout, with its dependencies installed:
+
+```bash
+PYTHONPATH=src python docs/evaluation/outcome-availability-counts-2026-10-06/replay_preserved_rows.py --state-root /path/to/preserved/diagnostics --output /tmp/replay.json
+```
+
+Captured result: `PASS: 24 rows across 11 preserved states; exact outputs equal`. The script compares full normalized reconciliation outputs with the pinned baseline implementation, not just labels or selected numerical fields. It does not assert that every model-facing context stayed byte-identical after introducing the new surface.

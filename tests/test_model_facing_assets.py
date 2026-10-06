@@ -208,3 +208,24 @@ def test_missing_reference_and_skill_use_official_science_and_preserve_recovery(
     assert "For D3.1, run the **availability audit**" not in skill
     for term in ("unopened supplements", "read_pages", "basis", "randomized - observed", "scoped"):
         assert term in reference, term
+
+
+def test_missing_reference_delivered_through_production_mcp_resource() -> None:
+    import asyncio
+
+    from fastmcp import Client
+
+    from rob2_kit.interfaces.mcp.server import mcp
+
+    async def read() -> str:
+        async with Client(mcp) as client:
+            contents = await client.read_resource("rob2://guidance/missing")
+            return "\n".join(item.text for item in contents if hasattr(item, "text"))
+
+    delivered = asyncio.run(read())
+    assert delivered == Path("src/rob2_kit/skills/rob2-assess/references/missing.md").read_text()
+    assert "`observed` or `unavailable`" in delivered
+    assert "does not synthesize `observed`" in delivered
+    assert "generic censoring does not" in delivered
+    assert "Only an explicit `observed`" not in delivered
+    assert "only derives `randomized - observed`" not in delivered
