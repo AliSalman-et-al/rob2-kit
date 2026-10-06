@@ -7,7 +7,9 @@ from pathlib import Path
 
 import pytest
 
-_ROOT = Path(__file__).parents[1] / "docs/evaluation/2026-10-03-active-question-architecture"
+_ROOT = (
+    Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-active-question-architecture"
+)
 _PROJECT = runpy.run_path(str(_ROOT / "prototype.py"))["project_active_questions"]
 
 

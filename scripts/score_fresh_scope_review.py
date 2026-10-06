@@ -97,7 +97,7 @@ def main() -> None:
     (campaign / "supplemental-scope-score.json").write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    report = repo / "docs/evaluation/2026-09-27-result-scope-report.md"
+    report = repo / "docs/archive/evaluation/2026-09-27-result-scope-report.md"
     report.write_text(
         render_markdown(result, publish_adjudication_details=True)
         + "\nA sanitized [case-level machine summary](2026-09-27-result-scope-score.json) "

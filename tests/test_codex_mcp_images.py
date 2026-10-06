@@ -13,7 +13,7 @@ from mcp.types import ImageContent, TextContent
 from rob2_kit.interfaces.mcp.contracts import output_schema, validate_output
 from scripts.codex_mcp import CodexImageContent
 
-CASE = Path(__file__).parents[1] / "docs/evaluation/2026-10-03-gupta-full-validation"
+CASE = Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-gupta-full-validation"
 
 
 def retained_render() -> dict:

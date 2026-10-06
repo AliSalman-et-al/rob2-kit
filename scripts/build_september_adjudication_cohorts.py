@@ -1756,12 +1756,12 @@ def main() -> int:
     parser.add_argument(
         "--inventory-output",
         type=Path,
-        default=Path("docs/evaluation/2026-09-27-trace-inventory.json"),
+        default=Path("docs/archive/evaluation/2026-09-27-trace-inventory.json"),
     )
     parser.add_argument(
         "--reconciliation-output",
         type=Path,
-        default=Path("docs/evaluation/2026-09-27-cohort-reconciliation.json"),
+        default=Path("docs/archive/evaluation/2026-09-27-cohort-reconciliation.json"),
     )
     args = parser.parse_args()
     build(args)

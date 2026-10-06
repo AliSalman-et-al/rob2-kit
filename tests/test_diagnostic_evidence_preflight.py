@@ -95,7 +95,10 @@ def test_contiguous_windows_cover_requirement_but_gap_does_not(tmp_path):
 
 
 def test_actual_confounded_exscel_input_is_rejected_without_launch():
-    root = Path(__file__).parents[1] / "docs/evaluation/2026-10-03-exscel-review-response-d789ea8"
+    root = (
+        Path(__file__).parents[1]
+        / "docs/archive/evaluation/2026-10-03-exscel-review-response-d789ea8"
+    )
     with pytest.raises(ValueError, match="page 188 lines 20-40"):
         check_manifest(root / "retrospective-required-evidence-manifest.json", root / "input.txt")
 

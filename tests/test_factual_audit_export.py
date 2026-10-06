@@ -13,7 +13,7 @@ from scripts.export_factual_audit import export_packet
 
 BUNDLE = (
     Path(__file__).parents[1]
-    / "docs/evaluation/2026-10-04-gupta-fork-continuation"
+    / "docs/archive/evaluation/2026-10-04-gupta-fork-continuation"
     / "caf5f259a9f5eef456a05a6543fac933aa9bcbc55a99ba4b03430da8b760ab2d.rob2.zip"
 )
 

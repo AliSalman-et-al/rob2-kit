@@ -1,0 +1,118 @@
+{
+  "selected_utc": "2026-10-06T02:02:59.023263+00:00",
+  "preselection_freeze_sha256": "b422c010f662863d64b21c1dc062369a74ed262fdaefcee8c0b0bbec30b13ced",
+  "ordered_sample": [
+    {
+      "slug": "albert-2013",
+      "meta_id": "lrheum-lbp",
+      "primary_outcome": "Disease-specific disability, Roland Morris Disability Questionnaire (first-named of two co-primary measures; the other is lumbar pain, LBP Rating Scale)",
+      "primary_outcome_source": "Methods: The primary outcome measures were disease-specific disability Roland Morris Questionnaire (RMDQ) and lumbar pain (LBP Rating Scale).",
+      "anchor_as_printed": "At baseline, 100 days follow-up, 1-year follow-up the disease-specific disability-RMDQ changed: antibiotic 15, 11, 5.7; placebo 15, 14, 14",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT00302796",
+      "registration_other": "",
+      "notes": "co-primary; lumbar pain also in abstract (antibiotics 6.7, 5.0, 3.7; placebo 6.3, 6.3, 6.3)"
+    },
+    {
+      "slug": "sustain-6",
+      "meta_id": "lde-glp1",
+      "primary_outcome": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event)",
+      "primary_outcome_source": "Methods: The primary composite outcome was the first occurrence of death from cardiovascular causes, nonfatal myocardial infarction (including silent), or nonfatal stroke.",
+      "anchor_as_printed": "The primary outcome occurred in 108 of 1648 patients (6.6%) in the semaglutide group and in 146 of 1649 patients (8.9%) in the placebo group (hazard ratio, 0.74; 95% confidence interval [CI], 0.58 to 0.95; P<0.001 for noninferiority)",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT01720446",
+      "registration_other": "",
+      "notes": ""
+    },
+    {
+      "slug": "bendix-1996",
+      "meta_id": "lrheum-lbp",
+      "primary_outcome": "Ability to work at 4-month follow-up (first-named outcome in the abstract; no primary outcome is designated)",
+      "primary_outcome_source": "Abstract: At that time, 29 (64%) of the 45 treated patients were able to work, compared with 14 of 49 (29%) in the control group.",
+      "anchor_as_printed": "29 (64%) of the 45 treated patients were able to work, compared with 14 of 49 (29%) in the control group",
+      "anchor_source": "Abstract, Results",
+      "nct": "",
+      "registration_other": "",
+      "notes": "1996 paper, no registration, no designated primary; sick leave, health care contacts, pain and disability also reported; PDF text layer is OCR of a scan"
+    },
+    {
+      "slug": "testing",
+      "meta_id": "cjasn-iga",
+      "primary_outcome": "Composite of 40% decline in eGFR, kidney failure (dialysis or transplant), or death due to kidney disease",
+      "primary_outcome_source": "Methods: The primary end point was the composite of the first occurrence of a sustained 40% decrease in eGFR, the development of kidney failure (defined as a need for maintenance dialysis or kidney transplant), or death due to kidney disease.",
+      "anchor_as_printed": "Over a mean of 4.2 years of follow-up, the primary outcome occurred in 74 participants (28.8%) in the methylprednisolone group compared with 106 (43.1%) in the placebo group (hazard ratio [HR], 0.53 [95% CI, 0.39-0.72]; P < .001; absolute annual event rate difference, -4.8% per year [95% CI, -8.0% to -1.6%])",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT01560052",
+      "registration_other": "",
+      "notes": "full-dose and reduced-dose regimens pooled vs placebo; JAMA PDF via Zaid JAMA login"
+    },
+    {
+      "slug": "beerendonk-1999",
+      "meta_id": "hru-preconception",
+      "primary_outcome": "State and trait anxiety (Spielberger STAI) during an IVF-ET procedure with vs without dietary sodium restriction (no primary is designated)",
+      "primary_outcome_source": "Abstract: influences of dietary sodium restriction as an independent factor on anxiety levels of women participating in an in vitro fertilization-embryo transfer procedure were investigated.",
+      "anchor_as_printed": "State as well as trait anxiety scores increased significantly (p = 0.01, and p = 0.03, respectively) from baseline to the point of measurement in the luteal phase. No significant differences in this mean increase were observed between the two diet groups",
+      "anchor_source": "Abstract",
+      "nct": "",
+      "registration_other": "",
+      "notes": "1999, 119 randomized, 69 analysed; no registration; abstract text layer is OCR of a scan, quote cleaned; T&F PDF saved by Zaid"
+    },
+    {
+      "slug": "chua-2022",
+      "meta_id": "lrm-preox",
+      "primary_outcome": "Lowest SpO2 during the first intubation attempt",
+      "primary_outcome_source": "Methods: The primary endpoint was lowest SpO2 during the first intubation attempt.",
+      "anchor_as_printed": "Median lowest SpO2 during the first intubation attempt was 100% in both groups. Incidence of SpO2 falling below 90% was lower in the intervention group (15.5%) compared to the control group (22.6%) (adjusted relative risk=0.68, 95% confidence interval [CI] 0.37\u20131.25)",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT03396094",
+      "registration_other": "",
+      "notes": "the meta labelled this trial on mortality; the trial's own primary is lowest SpO2"
+    },
+    {
+      "slug": "monaleesa-2",
+      "meta_id": "loncol-cdk46",
+      "primary_outcome": "Investigator-assessed progression-free survival (RECIST 1.1)",
+      "primary_outcome_source": "Methods: The primary end point was locally assessed progression-free survival, according to RECIST, version 1.1.",
+      "anchor_as_printed": "The duration of progression-free survival was significantly longer in the ribociclib group than in the placebo group (hazard ratio, 0.56; 95% CI, 0.43 to 0.72; P=3.29\u00d710\u22126 for superiority)",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT01958021",
+      "registration_other": "",
+      "notes": ""
+    },
+    {
+      "slug": "stop-igan",
+      "meta_id": "cjasn-iga",
+      "primary_outcome": "Full clinical remission at the end of the 3-year trial phase (first of two hierarchical primary end points; second is decrease in eGFR of \u226515 ml/min/1.73 m2)",
+      "primary_outcome_source": "Methods: The two primary end points in hierarchical order were full clinical remission (protein-to-creatinine ratio <0.2 and decrease in eGFR <5 ml/min/1.73 m2 from baseline) and a decrease in eGFR of at least 15 ml/min/1.73 m2 at the end of the 3-year trial phase.",
+      "anchor_as_printed": "After 3 years, 4 patients (5%) in the supportive-care group, as compared with 14 (17%) in the immunosuppression group, had a full clinical remission (P = 0.01)",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT00554502",
+      "registration_other": "",
+      "notes": "hierarchical co-primary; second end point: 22 (28%) vs 21 (26%), P = 0.75"
+    },
+    {
+      "slug": "sanctuary",
+      "meta_id": "cjasn-iga",
+      "primary_outcome": "Change from baseline in 24-hour urine protein-to-creatinine ratio at 9 months, felzartamab vs placebo",
+      "primary_outcome_source": "Methods: The primary endpoint was the change from baseline in 24-hour urine protein:creatinine ratio (UPCR) at 9 months.",
+      "anchor_as_printed": "Treatment with felzartamab versus placebo led to rapid (within 3-6 months) reduction in least-squares mean UPCR sustained at nine months (placebo, -5.7%; 2-dose, -12.5%; 5-dose, -12.8%; 9-dose, -29.5%; part 2, -44.8%)",
+      "anchor_source": "Abstract, Results",
+      "nct": "NCT05065970",
+      "registration_other": "",
+      "notes": "REPLACEMENT for align; phase 2a with several dose arms and a part 2; abstract gives arm percentages, no CI; Kidney Int open access, fetched in Chrome"
+    },
+    {
+      "slug": "fr-as-2018",
+      "meta_id": "gastro-glp1",
+      "primary_outcome": "Change in HbA1c from baseline to 26 weeks (modified intention-to-treat), LY3298176 doses vs placebo and vs dulaglutide",
+      "primary_outcome_source": "Methods: The primary efficacy outcome was change in HbA1c from baseline to 26 weeks in the modified intention-to-treat (mITT) population.",
+      "anchor_as_printed": "Mean changes from baseline in HbA1c with LY3298176 were -1.06% for 1 mg, -1.73% for 5 mg, -1.89% for 10 mg, and -1.94% for 15 mg, compared with -0.06% for placebo",
+      "anchor_source": "Abstract, Findings",
+      "nct": "NCT03131687",
+      "registration_other": "",
+      "notes": "six arms, phase 2 (tirzepatide); the meta labelled GI adverse events; NCT03311724 in the text is a cited study; Lancet PDF saved by Zaid, appendix by curl"
+    }
+  ],
+  "redraws": 0,
+  "exclusions": []
+}

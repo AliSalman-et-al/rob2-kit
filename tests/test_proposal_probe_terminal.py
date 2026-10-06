@@ -15,7 +15,9 @@ proposal_saved_for_review = _module.proposal_saved_for_review
 def test_actual_saved_receipt_stops_but_validation_and_conditions_do_not() -> None:
     import json
 
-    archive = Path(__file__).parents[1] / "docs/evaluation/2026-10-03-exscel-proposal-bd92ec8"
+    archive = (
+        Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-exscel-proposal-bd92ec8"
+    )
     calls = json.loads((archive / "proposal-requests-and-receipts.json").read_text())
     for call in calls:
         result = call["result"]["structured_content"]

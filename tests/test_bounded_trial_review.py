@@ -254,7 +254,7 @@ def test_selected_summary_keeps_full_saved_claims_and_recovers_exact_sources(
 ) -> None:
     artifact = (
         Path(__file__).parents[1]
-        / "docs/evaluation/2026-10-04-selected-review-packing"
+        / "docs/archive/evaluation/2026-10-04-selected-review-packing"
         / f"{case}-snapshot.json"
     )
     receipt = json.loads(artifact.read_text(encoding="utf-8"))

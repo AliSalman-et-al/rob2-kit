@@ -175,7 +175,8 @@ def test_shared_wall_budget_and_host_abort_are_real_boundaries(tmp_path: Path) -
 
 def test_actual_exscel_failed_item_status_is_counted_without_error_field() -> None:
     artifact = (
-        Path(__file__).parents[1] / "docs/evaluation/2026-10-03-exscel-full-bd92ec8/events.jsonl"
+        Path(__file__).parents[1]
+        / "docs/archive/evaluation/2026-10-03-exscel-full-bd92ec8/events.jsonl"
     )
     facts = trace_facts(artifact)
     assert facts["calls"] == 6
@@ -210,7 +211,7 @@ def test_finalization_receipt_lookup_matches_authoritative_revision() -> None:
 
     trace_path = (
         Path(__file__).parents[1]
-        / "docs/evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl"
+        / "docs/archive/evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl"
     )
     status = {"phase": "finalized", "state_revision": 12}
     artifact = finalized_artifact(status, [trace_path])

@@ -11,7 +11,9 @@ from pydantic import ValidationError
 
 from rob2_kit.workflow_models import ComparativeEffectResult, ResultTarget
 
-_ROOT = Path(__file__).parents[1] / "docs/evaluation/2026-10-03-d27-synthetic-scope-correction"
+_ROOT = (
+    Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-d27-synthetic-scope-correction"
+)
 _SPECIMENS = json.loads((_ROOT / "specimens.json").read_text())["scenarios"]
 
 

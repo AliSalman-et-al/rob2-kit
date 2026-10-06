@@ -9,7 +9,7 @@ from rob2_kit.application.domains import get_domain_context
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.packs.d3_authoritative import D3_QUESTION_GUIDANCE, D3_SHARED_GUIDANCE
 
-RECORD = Path(__file__).parents[1] / "docs/evaluation/2026-10-04-d3-authoritative-prototype"
+RECORD = Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-04-d3-authoritative-prototype"
 
 
 def test_complete_official_text_matches_independent_transcription() -> None:

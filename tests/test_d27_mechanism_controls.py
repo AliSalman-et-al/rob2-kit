@@ -8,7 +8,7 @@ import pytest
 
 from rob2_kit.logic import active_questions, evaluate_domain
 
-_ROOT = Path(__file__).parents[1] / "docs/evaluation/2026-10-03-d27-mechanism-impact"
+_ROOT = Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-d27-mechanism-impact"
 
 
 class _Control(TypedDict):

@@ -7,8 +7,8 @@ from pathlib import Path
 from scripts.workflow_completion import tool_feedback
 
 ROOT = Path(__file__).parents[1]
-PAID = ROOT / "docs/evaluation/2026-10-03-gupta-full-validation"
-PATCH = ROOT / "docs/evaluation/2026-10-03-gupta-guard-image-audit/bounded_launcher.py"
+PAID = ROOT / "docs/archive/evaluation/2026-10-03-gupta-full-validation"
+PATCH = ROOT / "docs/archive/evaluation/2026-10-03-gupta-guard-image-audit/bounded_launcher.py"
 spec = importlib.util.spec_from_file_location("offline_gupta_budget", PATCH)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
