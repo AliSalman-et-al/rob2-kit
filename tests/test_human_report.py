@@ -131,6 +131,7 @@ def test_report_escapes_untrusted_text_and_uses_only_local_evidence_links(
     render_identity: str,
 ) -> None:
     identity = "sha256:" + "a" * 64
+    figure_identity = "sha256:" + "b" * 64
     malicious = '<script>alert("x")</script><a href="javascript:alert(1)">x</a>'
     canonical = {
         "proposal": {
@@ -144,6 +145,14 @@ def test_report_escapes_untrusted_text_and_uses_only_local_evidence_links(
                     "start_line": 9,
                     "end_line": 12,
                     "quote": malicious,
+                },
+                figure_identity: {
+                    "identity": figure_identity,
+                    "kind": "figure",
+                    "source_id": "source",
+                    "render": {"identity": render_identity, "page": 7},
+                    "region": [0.1, 0.2, 0.6, 0.9],
+                    "transcription": malicious,
                 },
             },
         },
@@ -169,15 +178,6 @@ def test_report_escapes_untrusted_text_and_uses_only_local_evidence_links(
                 "trace": ["missing.likely_dependent"],
             }
         },
-    }
-    figure_identity = "sha256:" + "b" * 64
-    canonical["proposal"]["evidence"][figure_identity] = {
-        "identity": figure_identity,
-        "kind": "figure",
-        "source_id": "source",
-        "render": {"identity": render_identity, "page": 7},
-        "region": [0.1, 0.2, 0.6, 0.9],
-        "transcription": malicious,
     }
     claims = {"authoritative_wording": malicious, "overall": {malicious: "high"}}
     report = _human_report(canonical, claims)
