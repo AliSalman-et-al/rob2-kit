@@ -76,10 +76,17 @@ def test_complete_lean_d2_d3_d5_preserves_sources_uncertainty_and_native_labels(
             unknowns=["Unmeasured outcomes are not established."],
         ),
     ]
+    missing_evidence = support._call(
+        workspace, "select_text_evidence", {"trial_id": "trial", **reference(evidence, 3)}
+    )["data"]["evidence"]
     d3 = [
         answer("sq:missing:data-available", "no", [reference(evidence, 3)]),
         answer("sq:missing:evidence-unbiased", "no", [reference(evidence, 3)]),
-        answer("sq:missing:true-value-dependent", "probably_yes", [reference(evidence, 3)]),
+        answer(
+            "sq:missing:true-value-dependent",
+            "yes",
+            [{"kind": "inference", "evidence": missing_evidence["handle"]}],
+        ),
         answer(
             "sq:missing:likely-dependent",
             "probably_yes",
@@ -174,6 +181,22 @@ def test_complete_lean_d2_d3_d5_preserves_sources_uncertainty_and_native_labels(
     artifact = support._finalize_assessment(workspace, revision)["data"]["artifact"]["path"]
     assert verify_bundle(workspace / artifact)
     assert support._standalone_verify(workspace / artifact).returncode == 0
+
+    # Rehashing does not let the new uniform basis contract invent cited material.
+    tampered = tmp_path / "inference-source-tamper.rob2.zip"
+
+    def falsify_source(canonical: dict) -> None:
+        missing = canonical["domain_records"]["trial:domain:missing"]
+        dependent = next(
+            item
+            for item in missing["answers"]
+            if item["question_id"] == "sq:missing:true-value-dependent"
+        )
+        dependent["bases"][0]["source"] = "Fabricated withdrawal reason not in the Source."
+
+    support._rehashed_full_tamper(workspace / artifact, tampered, falsify_source)
+    assert not verify_bundle(tampered)
+    assert support._standalone_verify(tampered).returncode == 1
 
 
 @pytest.mark.parametrize("invalid", ["handle", "source", "page", "lines", "quote"])

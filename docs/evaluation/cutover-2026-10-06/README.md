@@ -19,3 +19,12 @@ and all ten final input/profile preflights passed. See `focused-closure-receipt.
 and `final-medium-freeze.json`. One clean aggregate suite is still running, and its
 green result is required before merge. No final Medium case has launched; earlier Low pilots remain superseded development evidence.
 `execution-protocol.md` defines prospective run/reporting rules, not gate closure.
+
+Albert’s first Medium workflow saved all five Domains and closed the Trial, then
+failed bundle finalization on a retired basis-label/modality invariant. The
+current-pack verifier fix passes four focused roundtrip/tamper/history checks
+and an unpaid clone passes both verifiers. New case launches are held for
+review, installed verification and an amended version-stratum freeze; see
+`verifier-uniform-basis-recovery.json`. SUSTAIN’s original idle continuation is
+retained and its same-session technical recovery is active. No successful
+first-attempt completion or accuracy gain is claimed.

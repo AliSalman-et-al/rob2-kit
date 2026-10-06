@@ -86,6 +86,12 @@ _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
 _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 
+# Official-core submissions ground every answer uniformly; a basis label does not
+# determine clinical certainty. Retain predecessor modality rules for old bundles.
+_UNIFORM_ANSWER_BASIS_PACKS = frozenset(
+    {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
+)
+
 
 def _nonblank(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
@@ -4630,12 +4636,16 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         material = str(evidence.get("quote") or evidence.get("transcription") or "")
                         if material != source:
                             return fail()
-                    if answer["answer"] in {"yes", "no"} and not (
-                        direct_basis
-                        or (
-                            answer["question_id"] == "sq:missing:evidence-unbiased"
-                            and answer["answer"] == "no"
-                            and any(use.get("kind") != "limitation" for use in answer["bases"])
+                    if (
+                        scientific_pack["content_hash"] not in _UNIFORM_ANSWER_BASIS_PACKS
+                        and answer["answer"] in {"yes", "no"}
+                        and not (
+                            direct_basis
+                            or (
+                                answer["question_id"] == "sq:missing:evidence-unbiased"
+                                and answer["answer"] == "no"
+                                and any(use.get("kind") != "limitation" for use in answer["bases"])
+                            )
                         )
                     ):
                         return fail()
@@ -4953,12 +4963,18 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                             )
                             if material != source:
                                 return fail()
-                        if answer["answer"] in {"yes", "no"} and not (
-                            direct_basis
-                            or (
-                                answer["question_id"] == "sq:missing:evidence-unbiased"
-                                and answer["answer"] == "no"
-                                and any(use.get("kind") != "limitation" for use in answer["bases"])
+                        if (
+                            scientific_pack["content_hash"] not in _UNIFORM_ANSWER_BASIS_PACKS
+                            and answer["answer"] in {"yes", "no"}
+                            and not (
+                                direct_basis
+                                or (
+                                    answer["question_id"] == "sq:missing:evidence-unbiased"
+                                    and answer["answer"] == "no"
+                                    and any(
+                                        use.get("kind") != "limitation" for use in answer["bases"]
+                                    )
+                                )
                             )
                         ):
                             return fail()

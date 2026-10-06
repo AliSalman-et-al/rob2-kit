@@ -165,6 +165,12 @@ _SCIENTIFIC_PACK = {
     },
 }
 _CONDITIONAL_AGGREGATION_CONTRACT = "rob2-kit.overall.cochrane-conditional.v1"
+
+# Official-core submissions ground every answer uniformly; a basis label does not
+# determine clinical certainty. Retain predecessor modality rules for old bundles.
+_UNIFORM_ANSWER_BASIS_PACKS = frozenset(
+    {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
+)
 _DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.reasoned-adjudication.v1"
 _PRE_DOMAIN_ADJUDICATION_PACK = {
     **_SCIENTIFIC_PACK,
@@ -5537,12 +5543,16 @@ def verify(path: Path) -> tuple[bool, str]:
                         )
                         if material != source:
                             return False, "Domain Evidence source is not an exact selected fragment"
-                    if answer["answer"] in {"yes", "no"} and not (
-                        direct_basis
-                        or (
-                            answer["question_id"] == "sq:missing:evidence-unbiased"
-                            and answer["answer"] == "no"
-                            and any(use.get("kind") != "limitation" for use in answer["bases"])
+                    if (
+                        scientific_pack["content_hash"] not in _UNIFORM_ANSWER_BASIS_PACKS
+                        and answer["answer"] in {"yes", "no"}
+                        and not (
+                            direct_basis
+                            or (
+                                answer["question_id"] == "sq:missing:evidence-unbiased"
+                                and answer["answer"] == "no"
+                                and any(use.get("kind") != "limitation" for use in answer["bases"])
+                            )
                         )
                     ):
                         return False, "definitive Domain answer lacks a direct basis"
@@ -5818,12 +5828,18 @@ def verify(path: Path) -> tuple[bool, str]:
                             )
                             if material != source:
                                 return False, "Domain history Evidence source is invalid"
-                        if answer["answer"] in {"yes", "no"} and not (
-                            direct_basis
-                            or (
-                                answer["question_id"] == "sq:missing:evidence-unbiased"
-                                and answer["answer"] == "no"
-                                and any(use.get("kind") != "limitation" for use in answer["bases"])
+                        if (
+                            scientific_pack["content_hash"] not in _UNIFORM_ANSWER_BASIS_PACKS
+                            and answer["answer"] in {"yes", "no"}
+                            and not (
+                                direct_basis
+                                or (
+                                    answer["question_id"] == "sq:missing:evidence-unbiased"
+                                    and answer["answer"] == "no"
+                                    and any(
+                                        use.get("kind") != "limitation" for use in answer["bases"]
+                                    )
+                                )
                             )
                         ):
                             return False, "definitive Domain history answer lacks a direct basis"

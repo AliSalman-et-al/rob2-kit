@@ -1,0 +1,105 @@
+{
+  "status": "new launches held for real verifier/runtime review and fresh installed verification",
+  "recorded_at_unix": 1791265036.8441672,
+  "frozen_original_runtime": "7355c4ce5e3ac5f377cfb8a0fb861605575ea7c4",
+  "scientific_pack_unchanged": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+  "first_case": {
+    "slug": "albert-2013",
+    "terminal": {
+      "returncode": 0,
+      "reason": null,
+      "session_id": "01a10f9c-ca9d-7d71-9800-a71d9f9d3418",
+      "elapsed_seconds": 582.0792403340456,
+      "finalized_batch_observed": false,
+      "initial_sessions": 0,
+      "continuations": 1,
+      "no_operator_science_feedback": true
+    },
+    "phase": "ready_to_finalize",
+    "all_five_domains_saved": true,
+    "trial_closed": true,
+    "operational_disposition": "bundle finalization blocked; not a successful first attempt",
+    "failure_code": "bundle_independent_verification_failed",
+    "failure_line": 4641,
+    "predicate": "Retired Yes/No-to-direct-basis-label coupling rejected source-grounded inference for question3.3. A basis label does not determine clinical certainty.",
+    "original_data_retained": true
+  },
+  "runtime_delta": {
+    "files": [
+      "src/rob2_kit/application/finalization.py",
+      "scripts/verify_bundle.py"
+    ],
+    "scope": "Current official-core pack exact hash accepts uniformly grounded Yes/No; predecessor modality rules retained. Question options, graph scores, quote/source ownership, count closure, source bytes, lineage, and shapes remain checked.",
+    "science_or_skill_asset_change": false,
+    "case_answers_rewritten": false,
+    "published_contract_changed": false
+  },
+  "regression": {
+    "frozen_old_runtime_red": "1 expected failure in89.57s; exact native invariant4641 confirmed",
+    "corrected_focused": "4 passed in189.59s; includes full D2/D3/D5 roundtrips, invented-source tamper rejection and historical bundle closure compatibility",
+    "lint": "pass",
+    "types": "pass",
+    "artifacts": {
+      "verifier-uniform-red-frozen98.log": {
+        "sha256": "8173f92796fd06c3ec0833fbf2687dc605e9d3170215e3884fa36693e9ff1f83",
+        "bytes": 8837
+      },
+      "verifier-uniform-green-and-guards.log": {
+        "sha256": "fcb50708cb06e175a42e87eceb42500fc7d94dc6ceb2bc7a15972f30c8183447",
+        "bytes": 153
+      },
+      "verifier-uniform-types.log": {
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "bytes": 19
+      }
+    }
+  },
+  "unpaid_clone_probe": {
+    "product_pass": true,
+    "product_diagnostic": {},
+    "standalone_exit": 0,
+    "artifact_sha256": "811587793f2bdd1435f03745da1f33ea25888d40ab79e9372dd341bccf3773ad",
+    "paid_inference": false,
+    "original_case_unmodified": true
+  },
+  "sustain_recovery": {
+    "same_session": "01a10f9c-cfe4-7060-87e7-ae82e62f7ef6",
+    "same_model": "gpt-6.1-sol",
+    "same_effort": "medium",
+    "candidate": "7355c4ce5e3ac5f377cfb8a0fb861605575ea7c4",
+    "reason": "Declared idle guard stopped continuation after313.04s; no assessment tool event or completed response observed. Cause unknown; not a scientific judgment failure.",
+    "changes": "Only separate output-stratum directory and equivalent workspace/home symlink paths. Launcher/config/prompt/source bytes unchanged.",
+    "unchanged_approved_state": true,
+    "original_attempt_preserved": true,
+    "observed_completed_response_count_before_and_after": 27,
+    "cost_for_interrupted_request": "Unknown; absence of completed usage does not establish no billing.",
+    "no_domain_feedback": true,
+    "original_terminal": {
+      "returncode": 0,
+      "reason": "no active tool and no observable productive progress for 300 seconds",
+      "session_id": "01a10f9c-cfe4-7060-87e7-ae82e62f7ef6",
+      "elapsed_seconds": 313.0394031900214,
+      "finalized_batch_observed": false,
+      "initial_sessions": 0,
+      "continuations": 1,
+      "no_operator_science_feedback": true
+    }
+  },
+  "active_case": {
+    "slug": "sustain-6",
+    "stage": "same-session Medium technical assessment recovery",
+    "last_observed_tools": [
+      "get_domain_context",
+      "read_pages"
+    ],
+    "last_monitor_seconds": 914,
+    "revision": 5,
+    "profile": "gpt-6.1-sol/medium",
+    "original313_second_idle_attempt_retained": true
+  },
+  "aggregate": "One durable old-head0dc9002 full suite past87% without failure markers; not terminal and not evidence for this verifier delta. A new exact corrected-head aggregate is required after this run settles, with no duplicate suite.",
+  "ci": "Last immediate snapshots queued; no CI pass claim",
+  "remaining_fixed_cases": 8,
+  "new_paid_case_launches": "held until reviewer closure, new installed verification and amended version-stratum freeze",
+  "accuracy_gain_claimed": false
+}
