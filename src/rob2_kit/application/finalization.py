@@ -1,4 +1,5 @@
 import hashlib
+import html
 import json
 import math
 import os
@@ -3586,6 +3587,154 @@ def _valid_trial_review_closures(
     }
 
 
+def _human_report(canonical: dict[str, Any], claims: dict[str, Any]) -> str:
+    """Render stored warrants; rule routes are derivations, not new source findings."""
+
+    def text(value: object) -> str:
+        return html.escape(str(value), quote=True)
+
+    def details(title: str, value: object) -> str:
+        return (
+            f"<details><summary>{text(title)}</summary><pre>"
+            + text(json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2))
+            + "</pre></details>"
+        )
+
+    evidence = canonical["proposal"]["evidence"]
+
+    def links(value: object) -> str:
+        identities: set[str] = set()
+
+        def collect(item: object) -> None:
+            if isinstance(item, dict):
+                for child in item.values():
+                    collect(child)
+            elif isinstance(item, list):
+                for child in item:
+                    collect(child)
+            elif isinstance(item, str) and item in evidence:
+                identities.add(item)
+
+        collect(value)
+        return " ".join(
+            f'<a href="#evidence-{identity[7:]}">{text(identity)}</a>'
+            for identity in sorted(identities)
+            if re.fullmatch(r"sha256:[0-9a-f]{64}", identity)
+        )
+
+    parts = [
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">',
+        "<title>RoB 2 assessment</title><style>body{max-width:75em;margin:2em auto;"
+        "padding:0 1em;font-family:sans-serif}pre{white-space:pre-wrap;overflow-wrap:anywhere}"
+        "a{overflow-wrap:anywhere}details{margin:1em 0}</style></head><body>",
+        "<h1>Batch finalized</h1>",
+        f"<p>{text(claims['authoritative_wording'])}</p>",
+        "<p>Answers and warrants are assessor statements. Algorithm rule identifiers describe "
+        "derivations, not empirical findings. Evidence links recover selected excerpts and exact "
+        "locations; original Source files are not included.</p>",
+        details("Batch claims", claims),
+    ]
+    results = {item["trial_id"]: item for item in canonical["proposal"]["payload"]["results"]}
+    for trial_id, disposition in sorted(canonical["dispositions"].items()):
+        parts.append(f"<h2>{text(trial_id)}</h2><p>Disposition: {text(disposition)}</p>")
+        if trial_id in claims["overall"]:
+            parts.append(f"<p>Overall judgment: {text(claims['overall'][trial_id])}</p>")
+        if trial_id in results:
+            result = results[trial_id]
+            parts.append(details("Approved Result: target, reported result and scope", result))
+            parts.append(links(result))
+        records = sorted(
+            (item for item in canonical["domain_records"].values() if item["trial_id"] == trial_id),
+            key=lambda item: (
+                "domain:randomization",
+                "domain:deviations",
+                "domain:missing",
+                "domain:measurement",
+                "domain:selection",
+            ).index(item["domain_id"]),
+        )
+        for record in records:
+            decision = record.get("decision") or {}
+            parts.append(f"<h3>{text(record['domain_id'])}</h3>")
+            parts.append(
+                f"<p>Adopted judgment: {text(record['judgment'])}; algorithm proposal: "
+                f"{text(decision.get('proposed', record['judgment']))}; "
+                f"authority: {text(decision.get('authority', 'algorithm'))}.</p>"
+            )
+            if any(
+                answer["question_id"] in record.get("driver_questions", [])
+                and answer["answer"] == "no_information"
+                for answer in record["answers"]
+            ):
+                parts.append(
+                    "<p>An algorithm driver answer is No information. The proposed judgment "
+                    "is the recorded rule's response to unresolved information, not evidence "
+                    "establishing that premise.</p>"
+                )
+            parts.append(
+                details(
+                    "Proposed algorithm route",
+                    {
+                        "trace": record.get("trace", []),
+                        "driver_questions": record.get("driver_questions", []),
+                    },
+                )
+            )
+            if decision.get("adjudication") is not None:
+                parts.append(details("Recorded host adjudication", decision["adjudication"]))
+                parts.append(links(decision["adjudication"]))
+            for answer in record["answers"]:
+                parts.append(
+                    f"<h4><code>{text(answer['question_id'])}</code> — "
+                    f"{text(answer['answer'].replace('_', ' ').capitalize())}</h4>"
+                )
+                parts.append(f"<p>Saved warrant: {text(answer.get('justification') or '')}</p>")
+                if answer.get("unknowns"):
+                    parts.append(
+                        "<p>Unresolved premises:</p><ul>"
+                        + "".join(f"<li>{text(unknown)}</li>" for unknown in answer["unknowns"])
+                        + "</ul>"
+                    )
+                parts.append(links(answer))
+                parts.append(
+                    details(
+                        "Bases, limitations and counterevidence",
+                        {
+                            key: value
+                            for key, value in answer.items()
+                            if key not in {"question_id", "answer", "justification", "unknowns"}
+                        },
+                    )
+                )
+    sources = {
+        source["id"]: source
+        for trial in canonical["batch"]["trials"]
+        for source in trial["sources"]
+    }
+    parts.append("<h2>Selected Evidence and Source locations</h2>")
+    for identity, item in sorted(evidence.items()):
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", identity):
+            raise ValueError("report Evidence identity is invalid")
+        parts.append(f'<section id="evidence-{identity[7:]}">')
+        source = sources.get(item.get("source_id"))
+        if source is not None:
+            parts.append(
+                f"<p>Source: {text(source.get('label', source['id']))}; "
+                f"{text(source['id'])}; {text(source['sha256'])}</p>"
+            )
+        parts.append(details(identity, item))
+        parts.append(f'<p><a href="evidence/{identity[7:]}.json">Evidence JSON</a></p>')
+        render = item.get("render") or {}
+        render_identity = render.get("identity", "")
+        if item.get("kind") == "figure" and re.fullmatch(r"sha256:[0-9a-f]{64}", render_identity):
+            parts.append(
+                f'<p><a href="visual/{render_identity[7:]}.png">Rendered Source page</a></p>'
+            )
+        parts.append("</section>")
+    parts.append("</body></html>")
+    return "".join(parts)
+
+
 def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     final_root = internal_path(root, "finalized")
     proposal = state.get("proposal")
@@ -3767,11 +3916,7 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     files: dict[str, bytes] = {
         "canonical.json": canonical_json_bytes(canonical),
         "claims.json": canonical_json_bytes(claims),
-        "report.html": (
-            "<html><body><h1>Batch finalized</h1><pre>"
-            + json.dumps(claims, sort_keys=True)
-            + "</pre></body></html>"
-        ).encode(),
+        "report.html": _human_report(canonical, claims).encode(),
     }
     files.update(visual_files)
     files.update(
@@ -5306,7 +5451,12 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
             }
             if not isinstance(claims, dict) or claims != expected_claims:
                 return fail()
-            if json.dumps(claims, sort_keys=True) not in report:
+            legacy_report = (
+                "<html><body><h1>Batch finalized</h1><pre>"
+                + json.dumps(claims, sort_keys=True)
+                + "</pre></body></html>"
+            )
+            if report not in {legacy_report, _human_report(canonical_value, claims)}:
                 return fail()
             proposal = canonical_value.get("proposal") or {}
             proposal_review = canonical_value.get("proposal_review")

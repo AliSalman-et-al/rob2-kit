@@ -472,6 +472,13 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
+New static reports project the approved Result, saved Domain answers and warrants,
+unresolved premises, proposed/adopted judgments, and local selected-Evidence links
+from Canonical records. Algorithm routes describe derivations, not empirical
+findings; a recorded No information driver remains explicitly unresolved. Both
+verifiers reproduce the report from its Canonical inputs and still recognize the
+historical aggregate-only HTML. Existing valid artifacts are not rewritten.
+
 Result semantics v0.9 allow an explicitly null group statistic when its meaning
 is not identified in the Source. Values, units, and endpoint identifiers remain
 source-bound, and unclear statistic meaning cannot be marked specified.

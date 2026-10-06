@@ -157,7 +157,8 @@ def test_standalone_verifier_rejects_targeted_claim_tampering(tmp_path: Path) ->
     )
     assert _standalone_verify(snapshot_tamper).returncode == 1
 
-    changed_report = original_report.replace(b'"trial": "assessed"', b'"trial": "failed"')
+    changed_report = original_report.replace(b"Disposition: assessed", b"Disposition: failed")
+    assert changed_report != original_report
     changed_manifest = _update_manifest_hash(original_manifest, "report.html", changed_report)
     html_tamper = tmp_path / "html-tamper.zip"
     _rewrite_zip(
