@@ -521,7 +521,7 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
 @pytest.mark.parametrize("domain_id", ["domain:deviations", "domain:missing"])
 def test_stale_submission_restarts_attempted_domain(tmp_path: Path, domain_id: str) -> None:
     workspace, evidence, _revision = _assessment_workspace(tmp_path)
-    scope = {"trial_id": "trial", "domain_id": domain_id}
+    scope: dict[str, object] = {"trial_id": "trial", "domain_id": domain_id}
     _call(workspace, "get_domain_context", scope)
     updated = _call(
         workspace,
