@@ -223,7 +223,9 @@ def test_missing_reference_delivered_through_production_mcp_resource() -> None:
             return "\n".join(item.text for item in contents if hasattr(item, "text"))
 
     delivered = asyncio.run(read())
-    assert delivered == Path("src/rob2_kit/skills/rob2-assess/references/missing.md").read_text()
+    assert delivered == Path(
+        "src/rob2_kit/skills/rob2-assess/references/missing.md"
+    ).read_bytes().decode("utf-8")
     assert "`observed` or `unavailable`" in delivered
     assert "does not synthesize `observed`" in delivered
     assert "generic censoring does not" in delivered
