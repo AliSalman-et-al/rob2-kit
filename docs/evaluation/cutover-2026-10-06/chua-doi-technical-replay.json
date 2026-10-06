@@ -262,5 +262,13 @@
     "diff_check": "passed",
     "initial_focus_failure": "1 failed, 19 passed: negative test incorrectly expected rejection of an exact DOI substring actually present in source. Revised negative uses an invented citation; failed log preserved. No production behavior changed to satisfy that assertion."
   },
-  "patch_review_requested": true
+  "patch_review_requested": true,
+  "filename_recovery_followup": {
+    "behavior": "Bare filenames still fail the existing explicit-locator check before network access or request creation. Error now explains the complete cited HTTPS URL or captured-registry URL route. No filename or host allowlist exception.",
+    "complete_companion_sources_suite": "48 passed in 22.78s",
+    "log_sha256": "11ff202b497fb45ba0264db556ba789e9c9fcc9c887695a65bdb11764c98581a",
+    "ruff": "passed",
+    "ty": "passed",
+    "patch_sha256": "b0c73519e5d9c4f9f4429236e2c9ec807566baac0f11e1bca3e461847a1f97aa"
+  }
 }

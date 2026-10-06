@@ -605,7 +605,14 @@ def _validated_reference(root: Path, reference: CompanionReference) -> tuple[dic
             and json.dumps(filename) in page["text"]
         )
     if not locator_found:
-        raise ValueError("locator must be explicitly present in the cited reference")
+        detail = "locator must be explicitly present in the cited reference"
+        if reference.locator_kind == "url" and not urlsplit(reference.locator).hostname:
+            detail += (
+                "; a filename alone is not a URL. Supply a complete cited HTTPS URL, "
+                "or use the captured registry ID and document filename with the "
+                "documented registry URL format"
+            )
+        raise ValueError(detail)
     return source, trial
 
 

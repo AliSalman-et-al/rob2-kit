@@ -111,6 +111,27 @@ def test_punctuated_doi_handoff_preserves_citation_and_source(tmp_path, network)
         )
 
 
+def test_bare_document_filename_has_url_recovery_without_fetch(tmp_path, network):
+    network(lambda request: pytest.fail("bare filename must not fetch"))
+    original = tmp_path / "original"
+    directory = original / "input" / "trial"
+    directory.mkdir(parents=True)
+    citation = 'Document filename: "Prot_000.pdf"'
+    (directory / "report.txt").write_text(citation)
+    prepare_batch(
+        original, [TrialDeclaration(id="trial", label="trial", requested_outcome="neutral")], 0
+    )
+    source = list_sources(original, "trial")["sources"][0]
+    ref = reference("url", "Prot_000.pdf").model_copy(
+        update={"source_id": source["id"], "citation": citation}
+    )
+    before = _state(original)
+    with pytest.raises(ValueError, match="filename alone is not a URL.*complete cited HTTPS"):
+        companion.request_companion_source(original, ref)
+    assert _state(original) == before
+    assert not (original / ".rob2-kit/companion_requests").exists()
+
+
 def test_explicit_capture_preserves_original_and_uses_normal_intake(tmp_path, network):
     network(lambda request: httpx.Response(200, content=pdf()))
     original = tmp_path / "original"
