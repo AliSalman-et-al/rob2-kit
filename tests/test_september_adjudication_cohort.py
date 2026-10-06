@@ -7,8 +7,8 @@ from rob2_kit.evaluation.adjudication import validate_sidecar, validate_sidecars
 from rob2_kit.evaluation.cohort import read_cohort, summarize
 
 ROOT = Path(".")
-RECONCILIATION = ROOT / "docs/archive/evaluation/2026-09-27-cohort-reconciliation.json"
-INVENTORY = ROOT / "docs/archive/evaluation/2026-09-27-trace-inventory.json"
+RECONCILIATION = ROOT / "tests/fixtures/historical-evaluation/2026-09-27-cohort-reconciliation.json"
+INVENTORY = ROOT / "tests/fixtures/historical-evaluation/2026-09-27-trace-inventory.json"
 
 
 def _json(path: Path) -> dict:

@@ -158,8 +158,8 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
         if not all(
             marker in asset
             for marker in (
-                "official_guidance.sections",
-                "official_d3_prototype",
+                "official",
+                "response_framework",
                 "counterevidence",
                 "missing_data",
             )
@@ -618,7 +618,6 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
 
 def _verify_wheel_archive(wheel: Path) -> None:
     skill_members = {
-        "rob2_kit/packs/d3_authoritative.py",
         "rob2_kit/skills/rob2-assess/SKILL.md",
         "rob2_kit/skills/rob2-assess/references/deviations.md",
         "rob2_kit/skills/rob2-assess/references/evidence.md",

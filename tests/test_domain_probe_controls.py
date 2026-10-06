@@ -153,7 +153,8 @@ def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> Non
 
     path = (
         Path(__file__).parents[1]
-        / "docs/archive/evaluation/2026-10-02-deliver-d3-completion-17bad3d/events.jsonl"
+        / "tests/fixtures/historical-evaluation/2026-10-02-deliver-d3-completion-17bad3d"
+        / "events.jsonl"
     )
     result = replay(path)
     assert result["scientific_data_recovered_exactly"]

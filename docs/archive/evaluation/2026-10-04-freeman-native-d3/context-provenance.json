@@ -1,8 +1,0 @@
-{
-  "effective_skill_matches_frozen_skill": true,
-  "skill_sha256": "e9ce314205652d707e53719cce2924b278f3a7b75c8a9ef63006c62e94fc877d",
-  "session_rollout_sha256": "027af75bd983c08ea39f73693f37576cb1d36ef9cb4a61a8c6f0efbf260dc262",
-  "fresh_context": true,
-  "native_transport": "mcp-codex",
-  "source_availability_not_reading": true
-}

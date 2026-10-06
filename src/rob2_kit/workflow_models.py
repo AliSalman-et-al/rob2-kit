@@ -318,7 +318,6 @@ class WorkingPremiseRecord(StrictModel):
 
 # Keep the shorter name available to callers while the wire/storage field uses
 # the explicit plural ``premise_records`` name.
-WorkingPremise = WorkingPremiseRecord
 
 
 class WorkingResultStep(StrictModel):
@@ -2748,20 +2747,6 @@ class DomainDraft(StrictModel):
     answers: tuple[DomainAnswer, ...]
     supersedes: Identity | None = None
     revision_basis: DomainRevisionBasis | None = None
-
-
-class DomainContext(StrictModel):
-    trial_id: TrialId
-    domain_id: DomainId
-    result: ResultChoice
-    evidence: tuple[ResultEvidence, ...] = ()
-    evidence_sufficiency: EvidenceSufficiencySummary | None = None
-    prior_digests: tuple[Identity, ...] = ()
-    active_questions: tuple[QuestionId, ...]
-    guidance: tuple[str, ...] = ()
-    traps: tuple[str, ...] = ()
-    completion_rule: str = Field(min_length=1)
-    state_revision: NonNegativeInt
 
 
 class NeedsInputTerminalRequest(StrictModel):

@@ -18,14 +18,6 @@ from ..logic.aggregation import aggregation_record
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from ..models import ResponseFramework, canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
-from ..packs.d3_authoritative import (
-    D3_FAQ_GUIDANCE,
-    D3_GUIDANCE_PROFILE,
-    D3_QUESTION_GUIDANCE,
-    D3_SHARED_GUIDANCE,
-    FAQ_SOURCE_URL,
-    OFFICIAL_SOURCE_URL,
-)
 from ..workflow_models import (
     DomainCounterpoint,
     DomainDraft,
@@ -2180,24 +2172,6 @@ def _repair(path: str, code: str, detail: str) -> dict[str, str]:
     return {"path": path, "code": code, "detail": detail}
 
 
-def _duplicate_repairs(values: list[str], path: str, code: str, label: str) -> list[dict[str, str]]:
-    seen: dict[str, int] = {}
-    repairs: list[dict[str, str]] = []
-    for index, value in enumerate(values):
-        first = seen.get(value)
-        if first is None:
-            seen[value] = index
-            continue
-        repairs.append(
-            _repair(
-                f"{path}/{index}",
-                code,
-                f"{label} '{value}' duplicates item {first}; keep one entry.",
-            )
-        )
-    return repairs
-
-
 def _ids(values: list[str]) -> str:
     return ", ".join(values) if values else "none"
 
@@ -3703,91 +3677,12 @@ def _domain_question_cards(
     ]
 
 
-def _apply_authoritative_d3_guidance(context: dict[str, Any]) -> None:
-    """Replace scientific guidance in place; preserve source and assessment data."""
-    question_ids = tuple(D3_QUESTION_GUIDANCE)
-    sections = [
-        {
-            "question_ids": question_ids,
-            "source_version": source.version,
-            "source_sha256": source.source_sha256,
-            "source_locator": source.source_locator,
-            "source_url": OFFICIAL_SOURCE_URL,
-            "excerpt": source.source_excerpt,
-        }
-        for source in D3_SHARED_GUIDANCE
-    ]
-    for question_id, source in D3_QUESTION_GUIDANCE.items():
-        sections.append(
-            {
-                "question_ids": (question_id,),
-                "source_version": source.version,
-                "source_sha256": source.source_sha256,
-                "source_locator": source.source_locator,
-                "source_url": OFFICIAL_SOURCE_URL,
-                "excerpt": source.source_excerpt,
-            }
-        )
-    for question_id, source in D3_FAQ_GUIDANCE.items():
-        sections.append(
-            {
-                "question_ids": (question_id,),
-                "source_version": source.version,
-                "source_sha256": source.source_sha256,
-                "source_locator": source.source_locator,
-                "source_url": FAQ_SOURCE_URL,
-                "excerpt": source.source_excerpt,
-            }
-        )
-    context["guidance_profile"] = D3_GUIDANCE_PROFILE
-    context["official_guidance"] = {
-        "pack": context["pack"],
-        "sections": sections,
-        "complete": True,
-        "next_cursor": None,
-    }
-    context["response_framework"] = None
-    questions_context: list[dict[str, Any]] = context["questions"]
-    context["questions"] = [
-        {
-            **{
-                key: question[key]
-                for key in (
-                    "id",
-                    "wording",
-                    "options",
-                    "activation_status",
-                    "activation",
-                    "query_suggestions",
-                )
-            },
-            "guidance_locator": D3_QUESTION_GUIDANCE[question["id"]].source_locator,
-        }
-        for question in questions_context
-    ]
-    # Interface instructions describe evidence handling, never add a scientific answer rule.
-    context["guidance"] = [
-        context["guidance"][0],
-        *[instruction for index, instruction in enumerate(_DOMAIN_GUIDANCE) if index != 4],
-    ]
-    context["traps"] = [context["traps"][0]]
-    for card in context["comparison_cards"]:
-        card["propositions"] = []
-        card["paired_examples"] = []
-        card["prompt"] = (
-            "Source and Result navigation only. Slots and typed quantities are descriptive; "
-            "scientific answer guidance is in official_guidance. Preserve the approved "
-            "Result scope and inspect source passages before using their information."
-        )
-
-
 def get_domain_context(
     workspace: str | Path,
     trial_id: str | None = None,
     domain_id: str | None = None,
     preview_missing_data: list[dict[str, Any]] | None = None,
     include_candidates: bool = False,
-    guidance_profile: Literal["current", "official_d3_prototype"] = "current",
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -4612,8 +4507,6 @@ def get_domain_context(
         "reading_recovery": _main_report_recovery(root, state, trial_id, include_budget=True),
         "continuation": continuation,
     }
-    if domain_id == "domain:missing" and guidance_profile == D3_GUIDANCE_PROFILE:
-        _apply_authoritative_d3_guidance(context)
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
         state, trial_id, domain_id, requested_preview, root

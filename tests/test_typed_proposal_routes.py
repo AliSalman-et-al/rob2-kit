@@ -13,7 +13,7 @@ from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.workflow_models import ResultClarity
 
 _REPO = Path(__file__).resolve().parents[1]
-_AUDIT = _REPO / "docs/archive/evaluation/2026-10-03-emperor-proposal-bef6a06"
+_AUDIT = _REPO / "tests/fixtures/historical-evaluation/2026-10-03-emperor-proposal-bef6a06"
 
 
 def _request() -> dict:
@@ -101,7 +101,8 @@ def test_archived_requests_are_rejected_without_public_compatibility(tmp_path: P
     attempts = json.loads(
         (
             _REPO
-            / "docs/archive/evaluation/2026-10-03-emperor-recovery-687fb24/proposal-attempts.json"
+            / "tests/fixtures/historical-evaluation/2026-10-03-emperor-recovery-687fb24"
+            / "proposal-attempts.json"
         ).read_text()
     )
     with pytest.raises(ToolError) as caught:

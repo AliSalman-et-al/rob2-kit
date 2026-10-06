@@ -1,9 +1,0 @@
-{
-  "recovery_date": "2026-10-03",
-  "invocation_date": "2026-10-02",
-  "first_durable_usage_timestamp": "2026-10-02T14:49:45.400Z",
-  "last_durable_usage_timestamp": "2026-10-02T14:51:17.087Z",
-  "new_invocations_during_recovery": 0,
-  "run_preserved": "../2026-10-02-award1-d3-repair4/run.json",
-  "original_result_and_accepted_high_not_rewritten": true
-}

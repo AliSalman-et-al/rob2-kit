@@ -44,12 +44,12 @@ v0.5 through v0.9 bundles remain verifiable.
 Run the complete release check with:
 
 ```powershell
-./scripts/verify_v010.ps1
+./scripts/verify_release.ps1
 ```
 
 That script regenerates the public contract, runs lint, type checks, and the
 parallel pytest-xdist suite, builds the wheel, and verifies the installed
-artifact. The repository config runs pytest with four workers; keep full-suite
+artifact from a fresh unique directory, resolving the version from pyproject.toml. The repository config runs pytest with four workers; keep full-suite
 runs parallel unless a test requires serial debugging.
 The lower-level commands remain available for isolated contract work:
 

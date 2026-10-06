@@ -141,33 +141,6 @@ class CloseTrialAction(PublicModel):
     review_reference: Identity
 
 
-class TrialReviewAction(PublicModel):
-    """Compatibility validator for the former combined review/close action."""
-
-    operation: Literal["review_trial", "close_trial"]
-    authority: Literal["host"]
-    trial_id: TrialId
-    expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["request"], ...] | None = Field(
-        default=None,
-        description=(
-            "Omit for a normal review or an automatically terminal unavailable or unsupported "
-            'Result. Use ["request"] only for a genuine needs_input or failed blocker.'
-        ),
-        examples=[None, ["request"]],
-    )
-    review_reference: Identity | None = None
-
-    @model_validator(mode="after")
-    def match_action_inputs(self) -> TrialReviewAction:
-        if self.operation == "review_trial":
-            if self.review_reference is not None or self.caller_inputs not in (None, ("request",)):
-                raise ValueError("review_trial accepts no fields or caller_inputs=request only")
-        elif self.caller_inputs is not None or self.review_reference is None:
-            raise ValueError("close_trial requires its review_reference only")
-        return self
-
-
 class ResearcherReviewAction(PublicModel):
     operation: Literal["researcher_review"]
     authority: Literal["researcher"]
@@ -2076,7 +2049,6 @@ class OfficialGuidanceRecovery(PublicModel):
 
 
 class DomainContextData(PublicModel):
-    guidance_profile: Literal["official_d3_prototype"] | None = None
     trial_id: TrialId | None = None
     domain_id: DomainId | None = None
     pack: DomainPack | None = Field(
@@ -2166,14 +2138,7 @@ class DomainContextData(PublicModel):
         )
         if continuation and any(value is not None for value in stable):
             raise ValueError("continuation pages must contain only context deltas")
-        if (
-            not continuation
-            and self.response_framework is None
-            and not (
-                self.guidance_profile == "official_d3_prototype"
-                and self.official_guidance is not None
-            )
-        ):
+        if not continuation and self.response_framework is None:
             raise ValueError("the first context page requires response guidance")
         if continuation and self.response_framework is not None:
             raise ValueError("continuation pages must contain only context deltas")
@@ -3263,9 +3228,6 @@ def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
 
     data = value.get("data")
     if isinstance(data, dict):
-        # New prototype metadata must not enlarge unchanged legacy context pages.
-        if data.get("guidance_profile") is None:
-            data.pop("guidance_profile", None)
         official = data.get("official_guidance")
         if isinstance(official, dict):
             for section in official.get("sections", []):

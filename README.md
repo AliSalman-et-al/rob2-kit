@@ -33,7 +33,7 @@ rob2 --help
 ```
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
-try `rob2 --help` again. The package includes the `rob2` command, an 18-tool MCP
+try `rob2 --help` again. The package includes the `rob2` command, a typed native MCP
 server, and the portable `rob2-assess` skill.
 
 To install a wheel instead, use its path:
@@ -191,7 +191,7 @@ revision-checked operation.
 
 ```powershell
 uv sync --frozen
-./scripts/verify_v010.ps1
+./scripts/verify_release.ps1
 ```
 
 The verification script runs Ruff, ty, pytest with four workers, public

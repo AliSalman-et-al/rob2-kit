@@ -491,14 +491,9 @@ records or scientific judgments.
 
 ## Public boundary
 
-The v0.11 FastMCP surface exposes exactly 18 strictly typed tools:
-
-`prepare_batch`, `get_status`, `save_working_checkpoint`, `list_sources`,
-`search_sources`, `search_sources_batch`, `read_pages`,
-`select_text_evidence`, `render_page`, `select_visual_evidence`,
-`validate_proposal`, `save_proposal`, `request_proposal_approval`,
-`get_domain_context`, `save_domain_judgment`,
-`review_trial`, `close_trial`, and `finalize_batch`.
+The current typed tool catalog is generated in `docs/release/public-contract.json`.
+It includes packaged guidance, optional arithmetic, immutable companion source acquisition
+and admission, source reading, proposal and assessment workflows.
 
 `validate_proposal` must validate the complete Proposal draft before
 `save_proposal` consumes its exact receipt. `save_domain_judgment` accepts a

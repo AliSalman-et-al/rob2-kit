@@ -18,9 +18,8 @@ the server commits only the dependency-closed active path.
 
 Use the official question elaborations and shared response guidance delivered
 by `get_domain_context`, with the exact approved Result and activation path.
-The opt-in `official_d3_prototype` profile replaces operational rules with
-`official_guidance.sections`; cards identify the relevant source locator.
-Follow its question-specific permitted options. The official source version,
+Use the complete official question elaborations and `response_framework`,
+including each question's permitted options. The official source version,
 hash and full-source URL accompany the text, including the distinction between
 available outcomes excluded from analysis and measurements not obtained.
 

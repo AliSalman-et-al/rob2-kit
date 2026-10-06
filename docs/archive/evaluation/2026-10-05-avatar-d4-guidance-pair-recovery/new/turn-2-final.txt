@@ -1,5 +1,0 @@
-The canonical next action is `researcher_review`; this Proposal cannot proceed to Domain assessment until you approve it or request a correction.
-
-The pending Result is the primary composite: time to first all-cause death, acute myocardial infarction, stroke, or unplanned heart-failure hospitalization requiring IV diuretics or inotropes. It compares early SAVR with conservative management in all 157 randomized patients, analyzed by intention to treat. The report gives HR 0.46 (95% CI 0.23–0.90), with follow-up completed in May 2021 and median follow-up of 32 months. The review proposes this as an exact match to the requested outcome.
-
-Reply with approval to continue, or tell me what Result scope should be corrected.

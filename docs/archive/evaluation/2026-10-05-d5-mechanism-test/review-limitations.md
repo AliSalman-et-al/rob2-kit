@@ -1,3 +1,0 @@
-Reviewer: gpt-6.1-sol/low (assigned profile; telemetry not inspected). Scores locked before condition unblinding. Access was limited to this packet directory and parent task/status instructions; no repository, mappings, history, launch logs or telemetry was inspected. All frozen input hashes verified before and after review.
-
-Three scientific answers were reviewed; packet-B is unscorable due to technical capacity failure, with no inferred labels or zero scientific scores. Scores assess evidential warrant against captured sources, permitting supported disagreement. Missing captured plans and numeric figure extraction limit inference; actual investigator access chronology is unresolved. This is a single AI review, not independent human validation or benchmark accuracy.

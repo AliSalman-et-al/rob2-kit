@@ -566,7 +566,6 @@ def test_native_completion_preview_and_save_preserve_unknown_observation(tmp_pat
         {
             "domain_id": "domain:missing",
             "missing_data": [row],
-            "guidance_profile": "official_d3_prototype",
         },
     )
     assert preview["outcome"] == "success", preview

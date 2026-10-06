@@ -1,7 +1,0 @@
-{
-  "frozen_bundle_sha256": "84b24f31679cca7139c15bebccb046e42853847bcca3a1f25aa670ed80a848a7",
-  "frozen_bundle_unchanged": true,
-  "before_bytes": 20030,
-  "after_bytes": 23680,
-  "replay": "same frozen canonical records and evidence catalog; actual item_35 envelope; projection only; persist=False; no inference"
-}

@@ -1,8 +1,0 @@
-{
-  "classification": "Repeated DAPA-HF diagnostic; neither held-out nor generalization evidence.",
-  "pinned_before_new_inference": true,
-  "question": "Does production reasoning distinguish actual outcome observation from analysis membership and justify plausible impact of missing outcomes using relevant event counts, reasons/timing and uncertainty?",
-  "desired_answers_provided_to_model": false,
-  "new_inference_planned": false,
-  "reason": "Core D3.1 scientific question guidance and missingness-impact instructions are unchanged from the prior baseline. A new stochastic rerun could measure reasoning variation/context presentation, not an implemented impact-warrant improvement."
-}

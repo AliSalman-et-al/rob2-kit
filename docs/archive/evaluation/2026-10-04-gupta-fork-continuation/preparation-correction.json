@@ -1,6 +1,0 @@
-{
-  "failure": "KeyError data in diagnostic status adapter",
-  "stage": "before experiment record and before launch_checked",
-  "model_calls": 0,
-  "correction": "Wrap flat application status for internal diagnostic head/data access"
-}

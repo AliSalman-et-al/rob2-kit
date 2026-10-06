@@ -19,7 +19,7 @@ _REPO = Path(__file__).resolve().parents[1]
 _STANDALONE = runpy.run_path(str(_REPO / "scripts" / "verify_bundle.py"))
 _ALLSOP = (
     _REPO
-    / "docs/archive/evaluation/2026-10-03-allsop-completion-544a523"
+    / "tests/fixtures/historical-evaluation/2026-10-03-allsop-completion-544a523"
     / "ae8d89700e5915ce9d93e4be472bc78f8165d4f3dfaeee3e92c8e3e47a6565e8.rob2.zip"
 )
 

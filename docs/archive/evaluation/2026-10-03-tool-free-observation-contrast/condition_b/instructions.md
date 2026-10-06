@@ -1,1 +1,0 @@
-Analyze the supplied synthetic scientific excerpts using the supplied guidance. Produce one final response, at most 600 words. Do not use tools or outside sources. No follow-up, coding, or extra response.

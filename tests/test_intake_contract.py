@@ -30,7 +30,6 @@ from rob2_kit.interfaces.mcp.contracts import (
     ResearcherReviewAction,
     ReviewTrialAction,
     SelectedNarrativeEvidence,
-    TrialReviewAction,
     output_schema,
     validate_output,
 )
@@ -101,10 +100,6 @@ def test_trial_review_actions_have_callable_normal_and_blocker_forms() -> None:
             "review_reference": identity,
         }
     )
-
-    # Keep the old combined model importable for callers that still validate
-    # persisted/public projections outside the NextAction schema.
-    assert TrialReviewAction.model_validate(close.model_dump()).review_reference == identity
 
 
 def test_domain_context_preserves_nullable_endpoint_definition_in_receipt(tmp_path: Path) -> None:
@@ -813,8 +808,8 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "Trial ready for review" in instructions
     assert "`ready_to_finalize` is not completion" in instructions
     assert "For D3, use the complete official question elaborations" in instructions
-    assert "official_d3_prototype" in instructions
-    assert "official_guidance.sections" in instructions
+    assert "official_d3_prototype" not in instructions
+    assert "complete official question" in instructions
     assert "its bases support the claims attributed to them" in instructions
     assert "Choose the option whose literal meaning follows from those passages" in instructions
     assert "progress confirmation" in instructions

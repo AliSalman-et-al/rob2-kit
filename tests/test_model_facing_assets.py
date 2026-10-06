@@ -218,8 +218,8 @@ def test_missing_reference_and_skill_use_official_science_and_preserve_recovery(
     )
     skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
     for asset in (reference, skill):
-        assert "official_guidance.sections" in asset
-        assert "official_d3_prototype" in asset
+        assert "official" in asset
+        assert "official_d3_prototype" not in asset
         assert "counterevidence" in asset
         assert "missing_data" in asset
     assert "## Availability audit" not in reference

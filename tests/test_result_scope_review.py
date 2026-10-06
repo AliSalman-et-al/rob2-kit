@@ -16,7 +16,9 @@ from rob2_kit.workflow_models import ProposalDraft
 def _allsop_result() -> dict:
     root = Path(__file__).resolve().parents[1]
     artifact = next(
-        (root / "docs/archive/evaluation/2026-10-03-allsop-completion-544a523").glob("*.rob2.zip")
+        (root / "tests/fixtures/historical-evaluation/2026-10-03-allsop-completion-544a523").glob(
+            "*.rob2.zip"
+        )
     )
     with zipfile.ZipFile(artifact) as archive:
         return json.loads(archive.read("canonical.json"))["proposal"]["payload"]["results"][0]

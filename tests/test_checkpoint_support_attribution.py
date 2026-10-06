@@ -16,7 +16,7 @@ from rob2_kit.interfaces.mcp.contracts import normalize
 def test_save_attributes_host_relationship_without_changing_sufficiency(status: str) -> None:
     audit = (
         Path(__file__).resolve().parents[1]
-        / "docs/archive/evaluation/2026-10-03-d31-impact-warrant"
+        / "tests/fixtures/historical-evaluation/2026-10-03-d31-impact-warrant"
     )
     record = json.loads((audit / "committed-domain.json").read_text())
     record["evidence_sufficiency"]["claims"][0]["status"] = status

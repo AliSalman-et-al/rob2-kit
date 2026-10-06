@@ -16,7 +16,8 @@ def test_actual_saved_receipt_stops_but_validation_and_conditions_do_not() -> No
     import json
 
     archive = (
-        Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-exscel-proposal-bd92ec8"
+        Path(__file__).parents[1]
+        / "tests/fixtures/historical-evaluation/2026-10-03-exscel-proposal-bd92ec8"
     )
     calls = json.loads((archive / "proposal-requests-and-receipts.json").read_text())
     for call in calls:

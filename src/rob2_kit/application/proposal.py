@@ -1128,14 +1128,6 @@ def _derive_bindings(
     return bindings
 
 
-def _has_local_defect(defects: list[dict[str, Any]], path: str) -> bool:
-    return any(
-        defect_path == path or defect_path.startswith(path + "/")
-        for defect in defects
-        if (defect_path := defect.get("path"))
-    )
-
-
 def _bind_result(
     result: dict[str, Any],
     catalog: dict[str, dict[str, Any]],

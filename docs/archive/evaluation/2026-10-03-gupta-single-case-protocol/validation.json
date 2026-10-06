@@ -1,9 +1,0 @@
-{
-  "original_input_hashes_match": true,
-  "all_json_parse": true,
-  "model_prompt_reference_leak_checks": true,
-  "model_input_reference_files_absent": true,
-  "old_model_outputs_inspected": false,
-  "inference_launched": false,
-  "runtime_changed": false
-}

@@ -1,9 +1,0 @@
-{
-  "effective_instructions_match_frozen_generic_skill_references": true,
-  "instruction_sha256": "b9790d27c32b2ce9855d921afde5c6c4888c4c7b65a81cb027ff2979d1dfc8df",
-  "skill_sha256": "7c97c9e76ea1acb0327f4a2ab691bc7dcd41b1464c5985949b671cff4d66f4a3",
-  "session_rollout_sha256": "2facaa63023045514f420e31306ec8ad3949bdd202bcc93d28e02bec717fee34",
-  "fresh_context": true,
-  "native_transport": "mcp-codex",
-  "source_availability_not_reading": true
-}

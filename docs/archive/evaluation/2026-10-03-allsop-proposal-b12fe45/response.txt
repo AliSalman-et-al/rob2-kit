@@ -1,1 +1,0 @@
-Proposal construction failed and was not saved. The first validation error showed that each Result requires a `kind` discriminator; the next established that the permitted tags are `assessable` or `unavailable`, not `quantitative`. I could not complete validation, save, or inspect pending proposal status within this invocation.

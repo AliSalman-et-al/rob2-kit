@@ -1,8 +1,0 @@
-{
-  "correction": "Albert 2013 was already used in the original paid test today, stalled at D3 around 06:08 UTC.",
-  "selection_deviation": "Did not satisfy previously untested case request; narrow manifest inventory missed prior run.",
-  "scope": "Preserved mechanism transfer under new code only; no unseen-case generalization claim.",
-  "original_manifest_preserved": true,
-  "original_manifest_freshness_claim_valid": false,
-  "no_replacement_run": true
-}

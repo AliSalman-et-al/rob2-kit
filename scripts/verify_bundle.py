@@ -1648,9 +1648,6 @@ def _result_value_contains(material: str, phrase: str, field_path: str | None = 
     )
 
 
-def _normalized_equal(left: str, right: str) -> bool:
-    """Compare mapping values as complete normalized leaves, not substrings."""
-    return _normalized_with_spans(left)[0] == _normalized_with_spans(right)[0]
 
 
 _FORBIDDEN_PATH_FIELDS = frozenset(

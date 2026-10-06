@@ -1,8 +1,0 @@
-{
-  "original_probe_database_sha256": {
-    "canonical.sqlite3": "0cdecaec36f643184077dec34a20aa1815fc65adbd5094830b17ade269f67c46",
-    "derivative.sqlite3": "df3d7658283f61a487f9613a454fb44722754a10fe90557bf10c2c7b6d7d9a64"
-  },
-  "originals_unchanged": true,
-  "fixture": "Exact accepted D2 application projection plus an explicitly synthetic transport header; no actual Trial review, assessment snapshot, inference or approval. "
-}

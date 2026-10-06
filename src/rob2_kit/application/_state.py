@@ -730,15 +730,6 @@ def _verify_canonical_payload(
         raise ValueError("canonical record integrity check failed")
 
 
-def _write(root: Path, values: dict[str, dict[str, Any]]) -> None:
-    with _db(root, "canonical.sqlite3") as connection:
-        for name, value in values.items():
-            connection.execute(
-                "INSERT OR REPLACE INTO records VALUES (?,?)", (name, canonical_json_bytes(value))
-            )
-            COUNTERS["serialized_bytes"] += len(canonical_json_bytes(value))
-
-
 def _state(root: Path) -> dict[str, Any]:
     return _read(root, "state") or {"phase": "empty", "revision": 0, "trial_dispositions": {}}
 

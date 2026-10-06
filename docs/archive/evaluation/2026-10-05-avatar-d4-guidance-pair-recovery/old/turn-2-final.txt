@@ -1,5 +1,0 @@
-`get_status` reports that the Proposal Review is pending for **AVATAR** (`banovic26-avatar-2024`). Its canonical next action is `researcher_review`, so the assessment cannot proceed to Domains until you approve or request a Result correction.
-
-The proposed Result is the primary time-to-first MACE comparison: early surgery versus guideline-based conservative treatment, with a hazard ratio of 0.46 (95% CI 0.23–0.90). The review labels it **exact** for the requested composite and all-randomized population. The report defines MACE as all-cause mortality, acute myocardial infarction, stroke, or unplanned heart-failure hospitalization. The review flags the result’s time window and other exactness claims for source interpretation.
-
-Please approve this Proposal Review or tell me what Result should be corrected.

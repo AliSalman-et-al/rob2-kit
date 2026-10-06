@@ -1863,29 +1863,6 @@ def _fts_token_match_spans(text: str, query: str, mode: str) -> list[tuple[int, 
     return [min(candidates)] if candidates else []
 
 
-def _search_match_line_range(
-    text: str,
-    query: str,
-    mode: str,
-    spans: list[tuple[int, int]] | None = None,
-) -> tuple[int, int]:
-    """Map the normalized search span to inclusive lines of the page projection."""
-    if spans is None:
-        spans = _search_match_spans(text, query, mode)
-    if not spans:
-        raise ValueError("search result match is absent from the captured page projection")
-    raw_start = min(start for start, _end in spans)
-    raw_end = max(end for _start, end in spans)
-    line_starts = [0]
-    offset = 0
-    for line in text.splitlines(keepends=True):
-        offset += len(line)
-        line_starts.append(offset)
-    start_line = bisect_right(line_starts, raw_start)
-    end_line = bisect_right(line_starts, max(raw_start, raw_end - 1))
-    return start_line, end_line
-
-
 def _preview_window_bounds(
     text: str, spans: list[tuple[int, int]], radius: int = 120
 ) -> tuple[int, int]:
@@ -1976,13 +1953,6 @@ def _search_candidate_window(
     if len(text[line_start:line_end].encode("utf-8")) <= _SEARCH_CANDIDATE_MAX_BYTES:
         return line_start, line_end, False
     return candidate_start, candidate_end, False
-
-
-def _recomputed_search_hits(
-    pages: dict[str, tuple[str, ...]], query: str, mode: str, limit: int
-) -> list[tuple[str, int]]:
-    """Recompute lexical hits from verified pages, bypassing the persistent FTS cache."""
-    return _recomputed_search_summary(pages, query, mode, limit)[0]
 
 
 def _recomputed_search_summary(
@@ -3069,22 +3039,6 @@ def read_pages(
         "outcome": "success",
         "pages": selected,
     }
-
-
-def record_read_coverage(
-    workspace: str | Path,
-    trial_id: str,
-    source_id: str,
-    page: int,
-    start_line: int,
-    end_line: int,
-) -> None:
-    """Persist only the numbered range actually delivered to the host."""
-
-    record_read_coverage_batch(
-        workspace,
-        [(trial_id, source_id, page, start_line, end_line)],
-    )
 
 
 def record_read_coverage_batch(
@@ -4174,11 +4128,6 @@ def _evidence_for_handles(
 def _normalized_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
     """Normalize caller/page text while retaining exact raw character spans."""
     return _normalized_text_with_spans(value)
-
-
-def _normalized_equal(left: str, right: str) -> bool:
-    """Compare text after the Evidence boundary's canonical normalization."""
-    return _normalized_with_spans(left)[0] == _normalized_with_spans(right)[0]
 
 
 def _normalized_contains(material: str, phrase: str) -> bool:

@@ -1,7 +1,0 @@
-{
-  "passed": 19,
-  "known_warning_from_frozen_original": true,
-  "native_protocol_source": "retained CLI events plus generated 0.159.0 ThreadItem variants; CLI snake_case mappings explicit",
-  "unknown_item_is_protocol_failure_not_tool_count": true,
-  "no_paid_controls": true
-}

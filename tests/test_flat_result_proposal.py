@@ -46,7 +46,8 @@ def test_actual_invalid_attempts_still_require_explicit_scientific_choices() -> 
     attempts = json.loads(
         (
             root
-            / "docs/archive/evaluation/2026-10-03-allsop-proposal-b12fe45/proposal-attempts.json"
+            / "tests/fixtures/historical-evaluation/2026-10-03-allsop-proposal-b12fe45"
+            / "proposal-attempts.json"
         ).read_text(encoding="utf-8")
     )
     for attempt in attempts:

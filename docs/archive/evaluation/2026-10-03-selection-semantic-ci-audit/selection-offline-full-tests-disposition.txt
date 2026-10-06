@@ -1,1 +1,0 @@
-Local duplicate baseline suite intentionally interrupted after roughly half the cases. Completed CI job111194362069 at1f0098e supplies full baseline evidence:28failed1277passed8skipped. Current changed behavior and all28known failures are verified in focused and contract runs. The partial local run is not a passed full-suite result.

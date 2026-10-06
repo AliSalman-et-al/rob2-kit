@@ -1,6 +1,0 @@
-Construction stopped after the single `validate_proposal` call returned `outcome:"repair"`:
-
-- The selected quantitative evidence did not contain the submitted reported-outcome wording together with the estimate in one Evidence item.
-- The precision string was not supported exactly as submitted.
-
-I did not retry or manually repair the proposal. Validation was unsuccessful, so there is no `scope_review` to inspect. No proposal was saved, and I did not seek approval or assess domains.

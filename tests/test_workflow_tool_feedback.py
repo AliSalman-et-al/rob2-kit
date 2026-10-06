@@ -8,7 +8,10 @@ import pytest
 
 from scripts.workflow_completion import Turn, drive, tool_feedback, trace_facts
 
-CASE = Path(__file__).parents[1] / "docs/archive/evaluation/2026-10-03-gupta-full-validation"
+CASE = (
+    Path(__file__).parents[1]
+    / "tests/fixtures/historical-evaluation/2026-10-03-gupta-full-validation"
+)
 
 
 def retained_validation_error() -> dict:
