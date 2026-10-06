@@ -2415,6 +2415,9 @@ class MissingDataReconciledRow(PublicModel):
     treated: StrictInt | None = Field(default=None, ge=0)
     completed: StrictInt | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
     observed: StrictInt | None = Field(default=None, ge=0)
+    unavailable: StrictInt | None = Field(
+        default=None, ge=0, exclude_if=lambda value: value is None
+    )
     analyzed: StrictInt | None = Field(default=None, ge=0)
     imputed: StrictInt | None = Field(default=None, ge=0)
     excluded: StrictInt | None = Field(default=None, ge=0)

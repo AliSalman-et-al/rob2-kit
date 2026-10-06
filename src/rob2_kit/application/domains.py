@@ -1060,6 +1060,7 @@ def _comparison_cards(
                     "treated",
                     "completed",
                     "observed",
+                    "unavailable",
                     "analyzed",
                     "imputed",
                     "excluded",
@@ -1074,6 +1075,7 @@ def _comparison_cards(
             ("treated", "treated"),
             ("completed", "completed"),
             ("observed", "observed"),
+            ("unavailable", "unavailable"),
             ("analyzed", "analyzed"),
             ("imputed", "imputed"),
             ("excluded", "excluded"),
@@ -1130,7 +1132,7 @@ def _comparison_cards(
                 if isinstance(evidence, dict) and evidence.get("kind") == "figure"
             ]
             for kind, field in flow_fields:
-                if kind == "completed" and field not in row:
+                if kind in {"completed", "unavailable"} and field not in row:
                     continue
                 value = row.get(field)
                 status = (

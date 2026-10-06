@@ -245,6 +245,7 @@ def _review_domain_findings(
             semantics = row.get("semantics")
             return (
                 isinstance(row.get("observed"), int)
+                or isinstance(row.get("unavailable"), int)
                 or isinstance(row.get("missing"), int)
                 or informative_bounds
                 or (

@@ -1513,3 +1513,33 @@ def test_declared_unknowns_survive_production_context_pages_and_recovery(tmp_pat
         drain=False,
     )
     assert recovered["data"]["evidence_sufficiency"] == first["data"]["evidence_sufficiency"]
+
+
+def test_unavailable_count_is_visible_in_production_preview(tmp_path: Path) -> None:
+    workspace, evidence, _ = _assessment_workspace(tmp_path)
+    first, _ = _wire_context(
+        workspace,
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "missing_data": [
+                {
+                    "arm": "A",
+                    "population": "randomized",
+                    "unit": "participants",
+                    "time_point": "primary endpoint follow-up",
+                    "randomized": 20,
+                    "unavailable": 3,
+                    "basis": [evidence["handle"]],
+                }
+            ],
+        },
+    )
+    counts = [
+        row
+        for card in first["data"]["comparison_cards"]
+        for row in card.get("participant_flow", [])
+        if row["kind"] == "unavailable"
+    ]
+    assert counts and all(row["value"] == 3 for row in counts)
+    assert all(row["passages"] for row in counts)

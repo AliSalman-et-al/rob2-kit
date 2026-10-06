@@ -15,9 +15,9 @@ _RESULT_SCOPE_FIELDS = ("result_identity", "endpoint", "severity", "window", "ev
 def normalize_missing_data_row(row: MissingDataRow | Mapping[str, Any]) -> dict[str, Any]:
     """Return one validated row without deriving outcome availability.
 
-    Legacy dictionaries remain accepted.  Only the explicit ``observed`` field
-    participates in missing-count arithmetic; event, analyzed, imputed, safety,
-    and exclusion quantities remain separate facts.
+    Legacy dictionaries remain accepted. Only explicit ``observed`` or
+    ``unavailable`` quantities participate in missing-count arithmetic; event,
+    analyzed, imputed, safety, and exclusion quantities remain separate facts.
     """
 
     if isinstance(row, MissingDataRow):
@@ -48,8 +48,9 @@ def normalize_missing_data_row(row: MissingDataRow | Mapping[str, Any]) -> dict[
     normalized["scope"] = {key: payload[key] for key in ("arm", "population", "unit", "time_point")}
     normalized["exclusions"] = payload.get("exclusions", [])
     normalized["basis"] = list(basis)
-    if "completed" in payload:
-        normalized["completed"] = payload["completed"]
+    for field in ("completed", "unavailable"):
+        if field in payload:
+            normalized[field] = payload[field]
     for key in ("result_identity", "endpoint", "severity", "window", "event_definition"):
         if key in payload:
             normalized[key] = payload[key]
@@ -63,9 +64,9 @@ def reconcile_missing_data(
 ) -> dict[str, list[dict[str, Any]]]:
     """Reconcile only rows with identical participant-flow scope.
 
-    Conflicting reports are retained.  No field other than an explicit
-    ``observed`` count is treated as ascertainment, and no scientific judgment
-    is made from the resulting arithmetic.
+    Conflicting reports are retained. Only explicit ``observed`` or ``unavailable``
+    outcome quantities establish exact missing-count arithmetic. Generic censoring
+    does not establish availability; no scientific judgment follows from counts.
     """
 
     normalized: list[dict[str, Any]] = []
@@ -77,18 +78,35 @@ def reconcile_missing_data(
         scope = tuple(scope_data[key] for key in ("arm", "population", "unit", "time_point"))
         randomized = item.get("randomized")
         observed = item.get("observed")
-        if isinstance(randomized, int) and isinstance(observed, int) and randomized >= observed:
-            item["missing"] = randomized - observed
-            item["missing_fraction"] = (randomized - observed) / randomized if randomized else 0.0
+        unavailable = item.get("unavailable")
+        incompatible = isinstance(randomized, int) and (
+            isinstance(observed, int)
+            and observed > randomized
+            or isinstance(unavailable, int)
+            and unavailable > randomized
+            or isinstance(observed, int)
+            and isinstance(unavailable, int)
+            and observed + unavailable != randomized
+        )
+        missing = (
+            randomized - observed
+            if isinstance(randomized, int) and isinstance(observed, int) and not incompatible
+            else unavailable
+            if isinstance(randomized, int) and isinstance(unavailable, int) and not incompatible
+            else None
+        )
+        if missing is not None:
+            item["missing"] = missing
+            item["missing_fraction"] = missing / randomized if randomized else 0.0
             item["missing_bounds"] = {
-                "lower": randomized - observed,
-                "upper": randomized - observed,
+                "lower": missing,
+                "upper": missing,
                 "kind": "exact",
             }
         else:
             item["missing"] = None
             item["missing_fraction"] = None
-            if isinstance(randomized, int) and isinstance(observed, int) and observed > randomized:
+            if incompatible:
                 # Preserve the report, but do not expose a consequence from
                 # an internally incompatible pair of counts.
                 item["missing_bounds"] = None
@@ -118,6 +136,7 @@ def reconcile_missing_data(
             "treated",
             "completed",
             "observed",
+            "unavailable",
             "analyzed",
             "imputed",
             "excluded",

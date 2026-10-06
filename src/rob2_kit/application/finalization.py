@@ -206,7 +206,9 @@ def _valid_missing_data(
     )
     legacy_optional = {"semantics"}
     current_optional = (
-        legacy_optional | set(result_scope_fields[1:]) | {"result_identity", "completed"}
+        legacy_optional
+        | set(result_scope_fields[1:])
+        | {"result_identity", "completed", "unavailable"}
     )
     current_schema = any(isinstance(row, dict) and "missing_bounds" in row for row in value["rows"])
     required = current_required if current_schema else legacy_required
@@ -224,7 +226,9 @@ def _valid_missing_data(
             return False
         numeric_fields = ["randomized", "observed", "analyzed", "imputed"]
         if current_schema:
-            numeric_fields.extend(["eligible", "treated", "completed", "excluded", "event_count"])
+            numeric_fields.extend(
+                ["eligible", "treated", "completed", "unavailable", "excluded", "event_count"]
+            )
         if any(
             row.get(key) is not None
             and (isinstance(row[key], bool) or not isinstance(row[key], int) or row[key] < 0)
@@ -258,6 +262,7 @@ def _valid_missing_data(
             "treated",
             "completed",
             "observed",
+            "unavailable",
             "analyzed",
             "imputed",
             "excluded",
@@ -281,13 +286,21 @@ def _valid_missing_data(
             return False
 
         randomized, observed = row["randomized"], row["observed"]
+        unavailable = row.get("unavailable")
+        incompatible = isinstance(randomized, int) and (
+            isinstance(observed, int)
+            and observed > randomized
+            or isinstance(unavailable, int)
+            and unavailable > randomized
+            or isinstance(observed, int)
+            and isinstance(unavailable, int)
+            and observed + unavailable != randomized
+        )
         expected_missing = (
             randomized - observed
-            if isinstance(randomized, int)
-            and not isinstance(randomized, bool)
-            and isinstance(observed, int)
-            and not isinstance(observed, bool)
-            and randomized >= observed
+            if isinstance(randomized, int) and isinstance(observed, int) and not incompatible
+            else unavailable
+            if isinstance(randomized, int) and isinstance(unavailable, int) and not incompatible
             else None
         )
         missing = row["missing"]
@@ -317,7 +330,6 @@ def _valid_missing_data(
             imputed = row["imputed"]
             imputed_is_int = isinstance(imputed, int) and not isinstance(imputed, bool)
             randomized_is_int = isinstance(randomized, int) and not isinstance(randomized, bool)
-            observed_is_int = isinstance(observed, int) and not isinstance(observed, bool)
             expected_bounds: dict[str, object] | None = None
             if expected_missing is not None:
                 expected_bounds = {
@@ -325,7 +337,7 @@ def _valid_missing_data(
                     "upper": expected_missing,
                     "kind": "exact",
                 }
-            elif randomized_is_int and observed_is_int and observed > randomized:
+            elif incompatible:
                 expected_bounds = None
             elif randomized_is_int and (not imputed_is_int or imputed <= randomized):
                 expected_bounds = {
@@ -364,6 +376,7 @@ def _valid_missing_data(
             "treated",
             "completed",
             "observed",
+            "unavailable",
             "analyzed",
             "imputed",
             "excluded",

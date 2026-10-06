@@ -594,6 +594,7 @@ ParticipantFlowKind = Literal[
     "treated",
     "completed",
     "observed",
+    "unavailable",
     "analyzed",
     "imputed",
     "excluded",
@@ -653,6 +654,17 @@ class MissingDataRow(StrictModel):
     )
     observed: NonNegativeInt | None = Field(
         default=None, description="Number with observed outcome data when reported."
+    )
+    unavailable: NonNegativeInt | None = Field(
+        default=None,
+        description=(
+            "Reported total number with unavailable data for this exact outcome and window. "
+            "For time-to-first-event outcomes, use the source's endpoint follow-up definition; "
+            "unknown individual event times do not erase a reported unavailable count. "
+            "Do not substitute all censoring, treatment discontinuation, or incomplete later "
+            "follow-up after an already observed first event. Omit when the availability "
+            "meaning or overlap is unresolved."
+        ),
     )
     analyzed: NonNegativeInt | None = Field(
         default=None, description="Number included in the analysis when reported."
