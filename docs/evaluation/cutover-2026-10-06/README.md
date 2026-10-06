@@ -36,6 +36,12 @@ skip or guard change occurred after the tested production revision. Focused port
 checks passed 28 tests; ownership concurrency passed separately. Explicit cp1252 and
 Git autocrlf controls preserve Unicode guidance, frozen fixture bytes and the intended
 EXSCEL missing-evidence rejection. CI concurrency preserves jobs, matrices and permissions.
+The subsequent `ea9c024` Windows 3.13 job exposed a remaining test-only newline
+mismatch: raw CRLF reference bytes embedded by the runner versus universal-newline
+translation in the expectation. The existing full-content assertion now compares
+raw UTF-8 decoded bytes. A negative control reproduced the mismatch, the corrected
+CRLF control passed, and all four runner tests passed. The runner and source bytes
+are unchanged. See [byte-recovery receipt](windows-reference-byte-recovery.json).
 Required checks must pass on the final PR head before merge.
 
 ## Fixed cases and recoveries
