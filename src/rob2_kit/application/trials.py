@@ -872,7 +872,10 @@ def review_trial(
                 raise ValueError("the Trial AssessmentSnapshot is unavailable")
             record, _ = aggregation_record(current_snapshot, request.cumulative_concerns)
             if record != current_snapshot.get("aggregation"):
-                raise ValueError("reopen the Trial before changing a closed cumulative assessment")
+                raise ValueError(
+                    "Trial closure is immutable; start a fresh assessment in a new workspace to "
+                    "record a changed cumulative assessment while preserving this closed record"
+                )
         current_review = (state.get("trial_reviews") or {}).get(request.trial_id)
         closure = (state.get("trial_closures") or {}).get(request.trial_id)
         if (

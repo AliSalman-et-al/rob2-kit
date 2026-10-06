@@ -155,11 +155,13 @@ Host-visual Evidence can support literal visible labels, endpoint text,
 values, axes, arm labels, stated timing, and procedure steps or decision criteria
 explicitly printed in a diagram. Transcribe branch labels and arrow connections
 with their prerequisites; do not turn a diagram into an invented patient scenario.
-A stated procedure does not establish that it was performed, how many participants
-were measured, or whether assessors followed it or were blinded. Use narrative or
-text-corroborated Evidence for those conduct claims, population, analysis methods,
-and prespecification. Put interpretation in the Result rationale or Domain
-justification, not in the transcription.
+Distinguish a planned or diagrammed procedure from a report of actual conduct.
+An inspected visible report passage may support what it reports, including
+conduct, population, analysis methods and prespecification, even when extracted
+text is unavailable. Preserve visual provenance and transcription uncertainty;
+OCR availability and crop size do not establish scientific sufficiency. Put
+interpretation in the Result rationale or Domain justification, not in the
+transcription.
 
 Keep each claim with the material that contains it. A caption or abbreviation
 legend does not support numerical values or routes found only in the image.
@@ -327,8 +329,11 @@ Evidence, decide answers, or certify scientific entailment.
 
 Read this section before the first `save_domain_judgment` call. Submit
 one object for each question on the dependency-closed active path. The object
-needs `question_id`, the exact permitted `answer`, at least one `bases` item,
-`justification`, `unknowns`, and `counterevidence` for an active question.
+needs `question_id`, the exact permitted `answer`, `bases`, `justification`,
+`unknowns`, and `counterevidence` for an active question. Provide its material
+premises through Evidence bases, `absence_searches`, or `limitations`; `bases: []`
+is allowed when the other collections supply the premises. A scoped no-hit search
+records retrieval, not evidence that a scientific fact is absent.
 Use the question card's `options`; the example values are fictional.
 
 ```json

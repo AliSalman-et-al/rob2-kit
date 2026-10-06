@@ -1396,7 +1396,7 @@ def save_proposal(
                     "detail": (
                         "Finish the required bounded text pass before submitting the Proposal. "
                         "Call get_status, read data.main_report_reading[trial_id].required_ranges "
-                        "with read_pages, then resubmit the complete Result cards and assessments "
+                        "with read_pages, then resubmit the complete Trial selections "
                         "to validate_proposal. Save only after validation succeeds."
                     ),
                 }

@@ -3175,6 +3175,12 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         {
             **expected,
             "content_hash": (
+                "sha256:b7da8a956f8c35edb26a62681561ce8f2c6849259dcd97fbad88df4973aa89a1"
+            ),
+        },
+        {
+            **expected,
+            "content_hash": (
                 "sha256:8d4d6c3e8e7c54dbe7b99ca4cd1fe6a11763dbc3c2bdcf4d28045c8ad4f1d814"
             ),
         },

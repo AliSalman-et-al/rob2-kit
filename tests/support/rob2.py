@@ -260,6 +260,18 @@ def _call(
                         data[section] = [
                             item for page in pages for item in page["data"].get(section, [])
                         ]
+                    cores = [
+                        page["data"]["official_guidance"]
+                        for page in pages
+                        if page["data"].get("official_guidance")
+                    ]
+                    if cores:
+                        data["official_guidance"] = {
+                            "pack": cores[0]["pack"],
+                            "sections": [section for core in cores for section in core["sections"]],
+                            "complete": True,
+                            "next_cursor": None,
+                        }
                     data.pop("context_page", None)
                     merged["data"] = data
                     merged["head"] = pages[-1].get("head", merged.get("head"))

@@ -213,7 +213,10 @@ class WorkingNote(StrictModel):
         max_length=4_000, description="Concise observation, interpretation, or open question."
     )
     sources: tuple[WorkingSourceRange, ...] = Field(
-        min_length=1, max_length=8, description="Exact Trial source locations for this note."
+        min_length=1,
+        max_length=8,
+        description="Array of exact Trial source locations for this note; "
+        "coordinates belong inside these items, not beside the note text.",
     )
     domain_id: DomainId | None = Field(
         default=None, description="Related RoB 2 Domain, when known."
@@ -402,7 +405,7 @@ class WorkingCheckpointDraft(StrictModel):
     result_account: tuple[WorkingResultStepDraft, ...] | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
-        description="Experimental selected-Result reconstruction. Replaces overlapping notes, "
+        description="Optional selected-Result reconstruction. Replaces overlapping notes, "
         "premises and drafts; source-linked steps are shared across Domains, "
         "not signalling answers.",
     )

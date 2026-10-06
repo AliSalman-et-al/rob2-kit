@@ -115,41 +115,35 @@ def _schema_hash(schema: dict[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(text.encode()).hexdigest()
 
 
-def _verify_d3_projection(context: dict[str, Any]) -> None:
-    """Check D3 identity and source coverage without enforcing maintainer science."""
+def _verify_official_projection(context: dict[str, Any], domain_id: str) -> None:
+    """Check installed official-source delivery and question dependencies."""
+    from rob2_kit.application.domains import _official_guidance_recovery
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
     questions = context.get("questions")
     if not isinstance(questions, list):
-        raise ValueError("D3 question cards are missing")
+        raise ValueError("official question cards are missing")
     expected = {
-        "sq:missing:data-available",
-        "sq:missing:evidence-unbiased",
-        "sq:missing:true-value-dependent",
-        "sq:missing:likely-dependent",
+        question.id: question
+        for question in SCIENTIFIC_PACK.questions
+        if question.domain_id == domain_id
     }
-    if {q.get("id") for q in questions if isinstance(q, dict)} != expected:
-        raise ValueError("D3 question identity differs")
+    if {question.get("id") for question in questions} != set(expected):
+        raise ValueError("official question identity differs")
     for question in questions:
-        options = {"yes", "probably_yes", "probably_no", "no"}
-        if question["id"] != "sq:missing:evidence-unbiased":
-            options.add("no_information")
-        if set(question.get("options", [])) != options:
-            raise ValueError("D3 official answer options differ")
-        if not question.get("activation") or not question.get("query_suggestions"):
-            raise ValueError("D3 dependencies or source navigation are missing")
+        canonical = expected[question["id"]]
+        if question["wording"] != canonical.wording or set(question["options"]) != {
+            answer.value for answer in canonical.allowed_answers
+        }:
+            raise ValueError("official question wording or options differ")
+        if question["activation"] != canonical.activation.model_dump(mode="json"):
+            raise ValueError("official question dependencies differ")
+        if not question.get("query_suggestions") or "decision_rule" in question:
+            raise ValueError("question navigation or scientific authority differs")
     core = context.get("official_guidance")
-    if not isinstance(core, dict) or not core.get("complete"):
-        raise ValueError("D3 official guidance is incomplete")
-    covered = {
-        q
-        for section in core.get("sections", [])
-        if section.get("source_version") == "22 August 2019"
-        and section.get("source_sha256")
-        == "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
-        and section.get("excerpt")
-        for q in section.get("question_ids", [])
-    }
-    if covered != expected:
-        raise ValueError("D3 official source coverage differs")
+    expected_core = json.loads(json.dumps(_official_guidance_recovery(domain_id)))
+    if core != expected_core:
+        raise ValueError("complete official source material differs")
 
 
 def _verify_packaged_skill(skill: str, reference: str) -> None:
@@ -159,7 +153,7 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
             marker in asset
             for marker in (
                 "official",
-                "response_framework",
+                "official",
                 "counterevidence",
                 "missing_data",
             )
@@ -239,6 +233,18 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
             data = dict(pages[0]["data"])
             for section in ("questions", "comparison_cards", "evidence"):
                 data[section] = [item for page in pages for item in page["data"].get(section, [])]
+            cores = [
+                page["data"]["official_guidance"]
+                for page in pages
+                if page["data"].get("official_guidance")
+            ]
+            if cores:
+                data["official_guidance"] = {
+                    "pack": cores[0]["pack"],
+                    "sections": [section for core in cores for section in core["sections"]],
+                    "complete": True,
+                    "next_cursor": None,
+                }
             data.pop("context_page", None)
             merged["data"] = data
             merged["head"] = pages[-1].get("head", merged.get("head"))
@@ -560,8 +566,7 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         )
         if context.get("domain_id") != domain_id:
             raise ValueError(f"acceptance Domain context differs: {domain_id}")
-        if domain_id == "domain:missing":
-            _verify_d3_projection(context)
+        _verify_official_projection(context, domain_id)
         revision = int(context["state_revision"])
         searched = await _call(
             client,

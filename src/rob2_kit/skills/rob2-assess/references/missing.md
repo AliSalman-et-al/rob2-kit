@@ -5,7 +5,7 @@ point; the returned question cards fix answer direction and activation.
 
 Every active answer is accompanied by a concise justification, an `unknowns`
 array (use `[]` when none are identified), and a `counterevidence` array. A
-counterpoint refers to the answer's zero-based basis index, for example:
+counterpoint names returned Evidence handles in its `evidence` array, for example:
 
 ```json
 "counterevidence": [{"evidence": ["eh_0123456789abcdef"], "implication": "This passage limits the strength of the selected answer."}]
@@ -18,7 +18,7 @@ the server commits only the dependency-closed active path.
 
 Use the official question elaborations and shared response guidance delivered
 by `get_domain_context`, with the exact approved Result and activation path.
-Use the complete official question elaborations and `response_framework`,
+Use the complete official question elaborations and the shared response semantics in the official core,
 including each question's permitted options. The official source version,
 hash and full-source URL accompany the text, including the distinction between
 available outcomes excluded from analysis and measurements not obtained.

@@ -24,7 +24,7 @@ Model final text cannot complete actionable canonical work. RSI records a
 receipt-based reading-delivery report, preserves every controller turn, and marks
 missing usage unknown. Required reading and Domain checkpoints are operational
 boundaries; their presence does not certify scientific correctness. See
-[evidence and limitations](evaluation/2026-10-04-completion-integration/README.md).
+[evidence and limitations](https://github.com/AliSalman-et-al/rob2-kit/blob/800f4afaadc1b1bb913fa3414b7e91e3b49d33f6/docs/archive/evaluation/2026-10-04-completion-integration/README.md).
 
 Overall aggregation follows [ADR 0039](adr/0039-conditional-cumulative-concerns.md).
 Multiple Some concerns propose Some concerns; High requires the optional host

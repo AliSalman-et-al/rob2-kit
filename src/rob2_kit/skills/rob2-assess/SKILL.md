@@ -289,9 +289,10 @@ changes the account, rather than reconstructing facts separately for each questi
 
 This is a reasoning procedure, not a requirement to complete a fact inventory,
 read every document, or justify a risk label in advance. Existing notes remain
-usable. The typed upstream account is an experimental route, not the default:
-use it only when explicitly requested for a diagnostic. It replaces overlapping
-notes/premises rather than adding another ledger. Do not migrate frozen assessments.
+usable. The typed `result_account` is an optional supported format in the same
+working-checkpoint workflow. It replaces overlapping notes/premises rather than
+adding another ledger. Choose the format that fits the material reasoning; do not
+migrate frozen assessments.
 
 For each active official proposition, identify which step bears on it and the
 mechanism connecting those facts to material bias in this Result. Ask what the
@@ -315,9 +316,10 @@ When current notes make recovery unnecessary, use them to resume orientation
 and inspect exact passages as needed. Follow
 [Read the main report](references/read-main-report.md) for the bounded pass.
 
-Read `data.pack.version` and treat every returned
-question field, including wording, options, activation, and official and
-operational guidance, as authoritative. Domain receipts remain usable while you
+Read `data.pack.version`. Use the complete source-bound official guidance as the
+scientific authority, with each question’s wording, options and activation.
+Search hints and workflow instructions guide tool use; they do not add scientific
+answer rules. Domain receipts remain usable while you
 investigate or commit another Domain in the same Trial, provided the approved
 Result, pack, preview, and requested Domain checkpoint stay unchanged. Search
 results and unrelated Domain commits do not invalidate an existing page chain.
@@ -328,9 +330,16 @@ Result, pack, preview, Source set, or checkpoint.
 Recoverable discovery candidates are omitted by default; use
 `include_candidates:true` on a fresh request when those candidates are needed.
 Revalidate after changing an assessment dependency. Treat each returned
-question card as authoritative for wording, allowed answer values, activation,
-official guidance, decision rules, and uncertainty. Open the matching
+question card for exact wording, allowed answer values and activation, and follow
+the complete official core for scientific interpretation and uncertainty. Open the matching
 scientific reference when working on that Domain:
+
+Inspect the proposed Domain label separately from the signalling answers. The
+Cochrane algorithm proposes a judgment; when a source-bound rationale justifies
+another judgment, use the existing `adjudication` field in `save_domain_judgment`
+and inspect the resulting review. Preserve justified signalling answers and
+explain the departure, its counterevidence and the adopted label. Structural
+acceptance does not establish that the departure is scientifically justified.
 
 Before the first `save_domain_judgment` call, read
 [Build a Domain answer](references/evidence.md#build-a-domain-answer) for the
@@ -432,7 +441,7 @@ A direct read does not require a search receipt.
 Selected Evidence must contain the complete premise. A relationship kind adds
 no facts. Scientific response semantics come from the official guidance in
 `get_domain_context`; state the inference connecting Evidence to the answer in
-`justification`. Use `response_framework` and the complete official question guidance. Follow the official
+`justification`. Use the shared response semantics in the official core and the complete official question guidance. Follow the official
 allowed options and activation predicates, including D3.2's absence of
 `no_information`.
 

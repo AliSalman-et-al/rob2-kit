@@ -301,9 +301,10 @@ ceiling, and no candidate cohort is implied by declaring the configuration.
    or holdout partition. An overall judgment is not the optimization target.
 2. Freeze the prompt, dossier bytes, registry capture, approved Result scope,
    model/version, reasoning effort, tool and skill revision, and evaluation
-   rule. The overall Trial label uses the deterministic Cochrane convention:
-   all five Low is Low; one Some concerns and no High is Some concerns; any
-   High or at least two Some concerns is High. Describe the source allowlist
+   rule. The overall Trial proposal is Low when all five Domains are Low,
+   High when any Domain is High, and Some concerns otherwise. Multiple Some
+   concerns support High only with a result-specific cumulative assessment
+   that their combination substantially lowers confidence (ADR0039). Describe the source allowlist
    and scope in a frozen `rob2-kit.rsi-case.v1`
    JSON manifest. Each source entry names one relative path, its assessment
    filename, and role. A captured registry entry also records its original

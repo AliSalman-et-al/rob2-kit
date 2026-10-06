@@ -1,0 +1,8 @@
+{
+  "status": "installed release verification passed",
+  "wheel": ".release-dist/wheel-1xm4cl7k/rob2_kit-0.11.0-py3-none-any.whl",
+  "bytes": 462573,
+  "sha256": "f02ec2a8a1c607bedd3d712314bbf80ad8de0977d7c6c841e805f076d74cdb41",
+  "scientific_pack_hash": "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08",
+  "scope": "Fresh wheel installed and normal release verifier exercised all five official Domain projections. Independent scientific review and clean final regression pending. No paid Medium launch."
+}

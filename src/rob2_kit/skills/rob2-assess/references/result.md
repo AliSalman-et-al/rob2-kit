@@ -235,8 +235,8 @@ The target records the requested measurement, time, randomized groups, an
 optional baseline-defined subgroup, and intended effect measure. The server
 anchors target to randomized participants, qualified by `baseline_subgroup` when
 supplied. `analysis_population` holds estimate participants and
-reported exclusions. Describe every complete randomized arm in
-`comparison_groups`. `target_measurement` is ascertainment or definition, not a
+reported exclusions. Describe the randomized arms in the requested comparison
+in `comparison_groups`, preserving legitimate joint multi-arm targets. `target_measurement` is ascertainment or definition, not a
 summary statistic.
 
 Include the passages supporting the population summary in `source_passages`,

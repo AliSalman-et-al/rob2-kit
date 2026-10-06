@@ -157,11 +157,29 @@ class OperationalQuestionGuidance(StrictModel):
         return self
 
 
+class QuestionNavigation(StrictModel):
+    """Optional lexical discovery hints; not scientific answer rules."""
+
+    id: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    attribution: str = Field(min_length=1)
+    query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
+
+
+class OfficialDomainGuidance(StrictModel):
+    """Source-bound shared or Domain background in the canonical pack."""
+
+    domain_id: str
+    question_ids: tuple[str, ...] = ()
+    source_url: str = Field(min_length=1)
+    guidance: OfficialQuestionGuidance
+
+
 class QuestionGuidance(StrictModel):
-    """Official provenance paired with rob2-kit operational answering guidance."""
+    """Official provenance paired with optional lexical discovery hints."""
 
     official: OfficialQuestionGuidance
-    operational: OperationalQuestionGuidance
+    operational: QuestionNavigation | OperationalQuestionGuidance
 
 
 class ResponseFramework(StrictModel):
@@ -187,9 +205,9 @@ class Question(StrictModel):
 
     @model_validator(mode="after")
     def guidance_anchors_are_allowed(self) -> Question:
-        if not set(anchor.answer for anchor in self.guidance.operational.answer_anchors) <= set(
-            self.allowed_answers
-        ):
+        if isinstance(self.guidance.operational, OperationalQuestionGuidance) and not set(
+            anchor.answer for anchor in self.guidance.operational.answer_anchors
+        ) <= set(self.allowed_answers):
             raise ValueError("guidance anchor references a disallowed answer")
         return self
 
@@ -206,12 +224,25 @@ class ScientificPack(StrictModel):
     questions: tuple[Question, ...]
     domains: tuple[Domain, ...]
     content_hash: str
+    official_sections: tuple[OfficialDomainGuidance, ...] | None = None
 
     @model_validator(mode="after")
     def activation_predicates_are_valid(self) -> ScientificPack:
         questions = {
             question.id: (position, question) for position, question in enumerate(self.questions)
         }
+        domains = {domain.id for domain in self.domains}
+        for section in self.official_sections or ():
+            if section.domain_id not in domains | {"all"}:
+                raise ValueError("official guidance names an unknown Domain")
+            for question_id in section.question_ids:
+                if question_id not in questions:
+                    raise ValueError("official guidance names an unknown question")
+                if (
+                    section.domain_id != "all"
+                    and questions[question_id][1].domain_id != section.domain_id
+                ):
+                    raise ValueError("official guidance question is outside its Domain")
         for position, question in enumerate(self.questions):
             if not question.guidance.operational.query_suggestions:
                 raise ValueError("every question must define query suggestions")

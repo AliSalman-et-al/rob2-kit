@@ -177,7 +177,7 @@ rob2 verify-sources C:/path/to/archive.sources.zip
 
 ### Public contract
 
-The server exposes 18 strictly typed MCP tools and the live
+The server exposes the strictly typed MCP tool catalog and the live
 `rob2://current-batch` resource. The generated [public contract](docs/release/public-contract.json)
 records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and

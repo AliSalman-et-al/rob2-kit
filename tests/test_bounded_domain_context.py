@@ -87,6 +87,20 @@ def _wire_context(
                                 for page in pages
                                 for item in page.structured_content["data"].get(section, [])
                             ]
+                        cores = [
+                            page.structured_content["data"]["official_guidance"]
+                            for page in pages
+                            if page.structured_content["data"].get("official_guidance")
+                        ]
+                        if cores:
+                            data["official_guidance"] = {
+                                "pack": cores[0]["pack"],
+                                "sections": [
+                                    section for core in cores for section in core["sections"]
+                                ],
+                                "complete": True,
+                                "next_cursor": None,
+                            }
                         data.pop("context_page", None)
                         merged["data"] = data
                         merged["head"] = pages[-1].structured_content.get("head")

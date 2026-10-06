@@ -1,4 +1,4 @@
-# Selected Result reconstruction (experimental typed route)
+# Selected Result reconstruction (optional typed format)
 
 Sources → how this Result was produced → independent official propositions →
 canonical judgments. This replaces question-first fact gathering, not Cochrane
@@ -14,7 +14,7 @@ conduct. Retain uncertainties and source conflicts beside the relevant step;
 unknown transitions are legitimate. Do not mechanically fill all four aspects.
 The approved Result may cover a different window from an adjacent report table.
 
-The experimental `save_working_checkpoint` route accepts `result_account` steps
+The optional `save_working_checkpoint` format accepts `result_account` steps
 instead of `observations`, `interpretations`, `premise_records`, `drafts`,
 `terminology`, or `open_questions`. Each step has a stable host `id`, an `aspect`
 (`assignment_course`, `outcome_ascertainment`, `analysis`, `plan_report`), one

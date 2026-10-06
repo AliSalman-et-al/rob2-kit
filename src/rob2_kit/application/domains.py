@@ -16,7 +16,7 @@ from ..logic.adjudication import (
 )
 from ..logic.aggregation import aggregation_record
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
-from ..models import ResponseFramework, canonical_json_bytes
+from ..models import canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import (
     DomainCounterpoint,
@@ -611,8 +611,8 @@ _DOMAIN_GUIDANCE = (
     "across relevant Sources, including a protocol or SAP when relevant. Inspect returned "
     "passages before using them. A limitation requires that explicit premise and stopping "
     "rationale; include a Trial-scoped search receipt when retrieval provenance is useful, "
-    "but a direct read does not require a search receipt. Absence "
-    "requires a scoped untruncated no-hit receipt.",
+    "but a direct read does not require a search receipt. A no-hit receipt records "
+    "a bounded lexical search, not scientific absence.",
     "Cite complete premises for the active question. One passage may support several facts. "
     "When an answer depends on separate passages, cite each with its own boundaries. "
     "A relationship kind describes the use of Evidence; it adds no scientific fact.",
@@ -625,10 +625,6 @@ _DOMAIN_GUIDANCE = (
     "working checkpoint is current for this exact approved Result and captured Source projection; "
     "a stale checkpoint requires the stated recovery action and never carries a prior Domain "
     "judgment into this assessment.",
-    "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
-    "a limitation or absence alone supports uncertainty, not a definitive answer. "
-    "For D3.2 No, inspected context/inference or a valid scoped no-hit receipt can instead "
-    "support the scoped absence of reassuring evidence; it does not assert bias occurred.",
     "Evaluate activation against your draft answers. If validation reports missing active "
     "question IDs, add those questions with allowed answer values and supported bases, then "
     "resubmit the complete active set in one validation call. The server commits only active "
@@ -636,17 +632,6 @@ _DOMAIN_GUIDANCE = (
     "Apply every reported repair and retain other drafted answers. Add missing questions to "
     "the existing answer set. Resolve further activation from the repaired answers before "
     "resubmitting. The server ignores inactive answers.",
-)
-_DOMAIN_TRAPS = (
-    "A planned method does not prove conduct; a time origin or analysis population does "
-    "not prove complete follow-up or equal assessment.",
-    "An endpoint label or definition does not prove objectivity, blinding, "
-    "prespecification, or no alternative analyses.",
-    "A treatment assignment or visibly different intervention does not by itself prove "
-    "that participants or personnel knew the assignment.",
-    "Different treatment or visit schedules do not by themselves prove that outcome "
-    "measurement differed between groups.",
-    "Stratification does not prove allocation concealment.",
 )
 
 
@@ -664,6 +649,23 @@ def _official_guidance_recovery(domain_id: str) -> dict[str, Any]:
         for question in SCIENTIFIC_PACK.questions
         if question.domain_id == domain_id
     ]
+    sections = [
+        {
+            "question_ids": item.question_ids
+            or tuple(
+                question.id
+                for question in SCIENTIFIC_PACK.questions
+                if question.domain_id == domain_id
+            ),
+            "source_version": item.guidance.version,
+            "source_sha256": item.guidance.source_sha256,
+            "source_locator": item.guidance.source_locator,
+            "source_url": item.source_url,
+            "excerpt": item.guidance.source_excerpt,
+        }
+        for item in SCIENTIFIC_PACK.official_sections or ()
+        if item.domain_id in {"all", domain_id}
+    ] + sections
     if not sections:
         raise ValueError("official guidance is unavailable for Domain")
     return {
@@ -676,37 +678,6 @@ def _official_guidance_recovery(domain_id: str) -> dict[str, Any]:
         "complete": True,
         "next_cursor": None,
     }
-
-
-_RESPONSE_FRAMEWORK = ResponseFramework(
-    version="22 August 2019",
-    source_locator="Full guidance p. 3, sections 1.1 and 1.1.1",
-    response_options=("yes", "probably_yes", "probably_no", "no", "no_information"),
-    firm_evidence_rule=(
-        "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence "
-        "is available in relation to the signalling question."
-    ),
-    probable_judgment_rule=(
-        "The ‘Probably’ versions would typically imply that a judgement has been made. "
-        "‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ "
-        "and ‘Probably no’."
-    ),
-    no_information_rule=(
-        "Use ‘No information’ only when both (i) insufficient details are reported to permit "
-        "a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these "
-        "details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the "
-        "circumstances of the trial."
-    ),
-    independence_rule=(
-        "Signalling questions should be answered independently: the answer to one question "
-        "should not affect answers to other questions in the same or other domains other than "
-        "through determining which subsequent questions are answered."
-    ),
-    quotation_rule=(
-        "Brief direct quotations from the text of the study report should be used whenever "
-        "possible to support the answer."
-    ),
-)
 
 
 def _comparison_cards(
@@ -774,585 +745,91 @@ def _comparison_cards(
 
     proposition_specs = {
         "domain:deviations": (
-            (
-                "sq:deviations:context-deviations",
-                "protocol_inconsistency",
-                "The observed change was inconsistent with the trial protocol.",
-                (),
-            ),
+            ("sq:deviations:context-deviations", "protocol_inconsistency", ()),
             (
                 "sq:deviations:context-deviations",
                 "trial_context_cause",
-                "Recruitment, research-only engagement, or trial-specific personnel decisions "
-                "caused the protocol-inconsistent change beyond what could occur during "
-                "ordinary delivery of the same intervention. Intervention burden or being "
-                "treated by trial staff does not establish that causal link.",
                 ("sq:deviations:context-deviations",),
             ),
             (
                 "sq:deviations:affected-outcome",
                 "outcome_pathway",
-                "The identified trial-context deviation could affect the approved outcome.",
                 ("sq:deviations:context-deviations",),
             ),
             (
                 "sq:deviations:balanced",
                 "group_balance",
-                "The identified deviation was balanced between randomized groups.",
                 ("sq:deviations:context-deviations", "sq:deviations:affected-outcome"),
             ),
-            (
-                "sq:deviations:appropriate-analysis",
-                "assignment_analysis_rule",
-                "The actual grouping and exclusion rule estimated the assignment effect. "
-                "Separate observed participant flow, a source-stated rule, and a host-inferred "
-                "rule: noncompletion and missing outcomes can overlap without establishing "
-                "which rule selected the analysis population.",
-                (),
-            ),
+            ("sq:deviations:appropriate-analysis", "assignment_analysis_rule", ()),
             (
                 "sq:deviations:substantial-impact",
                 "conditional_analysis_impact",
-                "If the assignment analysis was inappropriate, the affected participants could "
-                "substantially change this Result. Keep an inferred exclusion population "
-                "conditional on its mechanism; not all noncompleters or unavailable outcomes "
-                "are established inappropriate exclusions.",
                 ("sq:deviations:appropriate-analysis",),
             ),
         ),
         "domain:missing": (
-            (
-                "sq:missing:data-available",
-                "availability",
-                "Outcome data were available for all or nearly all randomized participants.",
-                (),
-            ),
-            (
-                "sq:missing:data-available",
-                "material_incompleteness",
-                "Outcome availability was materially incomplete for the approved Result; "
-                "unresolved availability alone does not establish this proposition.",
-                (),
-            ),
-            (
-                "sq:missing:evidence-unbiased",
-                "mitigation",
-                "The approved Result was not biased by missing outcome data.",
-                ("sq:missing:data-available",),
-            ),
+            ("sq:missing:data-available", "availability", ()),
+            ("sq:missing:data-available", "material_incompleteness", ()),
+            ("sq:missing:evidence-unbiased", "mitigation", ("sq:missing:data-available",)),
             (
                 "sq:missing:true-value-dependent",
                 "possible_dependence",
-                "Missingness could depend on the true outcome value.",
                 ("sq:missing:evidence-unbiased",),
             ),
             (
                 "sq:missing:likely-dependent",
                 "likely_dependence",
-                "Missingness likely depended on the true outcome value.",
                 ("sq:missing:true-value-dependent",),
             ),
         ),
         "domain:measurement": (
-            (
-                "sq:measurement:method-inappropriate",
-                "suitability",
-                "The measurement method was inappropriate for the approved outcome.",
-                (),
-            ),
-            (
-                "sq:measurement:differential",
-                "differential_detection",
-                "Outcome measurement or detection could differ between groups.",
-                (),
-            ),
-            (
-                "sq:measurement:assessor-aware",
-                "assessor_awareness",
-                "The relevant outcome assessor knew the assigned intervention.",
-                (),
-            ),
+            ("sq:measurement:method-inappropriate", "suitability", ()),
+            ("sq:measurement:differential", "differential_detection", ()),
+            ("sq:measurement:assessor-aware", "assessor_awareness", ()),
             (
                 "sq:measurement:influence-possible",
                 "susceptibility",
-                "Knowledge of assignment could influence this outcome assessment.",
                 ("sq:measurement:assessor-aware",),
             ),
             (
                 "sq:measurement:influence-likely",
                 "likely_influence",
-                "Knowledge of assignment likely influenced this outcome assessment.",
                 ("sq:measurement:influence-possible",),
             ),
         ),
         "domain:selection": (
-            (
-                "sq:selection:prespecified-analysis",
-                "document_availability",
-                "A plan or SAP describing the approved Result is available in the captured "
-                "Sources.",
-                (),
-            ),
+            ("sq:selection:prespecified-analysis", "document_availability", ()),
             (
                 "sq:selection:prespecified-analysis",
                 "plan_applicability",
-                "Compare the selected reported analysis with the applicable planned analysis "
-                "for the exact comparison, cohort, endpoint, population, window, and effect "
-                "measure. Keep their source citations together with any evidence about a "
-                "change's timing and reason. Matching endpoint or population and an early "
-                "plan do not resolve a material analysis difference. A documented change "
-                "before unblinded access or clearly unrelated to results may qualify; an "
-                "unknown amendment or a different method label alone establishes neither "
-                "correspondence nor noncorrespondence.",
                 ("sq:selection:prespecified-analysis",),
             ),
             (
                 "sq:selection:prespecified-analysis",
                 "chronology",
-                "Plan finalization preceded access to unblinded outcome data.",
                 ("sq:selection:prespecified-analysis",),
             ),
             (
                 "sq:selection:multiple-measurements",
                 "eligible_measurements",
-                "The eligible outcome measurements and the reported subset are known.",
                 ("sq:selection:prespecified-analysis",),
             ),
             (
                 "sq:selection:multiple-analyses",
                 "eligible_analyses",
-                "The eligible analyses and the reported analysis are known.",
                 ("sq:selection:prespecified-analysis",),
             ),
             (
                 "sq:selection:multiple-measurements",
                 "measurement_selection",
-                "The reported measurement was selected because of its result; inspected report "
-                "methods/results or companion reports may establish this without a protocol.",
                 ("sq:selection:multiple-measurements",),
             ),
             (
                 "sq:selection:multiple-analyses",
                 "results_based_selection",
-                "The reported analysis was selected because of its result; inspected report "
-                "methods/results or companion reports may establish this without an SAP.",
                 ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"),
             ),
-        ),
-    }
-    paired_examples_by_domain = {
-        "domain:deviations": (
-            {
-                "pair_id": "d2-protocol-status-same-trial-context",
-                "changed_premise": (
-                    "whether the same allocation-driven conduct was protocol-consistent"
-                ),
-                "left_facts": (
-                    "The treating clinician reported that knowledge of experimental allocation "
-                    "prompted rescue treatment. The protocol permitted that rescue.",
-                ),
-                "right_facts": (
-                    "The same treating clinician reported that knowledge of "
-                    "experimental allocation "
-                    "prompted the same rescue treatment. The protocol prohibited that rescue.",
-                ),
-                "reasoning_focus": (
-                    "Hold the documented allocation-driven cause fixed while "
-                    "changing protocol consistency."
-                ),
-            },
-            {
-                "pair_id": "d2-cause-same-protocol-inconsistency",
-                "changed_premise": (
-                    "the documented reason for the same clinician's prohibited conduct"
-                ),
-                "left_facts": (
-                    "The protocol prohibited rescue treatment. The treating "
-                    "clinician provided rescue "
-                    "because of the patient's symptoms, as the clinician would in ordinary care.",
-                ),
-                "right_facts": (
-                    "The protocol prohibited rescue treatment. The same "
-                    "treating clinician provided the "
-                    "same rescue because knowledge of experimental "
-                    "allocation changed the decision.",
-                ),
-                "reasoning_focus": (
-                    "Hold protocol inconsistency, personnel and conduct fixed; "
-                    "distinguish ordinary care from an allocation-driven "
-                    "decision. Personnel identity alone supplies no cause."
-                ),
-            },
-            {
-                "pair_id": "d2-regimen-burden-versus-research-engagement",
-                "changed_premise": "the documented reason for stopping the same assigned program",
-                "left_facts": (
-                    "The protocol required twelve exercise sessions. A participant stopped because "
-                    "the assigned exercises were physically difficult, as "
-                    "could occur in ordinary treatment.",
-                ),
-                "right_facts": (
-                    "The same protocol required twelve exercise sessions. A "
-                    "participant stopped the "
-                    "same program because additional research-only "
-                    "appointments prevented attendance.",
-                ),
-                "reasoning_focus": (
-                    "Keep non-adherence fixed. Treatment burden and trial-"
-                    "specific engagement are different causes; insufficient "
-                    "cause information remains unresolved."
-                ),
-            },
-            {
-                "pair_id": "d2-exclusion-rule-and-outcome-availability",
-                "changed_premise": "the source-stated exclusion rule and outcome availability",
-                "left_facts": (
-                    "Of 100 eligible randomized participants, 90 were analyzed in assigned groups. "
-                    "The report states that only the ten with unmeasured endpoint outcomes were "
-                    "excluded; adherence did not restrict the analysis.",
-                ),
-                "right_facts": (
-                    "Of the same 100 eligible randomized participants, 90 were analyzed in "
-                    "assigned groups. The report states that only treatment completers were "
-                    "analyzed even though endpoint outcomes were measured for all 100.",
-                ),
-                "reasoning_focus": (
-                    "The same analysis count can reflect missing-only availability or an "
-                    "adherence-conditioned rule. Source-stated observed outcomes omitted from "
-                    "analysis are affirmative evidence, not merely an uncertain denominator."
-                ),
-            },
-            {
-                "pair_id": "d2-exclusion-flow-versus-stated-rule",
-                "changed_premise": "whether the source establishes an exclusion rule",
-                "left_facts": (
-                    "Of 100 eligible randomized participants, 90 completed treatment and 90 "
-                    "were analyzed. Some noncompleters were contactable, but their endpoint "
-                    "measurement and the analysis restriction are not reported.",
-                ),
-                "right_facts": (
-                    "The same flow, contactability and unknown endpoint measurements are "
-                    "reported. The source additionally states that the analysis excluded all "
-                    "noncompleters regardless of whether their endpoint outcomes were available.",
-                ),
-                "reasoning_focus": (
-                    "Compatible counts do not identify a rule; contact is not measurement. "
-                    "A documented restriction can establish a mechanism without complete "
-                    "measurement counts. Carry uncertainty about an inferred mechanism into "
-                    "the participants considered for conditional impact, while allowing "
-                    "source-supported probable judgments."
-                ),
-            },
-        ),
-        "domain:missing": (
-            {
-                "pair_id": "d3-complete-versus-unresolved-availability",
-                "changed_premise": "whether the approved outcome was actually ascertained",
-                "left_facts": (
-                    "The outcome was ascertained for every randomized participant at the "
-                    "approved window.",
-                ),
-                "right_facts": (
-                    "The report gives an analysis denominator but does not establish outcome "
-                    "ascertainment.",
-                ),
-                "reasoning_focus": (
-                    "Keep observed outcome availability separate from analysis membership and "
-                    "preserve No information when extent is unresolved."
-                ),
-            },
-            {
-                "pair_id": "d3-administrative-versus-informative-censoring",
-                "changed_premise": "why outcome follow-up ended",
-                "left_facts": (
-                    "Administrative censoring occurred at a common cutoff after the approved "
-                    "window.",
-                ),
-                "right_facts": (
-                    "Participants stopped follow-up after worsening symptoms before the "
-                    "approved window.",
-                ),
-                "reasoning_focus": (
-                    "Separate administrative censoring from a mechanism that could depend on "
-                    "the true outcome."
-                ),
-            },
-            {
-                "pair_id": "d3-mitigation-evidence",
-                "changed_premise": (
-                    "whether the examined assumptions address the documented missingness mechanism"
-                ),
-                "left_facts": (
-                    "Post-hoc sensitivity analyses estimate the same approved Result.",
-                    "Their estimates remain close to the primary estimate.",
-                    "Changed assumptions address the documented reasons for missing outcomes; "
-                    "retained assumptions are supported by relevant observed information.",
-                ),
-                "right_facts": (
-                    "Post-hoc sensitivity analyses estimate the same approved Result.",
-                    "Their estimates remain close to the primary estimate.",
-                    "The analyses retain a missingness assumption whose plausibility for the "
-                    "documented reasons for missing outcomes remains unresolved.",
-                ),
-                "reasoning_focus": (
-                    "Compare changed and retained assumptions with the documented mechanism. "
-                    "Numerical agreement is reassurance within those assumptions; post-hoc "
-                    "timing alone does not invalidate D3 evidence, and an explicit MNAR analysis "
-                    "is not universally required. Keep unresolved plausibility distinct from "
-                    "evidence that bias occurred."
-                ),
-            },
-            {
-                "pair_id": "d3-possible-versus-likely-dependence",
-                "changed_premise": (
-                    "strength of evidence that missingness depends on the true outcome"
-                ),
-                "left_facts": (
-                    "The reported reason for loss could be related to the unobserved outcome, "
-                    "but the link is unresolved.",
-                ),
-                "right_facts": (
-                    "Source records show that worsening outcome status commonly preceded and "
-                    "explained follow-up loss.",
-                ),
-                "reasoning_focus": (
-                    "Keep a plausible pathway distinct from evidence that makes dependence "
-                    "likely; neither follows from missing counts alone."
-                ),
-            },
-            {
-                "pair_id": "d3-treatment-stop-with-followup-versus-loss",
-                "changed_premise": "whether outcome follow-up continued after treatment stopped",
-                "left_facts": (
-                    "Twelve participants stopped assigned treatment after documented worsening.",
-                    "The approved endpoint was due at day 90 for all randomized participants.",
-                    "All 12 participants were assessed at day 90 after stopping treatment.",
-                ),
-                "right_facts": (
-                    "Twelve participants stopped assigned treatment after documented worsening.",
-                    "The approved endpoint was due at day 90 for all randomized participants.",
-                    "Outcome follow-up ended before day 90 for all 12 participants after they "
-                    "stopped treatment.",
-                ),
-                "reasoning_focus": (
-                    "Treatment discontinuation alone does not establish missing outcomes. "
-                    "Check follow-up and the possible effect of unavailable outcomes."
-                ),
-            },
-        ),
-        "domain:measurement": (
-            {
-                "pair_id": "d4-objective-versus-judgment-dependent",
-                "changed_premise": "whether the assessor must exercise outcome judgment",
-                "left_facts": (
-                    "An independent registry establishes all-cause mortality.",
-                    "The detection opportunity is the same in both groups.",
-                ),
-                "right_facts": (
-                    "A participant reports symptom severity on a standardized questionnaire.",
-                    "The assessor interprets a judgment-dependent threshold.",
-                ),
-                "reasoning_focus": (
-                    "Assess suitability, detection opportunity, awareness, susceptibility, and "
-                    "likely influence as separate propositions."
-                ),
-            },
-            {
-                "pair_id": "d4-equal-versus-differential-detection",
-                "changed_premise": (
-                    "whether the opportunity to detect the approved outcome differs"
-                ),
-                "left_facts": ("Both groups use the same ascertainment method and schedule.",),
-                "right_facts": (
-                    "One intervention causes additional visits that can detect the approved "
-                    "outcome.",
-                ),
-                "reasoning_focus": (
-                    "A different opportunity matters only through an explicit pathway to "
-                    "differential detection; do not infer a risk label automatically."
-                ),
-            },
-            {
-                "pair_id": "d4-assessor-awareness",
-                "changed_premise": ("whether the outcome assessor knew intervention assignment"),
-                "left_facts": (
-                    "The outcome assessor was masked to assignment through assessment.",
-                ),
-                "right_facts": (
-                    "The assessor was told each participant's assignment before judging the "
-                    "outcome.",
-                ),
-                "reasoning_focus": (
-                    "Record assessor awareness separately from measurement suitability and any "
-                    "resulting detection or influence."
-                ),
-            },
-            {
-                "pair_id": "d4-possible-versus-likely-influence",
-                "changed_premise": ("whether awareness likely changed a susceptible measurement"),
-                "left_facts": (
-                    "An assessor knew assignment and rated a judgment-dependent symptom scale; "
-                    "no differential ratings are documented.",
-                ),
-                "right_facts": (
-                    "An assessor knew assignment and source records document ratings shifting "
-                    "toward the expected intervention effect.",
-                ),
-                "reasoning_focus": (
-                    "Separate the possibility of influence from evidence that influence likely "
-                    "affected recorded outcomes."
-                ),
-            },
-            {
-                "pair_id": "d4-toxicity-visits-by-endpoint",
-                "changed_premise": ("which endpoint is assessed under the same visit pattern"),
-                "left_facts": (
-                    "Blinded registry staff captured all deaths in both groups with the same "
-                    "complete follow-up method.",
-                    "Intervention-group participants received extra visits to monitor "
-                    "laboratory toxicity.",
-                    "The approved endpoint was all-cause mortality.",
-                ),
-                "right_facts": (
-                    "Blinded registry staff captured all deaths in both groups with the same "
-                    "complete follow-up method.",
-                    "Intervention-group participants received extra visits to monitor "
-                    "laboratory toxicity.",
-                    "The approved endpoint was lab-defined toxicity detected at those visits.",
-                ),
-                "reasoning_focus": (
-                    "Link extra visits to the selected endpoint. Complete equal death-registry "
-                    "ascertainment gives no mortality-specific path, while extra visits may "
-                    "create more opportunity to detect lab toxicity."
-                ),
-            },
-            {
-                "pair_id": "d4-safety-window-evidence",
-                "changed_premise": ("whether the adverse-event observation window was documented"),
-                "left_facts": (
-                    "The approved adverse-event endpoint includes events through 30 days "
-                    "after treatment ends.",
-                    "Median treatment duration was four months; median progression-free "
-                    "survival was seven months.",
-                    "The report specifies a safety visit 30 days after treatment ends in "
-                    "both groups.",
-                ),
-                "right_facts": (
-                    "The approved adverse-event endpoint includes events through 30 days "
-                    "after treatment ends.",
-                    "Median treatment duration was four months; median progression-free "
-                    "survival was seven months.",
-                    "The report does not say whether either group had a safety visit 30 days "
-                    "after treatment ended.",
-                ),
-                "reasoning_focus": (
-                    "Use visit and follow-up evidence to assess the safety window. Treatment "
-                    "duration and progression-free survival do not establish that schedule."
-                ),
-            },
-        ),
-        "domain:selection": (
-            {
-                "pair_id": "d5-applicable-versus-inapplicable-plan",
-                "changed_premise": "whether the located plan covers the approved Result",
-                "left_facts": (
-                    "The SAP names the approved comparison, cohort, endpoint, window, population, "
-                    "analysis, and effect measure.",
-                ),
-                "right_facts": (
-                    "A platform master plan names a different cohort and intervention phase.",
-                ),
-                "reasoning_focus": (
-                    "Assess plan applicability before using its dates or content for chronology."
-                ),
-            },
-            {
-                "pair_id": "d5-multiplicity-versus-selection",
-                "changed_premise": "whether reporting choice depended on the result",
-                "left_facts": (
-                    "The SAP lists three eligible analyses. All three were conducted, but only "
-                    "the adjusted model was reported. Dated correspondence made before "
-                    "unblinded results confirms that reporting plan.",
-                ),
-                "right_facts": (
-                    "The SAP lists the same three eligible analyses. All three were conducted, "
-                    "but only the adjusted model was reported. Dated minutes after unblinding "
-                    "state it was chosen because its estimate was favorable and the other two "
-                    "were withheld.",
-                ),
-                "reasoning_focus": (
-                    "Hold the eligible analyses and reporting pattern fixed; inspect the "
-                    "evidence about why the reporting decision was made."
-                ),
-            },
-            {
-                "pair_id": "d5-amendment-versus-unblinded-access",
-                "changed_premise": ("whether unblinded access preceded the amendment"),
-                "left_facts": (
-                    "Amended SAP signed June 15; cutoff and lock were August 1.",
-                    "Same cohort, endpoint, and analysis.",
-                    "Unblinded access began July 15.",
-                ),
-                "right_facts": (
-                    "Amended SAP signed June 15; cutoff and lock were August 1.",
-                    "Same cohort, endpoint, and analysis.",
-                    "Unblinded access began May 15.",
-                ),
-                "reasoning_focus": (
-                    "Compare access with amendment timing; chronology alone does not establish "
-                    "result-driven selection."
-                ),
-            },
-            {
-                "pair_id": "d5-unknown-versus-late-access",
-                "changed_premise": "whether the timing of unblinded access is known",
-                "left_facts": (
-                    "Applicable SAP signed June 15. Enrollment ended May 1.",
-                    "The reports do not identify when investigators accessed unblinded results.",
-                ),
-                "right_facts": (
-                    "The same applicable SAP signed June 15. Enrollment ended May 1.",
-                    "A dated report confirms investigators accessed unblinded results May 15.",
-                ),
-                "reasoning_focus": (
-                    "Unknown timing is not proof of late finalization. Establish the negative "
-                    "chronology premise separately; neither branch proves results-driven choice."
-                ),
-            },
-            {
-                "pair_id": "d5-report-documented-choice-without-plan",
-                "changed_premise": "whether the report establishes why a subset was reported",
-                "left_facts": (
-                    "No protocol or SAP is captured. Article methods identify three eligible "
-                    "analyses. Results report one; the reporting reason is unresolved.",
-                ),
-                "right_facts": (
-                    "No protocol or SAP is captured. The same article methods identify three "
-                    "eligible analyses. The authors state that only the favorable estimate was "
-                    "reported after comparing the three results.",
-                ),
-                "reasoning_focus": (
-                    "Keep plan availability and alternatives fixed. Preserve direct evidence of "
-                    "results-driven choice; missing plan chronology does not erase it."
-                ),
-            },
-            {
-                "pair_id": "d5-embedded-versus-separate-sap",
-                "changed_premise": "where the same signed analysis plan is packaged",
-                "left_facts": (
-                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
-                    "Plan signed before unblinded access.",
-                    "Plan is protocol appendix 2.",
-                ),
-                "right_facts": (
-                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
-                    "Plan signed before unblinded access.",
-                    "Plan is a separate repository PDF.",
-                ),
-                "reasoning_focus": (
-                    "Find the plan by scope and chronology; packaging does not change its content."
-                ),
-            },
         ),
     }
     refs = []
@@ -1634,12 +1111,16 @@ def _comparison_cards(
         }
 
     proposition_rows = []
-    for question_id, name, proposition, depends_on in proposition_specs[domain_id]:
+    for question_id, name, depends_on in proposition_specs[domain_id]:
         proposition_rows.append(
             {
                 "question_id": question_id,
                 "name": name,
-                "proposition": proposition,
+                "proposition": next(
+                    question.wording
+                    for question in SCIENTIFIC_PACK.questions
+                    if question.id == question_id
+                ),
                 "status": "unknown",
                 "depends_on": depends_on,
                 "passages": [],
@@ -1822,28 +1303,14 @@ def _comparison_cards(
             "passage_groups": passage_groups,
             "slots": slots,
             "propositions": proposition_rows,
-            "paired_examples": list(paired_examples_by_domain[domain_id]),
             "participant_flow": participant_flow,
             "missing_data": missing_data,
             "prompt": (
-                "Compare result_scope (target), reported_result, and target_relation. Retain "
-                "scope differences; assess the reported Result. "
-                + (
-                    "Read reported_result, analysis_plan, correspondence, amendment, and "
-                    "unblinded_access together: locate the selected and planned methods in "
-                    "their cited passages, then evidence about whether, when, and why a "
-                    "material change was made. Keep unresolved method correspondence "
-                    "explicit even when plan timing is well supported. Distinguish method "
-                    "content from labels; a discrepancy does not establish results-based "
-                    "selection. "
-                    if domain_id == "domain:selection"
-                    else ""
-                )
-                + "target or analyzed populations do not establish observed outcomes. Classify "
-                "remaining propositions; do not infer causation, availability, censoring, "
-                "measurement influence, plan correspondence, or risk from metadata, arithmetic, "
-                "or wording alone. An empty passage group is unopened; inspect "
-                "relevant Sources before recording an information limitation."
+                "Compare the approved target, reported Result and recorded relation using "
+                "the cited source passages. Preserve scope differences and source conflicts. "
+                "Slots and quantities are navigation and reconstruction aids; use the complete "
+                "official guidance to answer each active question. Empty passage groups denote "
+                "unopened source material, not an established absence."
             ),
         }
     ]
@@ -2247,7 +1714,7 @@ def _domain_working_context(status: dict[str, Any]) -> dict[str, Any]:
     checkpoint = status.get("checkpoint")
     if isinstance(checkpoint, dict) and checkpoint.get("result_account") is not None:
         return status
-    # Keep the legacy compact projection; the experimental account replaces
+    # Keep the legacy compact projection; the optional account replaces
     # its fragmented notes instead of inflating every existing context header.
     projected = {
         key: status.get(key)
@@ -2858,9 +2325,10 @@ def save_domain_judgment(
                         _repair(
                             f"/answers/{answer_index}/missing_data/{row_index}/result_identity",
                             "missing_data_result_mismatch",
-                            "This participant-flow row names another approved Result. Remove the "
-                            "field to bind it to the current approved Result, or submit the "
-                            "current Result identity.",
+                            "This participant-flow row names another approved Result. Verify that "
+                            "its endpoint, window and population apply to the current Result "
+                            "before correcting its identity. Preserve a genuine scope mismatch; "
+                            "changing the identity does not make the counts applicable.",
                         )
                     )
                 row["result_identity"] = approved_result_identity
@@ -2892,14 +2360,11 @@ def save_domain_judgment(
                 missing_data_rows.append(row)
             answer["missing_data"] = reconcile_missing_data(missing_data_rows)
         bases: list[dict[str, Any]] = []
-        direct_basis = False
-        uncertainty_basis = False
         seen_basis: set[bytes] = set()
         for basis_index, basis_model in enumerate(answer_item.bases):
             basis = basis_model.model_dump(mode="json", exclude_none=True)
             path = f"/answers/{answer_index}/bases/{basis_index}"
             if basis["kind"] == "limitation":
-                uncertainty_basis = True
                 if basis.get("search_receipt") is not None:
                     try:
                         receipt = _search_receipt(root, basis["search_receipt"])
@@ -2935,7 +2400,6 @@ def save_domain_judgment(
                             "could resolve the premise; change the query only when its wording "
                             "or the premise warrants it."
                         )
-                    uncertainty_basis = True
                     # Keep the disposable handle at the MCP boundary only.
                     # Checkpoints and their identities refer to the validated
                     # receipt content, so later finalization and verification
@@ -2954,10 +2418,6 @@ def save_domain_judgment(
                         )
                     )
             else:
-                if basis["kind"] in {"direct_support", "indirect_support", "contradiction"}:
-                    direct_basis = True
-                elif basis["kind"] in {"context", "inference"}:
-                    uncertainty_basis = True
                 evidence = catalog_by_handle.get(basis["evidence"]) or catalog.get(
                     basis["evidence"]
                 )
@@ -3140,49 +2600,16 @@ def save_domain_judgment(
                 )
             seen_basis.add(key)
             bases.append(basis)
-        # D3.2 No denies the presence of reassuring evidence, not the absence
-        # of bias. An unresolved mechanism does not contradict that answer.
-        denies_reassuring_evidence = (
-            answer_item.question_id == "sq:missing:evidence-unbiased" and answer["answer"] == "no"
-        )
-        scoped_negative_basis = denies_reassuring_evidence and any(
-            item.get("kind") != "limitation" for item in bases
-        )
-        if answer["answer"] in {"yes", "no"} and not (direct_basis or scoped_negative_basis):
+        # Relationship labels preserve the host's use of each premise. They are
+        # not a second scientific standard for selecting Cochrane answer values.
+        if not bases:
             repairs.append(
                 _repair(
                     f"/answers/{answer_index}/bases",
-                    "answer_requires_direct_basis",
-                    f"question '{answer_item.question_id}' has definitive answer "
-                    f"'{answer['answer']}', which needs a direct, indirect, or contradictory "
-                    "Evidence basis (D3.2 No may instead cite inspected context/inference "
-                    "or a valid scoped no-hit receipt). The submitted answer is unchanged; "
-                    "add the required support or reconsider the answer from the evidence.",
-                )
-            )
-        elif answer["answer"] in {"probably_yes", "probably_no"} and not (
-            direct_basis or uncertainty_basis
-        ):
-            repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/bases",
-                    "answer_requires_uncertainty_basis",
-                    f"the submitted probable answer '{answer['answer']}' needs direct evidence, "
-                    "a limitation, a valid scoped no-hit receipt, or an exact context/inference "
-                    "premise. The submitted answer is unchanged.",
-                )
-            )
-        if (
-            answer["answer"] in {"yes", "no"}
-            and not denies_reassuring_evidence
-            and any(item.get("kind") == "limitation" for item in bases)
-        ):
-            repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/bases",
-                    "complete_claim_has_unresolved_premise",
-                    "a definitive claim cannot be saved while a required premise is unresolved; "
-                    "use a probable answer or resolve the limitation first.",
+                    "answer_basis_required",
+                    "Provide an inspected source premise, scoped search account or explicit "
+                    "limitation. Explain the answer using the complete official guidance; "
+                    "the server verifies provenance and structure, not semantic sufficiency.",
                 )
             )
         answer["bases"] = bases
@@ -3655,18 +3082,7 @@ def _domain_question_cards(
                 )
             ),
             "activation": item.activation.model_dump(mode="json"),
-            "official_guidance": item.guidance.official.source_excerpt,
-            "source_locator": item.guidance.official.source_locator,
-            "bias_construct": item.guidance.operational.bias_construct,
-            "decision_rule": item.guidance.operational.decision_rule,
-            "evidence_needed": item.guidance.operational.evidence_needed,
-            "no_information_rule": item.guidance.operational.no_information_rule,
-            "answer_anchors": tuple(
-                anchor.model_dump(mode="json")
-                for anchor in item.guidance.operational.answer_anchors
-            ),
-            "considerations": item.guidance.operational.considerations,
-            "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
+            "guidance_locator": item.guidance.official.source_locator,
             "query_suggestions": tuple(
                 suggestion.model_dump(mode="json")
                 for suggestion in item.guidance.operational.query_suggestions
@@ -4432,10 +3848,8 @@ def get_domain_context(
             ),
             *_DOMAIN_GUIDANCE,
         ],
-        "response_framework": _RESPONSE_FRAMEWORK.model_dump(mode="json"),
         "traps": [
             "A no-hit search describes one lexical query, not scientific absence.",
-            *_DOMAIN_TRAPS,
         ],
         "questions": _domain_question_cards(domain_id, active, checkpoint_identity),
         "completion_rule": (

@@ -1,16 +1,12 @@
 # Assess selection of the reported result
 
 Use this reference for Domain 5. The approved Result is fixed; do not switch to
-an easier endpoint. The returned question cards are authoritative.
+an easier endpoint. Read the complete official Box 11 elaborations, shared response semantics and
+sections 8.1–8.3 in `get_domain_context`. They supply the scientific interpretation,
+including review-defined eligible alternatives; the instructions below guide
+source acquisition, navigation and recording.
 
 ## Establish the analysis plan
-
-Identify the exact planned intervention comparison, cohort, outcome measurement,
-definition, time point or window, population, analysis, and effect measure.
-Establish that the plan was finalized
-before unblinded outcome data were available, or that later changes were
-unrelated to the results. Then compare the plan with the approved reported
-Result.
 
 A missing protocol/SAP in this captured dossier does not show publication
 unavailability. Prospective intake can opt into official registry-linked document
@@ -64,31 +60,10 @@ update. Current registry content does not establish unseen historical intent.
 A data cutoff or database lock does not by itself establish when investigators
 could access unblinded outcomes.
 
-Paired chronology example: one Source locates SAP finalization on 1 June and
-actual access to unblinded outcome data on 1 July; another gives protocol
-approval and registry posting dates of 1 June, with an analysis section added
-later, but does not date plan finalization or investigators' access to unblinded
-outcomes. Preserve the second chronology as unknown. Posting, approval,
-amendment, retrieval, data cutoff, and database lock do not fill in a missing
-access date.
-
-The selected plan passage establishes plan content. For 5.1, use the returned
-question card's proposition, answer directions, probable-inference allowance,
-uncertainty rule, and treatment of later changes unrelated to results. This
-reference guides source investigation; it does not add a competing decision rule.
-Compare the applicable plan's content with what was actually done. Keep content,
-applicability, finalization, and unblinded access as separate premises. For a
-platform trial, establish the intervention comparison and cohort. An embedded
-SAP may supply the relevant passages; a registry identifier or report-level
-prespecification label alone does not resolve those premises.
-
-A protocol commitment to finish or amend a SAP before unblinding states an
-intended safeguard, not that the safeguard was carried out. Compare the actual
-plan version and reported analysis with evidence about conduct. If matching
-content and trial circumstances support timing only by inference, use the
-question card's probable answer and state the unresolved timing; do not turn
-future-tense intent into a definitive chronology fact. Exact timestamps are not
-required for a supported probable inference.
+Compare source-located plan content with the reported analysis. Retain
+applicability, finalization, amendments and access to unblinded outcome data as
+separate recorded premises. Apply the complete official question guidance to
+these premises; do not add a mandatory timestamp or documentation gate.
 
 If the plan is unavailable after bounded source-specific discovery, record that
 information limit. Missing plans do not prove selective reporting.
@@ -121,64 +96,7 @@ adequate captured Evidence; no additional search is needed just to add a citatio
 A method description can support what was analysed without establishing that all
 estimates were fully reported. Keep inference and remaining uncertainty explicit.
 
-## Separate the two selection mechanisms
-
-The approved Result remains the target being assessed; it does not define the
-eligible alternative set retrospectively. Define that set from the review's
-prespecified outcome-domain criteria or hierarchy, independently of the published
-choice (Cochrane sections 8.1–8.1.2, pp. 58–60; Box 11, pp. 63–65). Eligible
-measurements may differ in scale, definition or time point; eligible analyses may
-use final values, change scores, ANCOVA, different covariates or missing-data
-strategies. Do not freeze these alternatives to the selected measurement/analysis.
-Conversely, if only one scale or a prespecified final-value analysis is eligible
-and is reported, choosing it over an ineligible alternative does not itself bias
-that eligible result. Missing review criteria leave eligibility unresolved; do not
-invent a restriction or expand eligibility merely because an alternative exists.
-
-Distinguish the outcome domain (the state or endpoint of interest) from its
-measurement and analysis. Non-reporting of a separate domain, such as anxiety
-when assessing a reported depression result, concerns review-level reporting bias;
-it does not by itself establish selection bias in this reported Result. Alternative
-depression scales or analyses within the eligible depression domain require the
-separate appraisal below. This distinction does not dismiss selection when it is
-supported within the approved Result's domain.
-
-For eligible outcome measurements, compare alternative scales, definitions,
-thresholds, time points, or assessors. Ask whether only a subset was fully
-reported and whether selection was likely based on the results.
-
-For eligible analyses, compare alternative adjustment sets, transformations,
-models, composite definitions, censoring rules, missing-data methods,
-populations, or effect estimates. Apply the same selection question separately.
-
-For 5.3, identify both the eligible alternatives and evidence that reporting
-favoured a subset because of its results. Reporting ITT, per-protocol, imputed,
-and survival analyses together establishes multiplicity, not that selection
-occurred. An inability to rule out selection does not support Yes/Probably Yes.
-When intentions are insufficiently detailed and multiple analyses were possible,
-use No information unless other evidence resolves the selection question.
-
-A detailed reported endpoint or estimate proves neither prespecification nor the
-absence of alternatives. For multiple eligible analyses, reporting adjusted,
-unadjusted, complete-case, imputed, or survival analyses establishes
-multiplicity, not result-driven selection. For a non-exact Result, compare the
-exact approved definition and relation rationale with the plan; do not silently
-assess a more convenient planned endpoint. Preserve Low, Some concerns, High,
-or legitimate No information according to the evidence path rather than forcing
-a severity category when applicability or chronology is unresolved.
-
-## Paired premise check
-
-Contrast an applicable SAP that names the exact comparison and cohort with a
-platform plan that names a different phase or cohort. For result-based selection,
-keep the three eligible analyses, the analyses conducted, and the single reported
-analysis fixed in both examples. In one, dated correspondence before unblinded
-results documents the reporting plan; in the other, dated minutes after access
-state that the reported analysis was chosen because its estimate was favorable
-and the other analyses were withheld. The changed premise is applicability,
-chronology, or result dependence; document availability, dates, and the existence
-of eligible alternatives do not answer the selection question by themselves.
-
+## Add an explicitly referenced companion Source
 
 For an explicit protocol/SAP DOI or public PDF reference found during an approved
 open Trial, call `acquire_companion_source(reference={...}, expected_revision=...)`.

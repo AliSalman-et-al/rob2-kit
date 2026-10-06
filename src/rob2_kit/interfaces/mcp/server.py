@@ -109,6 +109,7 @@ from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.interfaces.mcp.contracts import PublicCompanionReference
 from rob2_kit.models import canonical_json_bytes
+from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import (
     CumulativeConcernsAssessment,
     DomainAdjudication,
@@ -377,7 +378,13 @@ _DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
 _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
 _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES = 64
-_DOMAIN_CONTEXT_PAGE_SECTIONS = ("primary_report", "questions", "evidence", "comparison_cards")
+_DOMAIN_CONTEXT_PAGE_SECTIONS = (
+    "primary_report",
+    "questions",
+    "official_guidance",
+    "evidence",
+    "comparison_cards",
+)
 _REVIEW_TRIAL_RESPONSE_BYTES = 24_000
 _REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES = 256
 _REVIEW_PREVIEW_TEXT_CHARS = 220
@@ -419,7 +426,6 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "comparison_cards",
             "answers",
             "guidance",
-            "response_framework",
             "traps",
             "completion_rule",
             "working_checkpoint",
@@ -501,6 +507,21 @@ def _domain_context_cursor(payload: dict[str, Any]) -> str:
         return f"dcp2.{view_id}.{page_index}"
     encoded = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return "dcp1." + base64.urlsafe_b64encode(encoded).decode("ascii").rstrip("=")
+
+
+def _current_domain_context_view(view: dict[str, Any]) -> bool:
+    """Old presentation snapshots stay preserved but cannot use this schema."""
+    snapshot = view.get("snapshot")
+    data = snapshot.get("data") if isinstance(snapshot, dict) else None
+    if not isinstance(data, dict):
+        return False
+    pack = data.get("pack")
+    return (
+        isinstance(pack, dict)
+        and pack.get("content_hash") == SCIENTIFIC_PACK.content_hash
+        and "response_framework" not in data
+        and "guidance_profile" not in data
+    )
 
 
 def _domain_context_digest(data: dict[str, Any]) -> str:
@@ -1266,6 +1287,7 @@ def _enrich_response_head(
             delivery = _domain_context_delivery(root, trial_id, domain_id, None)
             if (
                 delivery is not None
+                and _current_domain_context_view(delivery)
                 and not delivery.get("complete")
                 and isinstance(delivery.get("next_cursor"), str)
                 and delivery.get("preview_scope") is None
@@ -1339,12 +1361,23 @@ def _domain_context_page_data(
     section: str,
     items: list[dict[str, Any]],
     page: dict[str, Any],
+    official_pack: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     result = dict(data)
     for name in _DOMAIN_CONTEXT_PAGE_SECTIONS:
         if section == "complete":
             continue
-        if name == section:
+        if name == "official_guidance":
+            if name == section:
+                result[name] = {
+                    "pack": official_pack,
+                    "sections": items,
+                    "complete": False,
+                    "next_cursor": page.get("next_cursor"),
+                }
+            else:
+                result.pop(name, None)
+        elif name == section:
             result[name] = items
         elif result:
             result[name] = []
@@ -1420,8 +1453,12 @@ def _paginate_domain_context_transport(
     data_template = dict(data)
     for section in _DOMAIN_CONTEXT_PAGE_SECTIONS:
         items = data.get(section)
+        if section == "official_guidance":
+            items = items.get("sections") if isinstance(items, dict) else []
+            data_template.pop(section, None)
+        else:
+            data_template[section] = []
         full_sections[section] = items if isinstance(items, list) else []
-        data_template[section] = []
 
     # Leave room for page metadata and the opaque cursor in the structured
     # envelope. Items remain indivisible.
@@ -1596,6 +1633,7 @@ def _paginate_domain_context_transport(
                         "cursor": cursor_placeholder,
                         "next_cursor": cursor_placeholder,
                     },
+                    data.get("pack"),
                 )
                 probe_value = {**value, "data": probe}
                 if _domain_context_transport_bytes(probe_value) <= working_budget:
@@ -1676,7 +1714,11 @@ def _paginate_domain_context_transport(
     paged = {
         **value,
         "data": _domain_context_page_data(
-            _domain_context_page_template(data_template, page_index), section, items, page
+            _domain_context_page_template(data_template, page_index),
+            section,
+            items,
+            page,
+            data.get("pack"),
         ),
     }
     if next_cursor is not None:
@@ -2630,7 +2672,8 @@ def get_status(
         "material premise records. A premise record keeps its proposition, source-located "
         "observations and counterevidence, host tentative inference, unresolved component, next "
         "discriminating action, and stopping rationale separate. "
-        "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
+        "Each note carries its locations inside a sources array (not flat note coordinates). "
+        "Cite exact source page and line ranges, or 0,0 for a whole-page visual "
         "locator. Optional note scope preserves Result relation, groups, stage, window, "
         "population, "
         "method, reported/inferred meaning and uncertainty; it is a host interpretation. "
@@ -2645,7 +2688,7 @@ def get_status(
         "main-report identity, set main_report_source_id to a Source handle cited by an "
         "observation, "
         "or set it to 'missing' with a source-backed explanation. Saving replaces the prior "
-        "checkpoint for this Trial. Experimental result_account replaces overlapping notes, "
+        "checkpoint for this Trial. Optional result_account replaces overlapping notes, "
         "premises and drafts with source-linked steps in producing the selected Result. It feeds "
         "optional existing count rows into Domain flow context before judgments. Recover returned "
         "step identities with get_status. Facts, counterevidence and unknowns remain "
@@ -4108,8 +4151,8 @@ class ProposalApprovalDecision(StrictModel):
     name="request_proposal_approval",
     title="Request Proposal approval",
     description=(
-        "After the researcher explicitly approves the current Proposal Review in conversation, "
-        "present that exact immutable Review, obtain explicit approval, then call "
+        "Present the exact immutable Proposal Review and obtain the researcher’s explicit "
+        "approval in conversation. Then call "
         "request_proposal_approval with {} to "
         "record the approval through elicitation. Call get_status after the approval succeeds. "
         "This tool has no approval arguments: only a directly accepted elicitation with "
@@ -4403,6 +4446,20 @@ def get_domain_context(
     if cursor_scope is not None and isinstance(cursor_scope.get("view_id"), str):
         view = _domain_context_view(_root(_workspace()), cursor_scope["view_id"])
         if view is not None:
+            if not _current_domain_context_view(view):
+                return _content(
+                    "get_domain_context",
+                    {
+                        "outcome": "condition",
+                        "code": "domain_context_cursor_stale",
+                        "condition": (
+                            "This preserved view uses an earlier scientific pack or context "
+                            "presentation. Restart get_domain_context without a cursor for "
+                            "the current Trial and Domain, and complete the new page chain. "
+                            "The historical snapshot and canonical records remain preserved."
+                        ),
+                    },
+                )
             cursor_scope = {**view, "page_index": cursor_scope["page_index"]}
         else:
             return _content(
@@ -4477,10 +4534,12 @@ def get_domain_context(
         "Optional bases[].working_observation accepts {text, scope?}; the server captures "
         "the cited Evidence locator without a working checkpoint. Existing checkpoint links "
         "remain available for resumed notes. Scope is host asserted and cannot decide an answer. "
-        "For an experimental upstream result_account, working_observation may reference "
+        "For an optional result_account, working_observation may reference "
         "{step_identity, transfer?}; the server snapshots that unchanged factual step. A known "
-        "different source scope requires an inference role and explicit transfer. "
-        "Submit only the active answer path. "
+        "different source scope requires an explicit rationale for its relevant use as "
+        "context, contradiction, or inference; preserve the original scope. "
+        "Submit the complete active answer path. Valid inactive answers are ignored "
+        "and never committed. "
         "For a correction, supply the exact "
         "prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair "
         "revision basis. The server checks structure, references, activation, and workflow rules; "

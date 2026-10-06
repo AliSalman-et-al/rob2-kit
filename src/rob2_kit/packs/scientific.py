@@ -1,6 +1,8 @@
 # ruff: noqa: E501
 """Independently transcribed RoB 2 parallel-assignment question pack."""
 
+import json
+from pathlib import Path
 from typing import Literal
 
 from rob2_kit.models import (
@@ -9,12 +11,13 @@ from rob2_kit.models import (
     Answer,
     ConditionalActivation,
     Domain,
+    OfficialDomainGuidance,
     OfficialQuestionGuidance,
-    OperationalQuestionGuidance,
     Provenance,
     QuerySuggestion,
     Question,
     QuestionGuidance,
+    QuestionNavigation,
     ScientificPack,
     sha256,
 )
@@ -45,689 +48,33 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
-_OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.15"
-_OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
-
-_OFFICIAL_ELABORATIONS = {
-    "Full guidance p. 17, Box 4, signalling question 1.1": "Answer ‘Yes’ if a random component was used in the sequence generation process. Examples include computer-generated random numbers; reference to a random number table; coin tossing; shuffling cards or envelopes; throwing dice; or drawing lots. Minimization is generally implemented with a random element (at least when the scores are equal), so an allocation sequence that is generated using minimization should generally be considered to be random. Answer ‘No’ if no random element was used in generating the allocation sequence or the sequence is predictable. Examples include alternation; methods based on dates (of birth or admission); patient record numbers; allocation decisions made by clinicians or participants; allocation based on the availability of the intervention; or any other systematic or haphazard method. Answer ‘No information’ if the only information about randomization methods is a statement that the study is randomized. In some situations a judgement may be made to answer ‘Probably no’ or ‘Probably yes’. For example, , in the context of a large trial run by an experienced clinical trials unit, absence of specific information about generation of the randomization sequence, in a paper published in a journal with rigorously enforced word count limits, is likely to result in a response of ‘Probably yes’ rather than ‘No information’. Alternatively, if other (contemporary) trials by the same investigator team have clearly used non-random sequences, it might be reasonable to assume that the current study was done using similar methods.",
-    "Full guidance p. 17, Box 4, signalling question 1.2": "Answer ‘Yes’ if the trial used any form of remote or centrally administered method to allocate interventions to participants, where the process of allocation is controlled by an external unit or organization, independent of the enrolment personnel. Answer ‘Yes’ if envelopes or drug containers were used appropriately. Answer ‘No’ if there is reason to suspect that the enrolling investigator or the participant had knowledge of the forthcoming allocation.",
-    "Full guidance pp. 17-18, Box 4, signalling question 1.3": "Note that differences that are compatible with chance do not lead to a risk of bias. Answer ‘No’ if no imbalances are apparent or if any observed imbalances are compatible with chance. Answer ‘Yes’ if there are imbalances that indicate problems with the randomization process, including substantial differences between intervention group sizes, a substantial excess in statistically significant differences beyond that expected by chance, or imbalance in one or more key prognostic factors very unlikely to be due to chance. Answer ‘No information’ when there is no useful baseline information available.",
-    "Full guidance p. 28, Box 6, signalling question 2.1": "If participants are aware of their assigned intervention it is more likely that health-related behaviours will differ between the intervention groups. Blinding participants, most commonly through use of a placebo or sham intervention, may prevent such differences. If participants experienced side effects or toxicities that they knew to be specific to one of the interventions, answer this question ‘Yes’ or ‘Probably yes’.",
-    "Full guidance p. 28, Box 6, signalling question 2.2": "If carers or people delivering the interventions are aware of the assigned intervention then its implementation, or administration of non-protocol interventions, may differ between the intervention groups. Blinding may prevent such differences. If randomized allocation was not concealed, then it is likely that carers and people delivering the interventions were aware of participants’ assigned intervention during the trial.",
-    "Full guidance p. 28, Box 6, signalling question 2.3": "Answer ‘Yes’ or ‘Probably yes’ only if there is evidence, or strong reason to believe, that the trial context led to failure to implement the protocol interventions or to implementation of interventions not allowed by the protocol. Answer ‘No’ or ‘Probably no’ if there were changes from assigned intervention that are inconsistent with the trial protocol, such as non-adherence to intervention, but these are consistent with what could occur outside the trial context. The answer ‘No information’ may be appropriate.",
-    "Full guidance p. 28, Box 6, signalling question 2.4": "Changes from assigned intervention that are inconsistent with the trial protocol and arose because of the trial context will impact on the intervention effect estimate if they affect the outcome, but not otherwise.",
-    "Full guidance p. 29, Box 6, signalling question 2.5": "Changes from assigned intervention that are inconsistent with the trial protocol and arose because of the trial context are more likely to impact on intervention effect estimate if they are not balanced between the intervention groups.",
-    "Full guidance p. 29, Box 6, signalling question 2.6": "Both intention-to-treat (ITT) analyses and modified intention-to-treat (mITT) analyses excluding participants with missing outcome data should be considered appropriate. Both naïve ‘per-protocol’ analyses and ‘as treated’ analyses should be considered inappropriate. Analyses excluding eligible trial participants post-randomization should also be considered inappropriate.",
-    "Full guidance p. 29, Box 6, signalling question 2.7": "This question addresses whether the number of participants who were analysed in the wrong intervention group, or excluded from the analysis, was sufficient that there could have been a substantial impact on the result. It is not possible to specify a precise rule: there may be potential for substantial impact even if fewer than 5% of participants were analysed in the wrong group or excluded, if the outcome is rare or if exclusions are strongly related to prognostic factors.",
-    "Full guidance p. 45, Box 8, signalling question 3.1": "‘Nearly all’ should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data.",
-    "Full guidance p. 45, Box 8, signalling question 3.2": "Evidence that the result was not biased by missing outcome data may come from: (1) analysis methods that correct for bias; or (2) sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data.",
-    "Full guidance p. 45, Box 8, signalling question 3.3": "If loss to follow up, or withdrawal from the study, could be related to participants’ health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low.",
-    "Full guidance pp. 45-46, Box 8, signalling question 3.4": "This question distinguishes between situations in which (i) missingness could depend on its true value and (ii) it is likely that missingness depended on its true value. Five reasons for answering ‘Yes’ are differences between intervention groups in the proportions of missing outcome data; reported reasons that provide evidence that missingness depends on its true value; reasons that differ between intervention groups; trial circumstances; and censoring when participants stop or change their assigned intervention.",
-    "Full guidance p. 54, Box 10, signalling question 4.1": "Answer ‘Yes’ or ‘Probably yes’ if the method of measuring the outcome is inappropriate, for example because it is unlikely to be sensitive to plausible intervention effects or the measurement instrument has been demonstrated to have poor validity.",
-    "Full guidance p. 54, Box 10, signalling question 4.2": "Comparable methods of outcome measurement involve the same measurement methods and thresholds, used at comparable time points. Differences between intervention groups may arise because of ‘diagnostic detection bias’ in the context of passive collection of outcome data, or if an intervention involves additional visits to a healthcare provider.",
-    "Full guidance p. 54, Box 10, signalling question 4.3": "Answer ‘No’ if outcome assessors were blinded to intervention status. For participant-reported outcomes, the outcome assessor is the study participant.",
-    "Full guidance p. 54, Box 10, signalling question 4.4": "Knowledge of the assigned intervention could influence participant-reported outcomes (such as level of pain), observer- reported outcomes involving some judgement, and intervention provider decision outcomes. They are unlikely to influence observer-reported outcomes that do not involve judgement, for example all-cause mortality.",
-    "Full guidance p. 54, Box 10, signalling question 4.5": "This question distinguishes between situations in which knowledge of intervention status could have influenced outcome assessment but there is no reason to believe that it did from those in which knowledge of intervention status was likely to influence outcome assessment. When there are strong levels of belief in either beneficial or harmful effects of the intervention, it is more likely that the outcome was influenced.",
-    "Full guidance p. 63, Box 11, signalling question 5.1": "To avoid the possibility of selection of the reported result, finalization of the analysis intentions must precede availability of unblinded outcome data to the trial investigators. Changes to analysis plans that were made before unblinded outcome data were available, or that were clearly unrelated to the results, do not raise concerns about bias in selection of the reported result.",
-    "Full guidance pp. 63-64, Box 11, signalling question 5.2": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a domain was measured in multiple eligible ways, but data for only one or a subset of measures is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome domain could have been measured.",
-    "Full guidance pp. 64-65, Box 11, signalling question 5.3": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a measurement was analysed in multiple eligible ways, but data for only one or a subset of analyses is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome measurement could have been analysed.",
-}
-
-
-def _anchor(answer: Answer, text: str) -> tuple[Answer, str]:
-    return answer, text
-
-
-def _guidance(
-    locator: str,
-    bias_construct: str,
-    decision_rule: str,
-    evidence_needed: tuple[str, ...],
-    no_information_rule: str,
-    anchors: tuple[tuple[Answer, str], ...],
-    considerations: tuple[str, ...],
-    invalid_shortcuts: tuple[str, ...],
-) -> QuestionGuidance:
-    return QuestionGuidance(
-        official=OfficialQuestionGuidance(
-            version=_GUIDANCE_VERSION,
-            source_locator=locator,
-            source_sha256=_GUIDANCE_SOURCE_SHA256,
-            source_excerpt=_OFFICIAL_ELABORATIONS[locator],
-        ),
-        operational=OperationalQuestionGuidance(
-            id=_OPERATIONAL_GUIDANCE_ID,
-            version=_OPERATIONAL_GUIDANCE_VERSION,
-            attribution=_OPERATIONAL_ATTRIBUTION,
-            bias_construct=bias_construct,
-            decision_rule=decision_rule,
-            evidence_needed=evidence_needed,
-            no_information_rule=no_information_rule,
-            answer_anchors=tuple({"answer": answer, "text": text} for answer, text in anchors),
-            considerations=considerations,
-            invalid_shortcuts=invalid_shortcuts,
-        ),
-    )
-
-
-_GUIDANCE: dict[str, QuestionGuidance] = {
-    "sq:randomization:sequence": _guidance(
-        "Full guidance p. 17, Box 4, signalling question 1.1",
-        "Whether a random component was used to generate the allocation sequence.",
-        "Answer yes when a random component was used; answer no when no random element was used or the sequence is predictable. When only a randomized label is reported, use the response framework to judge whether trial circumstances support a probable answer.",
-        (
-            "The sequence-generation method, such as computer random numbers, a random number table, coin tossing, or minimization with a random element.",
-        ),
-        "Use no_information only when reported methods and trial circumstances do not support a reasonable probable judgment. Do not turn missing reporting into proof that the sequence was non-random.",
-        (
-            _anchor(Answer.YES, "A random component was used in sequence generation."),
-            _anchor(Answer.NO, "No random element was used, or the sequence was predictable."),
-            _anchor(
-                Answer.NO_INFORMATION,
-                "Only a randomized label is reported and trial circumstances do not support a reasonable probable judgment.",
-            ),
-        ),
-        (
-            "Minimization should generally be considered random; documented use of no random element or a predictable sequence is different evidence.",
-            "Sequence generation asks how the allocation sequence was produced; concealment asks whether forthcoming assignments were hidden before enrolment and assignment; baseline imbalance asks whether the resulting groups suggest a randomization problem. Evidence for one does not answer the others.",
-            "The baseline-imbalance answer must not change this answer.",
-            "Use the returned query suggestions or wording from the report to locate the sequence method. A truncated search does not establish that the method is absent.",
-        ),
-        (
-            "underwent randomization",
-            "was called randomized",
-            "had balanced groups",
-            "was centrally registered",
-        ),
-    ),
-    "sq:randomization:concealment": _guidance(
-        "Full guidance p. 17, Box 4, signalling question 1.2",
-        "Whether the allocation sequence was concealed until participants were enrolled and assigned.",
-        "Answer yes for remote or centrally administered allocation independent of enrolment personnel, or appropriately used opaque sequentially numbered sealed envelopes or identical sequentially numbered drug containers. Answer no when the enrolling investigator or participant could know the forthcoming allocation.",
-        (
-            "The method used before assignment and who controlled it; for envelopes or containers, capture the details that make them tamper-resistant and irreversible before assignment.",
-        ),
-        "Answer no_information when the report does not provide enough information to assess concealment; do not infer concealment from central registration or a sequence number alone.",
-        (
-            _anchor(
-                Answer.YES,
-                "Remote or central allocation was controlled by an independent external unit, or appropriate envelopes/containers were used.",
-            ),
-            _anchor(
-                Answer.NO,
-                "The enrolling investigator or participant had knowledge of the forthcoming allocation.",
-            ),
-        ),
-        (
-            "Allocation concealment concerns the process before assignment, not blinding after assignment.",
-            "Keep concealment separate from sequence generation (how the sequence was made) and baseline imbalance (what the randomized groups look like). A random sequence or balanced baseline table does not establish concealment.",
-            "The reported sequence-generation method does not establish concealment.",
-            "Use the returned query suggestions or wording from the report to locate the allocation safeguards. A truncated search does not establish that concealment details are absent.",
-        ),
-        (
-            "stratification",
-            "central registration",
-            "a numbered sequence",
-            "sealed envelopes without their safeguards",
-        ),
-    ),
-    "sq:randomization:baseline-imbalance": _guidance(
-        "Full guidance pp. 17-18, Box 4, signalling question 1.3",
-        "Whether baseline differences between intervention groups suggest a problem with randomization.",
-        "Answer no when no imbalance is apparent or observed differences are compatible with chance. Answer yes for substantial group-size differences, an excess of statistically significant baseline differences beyond chance, a key prognostic imbalance very unlikely due to chance and large enough to bias the estimate, or excessive similarity incompatible with chance.",
-        (
-            "Baseline characteristics for the randomized groups, intended allocation ratio, prognostic factors, and outcome baseline measures.",
-        ),
-        "Answer no_information when no useful baseline information is available, for example in an abstract or when only final-analysis participants are described.",
-        (
-            _anchor(
-                Answer.YES, "Baseline imbalance indicates a problem with the randomization process."
-            ),
-            _anchor(
-                Answer.NO,
-                "No imbalance is apparent or observed differences are compatible with chance.",
-            ),
-            _anchor(Answer.NO_INFORMATION, "No useful baseline information is available."),
-        ),
-        (
-            "A few statistically significant differences at the conventional 0.05 threshold are usually compatible with chance.",
-            "This is a question about baseline imbalance suggesting a randomization problem, not about how the sequence was generated or whether allocation was concealed. Do not use the baseline table to backfill either process question.",
-            "This answer must not alter answers about sequence generation or concealment.",
-        ),
-        (
-            "a baseline table header",
-            "balanced groups",
-            "statistical significance of one isolated comparison",
-            "an ITT analysis",
-        ),
-    ),
-    "sq:deviations:participants-aware": _guidance(
-        "Full guidance p. 28, Box 6, signalling question 2.1",
-        "Whether participants were aware of their assigned intervention during the trial.",
-        "Answer yes or probably yes when participants knew their assignment, including when intervention-specific side effects or toxicities revealed it. Blinding participants, commonly with placebo or sham intervention, may prevent such differences.",
-        (
-            "A direct report of participant blinding, open-label conduct, or participant knowledge during the trial.",
-        ),
-        "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
-        "an absent explicit awareness statement alone is insufficient when those facts support a probable judgment.",
-        (
-            _anchor(Answer.YES, "Participants were aware of their assigned intervention."),
-            _anchor(Answer.NO, "Participants were blinded to their assigned intervention."),
-        ),
-        (
-            "Awareness is about knowledge of assignment, not whether participants completed or received treatment.",
-        ),
-        ("completed treatment", "received the intervention", "was randomized"),
-    ),
-    "sq:deviations:personnel-aware": _guidance(
-        "Full guidance p. 28, Box 6, signalling question 2.2",
-        "Whether carers and people delivering interventions were aware of participants' assigned intervention.",
-        "Answer yes or probably yes when carers or intervention personnel knew assignment, including when participant side effects or toxicities revealed it. If randomized allocation was not concealed, awareness by carers and delivery personnel is likely.",
-        (
-            "A direct report of blinding or awareness by carers and people delivering the intervention, plus the allocation process when it bears on their awareness.",
-        ),
-        "Use no_information when awareness of carers or delivery personnel cannot be determined.",
-        (
-            _anchor(
-                Answer.YES, "Carers or intervention personnel were aware of assigned intervention."
-            ),
-            _anchor(
-                Answer.NO, "Carers or intervention personnel were blinded to assigned intervention."
-            ),
-        ),
-        ("Assess the people delivering interventions, not merely outcome assessors.",),
-        ("completed treatment", "received the intervention", "was randomized"),
-    ),
-    "sq:deviations:context-deviations": _guidance(
-        "Full guidance p. 28, Box 6, signalling question 2.3",
-        "Whether deviations inconsistent with protocol arose because of the trial context.",
-        "Answer yes or probably yes only after establishing both that the change was inconsistent with the protocol and that the trial context caused it; identify both premises in the justification. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context, protocol-consistent changes, and protocol-permitted subsequent care after progression.",
-        (
-            "Evidence linking the deviation to recruitment, engagement, or trial personnel and showing it was inconsistent with the protocol.",
-        ),
-        "Use no_information when reported details are insufficient and trial circumstances do not support a reasonable probable judgment about trial-context-caused deviations.",
-        (
-            _anchor(Answer.YES, "The trial context caused protocol-inconsistent deviations."),
-            _anchor(
-                Answer.NO, "No protocol-inconsistent deviation arose because of the trial context."
-            ),
-            _anchor(
-                Answer.NO_INFORMATION,
-                "Reported details and trial circumstances do not support a judgment about trial-context-caused deviations.",
-            ),
-        ),
-        (
-            "Side-effect-related compromised blinding counts only when resulting changes were protocol-inconsistent and context-caused.",
-            "Subsequent treatment, rescue treatment, or cross-over is not itself a deviation for the effect of assignment: establish both protocol inconsistency and a trial-context cause before answering affirmatively.",
-            "Neutral contrast: protocol-permitted rescue after progression is ordinary subsequent care; prohibited rescue encouraged by trial staff is a candidate trial-context deviation. Change only the protocol-consistency and cause premises before changing the reasoning.",
-        ),
-        (
-            "nonadherence alone",
-            "an ITT analysis",
-            "participants switched treatment",
-            "unequal post-progression treatment without evidence that it was prohibited and trial-context-caused",
-            "a protocol deviation without its cause",
-            "discontinuation or crossover without protocol and cause evidence",
-        ),
-    ),
-    "sq:deviations:affected-outcome": _guidance(
-        "Full guidance p. 28, Box 6, signalling question 2.4",
-        "Whether context-caused protocol-inconsistent deviations were likely to affect the outcome.",
-        "Answer yes or probably yes when the identified deviations were likely to affect the intervention effect estimate through this outcome; answer no or probably no when they were not likely to affect the outcome.",
-        (
-            "A direct link between the identified context-caused deviation and this outcome or its effect estimate.",
-        ),
-        "Use no_information when the effect of the identified deviations on the outcome cannot be determined.",
-        (
-            _anchor(Answer.YES, "The identified deviations were likely to affect the outcome."),
-            _anchor(Answer.NO, "The identified deviations were not likely to affect the outcome."),
-        ),
-        (
-            "This question concerns the deviations already identified in 2.3, not any non-adherence in isolation.",
-        ),
-        ("nonadherence alone", "an ITT analysis", "a deviation without outcome impact"),
-    ),
-    "sq:deviations:balanced": _guidance(
-        "Full guidance p. 29, Box 6, signalling question 2.5",
-        "Whether context-caused protocol-inconsistent deviations were balanced between intervention groups.",
-        "Answer yes or probably yes when the identified deviations were balanced between groups; answer no or probably no when they were not balanced.",
-        (
-            "Group-specific counts or descriptions of the identified deviations and their comparability between intervention groups.",
-        ),
-        "Use no_information when balance of the identified deviations cannot be determined.",
-        (
-            _anchor(
-                Answer.YES, "The identified deviations were balanced between intervention groups."
-            ),
-            _anchor(
-                Answer.NO,
-                "The identified deviations were not balanced between intervention groups.",
-            ),
-        ),
-        (
-            "Balance refers to the deviations identified in 2.3 and their potential effect, not to baseline group sizes.",
-        ),
-        ("equal randomized group sizes", "an ITT analysis", "absence of a reported problem"),
-    ),
-    "sq:deviations:appropriate-analysis": _guidance(
-        "Full guidance p. 29, Box 6, signalling question 2.6",
-        "Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the actual analysis population, grouping, reassignment, and exclusions, including their reasons; an ITT, modified ITT, or as-treated label alone does not establish this.",
-        "Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.",
-        (
-            "The actual analysis population and grouping rule: who was assigned, who was analysed in each group, who was excluded or reassigned after randomization, and why.",
-        ),
-        "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
-        "an incomplete analysis description alone is insufficient when those facts support a probable judgment "
-        "about appropriateness.",
-        (
-            _anchor(
-                Answer.YES,
-                "An ITT or appropriate modified ITT analysis estimated assignment effect.",
-            ),
-            _anchor(
-                Answer.NO,
-                "A naive per-protocol, as-treated, or inappropriate post-randomization exclusion analysis was used.",
-            ),
-        ),
-        (
-            "The question is about effect of assignment, so grouping must follow randomized assignment.",
-            "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
-            "Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.",
-            "Excluding participants solely because their outcome data are missing can be an appropriate modified ITT analysis for D2; assess the missing outcomes in D3. An eligible participant with an observed outcome omitted from the assignment analysis, or analysed in the wrong randomized group, is a distinct D2 concern. Record whether exclusions occurred before the endpoint was measured or after an outcome value was recorded, but timing alone does not establish availability or the exclusion reason. An observed value omitted from analysis is not thereby missing outcome data. An analyzed count below the randomized count alone does not establish inappropriate analysis; if the exclusion mechanism cannot support a reasonable probable judgment, retain no_information. When 2.6 is no, probably_no, or no_information, assess 2.7 conditionally: could the wrong-group analysis or exclusions substantially affect this Result if the assignment-analysis failure occurred? Keep uncertainty about the analysis mechanism explicit. Assess potential impact using the participants affected, reasons, outcome rarity, and prognostic relevance; demonstrated actual bias or a sensitivity analysis is not required, and no precise percentage rule applies.",
-        ),
-        (
-            "an endpoint definition",
-            "an ITT label without its population",
-            "a per-protocol label without the analysis population",
-        ),
-    ),
-    "sq:deviations:substantial-impact": _guidance(
-        "Full guidance p. 29, Box 6, signalling question 2.7",
-        "Whether failure to analyse participants in their randomized group could substantially affect the result.",
-        "Assess whether the number analysed in the wrong group or excluded was sufficient for substantial impact. There is no precise percentage rule: fewer than 5% may still matter for rare outcomes or exclusions strongly related to prognostic factors.",
-        (
-            "Counts and reasons for participants analysed in the wrong group or excluded, outcome rarity, and prognostic relevance of exclusions.",
-        ),
-        "Use no_information when the potential magnitude of impact cannot be assessed.",
-        (
-            _anchor(
-                Answer.YES,
-                "The wrong-group analysis or exclusions could substantially affect the result.",
-            ),
-            _anchor(
-                Answer.NO,
-                "The wrong-group analysis or exclusions could not substantially affect the result.",
-            ),
-        ),
-        (
-            "Carry the inappropriate or uncertain analysis mechanism from 2.6 into this conditional impact judgment. Explain how the affected participants or observations could change this selected estimate, considering their outcomes, prognostic differences and the analysis assumptions. A small component of a restriction does not settle the impact of other components.",
-            "Treatment stopping, unmeasured outcomes and measured values omitted by an analysis rule are different facts. Stopping alone establishes neither omission nor bias; a censoring rule alone does not establish how many measured values were omitted. Preserve uncertainty about actual availability and selection, including possible outcome-dependent loss.",
-            "A source-supported probable judgment is valid without a numerical bound, demonstrated bias or a sensitivity analysis. Explain why the restriction is plausibly important or negligible for this endpoint; a small or balanced count alone is insufficient. Low potential impact does not make an inappropriate analysis appropriate.",
-        ),
-        ("a small percentage alone", "an ITT analysis", "a group label without exclusion counts"),
-    ),
-    "sq:missing:data-available": _guidance(
-        "Full guidance p. 45, Box 8, signalling question 3.1",
-        "Whether outcome data were available for all or nearly all randomized participants.",
-        "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When exact extent cannot be determined directly, weigh outcome-specific follow-up accounting and other source-supported information for a probably yes or probably no judgment. If the extent remains unknown because that evidence does not support a reasonable inference, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
-        (
-            "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement. Outcome-specific observed/expected follow-up time can inform a probable judgment, but is not a participant-observation fraction; vital status alone does not ascertain nonfatal components. Explain what the evidence implies about missing outcomes for the approved estimate.",
-            "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
-            "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts.",
-        ),
-        "Answer no_information when neither direct nor indirect evidence supports a reasonable judgment about availability after bounded retrieval. Imprecise quantification alone does not require no_information. Lack of evidence for complete availability is not evidence of materially incomplete availability.",
-        (
-            _anchor(
-                Answer.YES,
-                "Outcome data were available for all or nearly all randomized participants.",
-            ),
-            _anchor(
-                Answer.NO,
-                "Outcome data were not available for all or nearly all randomized participants.",
-            ),
-            _anchor(
-                Answer.NO_INFORMATION,
-                "The report provides no information about the extent of missing outcome data.",
-            ),
-        ),
-        (
-            "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
-            "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
-            "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
-            "Where follow-up is incomplete, explain why the unobserved outcomes plausibly could or could not make an important difference to the approved estimate, rather than citing a small percentage alone. Relate the reported extent to the outcome event scale or variability and any known follow-up timing or reasons; retain what is unknown. For time-to-event estimates, event counts contextualize scale but do not by themselves mathematically bound the hazard ratio or its interval. A calibrated probable judgment can rest on nearly complete outcome accounting without exact censoring times or a formal sensitivity analysis. Missing reasons or timing alone do not require no_information; judge whether available circumstances support a reasonable inference.",
-        ),
-        (
-            "a complete-case analysis label",
-            "an ITT analysis",
-            "analysis denominators or ITT membership alone",
-            "planned or scheduled follow-up alone",
-            "treatment continuation or discontinuation alone",
-            "last-known-alive censoring alone",
-            "an event count treated as an observed-outcome count",
-            "an analysis denominator treated as an outcome denominator",
-            "a generic censoring rule without actual rates or follow-up accounting",
-            "imputed data counted as observed outcomes",
-        ),
-    ),
-    "sq:missing:evidence-unbiased": _guidance(
-        "Full guidance p. 45, Box 8, signalling question 3.2",
-        "Whether there is evidence that the result was not biased by missing outcome data.",
-        "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. A comparison that changes group attribution, such as ITT versus as-treated, does not test unobserved outcome values unless the source explicitly establishes that relationship. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias.",
-        (
-            "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses.",
-            "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support.",
-        ),
-        "No_information is not an allowed response to this question in the parallel-assignment pack. Answer no/probably no when inspected evidence does not establish protection from missing-data bias. No does not assert that bias occurred: retain source coverage limits and unknown missingness mechanisms. Ground the scoped negative answer in inspected Evidence or a valid scoped no-hit receipt; an unsupported limitation alone is insufficient.",
-        (
-            _anchor(
-                Answer.YES,
-                "A bias-correcting or informative sensitivity analysis indicates the result was not biased.",
-            ),
-            _anchor(
-                Answer.NO,
-                "The available evidence does not show that the result was free from missing-data bias.",
-            ),
-        ),
-        (
-            "Imputation alone is not evidence that missing outcome data did not bias the result.",
-            "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the missing outcomes.",
-            "This question permits complete ascertainment, mechanism-matched reassurance, and legitimate uncertainty. Do not apply a universal percentage threshold in place of a Result-specific impact judgment.",
-        ),
-        (
-            "an ITT analysis",
-            "last observation carried forward",
-            "multiple imputation based only on intervention group",
-        ),
-    ),
-    "sq:missing:true-value-dependent": _guidance(
-        "Full guidance p. 45, Box 8, signalling question 3.3",
-        "Whether missingness in the outcome could depend on its true value.",
-        "Answer yes or probably yes when loss to follow-up or withdrawal could relate to health status or outcome. Answer no or probably no when all missingness had documented reasons unrelated to outcome, such as a failed measuring device or interruption to routine data collection.",
-        (
-            "Reasons for missingness and their relationship to participants' health status or true outcome, including censoring and treatment switching in time-to-event analyses.",
-        ),
-        "Use no_information when the reasons for missingness do not permit assessment of dependence on the true value.",
-        (
-            _anchor(Answer.YES, "Missingness could depend on the true outcome value."),
-            _anchor(Answer.NO, "Documented missingness reasons are unrelated to the outcome."),
-        ),
-        (
-            "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness.",
-            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. Treatment discontinuation is not loss to follow-up when outcome ascertainment continues; stopping treatment or an analysis label alone does not establish whether the outcome was observed. Last-known-alive censoring is not by itself evidence that observation stopped. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
-            "Withdrawal or censoring after worsening health or symptoms can support possible dependence on the outcome value when the source links the reason to that participant's outcome; stopping treatment without that follow-up loss does not.",
-        ),
-        (
-            "complete follow-up claims",
-            "an ITT analysis",
-            "a reason for withdrawal without its relation to outcome",
-        ),
-    ),
-    "sq:missing:likely-dependent": _guidance(
-        "Full guidance pp. 45-46, Box 8, signalling question 3.4",
-        "Whether missingness that could depend on true value likely depended on it.",
-        "Consider differences in missingness or censoring rates, reasons that depend on true value, reasons differing between groups, trial circumstances, and censoring after stopping or changing intervention. Answer no when analysis accounted for participant characteristics likely to explain the relationship.",
-        (
-            "Group-specific missingness or censoring, reasons for missingness, trial circumstances, and any analysis accounting for relevant participant characteristics.",
-        ),
-        "Use no_information when likelihood of dependence on true value cannot be judged from the available evidence.",
-        (
-            _anchor(Answer.YES, "Missingness likely depended on the true outcome value."),
-            _anchor(
-                Answer.NO,
-                "The analysis accounted for characteristics explaining the relationship, or dependence was not likely.",
-            ),
-        ),
-        (
-            "Possible dependence in 3.3 does not establish likely dependence in 3.4. Weigh evidence for and against likelihood from missingness reasons and trial circumstances, including comparable outcome follow-up and continued ascertainment after treatment stopping. Such contextual counterevidence is not proof of non-informative censoring; absence of precise reasons or timing alone does not require no_information, and absent contrary evidence alone does not establish likelihood.",
-            "Keep the stages distinct: observed outcome data and follow-up availability describe what was obtained; 3.3 asks whether missingness could depend on the true value; 3.4 asks whether that dependence was likely. Do not promote possible dependence to likely dependence without supporting evidence.",
-            "Full guidance section 6.1, p. 39 distinguishes genuinely missing measurements (D3) from available outcomes deliberately excluded from analysis (D2). Outcome-driven rescue, switching, or post-change analysis exclusion does not by itself establish non-observation; scheduled collection does not establish observation either. Link the outcome-related reason to actual missing measurements or missing follow-up before treating it as a D3 mechanism. If that link is unknown, retain it as an unresolved premise rather than assigning analysis exclusions to missingness.",
-            "Paired control: after the same outcome-driven treatment change, endpoint measurements collected but omitted from analysis raise an assignment-analysis concern in D2; measurements not obtained require D3 appraisal. If collection is only planned or unspecified, observed availability remains unknown. Differences in rescue rates alone are not differences in missing-outcome rates. Compare post-change handling with the approved assignment target; matching endpoint and time point alone does not establish the same estimand.",
-        ),
-        ("different group sizes alone", "an ITT analysis", "a generic loss-to-follow-up statement"),
-    ),
-    "sq:measurement:method-inappropriate": _guidance(
-        "Full guidance p. 54, Box 10, signalling question 4.1",
-        "Whether the method of measuring the outcome was inappropriate for the outcome, including validity and sensitivity to plausible intervention effects.",
-        "Answer yes or probably yes when the method is unlikely to be sensitive to plausible intervention effects or the instrument has demonstrated poor validity. Validity and sensitivity are distinct from detection opportunity, assessor identity or awareness, and whether knowledge influenced assessment. Do not assess whether choosing the outcome itself was sensible.",
-        (
-            "The measurement method's sensitivity to plausible effects and evidence of instrument validity for this outcome.",
-            "For a mixed objective and subjective composite, inspect component-specific measurement methods and their relative frequency or contribution to the approved composite. Cochrane section 7.1 p. 52 directs the risk assessment to take account of the most influential components; an objective component does not establish validity for a subjective component, and a subjective component alone does not determine the composite judgment.",
-        ),
-        "Use no_information when appropriateness of the measurement method cannot be determined.",
-        (
-            _anchor(
-                Answer.YES,
-                "The measurement method is unsuitable, insensitive, or poorly valid for this outcome.",
-            ),
-            _anchor(Answer.NO, "The measurement method is appropriate for this outcome."),
-        ),
-        (
-            "For pre-specified outcomes the answer will usually be no or probably no.",
-            "Measurement susceptibility concerns whether the method can validly and sensitively measure this outcome. It is distinct from assessor awareness, detection opportunity, and whether knowledge of intervention likely influenced assessment.",
-            "A standardized instrument can still involve judgment in elicitation, attribution, grading, or assessment. Preserve component-specific Evidence and uncertainty for mixed objective and subjective components.",
-        ),
-        (
-            "a surrogate or proxy label",
-            "an endpoint definition",
-            "a statistically significant result",
-        ),
-    ),
-    "sq:measurement:differential": _guidance(
-        "Full guidance p. 54, Box 10, signalling question 4.2",
-        "Whether measurement or ascertainment of the outcome could have differed between intervention groups.",
-        "Comparable measurement uses the same methods and thresholds at comparable time points. Consider diagnostic detection bias from passive collection and additional healthcare visits caused by an intervention, but identify the pathway by which a different detection opportunity could change ascertainment before judging its severity.",
-        (
-            "Methods, thresholds, timing, and opportunities for outcome ascertainment in each intervention group, plus the pathway connecting any opportunity difference to differential detection.",
-        ),
-        "Use no_information when comparability of measurement or ascertainment cannot be assessed.",
-        (
-            _anchor(
-                Answer.YES, "Measurement or ascertainment could differ between intervention groups."
-            ),
-            _anchor(
-                Answer.NO,
-                "The same comparable measurement or ascertainment was used between groups.",
-            ),
-        ),
-        (
-            "Compare actual methods and detection opportunities. Assessor awareness or possible reporting influence alone does not establish a between-group method difference; assess awareness and influence in 4.3 to 4.5.",
-            "Detection opportunity is the chance an outcome could be identified or recorded, including passive ascertainment or intervention-related visits. Keep it separate from measurement susceptibility (4.1) and from who knew the assignment (4.3).",
-            "A different visit schedule or passive collection is not enough on its own: explain how it could make the approved outcome more or less likely to be detected in one group.",
-            "Tie every monitoring difference to the approved event. Extra visits for toxicity monitoring do not establish differential measurement of mortality when death is captured through the same complete registry in both groups; those same visits may change detection of a lab-detected toxicity measured at those visits. State any mortality-specific pathway if one is supported.",
-            "For adverse events, compare the actual start and end of the AE observation window, visit schedule, post-treatment follow-up, and ascertainment method with the approved safety window. Treatment duration, median progression-free survival, or a treatment-emergent label alone does not establish when or how adverse events were observed.",
-            "Neutral paired control: equal ascertainment schedules and intervention-created additional visits differ only in detection opportunity; do not turn that contrast into an automatic risk label.",
-        ),
-        ("a common endpoint label", "an equal number randomized", "an ITT analysis"),
-    ),
-    "sq:measurement:assessor-aware": _guidance(
-        "Full guidance p. 54, Box 10, signalling question 4.3",
-        "Whether outcome assessors were aware of the intervention received, when 4.1 and 4.2 are not yes/probably yes. Identify the assessor's identity and role: who determines the approved outcome at the relevant time point, not merely who records it.",
-        "Answer no when the outcome assessor was blinded to intervention status. For participant-reported outcomes, the participant is the outcome assessor, so participant blinding can determine this answer. This question is applicable only after the stated activation conditions.",
-        ("Who assessed the outcome and whether that assessor was blinded to intervention status.",),
-        "Use no_information when assessor awareness cannot be determined; do not infer blinding from an objective endpoint or from blinding elsewhere in the trial.",
-        (
-            _anchor(Answer.NO, "Outcome assessors were blinded to intervention status."),
-            _anchor(Answer.YES, "Outcome assessors knew the intervention received."),
-        ),
-        (
-            "The assessor can be a participant, intervention provider, or independent observer. For intervention-provider decision outcomes such as hospitalization, discharge or stopping ventilation, the outcome assessor is the care provider making that decision (Cochrane section 7.1 pp. 51-52). Identify that decision maker separately from a committee later classifying or confirming the recorded event; committee blinding or consensus does not establish the decision maker's blinding.",
-            "This asks only whether the relevant assessor knew assignment. It does not establish that the measurement was susceptible to bias, that detection opportunities differed, or that knowledge likely changed the assessment; those are separate questions.",
-            "Unknown assessor identity or awareness does not prevent conditional reasoning about whether the measurement could be influenced if awareness existed.",
-        ),
-        (
-            "an objective endpoint",
-            "a blinded statistician",
-            "participant completion of treatment",
-            "participant blinding without identifying the outcome assessor",
-        ),
-    ),
-    "sq:measurement:influence-possible": _guidance(
-        "Full guidance p. 54, Box 10, signalling question 4.4",
-        "Whether assessment could have been influenced by knowledge of intervention received. Keep assessor awareness separate from the mechanism by which awareness could change a judgement.",
-        "Knowledge could influence participant-reported outcomes, observer-reported outcomes involving judgement, and intervention-provider decisions; it is unlikely to influence observer-reported outcomes without judgement, such as all-cause mortality. A standardized instrument does not remove judgment from elicitation, attribution, grading, or assessment.",
-        (
-            "Outcome type, assessor role, degree of judgement, and whether knowledge of assignment could change assessment.",
-        ),
-        "Use no_information when possible influence cannot be determined; this question is conditional on awareness in 4.3.",
-        (
-            _anchor(Answer.YES, "Knowledge of intervention could influence assessment."),
-            _anchor(
-                Answer.NO,
-                "The outcome assessment was unlikely to be influenced by knowledge of intervention.",
-            ),
-        ),
-        (
-            "Assess whether knowledge could influence this outcome. Evidence that influence actually occurred belongs to 4.5; its absence does not resolve 4.4.",
-            "Possible influence requires a judgement or reporting pathway through which assessor awareness could matter. Awareness alone is not a measurement difference, and a susceptible outcome does not by itself show that influence was possible in this assessment.",
-            "When a composite mixes objective and subjective components, assess each component's pathway separately, then consider its relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Retain component-specific uncertainty and uncertainty about contributions when the sources do not resolve them; do not automatically transfer possible influence on any subjective component to the whole composite.",
-        ),
-        (
-            "an objective endpoint label",
-            "assessor awareness without outcome type",
-            "participant blinding without identifying the outcome assessor",
-        ),
-    ),
-    "sq:measurement:influence-likely": _guidance(
-        "Full guidance p. 54, Box 10, signalling question 4.5",
-        "Whether knowledge of intervention likely influenced outcome assessment. Assess conscious and subconscious interests and expectations using the assessor, comparator, assessment setting and timing; awareness alone does not establish likely influence.",
-        "Distinguish possible influence without reason to believe it occurred from likely influence. Strong beliefs about benefits or harms make influence more likely, for example patient-reported symptoms or recovery assessed by an intervention provider. A standardized scale or grading rule does not by itself remove an elicitation, attribution, grading, or assessment pathway.",
-        (
-            "Source-supported circumstances bearing on likelihood: comparator, assessor involvement in care, interview or reporting setting, assessment timing, and any evidence of actual influence or strong beliefs. Direct proof of changed ratings or documented strong beliefs is not required for a probable judgment.",
-        ),
-        "Use no_information when likelihood of influence cannot be judged; this question is conditional on possible influence in 4.4.",
-        (
-            _anchor(Answer.YES, "Knowledge of intervention likely influenced assessment."),
-            _anchor(
-                Answer.NO,
-                "Knowledge could have influenced assessment but it was not likely to do so.",
-            ),
-        ),
-        (
-            "Possible influence without reason to believe it occurred maps differently from likely influence.",
-            "Weigh reasons for and against likely influence, including subconscious expectations. For intervention-provider decision outcomes such as hospitalization, assessment is usually likely to be influenced when the care provider making the decision knows the intervention (Cochrane section 7.1 p. 52); appraise that decision pathway and its circumstances, rather than only later committee classification. No-treatment or usual-care comparators may raise concern relative to another active intervention; a care provider assessing their own treatment may have an interest in its success. Independent assessment, an independent interviewer, or a long interval with intervening treatments may reduce concern. These are contextual considerations, not automatic answers; keep likelihood separate from mere possibility, measurement susceptibility and detection opportunity.",
-            "For a composite, weigh component-specific likelihood and counterevidence in light of relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Preserve concerns about a subjective component, but do not automatically assign High because one component is subjective or could be influenced. Dominant objective components and dominant susceptible components can support different composite appraisals; source-supported contribution, assessor awareness and likelihood of influence remain separate premises. If contribution is unknown, state that limit rather than assume dominance.",
-        ),
-        (
-            "assessor awareness alone",
-            "absence of documented influence or strong beliefs alone",
-            "an objective endpoint label",
-            "an ITT analysis",
-        ),
-    ),
-    "sq:selection:prespecified-analysis": _guidance(
-        "Full guidance p. 63, Box 11, signalling question 5.1",
-        "Whether data producing this result followed a pre-specified plan finalized before unblinded outcome data were available.",
-        "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish protocol or ethics approval, plan finalization, amendment effective dates, registry posting or update, data cutoff, database lock, and investigators' access to unblinded outcome data; assess what the reported chronology and trial circumstances support. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
-        (
-            "A sufficiently detailed protocol or SAP, its source-located chronology and finalization date relative to unblinded outcome data, and the reported analysis. Capture each dated event as reported; approval, cutoff, or database lock does not by itself establish when investigators could see unblinded outcomes.",
-            "For an original plan and an amended plan, capture the source-located content and chronology separately. An SAP embedded in a protocol, supplement, or combined document is still plan Evidence when its section and scope can be located; a separate SAP file is not required. An absent or unresolved plan remains an information limit.",
-        ),
-        "Use a definitive answer when firm evidence establishes timing and correspondence. "
-        "Use a probable answer when source facts and trial circumstances support only an inference. "
-        "Use no_information when neither is supported. A plan mention or matching endpoint alone "
-        "does not establish timing.",
-        (
-            _anchor(
-                Answer.YES,
-                "The result follows a sufficiently detailed plan finalized before unblinded outcome data were available.",
-            ),
-            _anchor(Answer.NO, "The result did not follow such a pre-specified plan."),
-            _anchor(
-                Answer.NO_INFORMATION,
-                "Analysis intentions or their timing are insufficiently reported, and the available circumstances do not support a reasonable probable answer.",
-            ),
-        ),
-        (
-            "Assess correspondence between the applicable plan and the exact approved Result: outcome, time point, population, effect measure, and analysis must be compared.",
-            "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Assess chronology separately from applicability. Protocol approval, ethics approval, amendment, registry posting or update, retrieval, data cutoff, database lock, and investigator access are distinct events; identify which event the source establishes and weigh its relevance to prespecification.",
-            "Current registry content does not establish unseen historical intent. A data cutoff or database lock is not itself proof of when investigators accessed unblinded outcomes. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
-            "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results. Not establishing that a plan was early is not evidence that it was late: ground a negative chronology inference in source facts and trial circumstances, or preserve no_information when those cannot support a reasonable probable answer.",
-            "Neutral paired control: an applicable plan for the approved cohort differs from a platform plan for another phase; a source-located finalization date before investigator access differs from the same plan with access timing unresolved.",
-            "A plan may be an identified section of a combined protocol or supplement. Navigate to that section and retain its exact Source and page coordinates; the lack of a separately named SAP file does not show that no plan exists.",
-            "Distinguish confidential data-monitoring access from access by trial investigators making analysis decisions. Staff providing confidential data to a monitoring committee are excepted in the official guidance; that access alone does not establish late prespecification. Public interim results are different evidence. Refining an analysis with blinded data is generally acceptable unless variables reveal intervention identity.",
-        ),
-        (
-            "an objective definition",
-            "a registry link",
-            "an endpoint label",
-            "a protocol mention without date or detail",
-            "current registry content treated as historical intent",
-            "a data cutoff treated as investigator unblinding",
-            "a platform master plan treated as applicable to every comparison",
-        ),
-    ),
-    "sq:selection:multiple-measurements": _guidance(
-        "Full guidance pp. 63-64, Box 11, signalling question 5.2",
-        "Whether the result was selected from multiple eligible outcome measurements within the outcome domain on the basis of results.",
-        "Answer yes or probably yes when clear evidence shows multiple eligible measures but only one or a subset is fully reported without justification and selection likely depended on results. Answer no or probably no when all eligible intended measures are reported, only one possible measurement exists, or an unrelated inconsistency is explained.",
-        (
-            "Eligible scales, definitions, time points, assessors or subscales and which were reported, with any justification. Use a protocol or SAP when available; article methods, results and companion reports can also establish the alternatives and the reporting choice.",
-        ),
-        "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible measurement was possible, and the inspected reports do not support a reasonable judgment about selection. A missing protocol does not override source-supported evidence of results-driven choice.",
-        (
-            _anchor(
-                Answer.YES,
-                "Multiple eligible measurements existed and the reported subset was likely selected on the results.",
-            ),
-            _anchor(
-                Answer.NO,
-                "All eligible measurements correspond to intentions, or only one eligible measurement was possible.",
-            ),
-            _anchor(
-                Answer.NO_INFORMATION,
-                "Measurement intentions are insufficiently reported despite multiple possible measurements.",
-            ),
-        ),
-        (
-            "Keep the approved reported Result as the assessment target, but define measurement eligibility independently using the review's prespecified criteria (Cochrane sections 8.1 and 8.1.2, pp. 58-60; Box 11 pp. 63-64). Within the same trial comparison and outcome domain, eligible alternatives may use different scales, definitions or time points; do not freeze those alternatives to the selected measurement. If the review genuinely permits only one scale or time point and that result is reported, selection in preference to an ineligible measurement does not itself bias this eligible result. Do not infer such a restriction from the approved Result alone.",
-            "An outcome domain is the state or endpoint of interest, independent of its measurement. Selection among eligible measurements or analyses within that domain belongs here. Non-reporting of a different outcome domain is a review-level reporting-bias issue and does not by itself put this reported Result at risk (Cochrane section 8.1 p. 58); do not treat an unreported anxiety domain as evidence of selection for a reported depression result.",
-            "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
-            "If eligible alternatives remain unresolved, preserve no_information rather than treating the absence of documented selection as no/probably no. Eligibility is defined independently of which result was reported. A located protocol is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
-            "An embedded SAP or platform plan may list eligible measurements without proving that it applied to the approved cohort; applicability and chronology remain separate premises.",
-        ),
-        (
-            "an endpoint definition",
-            "a single reported time point",
-            "a single scale without the eligible set",
-            "a single ITT analysis",
-        ),
-    ),
-    "sq:selection:multiple-analyses": _guidance(
-        "Full guidance pp. 64-65, Box 11, signalling question 5.3",
-        "Whether the result was selected from multiple eligible analyses of the data on the basis of results.",
-        "Multiplicity alone does not establish result-based selection. Answer yes or probably yes only when the justification identifies the eligible alternatives, the reporting or selection evidence, and why selection likely depended on the results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
-        (
-            "Eligible analysis methods and which were reported, including adjustment, transformation, composite definitions and missing-data strategies. Use a protocol or SAP when available; article methods, results and companion reports can also establish the alternatives and the reporting choice.",
-        ),
-        "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible analysis was possible, and the inspected reports do not support a reasonable judgment about selection. A missing SAP does not override source-supported evidence of results-driven choice.",
-        (
-            _anchor(
-                Answer.YES,
-                "Multiple eligible analyses existed and the reported subset was likely selected on the results.",
-            ),
-            _anchor(
-                Answer.NO,
-                "All eligible analyses correspond to intentions, or only one eligible analysis was possible.",
-            ),
-            _anchor(
-                Answer.NO_INFORMATION,
-                "Analysis intentions are insufficiently reported despite multiple possible analyses.",
-            ),
-        ),
-        (
-            "Keep the approved reported Result as the assessment target, but define analysis eligibility independently using the review's prespecified criteria (Cochrane section 8.1.2 p. 60; Box 11 pp. 64-65). Eligible alternatives for its outcome measurement can include final values, change from baseline, ANCOVA, different adjustment sets or missing-data strategies; do not require the selected analysis specification to remain identical across alternatives. If a prespecified review hierarchy seeks only post-intervention values and that analysis is reported, preference over an ineligible change-score analysis does not itself bias the eligible result. Do not invent a hierarchy from the reported analysis; retain unresolved eligibility when sources do not establish it.",
-            "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
-            "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred. A located SAP is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
-            "When the plan is insufficiently detailed and multiple eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis. Preserve the evidence path's support for Low, Some concerns, High, or legitimate uncertainty without forcing a severity category.",
-        ),
-        (
-            "an endpoint definition",
-            "a single ITT analysis",
-            "one reported model",
-            "a registry link without analysis detail",
-        ),
-    ),
+_OFFICIAL_CONTENT = json.loads(
+    Path(__file__).with_name("official-guidance.json").read_text(encoding="utf-8")
+)
+_OFFICIAL_ELABORATIONS: dict[str, str] = _OFFICIAL_CONTENT["questions"]
+_QUESTION_LOCATORS = {
+    "sq:randomization:sequence": "Full guidance p. 17, Box 4, signalling question 1.1",
+    "sq:randomization:concealment": "Full guidance p. 17, Box 4, signalling question 1.2",
+    "sq:randomization:baseline-imbalance": "Full guidance pp. 17-18, Box 4, signalling question 1.3",
+    "sq:deviations:participants-aware": "Full guidance p. 28, Box 6, signalling question 2.1",
+    "sq:deviations:personnel-aware": "Full guidance p. 28, Box 6, signalling question 2.2",
+    "sq:deviations:context-deviations": "Full guidance p. 28, Box 6, signalling question 2.3",
+    "sq:deviations:affected-outcome": "Full guidance p. 28, Box 6, signalling question 2.4",
+    "sq:deviations:balanced": "Full guidance p. 29, Box 6, signalling question 2.5",
+    "sq:deviations:appropriate-analysis": "Full guidance p. 29, Box 6, signalling question 2.6",
+    "sq:deviations:substantial-impact": "Full guidance p. 29, Box 6, signalling question 2.7",
+    "sq:missing:data-available": "Full guidance p. 45, Box 8, signalling question 3.1",
+    "sq:missing:evidence-unbiased": "Full guidance p. 45, Box 8, signalling question 3.2",
+    "sq:missing:true-value-dependent": "Full guidance p. 45, Box 8, signalling question 3.3",
+    "sq:missing:likely-dependent": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+    "sq:measurement:method-inappropriate": "Full guidance p. 54, Box 10, signalling question 4.1",
+    "sq:measurement:differential": "Full guidance p. 54, Box 10, signalling question 4.2",
+    "sq:measurement:assessor-aware": "Full guidance p. 54, Box 10, signalling question 4.3",
+    "sq:measurement:influence-possible": "Full guidance p. 54, Box 10, signalling question 4.4",
+    "sq:measurement:influence-likely": "Full guidance p. 54, Box 10, signalling question 4.5",
+    "sq:selection:prespecified-analysis": "Full guidance p. 63, Box 11, signalling question 5.1",
+    "sq:selection:multiple-measurements": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+    "sq:selection:multiple-analyses": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
 }
 
 
@@ -865,14 +212,21 @@ _QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
 }
 
 _GUIDANCE = {
-    question_id: guidance.model_copy(
-        update={
-            "operational": guidance.operational.model_copy(
-                update={"query_suggestions": _QUERY_SUGGESTIONS[question_id]}
-            )
-        }
+    question_id: QuestionGuidance(
+        official=OfficialQuestionGuidance(
+            version=_GUIDANCE_VERSION,
+            source_locator=locator,
+            source_sha256=_GUIDANCE_SOURCE_SHA256,
+            source_excerpt=_OFFICIAL_ELABORATIONS[locator],
+        ),
+        operational=QuestionNavigation(
+            id="rob2-kit.parallel-assignment.question-navigation",
+            version="1.0.0",
+            attribution="rob2-kit maintainers",
+            query_suggestions=_QUERY_SUGGESTIONS[question_id],
+        ),
     )
-    for question_id, guidance in _GUIDANCE.items()
+    for question_id, locator in _QUESTION_LOCATORS.items()
 }
 
 _Q = (
@@ -1045,6 +399,20 @@ _CONTENT = {
     "provenance": _P,
     "questions": _QUESTIONS,
     "domains": _DOMAINS,
+    "official_sections": tuple(
+        OfficialDomainGuidance(
+            domain_id=section["domain_id"],
+            question_ids=tuple(section.get("question_ids", ())),
+            source_url=section.get("source_url", _OFFICIAL_CONTENT["source_url"]),
+            guidance=OfficialQuestionGuidance(
+                version=section.get("version", _GUIDANCE_VERSION),
+                source_sha256=section.get("source_sha256", _GUIDANCE_SOURCE_SHA256),
+                source_locator=section["source_locator"],
+                source_excerpt=section["source_excerpt"],
+            ),
+        )
+        for section in _OFFICIAL_CONTENT["sections"]
+    ),
 }
 SCIENTIFIC_PACK = ScientificPack(**_CONTENT, content_hash=sha256(_CONTENT))
 

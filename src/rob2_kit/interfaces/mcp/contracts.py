@@ -25,7 +25,7 @@ from rob2_kit.application.companion_sources import CompanionReference
 from rob2_kit.application.contracts import TOOL_NAMES
 from rob2_kit.application.domains import _host_asserted_sufficiency
 from rob2_kit.application.source_handles import public_source_references
-from rob2_kit.models import Answer, Judgment, QuerySuggestion, ResponseFramework
+from rob2_kit.models import Answer, Judgment, QuerySuggestion
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
     ComparativeEffectResult,
@@ -1692,37 +1692,7 @@ class DomainQuestionIdentity(PublicModel):
 
 
 class DomainQuestionCard(DomainQuestionIdentity):
-    """Current model-facing scientific and operational guidance."""
-
-    official_guidance: str = Field(min_length=1)
-    source_locator: str = Field(min_length=1)
-    bias_construct: str = Field(
-        min_length=1,
-        description="The causal bias construct assessed by this signalling question.",
-    )
-    decision_rule: str = Field(min_length=1)
-    evidence_needed: tuple[str, ...] = Field(min_length=1)
-    no_information_rule: str = Field(min_length=1)
-    answer_anchors: tuple[AnswerAnchor, ...] = Field(
-        min_length=1,
-        description=(
-            "Operational examples for interpreting each answer. Anchors clarify semantics; "
-            "they are not a whitelist of acceptable evidence."
-        ),
-    )
-    considerations: tuple[str, ...] = Field(
-        min_length=1,
-        description=(
-            "Operational guidance for this question. Retrieval examples are optional alternatives, "
-            "not a required query list."
-        ),
-    )
-    invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
-    query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
-
-
-class AuthoritativeDomainQuestionCard(DomainQuestionIdentity):
-    """Prototype identity card referring to one complete official guidance core."""
+    """Official proposition identity with optional lexical discovery hints."""
 
     guidance_locator: str = Field(min_length=1)
     query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
@@ -2040,12 +2010,20 @@ class OfficialGuidanceSection(PublicModel):
 
 
 class OfficialGuidanceRecovery(PublicModel):
-    """Complete bounded official guidance for the selected Domain."""
+    """Pack-bound official core or an ordered fragment of its source sections."""
 
     pack: DomainPack
     sections: tuple[OfficialGuidanceSection, ...] = Field(min_length=1)
-    complete: StrictBool
-    next_cursor: str | None = None
+    complete: StrictBool = Field(
+        description="True when this payload contains the whole declared official core. "
+        "Paginated fragments are false, including the final fragment; reconstruct sections "
+        "in context_page order. This does not assert delivery of the entire source document.",
+    )
+    next_cursor: str | None = Field(
+        default=None,
+        description="Next frozen context-page cursor, when supplied; context_page governs "
+        "the complete sequence and page-zero recovery.",
+    )
 
 
 class DomainContextData(PublicModel):
@@ -2058,8 +2036,8 @@ class DomainContextData(PublicModel):
     official_guidance: OfficialGuidanceRecovery | None = Field(
         default=None,
         description=(
-            "Exact, pack-bound official excerpts for the selected Domain. Complete is false "
-            "only when a bounded continuation is supplied."
+            "Exact, pack-bound official source sections for the selected Domain. "
+            "Paginated fragments reconstruct the complete declared core in context-page order."
         ),
     )
     result: DomainResultChoice | None = None
@@ -2106,9 +2084,8 @@ class DomainContextData(PublicModel):
         ),
     )
     guidance: tuple[str, ...] = ()
-    response_framework: ResponseFramework | None = None
     traps: tuple[str, ...] = ()
-    questions: tuple[DomainQuestionCard | AuthoritativeDomainQuestionCard, ...] = ()
+    questions: tuple[DomainQuestionCard, ...] = ()
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
@@ -2137,10 +2114,6 @@ class DomainContextData(PublicModel):
             self.evidence_workspace,
         )
         if continuation and any(value is not None for value in stable):
-            raise ValueError("continuation pages must contain only context deltas")
-        if not continuation and self.response_framework is None:
-            raise ValueError("the first context page requires response guidance")
-        if continuation and self.response_framework is not None:
             raise ValueError("continuation pages must contain only context deltas")
         if not continuation and any(value is None for value in stable):
             raise ValueError("the first context page requires the complete stable header")
@@ -2179,7 +2152,14 @@ class DomainContextPage(PublicModel):
             "not an assessment completion status."
         )
     )
-    section: Literal["complete", "primary_report", "questions", "comparison_cards", "evidence"]
+    section: Literal[
+        "complete",
+        "primary_report",
+        "questions",
+        "official_guidance",
+        "comparison_cards",
+        "evidence",
+    ]
     item_start: NonNegativeInt = 0
     item_count: NonNegativeInt = 0
     max_response_bytes: StrictInt = Field(
@@ -2276,16 +2256,6 @@ class ComparisonProposition(PublicModel):
     passages: tuple[ComparisonPassageRef, ...] = ()
 
 
-class ComparisonExample(PublicModel):
-    """A neutral paired contrast; it deliberately carries no expected answer."""
-
-    pair_id: str = Field(min_length=1)
-    changed_premise: str = Field(min_length=1)
-    left_facts: tuple[str, ...] = Field(min_length=1)
-    right_facts: tuple[str, ...] = Field(min_length=1)
-    reasoning_focus: str = Field(min_length=1)
-
-
 class ComparisonResultScope(PublicModel):
     """Approved assessment target, which can differ from the reported estimate."""
 
@@ -2319,7 +2289,6 @@ class ComparisonCard(PublicModel):
     passage_groups: tuple[ComparisonPassageGroup, ...] = ()
     slots: tuple[ComparisonSlot, ...] = Field(min_length=1)
     propositions: tuple[ComparisonProposition, ...] = ()
-    paired_examples: tuple[ComparisonExample, ...] = ()
     participant_flow: tuple[ParticipantFlowProjection, ...] = ()
     missing_data: MissingDataReconciliation | None = None
     prompt: str = Field(min_length=1)
