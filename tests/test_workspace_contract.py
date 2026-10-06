@@ -45,7 +45,7 @@ def test_v0_8_workspace_is_rejected_without_modification(tmp_path: Path) -> None
 
     with pytest.raises(
         ValueError,
-        match=r"workspace_contract_unsupported:.*0\.5\.0.*new empty workspace",
+        match=r"workspace_contract_unsupported:.*0\.5\.0.*fresh workspace",
     ):
         _ensure(workspace)
 
@@ -63,7 +63,7 @@ def test_legacy_active_batch_workspace_is_rejected_without_modification(tmp_path
 
     with pytest.raises(
         ValueError,
-        match=r"workspace_contract_unsupported:.*new empty workspace",
+        match=r"workspace_contract_unsupported:.*fresh workspace",
     ):
         _ensure(workspace)
 

@@ -174,42 +174,24 @@ def test_skill_requires_complete_proposal_construction_before_validation() -> No
     assert "one complete Trial selection" in skill
 
 
-def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
+def test_measurement_reference_uses_official_science_and_source_reconstruction() -> None:
     normalized = " ".join(
-        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md")
-        .read_text(encoding="utf-8")
-        .split()
+        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text().split()
     )
-    markers = list(re.finditer(r"(?<!\w)([1-9])\.\s+", normalized))
-    start = next(
-        index
-        for index in range(len(markers) - 8)
-        if [int(marker.group(1)) for marker in markers[index : index + 9]] == list(range(1, 10))
-    )
-    markers = markers[start : start + 9]
-    items = {
-        number: normalized[
-            marker.end() : markers[index + 1].start()
-            if index + 1 < len(markers)
-            else len(normalized)
-        ]
-        for index, marker in enumerate(markers[:9])
-        for number in [int(marker.group(1))]
-    }
-    semantic_items = (
-        "approved Result's event definition and ascertainment method",
-        "measurement method is appropriate and valid for that approved event",
-        "methods, thresholds, schedules, and detection opportunities between randomized groups",
-        "who determines whether that event occurred",
-        "assessor awareness separately from susceptibility to influence",
-        "influence is possible or likely, explain the mechanism",
-        "all-cause mortality, distinguish establishing death from judging progression, "
-        "symptoms, or cause of death",
-        "composite outcomes, inspect the components and their relative frequency or",
-        "passage discusses several outcomes, use only the premise that applies to the "
-        "approved outcome and state any inference or unresolved link",
-    )
-    assert all(semantic in items[index + 1] for index, semantic in enumerate(semantic_items))
+    for marker in (
+        "complete official Box 10 elaborations",
+        "section 7.1 background",
+        "assessor identity",
+        "component contributions",
+        "exact approved Result",
+        "independent question dependencies",
+        "actor, arm, period and endpoint",
+        "visible report material",
+        "counterevidence",
+    ):
+        assert marker in normalized
+    assert "OCR availability, metadata and arithmetic are not scientific authority" in normalized
+    assert "preserve unknown contributions and source conflicts" in normalized
 
 
 def test_missing_reference_and_skill_use_official_science_and_preserve_recovery() -> None:

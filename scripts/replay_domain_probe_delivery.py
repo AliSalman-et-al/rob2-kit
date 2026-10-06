@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import Any
 
 from rob2_kit.interfaces.mcp.server import (
-    _DOMAIN_CONTEXT_PAGE_SECTIONS,
     _domain_context_transport_bytes,
     _paginate_domain_context_transport,
 )
+from scripts.profile_domain_context_delivery import _reconstruct
 
 
 def replay(events: Path) -> dict[str, Any]:
@@ -25,19 +25,15 @@ def replay(events: Path) -> dict[str, Any]:
     )
     original = copy.deepcopy(item["result"]["structured_content"])
     original["data"].pop("context_page")
-    sections = {name: [] for name in _DOMAIN_CONTEXT_PAGE_SECTIONS}
     cursor = None
     pages = []
-    header = None
+    responses = {}
     while True:
         page = _paginate_domain_context_transport(
             original, cursor, None, "offline-replay", original["head"]["state_revision"]
         )
         data = page["data"]
-        if header is None:
-            header = {k: v for k, v in data.items() if k not in sections and k != "context_page"}
-        for name in sections:
-            sections[name].extend(data.get(name, []))
+        responses[data["context_page"]["index"]] = page
         pages.append(
             {"index": data["context_page"]["index"], "bytes": _domain_context_transport_bytes(page)}
         )
@@ -46,7 +42,14 @@ def replay(events: Path) -> dict[str, Any]:
         cursor = data["context_page"]["next_cursor"]
         if cursor is None:
             break
-    recovered = {**header, **{k: v for k, v in sections.items() if k in original["data"]}}
+    recovered = _reconstruct(responses)
+    assert recovered is not None
+    # Current transport supplies empty arrays absent from a historical envelope.
+    # Remove only those defaults; retain every original field and its exact value.
+    for name in set(recovered) - set(original["data"]):
+        assert name in ("primary_report", "questions", "evidence", "comparison_cards")
+        assert recovered[name] == []
+        del recovered[name]
     assert recovered == original["data"], "scientific data changed during pagination"
     return {
         "recorded_requested_bytes": item["arguments"]["max_response_bytes"],

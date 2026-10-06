@@ -204,7 +204,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     }
     assert "support the response" in answer_schema["properties"]["justification"]["description"]
     assert "explicitly use []" in answer_schema["properties"]["unknowns"]["description"]
-    assert "submit only the active answer path" in (domain_tool.description or "").lower()
+    assert "submit the complete active answer path" in (domain_tool.description or "").lower()
+    assert "valid inactive answers are ignored" in (domain_tool.description or "").lower()
     assert "scientific correctness" in (domain_tool.description or "")
     assert "multiple_concerns" not in domain_tool.parameters["properties"]
     proposal_tool = by_name["validate_proposal"]

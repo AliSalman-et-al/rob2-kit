@@ -116,7 +116,14 @@ def test_complete_lean_d2_d3_d5_preserves_sources_uncertainty_and_native_labels(
         assert {card["id"] for card in cards} == {
             q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain
         }
-        assert all(card["official_guidance"] for card in cards)
+        official = {
+            section["excerpt"] for section in context["data"]["official_guidance"]["sections"]
+        }
+        assert all(
+            q.guidance.official.source_excerpt in official
+            for q in SCIENTIFIC_PACK.questions
+            if q.domain_id == domain
+        )
         saved = support._call(
             workspace,
             "save_domain_judgment",
@@ -215,9 +222,20 @@ def test_lean_keeps_canonical_active_path_and_uncertainty_checks(
             }
         ]
     saved = support._call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "repair", saved
-    assert not _state(workspace).get("domain_records")
-    assert _state(workspace)["revision"] == revision
+    if defect == "missing_active_answer":
+        assert saved["outcome"] == "repair", saved
+        assert not _state(workspace).get("domain_records")
+        assert _state(workspace)["revision"] == revision
+    else:
+        assert saved["outcome"] == "success", saved
+        record = _state(workspace)["domain_records"]["trial:domain:selection"]
+        stored = record["answers"][0]
+        assert stored["answer"] == "yes"
+        assert any(
+            b["kind"] == "limitation"
+            and b["unresolved_premise"] == draft["answers"][0]["limitations"][0]["premise"]
+            for b in stored["bases"]
+        )
 
 
 def test_inline_copied_quotes_reuse_reviewed_selector_and_preserve_canonical_state(

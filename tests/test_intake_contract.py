@@ -801,7 +801,7 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "data.remaining_windows" in instructions
     assert "Draft every active question in the dependency-closed path" in instructions
     assert "Include an inactive answer when it is already available" in instructions
-    assert "For 5.3, identify both the eligible alternatives" in instructions
+    assert "the complete official question guidance" in instructions
     assert '"target_time_value": "15"' in instructions
     assert '"target_time_unit": "days"' in instructions
     assert '"15 days after randomization"' in instructions
@@ -813,7 +813,17 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "its bases support the claims attributed to them" in instructions
     assert "Choose the option whose literal meaning follows from those passages" in instructions
     assert "progress confirmation" in instructions
-    assert "Was allocation concealed until participants were enrolled and assigned?" in instructions
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    concealment = next(
+        q for q in SCIENTIFIC_PACK.questions if q.id == "sq:randomization:concealment"
+    )
+    assert (
+        concealment.wording
+        == "Was the allocation sequence concealed until participants were enrolled "
+        "and assigned to interventions?"
+    )
+    assert "complete official question guidance" in instructions
 
     trial_review_description = _tool_description("review_trial")
     assert "ordinary missing Evidence" in trial_review_description

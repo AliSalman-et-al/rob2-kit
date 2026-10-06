@@ -46,7 +46,7 @@ from rob2_kit.interfaces.mcp.server import (
     mcp,
 )
 from rob2_kit.packs import SCIENTIFIC_PACK
-from scripts.profile_domain_context_delivery import _omit_empty_section_arrays
+from scripts.profile_domain_context_delivery import _omit_empty_section_arrays, _reconstruct
 
 
 def _wire_context(
@@ -322,10 +322,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert question_ids == expected_ids
     assert "sq:deviations:substantial-impact" in question_ids
 
-    reconstructed = dict(pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(pages)})
     full, _transport_bytes = _wire_context(
         workspace,
         {"trial_id": "trial", "domain_id": "domain:deviations"},
@@ -358,12 +355,7 @@ def test_empty_delta_arrays_are_omittable_without_changing_reconstructed_context
         validated = mcp_server.validate_output("get_domain_context", candidate)
         assert validated["data"]["context_page"] == candidate["data"]["context_page"]
 
-    reconstructed = dict(candidate_pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [
-            item for page in candidate_pages for item in page["data"].get(section, [])
-        ]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(candidate_pages)})
     full = _call(workspace, "get_domain_context", {})["data"]
     assert reconstructed == full
 
@@ -506,10 +498,7 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
         pages.append(page)
         cursor = page["data"]["context_page"]["next_cursor"]
 
-    reconstructed = dict(pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(pages)})
     assert reconstructed == original["data"]
 
     replaced, _transport_bytes = _wire_context(
@@ -556,10 +545,7 @@ def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) 
 
     assert pages[-1]["head"]["state_revision"] > first["head"]["state_revision"]
     assert pages[-1]["data"]["context_page"]["state_revision"] == first_page["state_revision"]
-    reconstructed = dict(pages[0]["data"])
-    for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
-    reconstructed.pop("context_page")
+    reconstructed = _reconstruct({i: page for i, page in enumerate(pages)})
     assert reconstructed == original["data"]
 
 
