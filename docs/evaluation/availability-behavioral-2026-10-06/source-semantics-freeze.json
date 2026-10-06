@@ -1,0 +1,60 @@
+{
+  "case": "deliver",
+  "source_based_not_label_based": true,
+  "signalling_labels": null,
+  "facts": [
+    {
+      "kind": "randomized",
+      "dapagliflozin": 3131,
+      "placebo": 3132,
+      "locator": "main physical p4 Table1; appendix physical p27 FigureS2"
+    },
+    {
+      "kind": "primary_event_numerator",
+      "dapagliflozin": 512,
+      "placebo": 610,
+      "locator": "main physical p3 L79-84 and Table2"
+    },
+    {
+      "kind": "incomplete_primary_endpoint_follow_up",
+      "dapagliflozin": 29,
+      "placebo": 23,
+      "locator": "appendix physical p27 FigureS2, visually verified before freeze"
+    },
+    {
+      "kind": "unknown_survival_status",
+      "dapagliflozin": 2,
+      "placebo": 2,
+      "locator": "main physical p3 L73-76; appendix p27; overlap with primary incompleteness is not assumed additive"
+    },
+    {
+      "kind": "intervention_discontinued",
+      "dapagliflozin": 444,
+      "placebo": 442,
+      "locator": "main physical p3 L70-73; appendix p27"
+    },
+    {
+      "kind": "never_received_assigned_intervention",
+      "dapagliflozin": 5,
+      "placebo": 5,
+      "locator": "appendix p27; distinct from endpoint availability"
+    }
+  ],
+  "definition": {
+    "source": "nejmoa2206286_protocol.pdf",
+    "version": "SAP5.0,8December2021",
+    "physical_page": 256,
+    "definition_lines": "19\u201333 in screening extraction; exact native projection to be sealed before launch",
+    "meaning": "Complete primary endpoint follow-up includes first primary event, non-CV death (including undetermined death under this SAP), or complete event assessment on/after PACD. Known vital status is insufficient for nonfatal endpoint completeness. Unknown event time/reasons do not erase a reported count of incomplete endpoint follow-up."
+  },
+  "expected_semantics": [
+    "Preserve reported endpoint-incomplete extent29/23 with its source definition, separately from unknown event times and reasons.",
+    "Do not substitute2/2 unknown vital statuses,444/442 drug discontinuations,5/5 nonreceivers or512/610 event counts for total unavailable primary-outcome extent.",
+    "Do not add overlapping categories or fabricate observed subgroup counts. Source-derived complementary availability is permissible if explicitly warranted.",
+    "Under the intervention, unavailable29/23 may represent the reported total once endpoint scope/definition is established; control can equally succeed through a warranted observed complement or explicit source-bound reasoning.",
+    "Do not infer a signalling response, important bias, direction or magnitude from the count alone.",
+    "Do not treat planned SAP sensitivity procedures as demonstrated performed robustness analyses.",
+    "Retain source definition nuance concerning non-CV/undetermined death and the chosen endpoint rather than silently substituting all-cause mortality."
+  ],
+  "review_rule": "Independent source review freezes/qualifies these semantic expectations before launch; no preferred D3 signalling or domain labels."
+}

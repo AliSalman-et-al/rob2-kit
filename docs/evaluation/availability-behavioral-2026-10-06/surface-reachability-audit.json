@@ -1,0 +1,60 @@
+{
+  "logs": [
+    {
+      "path": "evidence-weighting-paired-low-20261006/control/cases/dapa-hf/attempt-02/assessment-events.jsonl",
+      "sha256": "cf7603f45063da06f7100b6b85eb5b68037e051d58456350c922a43e0269160c",
+      "missing_reference_reads": [
+        "item_33",
+        "item_43"
+      ],
+      "successful_missing_domain_saves": [
+        {
+          "item": "item_52",
+          "availability_input_observed": null,
+          "quantity_roles": [
+            "analyzed",
+            "arm",
+            "endpoint",
+            "event_count",
+            "event_definition",
+            "observed",
+            "population",
+            "randomized",
+            "semantics",
+            "time_point",
+            "unit"
+          ],
+          "follow_up_count_present_in_censoring": true
+        }
+      ]
+    },
+    {
+      "path": "evidence-weighting-paired-low-20261006/intervention/cases/dapa-hf/attempt-02/assessment-events.jsonl",
+      "sha256": "815b6605bbd5361a537b7958a31a049753aa57b4b1f470a9724ed679a9bce3d3",
+      "missing_reference_reads": [
+        "item_38",
+        "item_51"
+      ],
+      "successful_missing_domain_saves": [
+        {
+          "item": "item_69",
+          "availability_input_observed": null,
+          "quantity_roles": [
+            "analyzed",
+            "arm",
+            "event_count",
+            "event_definition",
+            "observed",
+            "population",
+            "randomized",
+            "semantics",
+            "time_point",
+            "unit"
+          ],
+          "follow_up_count_present_in_censoring": true
+        }
+      ]
+    }
+  ],
+  "finding": "Both prior DAPA sessions actually read the packaged missing reference twice and submitted follow-up counts in censoring metadata with observed null. The new schema, quantity slot, guidance and saved-row restoration are exercised in real production MCP tests; behavioral use of the new field remains untested. No old DELIVER judgments or correctness were used for selection."
+}
