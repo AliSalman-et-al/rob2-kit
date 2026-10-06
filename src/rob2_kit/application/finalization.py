@@ -86,8 +86,9 @@ _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
 _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 
-# Official-core submissions ground every answer uniformly; a basis label does not
-# determine clinical certainty. Retain predecessor modality rules for old bundles.
+# The official core accepts structurally valid bases uniformly, including limitations.
+# Basis validation does not certify entailment or prescribe answer modality.
+# Retain predecessor modality rules for old bundles.
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
     {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
 )

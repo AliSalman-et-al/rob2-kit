@@ -199,6 +199,73 @@ def test_complete_lean_d2_d3_d5_preserves_sources_uncertainty_and_native_labels(
     assert support._standalone_verify(tampered).returncode == 1
 
 
+def test_valid_basis_structure_does_not_certify_entailment_or_rewrite_modality(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = support._assessment_workspace(tmp_path)
+    draft = support._domain_draft("trial", "domain:randomization", revision, evidence)
+    first = draft["answers"][0]
+    first["answer"] = "yes"
+    before = _state(workspace)
+    for invalid in ([], [{"kind": "inference", "evidence": "eh_0000000000000000"}]):
+        first["bases"] = invalid
+        try:
+            rejected = support._call(workspace, "save_domain_judgment", draft)
+        except ToolError:
+            pass
+        else:
+            assert rejected["outcome"] != "success", rejected
+        assert _state(workspace) == before
+    first.update(
+        bases=[
+            {
+                "kind": "limitation",
+                "unresolved_premise": "The sequence-generation method is not established.",
+                "stopping_rationale": "This unsupported response tests structure only.",
+            }
+        ],
+        justification="Unsupported Yes tests structural parity, not clinical validity.",
+        unknowns=["The sequence-generation method is not established."],
+        counterevidence=[],
+    )
+    saved = support._call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    stored = _state(workspace)["domain_records"]["trial:domain:randomization"]["answers"][0]
+    assert stored["answer"] == "yes"
+    assert [basis["kind"] for basis in stored["bases"]] == ["limitation"]
+    revision = saved["head"]["state_revision"]
+    for domain in SCIENTIFIC_PACK.domains:
+        if domain.id == "domain:randomization":
+            continue
+        saved = support._call(
+            workspace,
+            "save_domain_judgment",
+            support._domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = saved["head"]["state_revision"]
+    path = support._finalize_assessment(workspace, revision)["data"]["artifact"]["path"]
+    artifact = workspace / path
+    assert verify_bundle(artifact)
+    assert support._standalone_verify(artifact).returncode == 0
+
+    # The declared predecessor retains its original modality predicate.
+    predecessor = tmp_path / "predecessor-limitation-only.rob2.zip"
+
+    def declare_predecessor(canonical: dict) -> None:
+        canonical["scientific_pack"]["content_hash"] = (
+            "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08"
+        )
+
+    support._rehashed_full_tamper(artifact, predecessor, declare_predecessor)
+    assert not verify_bundle(predecessor)
+    independent = support._standalone_verify(predecessor)
+    assert independent.returncode == 1
+    assert "definitive Domain answer lacks a direct basis" in (
+        str(independent.stdout) + str(independent.stderr)
+    )
+
+
 @pytest.mark.parametrize("invalid", ["handle", "source", "page", "lines", "quote"])
 def test_lean_rejects_fabricated_sources_without_saving_a_domain(
     tmp_path: Path, invalid: str

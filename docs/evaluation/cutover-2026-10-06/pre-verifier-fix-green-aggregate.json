@@ -1,0 +1,11 @@
+{
+  "tested_head": "0dc9002c2fae114c5607d5f430c77479b1125330",
+  "passed": 1643,
+  "failed": 0,
+  "skipped": 8,
+  "elapsed_seconds": 3587.78,
+  "exit_status": 0,
+  "log_sha256": "67459b92b2a2d34af7eaa691c68237b7178c359871d8074306a6aef0edb24745",
+  "xml_sha256": "72693e2b5153378dd63c3f75d4e3243ee127cd5efe3dc8893953115032b29e34",
+  "scope": "Completed green aggregate for pre-verifier-fix runtime only; not the release gate for3bdd55e or later. Original1629/14/8 and focused recovery strata remain preserved."
+}

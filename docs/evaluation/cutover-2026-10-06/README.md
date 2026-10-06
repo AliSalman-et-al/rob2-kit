@@ -17,7 +17,9 @@ five Domain projections. See `guidance-audit.md`, `experiment-disposition.md` an
 There is no single full-suite green claim. The exact-head focused cohort passed 14/14; the unchanged installed runtime
 and all ten final input/profile preflights passed. See `focused-closure-receipt.json`
 and `final-medium-freeze.json`. One clean aggregate suite is still running, and its
-green result is required before merge. No final Medium case has launched; earlier Low pilots remain superseded development evidence.
+green result is required before merge. Two final Medium cases have launched; see `first-medium-launch-receipt.json` and
+`first-medium-proposal-completion.json`. Earlier Low pilots remain superseded
+development evidence.
 `execution-protocol.md` defines prospective run/reporting rules, not gate closure.
 
 Albert’s first Medium workflow saved all five Domains and closed the Trial, then

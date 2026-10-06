@@ -1,0 +1,50 @@
+{
+  "case": "sustain-6",
+  "first_idle_continuation_retained": true,
+  "same_session": "01a10f9c-cfe4-7060-87e7-ae82e62f7ef6",
+  "terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10f9c-cfe4-7060-87e7-ae82e62f7ef6",
+    "elapsed_seconds": 2191.5529326219694,
+    "finalized_batch_observed": true,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "artifact_sha256": "785a22d2cd0645c52157ce4cd776a9762b49fc34320b0c6bc5cbf715af4ef5e1",
+  "product_pass": true,
+  "standalone_exit": 0,
+  "settled_session_sha256": "d8580bdd3553f4d21aa05e8cf3d32a4063d6ca5e28281195b5937fafdc18621e",
+  "profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "response_count": 158,
+  "usage": {
+    "input_tokens": 19443259,
+    "cached_input_tokens": 18854144,
+    "output_tokens": 43224,
+    "reasoning_output_tokens": 8712
+  },
+  "science_audit_pending": true,
+  "accuracy_gain_claimed": false
+}
