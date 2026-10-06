@@ -1696,7 +1696,9 @@ def _evidence_sufficiency(
     return summary
 
 
-def _host_asserted_sufficiency(summary: dict[str, Any] | None) -> dict[str, Any] | None:
+def _host_asserted_sufficiency(
+    summary: dict[str, Any] | None, answers: list[dict[str, Any]] | None = None
+) -> dict[str, Any] | None:
     """Annotate a model-facing receipt without changing canonical history.
 
     Historical bundles and the standalone verifier intentionally retain the
@@ -1710,11 +1712,15 @@ def _host_asserted_sufficiency(summary: dict[str, Any] | None) -> dict[str, Any]
     claims = summary.get("claims")
     if not isinstance(claims, (list, tuple)):
         return summary
+    declared_unknowns = {
+        answer.get("question_id"): tuple(answer.get("unknowns", ())) for answer in answers or []
+    }
     return {
         **summary,
         "claims": tuple(
             {
                 **claim,
+                "declared_unknowns": declared_unknowns.get(claim.get("question_id"), ()),
                 "support_attribution": (
                     "host_asserted"
                     if isinstance(claim, dict)
@@ -3711,7 +3717,8 @@ def get_domain_context(
         ),
         "working_checkpoint": _domain_working_context(premise_status),
         "evidence_sufficiency": _host_asserted_sufficiency(
-            existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
+            existing.get("evidence_sufficiency") if isinstance(existing, dict) else None,
+            existing.get("answers") if isinstance(existing, dict) else None,
         ),
         "current_checkpoint": checkpoint_identity,
         "decision": existing.get("decision") if isinstance(existing, dict) else None,

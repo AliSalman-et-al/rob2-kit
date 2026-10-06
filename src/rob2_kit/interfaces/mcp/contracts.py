@@ -2469,6 +2469,14 @@ class ClaimTrace(PublicModel):
     evidence: tuple[Identity, ...] = ()
     search_receipts: tuple[Identity, ...] = ()
     unresolved_premises: tuple[str, ...] = ()
+    declared_unknowns: tuple[str, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description=(
+            "Unknowns explicitly declared with this answer, preserved independently of "
+            "Evidence roles and support status. They do not mandate an answer downgrade."
+        ),
+    )
     support_attribution: Literal["host_asserted", "not_established"] = Field(
         default="not_established",
         description=(
@@ -3343,7 +3351,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
             )
         }
         data["checkpoint"]["evidence_sufficiency"] = _host_asserted_sufficiency(
-            checkpoint.get("evidence_sufficiency")
+            checkpoint.get("evidence_sufficiency"), checkpoint.get("answers")
         )
     if tool == "prepare_batch" and "batch" in data:
         batch = data.pop("batch")
