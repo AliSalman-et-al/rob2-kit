@@ -1,0 +1,27 @@
+{
+  "review": "Independent source-warrant review of sealed Medium MONALEESA and STOP outputs; adopted labels withheld",
+  "monaleesa-2": {
+    "material_scope_denominator_or_planned_conducted_error_demonstrated": false,
+    "findings": [
+      "Local interim PFS HR0.56 and all668 randomized retained.",
+      "334/334 efficacy distinguished from334/330 safety; treatment discontinuation distinguished from censoring.",
+      "Planned sensitivity analysis not promoted to conducted reassurance; chronology NI remains qualified."
+    ]
+  },
+  "stop-igan": {
+    "material_scope_denominator_or_planned_conducted_error_demonstrated": false,
+    "findings": [
+      "80/82 randomized distinguished from76/78 completed and72/71 observed remission outcomes.",
+      "Failure imputation retained as missingness; MI significance not treated as proof against bias."
+    ],
+    "qualification": "Minor over-uncertainty: D1 lists run-in/allocation timing conflict although delivered protocol physical page98 explicitly places allocation request after the last run-in examination (eh_d8a42980e5233d19). Original answer retained; no forced label change."
+  },
+  "verification_limits": [
+    "Main/appendix hashes independently verified.",
+    "Critical archived protocol passages crosschecked; large full protocol binaries and selected algebra visuals not independently rendered by reviewer.",
+    "Operator separately rendered STOP physical page158 formula before scope approval; that does not remove reviewer limitations."
+  ],
+  "structural_or_provenance_pass_certifies_source_entailment": false,
+  "accuracy_gain_claimed": false,
+  "sealed_outputs_changed": false
+}

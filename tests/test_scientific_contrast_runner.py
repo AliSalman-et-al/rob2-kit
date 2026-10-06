@@ -76,7 +76,9 @@ def test_fixed_pack_inputs_add_current_reference_and_question_context() -> None:
     assert "Current Domain reference guidance" in prompts["C-31"]
     assert "Current Domain reference guidance" in prompts["C-53"]
     assert "complete official Box 10 elaborations" in prompts["C-53"]
-    reference = Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text()
+    reference = Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text(
+        encoding="utf-8"
+    )
     assert reference.rstrip() in prompts["C-53"]
     assert "Preserve which actor, arm, period and endpoint" in prompts["C-53"]
     assert any(Path(path).name == "measurement.md" for path in hashes)

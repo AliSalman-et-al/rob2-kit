@@ -1,0 +1,58 @@
+{
+  "case": "sanctuary",
+  "runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a11022-c949-72f0-a053-89e8f7f981ea",
+    "elapsed_seconds": 188.96795537200524,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "assessment_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a11022-c949-72f0-a053-89e8f7f981ea",
+    "elapsed_seconds": 1896.6688066489878,
+    "finalized_batch_observed": true,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "artifact": "diagnostics/final-medium-verifier-cutover-20261006/cases/sanctuary/workspace-run/.rob2-kit/finalized/805f43f1e5a61e1271558c2b29be4de12274c6bb2a34a240f8687d9715bc016f.rob2.zip",
+  "artifact_sha256": "aa54e1d3e3077002a36bf7207cb0c4d8db16141197174093997198a5aaae8d41",
+  "product_verifier": true,
+  "standalone_verifier_exit": 0,
+  "source_warrant_review": "pending; structural verification does not certify scientific support",
+  "projection_sha256": "49af06bf4543c48be5789e0f7f49caddff7272a31ba6a3009913d7199c776352",
+  "session_sha256": "c1432a2fa12c080d4392dbf368e5bdc699c5b7c266b189d5814143d8de07a905",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 136,
+    "tokens": {
+      "input_tokens": 16570607,
+      "cached_input_tokens": 16093568,
+      "output_tokens": 29137,
+      "reasoning_output_tokens": 3974
+    },
+    "dollars": null
+  },
+  "accuracy_gain_claimed": false,
+  "all_attempts_preserved": true
+}

@@ -95,9 +95,7 @@ def test_punctuated_doi_handoff_preserves_citation_and_source(tmp_path, network)
     )
     source = list_sources(original, "trial")["sources"][0]
     before = _state(original)
-    ref = reference("doi", DOI).model_copy(
-        update={"source_id": source["id"], "citation": citation}
-    )
+    ref = reference("doi", DOI).model_copy(update={"source_id": source["id"], "citation": citation})
     companion.request_companion_source(original, ref)
     request_path = next((original / ".rob2-kit/companion_requests").glob("*/request.json"))
     saved = json.loads(request_path.read_text())

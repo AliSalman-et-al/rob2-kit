@@ -15,7 +15,9 @@ from rob2_kit.packs import SCIENTIFIC_PACK, load_scientific_pack
 
 def test_complete_question_capture_and_background_are_pack_bound() -> None:
     capture = json.loads(
-        Path("tests/fixtures/official-guidance-audit-2019/complete-elaborations.json").read_text()
+        Path("tests/fixtures/official-guidance-audit-2019/complete-elaborations.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert len(capture["questions"]) == 22
     by_id = {question.id: question for question in SCIENTIFIC_PACK.questions}
@@ -36,9 +38,13 @@ def test_complete_question_capture_and_background_are_pack_bound() -> None:
 
 def test_background_and_faq_wording_preserve_source_versions_and_scope() -> None:
     background = json.loads(
-        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text()
+        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text(
+            encoding="utf-8"
+        )
     )
-    faq = json.loads(Path("tests/fixtures/official-guidance-audit-2019/faq.json").read_text())
+    faq = json.loads(
+        Path("tests/fixtures/official-guidance-audit-2019/faq.json").read_text(encoding="utf-8")
+    )
     by_locator = {
         section.guidance.source_locator: section
         for section in SCIENTIFIC_PACK.official_sections or ()
@@ -124,7 +130,9 @@ def test_preserved_previous_pack_view_recovers_without_schema_failure(tmp_path: 
 
 def test_box9_continuation_preserves_words_and_reading_order() -> None:
     capture = json.loads(
-        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text()
+        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text(
+            encoding="utf-8"
+        )
     )
     original49, original50 = capture["original_box9_page_captures"]
     joined, remaining = capture["sections"][2:4]

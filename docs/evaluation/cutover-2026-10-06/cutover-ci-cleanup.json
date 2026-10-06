@@ -355,5 +355,64 @@
   "yaml_semantic_check": "PASS: parsed workflow minus concurrency exactly equals previous workflow",
   "service_or_quota_blocker": "No specific service/quota error established; latest-head status recorded as observed, not claimed green.",
   "raw_receipt_sha256": "6bbc778b87c89fa60d62a05b70c392ec1e8d355a594d9be83e33d667f2a42a8d",
-  "raw_api_list_discrepancy": "Direct gh api list returned older completed runs and resulted in zero mutations; cleanup instead used gh run list with exact headBranch checks. Both raw snapshots retained."
+  "raw_api_list_discrepancy": "Direct gh api list returned older completed runs and resulted in zero mutations; cleanup instead used gh run list with exact headBranch checks. Both raw snapshots retained.",
+  "post_policy_push": {
+    "head": "a24cb9708791bb1c580847b58517d15fbadd64e7",
+    "latest_head_runs": [
+      {
+        "conclusion": "",
+        "databaseId": 37431835832,
+        "event": "pull_request",
+        "headBranch": "improve/scientific-premise-20261002",
+        "headSha": "a24cb9708791bb1c580847b58517d15fbadd64e7",
+        "status": "queued",
+        "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37431835832",
+        "workflowName": "CI"
+      },
+      {
+        "conclusion": "",
+        "databaseId": 37431830604,
+        "event": "push",
+        "headBranch": "improve/scientific-premise-20261002",
+        "headSha": "a24cb9708791bb1c580847b58517d15fbadd64e7",
+        "status": "queued",
+        "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37431830604",
+        "workflowName": "CI"
+      }
+    ],
+    "newly_superseded_ungrouped_runs_cancelled": [
+      {
+        "run": {
+          "conclusion": "",
+          "databaseId": 37430691063,
+          "event": "pull_request",
+          "headBranch": "improve/scientific-premise-20261002",
+          "headSha": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+          "status": "queued",
+          "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37430691063",
+          "workflowName": "CI"
+        },
+        "returncode": 0,
+        "stdout": "\u2713 Request to cancel workflow 37430691063 submitted.\n",
+        "stderr": ""
+      },
+      {
+        "run": {
+          "conclusion": "",
+          "databaseId": 37430684969,
+          "event": "push",
+          "headBranch": "improve/scientific-premise-20261002",
+          "headSha": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+          "status": "queued",
+          "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37430684969",
+          "workflowName": "CI"
+        },
+        "returncode": 0,
+        "stdout": "\u2713 Request to cancel workflow 37430684969 submitted.\n",
+        "stderr": ""
+      }
+    ],
+    "earlier_in_progress_obsolete_run": "Absent from pending set in post-policy snapshot; original cancellation request and history retained",
+    "future_push_policy": "Batch nonessential receipt updates; preserve final required push and PR checks"
+  }
 }
