@@ -1124,6 +1124,45 @@ def _review_fragment_response(
     return best
 
 
+def _share_review_fact_text(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Share only exact repeated source text; preserve all answer-specific fields."""
+    projected = json.loads(json.dumps(snapshot))
+    data = projected["data"]
+    if data.get("evidence_bodies"):
+        return snapshot
+    bodies: dict[str, dict[str, Any]] = {}
+    occurrences: dict[str, list[dict[str, Any]]] = {}
+    for domain in data.get("domain_findings", []):
+        for answer in domain.get("answers", []):
+            for fact in answer.get("facts", []):
+                reference = fact.get("evidence")
+                if not isinstance(reference, dict) or not isinstance(fact.get("text"), str):
+                    continue
+                identity = reference["identity"]
+                body = {"evidence": reference, "text": fact["text"]}
+                if identity in bodies and bodies[identity] != body:
+                    return snapshot
+                bodies[identity] = body
+                if fact.get("role") != "counterevidence":
+                    occurrences.setdefault(identity, []).append(fact)
+    shared = {
+        identity: bodies[identity] for identity, facts in occurrences.items() if len(facts) > 1
+    }
+    if not shared:
+        return snapshot
+    for identity in shared:
+        for fact in occurrences[identity]:
+            fact["source_body"] = identity
+            fact.pop("text")
+    data["evidence_bodies"] = shared
+    projected = _validate_response("review_trial", projected)
+    return (
+        projected
+        if _review_transport_bytes(projected) < _review_transport_bytes(snapshot)
+        else snapshot
+    )
+
+
 def _project_review_trial(
     normalized: dict[str, Any],
     *,
@@ -1135,6 +1174,13 @@ def _project_review_trial(
     data = normalized.get("data")
     if not isinstance(data, dict) or not isinstance(data.get("review"), dict):
         return normalized
+    recovery_snapshot = normalized
+    if selector is None and cursor is None:
+        recovery_snapshot = _share_review_fact_text(normalized)
+        # Keep existing summaries unchanged when the full projection still needs paging.
+        if _review_transport_bytes(recovery_snapshot) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+            normalized = recovery_snapshot
+    data = normalized["data"]
     review = data["review"]
     trial_id = review.get("trial_id")
     review_identity = review.get("identity")
@@ -1171,7 +1217,7 @@ def _project_review_trial(
         return _validate_response("review_trial", response)
 
     selected = _select_review_receipt(normalized, selector)
-    digest = _review_view_digest(normalized, selector)
+    digest = _review_view_digest(recovery_snapshot, selector)
     if selector is None and _review_transport_bytes(normalized) <= _REVIEW_TRIAL_RESPONSE_BYTES:
         return normalized
     target_kind, _target = _review_target(normalized, selector)
@@ -1229,7 +1275,9 @@ def _project_review_trial(
         if _review_transport_bytes(summary) > _REVIEW_TRIAL_RESPONSE_BYTES:
             raise ValueError("review_summary_unrecoverable: typed summary exceeds the byte limit")
         if persist:
-            _record_review_view(root, view_id, trial_id, review_identity, digest, None, normalized)
+            _record_review_view(
+                root, view_id, trial_id, review_identity, digest, None, recovery_snapshot
+            )
         return summary
 
     summary = _validate_response(
@@ -4639,6 +4687,11 @@ def save_domain_judgment(
         "that their combined impact substantially lowers confidence in this exact Result. "
         "Omission preserves the default proposal. A review is "
         "not closure: inspect its Result and checkpoint identities, correct any Domain if needed. "
+        "Exact repeated source quotations may be shared in data.evidence_bodies, bound to "
+        "each facts[].source_body by unchanged Evidence identity and handle. Contrary quotes "
+        "stay inline. Per-answer warrants, qualifiers and source recovery actions remain intact; "
+        "selected Domain/answer views retain inline source text. These references do not certify "
+        "inference. "
         "Review fact text is bounded to 4,000 characters. Use evidence_expansions to recover the "
         "exact Evidence when more context is needed, then read a narrower Source window. Review "
         "expansion objects contain operation and Evidence metadata, not direct tool arguments; "

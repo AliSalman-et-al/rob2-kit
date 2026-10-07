@@ -2633,7 +2633,9 @@ class ReviewEvidenceReference(PublicModel):
 class ReviewFact(PublicModel):
     """One source-bound fact shown before the host's answer warrant."""
 
-    text: str = Field(
+    text: str | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
         min_length=1,
         max_length=4_000,
         description=(
@@ -2642,7 +2644,14 @@ class ReviewFact(PublicModel):
         ),
     )
     evidence: ReviewEvidenceReference | None = None
+    source_body: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
     role: Literal["support", "counterevidence", "context"] = "support"
+
+    @model_validator(mode="after")
+    def quoted_text_is_reachable(self) -> ReviewFact:
+        if self.text is None and self.source_body is None:
+            raise ValueError("review fact requires quoted text or an exact source body")
+        return self
 
 
 class ReviewLimitation(PublicModel):
@@ -2941,7 +2950,17 @@ class ReviewTrialPage(PublicModel):
         return self
 
 
+class ReviewEvidenceBody(PublicModel):
+    """Exact quoted text shared by unchanged Evidence identity and handle."""
+
+    evidence: ReviewEvidenceReference
+    text: str = Field(min_length=1, max_length=4_000)
+
+
 class ReviewTrialData(PublicModel):
+    evidence_bodies: dict[Identity, ReviewEvidenceBody] = Field(
+        default_factory=dict, exclude_if=lambda value: not value
+    )
     review: TrialReviewSummary
     result: dict[str, Any] | None = Field(
         default=None,
@@ -2960,6 +2979,26 @@ class ReviewTrialData(PublicModel):
         exclude_if=lambda value: value is None,
         description="Completeness, summary counts, and explicit detail recovery for this review.",
     )
+
+    @model_validator(mode="after")
+    def exact_source_body_bindings(self) -> ReviewTrialData:
+        for identity, body in self.evidence_bodies.items():
+            if identity != body.evidence.identity:
+                raise ValueError("review source body key differs from Evidence identity")
+        for domain in self.domain_findings:
+            for answer in domain.answers:
+                for fact in answer.facts:
+                    identity = fact.source_body or (
+                        fact.evidence.identity if fact.evidence else None
+                    )
+                    body = self.evidence_bodies.get(identity) if identity else None
+                    if fact.source_body is not None and (
+                        body is None or fact.evidence != body.evidence
+                    ):
+                        raise ValueError("review source body is missing or differently bound")
+                    if body is not None and fact.text is not None and fact.text != body.text:
+                        raise ValueError("inline quote differs from its source body")
+        return self
 
 
 class TrialClosureSummary(PublicModel):
