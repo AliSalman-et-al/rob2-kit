@@ -50,20 +50,35 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     semantics = row["properties"]["semantics"]["anyOf"][0]
     for model, advertised in ((MissingDataRow, row), (MissingDataSemantics, semantics)):
         repair = _construction_schema(model)
+        for branch in ("if", "then"):
+            for field, schema in advertised[branch]["properties"].items():
+                assert schema["description"]
+                assert {k: v for k, v in schema.items() if k != "description"} == (
+                    repair[branch]["properties"][field]
+                )
         assert (
-            advertised["if"]
+            {**advertised["if"], "properties": repair["if"]["properties"]}
             == repair["if"]
             == {
                 "required": ["event_count"],
-                "properties": {"event_count": {"type": "integer"}},
+                "properties": {
+                    "event_count": {
+                        "type": "integer",
+                    }
+                },
             }
         )
         assert (
-            advertised["then"]
+            {**advertised["then"], "properties": repair["then"]["properties"]}
             == repair["then"]
             == {
                 "required": ["event_definition"],
-                "properties": {"event_definition": {"type": "string", "minLength": 1}},
+                "properties": {
+                    "event_definition": {
+                        "type": "string",
+                        "minLength": 1,
+                    }
+                },
             }
         )
         assert (

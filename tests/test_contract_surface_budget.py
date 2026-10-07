@@ -100,7 +100,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # that surface; continuation payloads themselves no longer repeat it.
     # Two companion operations and durable typed status recovery add 18 KB.
     # Authored bookmark provenance and bound outline/read actions add 14 KB; measured 667054.
-    assert total_bytes < 675_000
+    # Conditional event-definition disclosure and field descriptions measure 680803 bytes.
+    assert total_bytes < 685_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations

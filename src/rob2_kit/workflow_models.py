@@ -555,10 +555,24 @@ class MissingDataCensoring(StrictModel):
 
 
 _EVENT_COUNT_DEFINITION_SCHEMA = {
-    "if": {"required": ["event_count"], "properties": {"event_count": {"type": "integer"}}},
+    "if": {
+        "required": ["event_count"],
+        "properties": {
+            "event_count": {
+                "type": "integer",
+                "description": "Event numerator requiring an explicit definition.",
+            }
+        },
+    },
     "then": {
         "required": ["event_definition"],
-        "properties": {"event_definition": {"type": "string", "minLength": 1}},
+        "properties": {
+            "event_definition": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Source-supported definition of the event numerator.",
+            }
+        },
     },
 }
 
