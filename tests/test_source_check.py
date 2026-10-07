@@ -137,12 +137,12 @@ def test_full_canonical_answers_paired_guidance_pixels_and_fresh_preparation(ass
     )
     assert manifest["model_calls"] == 0 and manifest["fresh_exec"] and not manifest["resume"]
     assert manifest["accepted_checkpoints_not_model_input"] == [record]
-    guidance = json.loads((output / "guidance.json").read_text())
+    guidance = json.loads((output / "guidance.json").read_text(encoding="utf-8"))
     assert "questions" not in guidance and guidance["shared_sections"]
     assert manifest["allowed_tools"] == list(READ_TOOLS)
     assert not set(READ_TOOLS) & {"save_domain_judgment", "review_trial", "get_status"}
     assert "--image" in manifest["command"] and "--output-schema" in manifest["command"]
-    assert "Attached image 1" in (output / "prompt.txt").read_text()
+    assert "Attached image 1" in (output / "prompt.txt").read_text(encoding="utf-8")
     assert "Not supplied" in manifest["delivery"]["filesystem_isolation"]
     assert _protected(workspace) == before
     with pytest.raises(FileExistsError):
