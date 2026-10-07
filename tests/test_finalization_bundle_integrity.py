@@ -764,6 +764,7 @@ def test_pre_d27_clarification_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 
     def use_previous_guidance(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.9"
         _historical_count_fixture(canonical)
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
