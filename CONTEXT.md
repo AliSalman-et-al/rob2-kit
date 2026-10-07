@@ -158,6 +158,13 @@ an automatic requirement to read every appendix page. A No information answer
 retains the host's bounded scientific stopping rationale; the server does not
 turn a navigation match into a signaling answer or risk label.
 
+Registry comparison cards retain a separate navigation entry for each captured
+result-outcome index, with its literal title, type, time frame and population
+description when unambiguous, plus exact source recovery windows. An analyzed
+denominator is not an observed-outcome count; neighboring outcomes may use
+different definitions or analyses even at the same time point. These entries
+do not certify correspondence with the selected Result or historical plan timing.
+
 Main-report identification is separate from reading coverage. A unique declared
 `main_article` role identifies the report. Inferred roles and fallback reading
 remain visible but do not certify report identity. When identification is

@@ -13,7 +13,11 @@ from support.rob2 import (
 )
 
 from rob2_kit.application import domains
-from rob2_kit.interfaces.mcp.contracts import EvidenceRecovery, MainReportRecovery
+from rob2_kit.interfaces.mcp.contracts import (
+    EvidenceRecovery,
+    MainReportRecovery,
+    RegistryOutcomeNavigation,
+)
 
 
 def _verifier():
@@ -158,6 +162,54 @@ def test_registry_navigation_keeps_first_twenty_windows_and_count(tmp_path: Path
     recovery = found[source_id]["recovery"]
     assert len(recovery["windows"]) == 20
     assert found[source_id]["window_count"] == 25
+
+
+def test_registry_outcomes_keep_distinct_scope_and_exact_recovery(tmp_path: Path) -> None:
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    source_id = "sh_" + "b" * 16
+    prefix = "resultsSection.outcomeMeasuresModule.outcomeMeasures"
+    pages = [
+        f'{prefix}[0].title: "Change in score"\n'
+        f'{prefix}[0].timeFrame: "Week 28"\n'
+        f'{prefix}[0].type: "PRIMARY"\n'
+        f'{prefix}[0].denoms[0].counts[0].value: "133"',
+        f'{prefix}[0].populationDescription: "Baseline and at least one post-baseline score"\n'
+        f'{prefix}[1].title: "Percentage below threshold"\n'
+        f'{prefix}[1].timeFrame: "Week 28"\n'
+        f'{prefix}[1].type: "SECONDARY"\n'
+        f'{prefix}[1].populationDescription: "Baseline and at least one post-baseline score"',
+        f"{prefix}[2].title: malformed\n"
+        f'{prefix}[2].populationDescription: "First fragment"\n'
+        f'{prefix}[2].populationDescription: "Second fragment"',
+    ]
+    with sqlite3.connect(internal / "derivative.sqlite3") as connection:
+        connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
+        connection.executemany(
+            "INSERT INTO pages VALUES (?, ?, ?)",
+            [(page, text, source_id) for page, text in enumerate(pages, 1)],
+        )
+    navigation = domains._registry_navigation(
+        tmp_path, "trial", [{"id": source_id, "role": "registry"}]
+    )[source_id]
+    entries = [RegistryOutcomeNavigation.model_validate(x) for x in navigation["outcomes"]]
+    assert [entry.path for entry in entries] == [f"{prefix}[{i}]" for i in range(3)]
+    assert entries[0].type == "PRIMARY"
+    assert entries[1].type == "SECONDARY"
+    assert entries[0].title != entries[1].title
+    assert entries[0].populationDescription == "Baseline and at least one post-baseline score"
+    assert navigation["outcomes"][0]["recovery"]["windows"] == (
+        {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 4},
+        {"source_id": source_id, "page": 2, "start_line": 1, "end_line": 1},
+    )
+    assert navigation["outcomes"][1]["recovery"]["windows"] == (
+        {"source_id": source_id, "page": 2, "start_line": 2, "end_line": 5},
+    )
+    assert entries[2].title is None
+    assert entries[2].populationDescription is None
+    assert (
+        domains._registry_navigation(tmp_path, "trial", [{"id": source_id, "role": "other"}]) == {}
+    )
 
 
 def test_evidence_recovery_shape_stays_compatible_with_older_projections() -> None:
@@ -322,6 +374,9 @@ def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_a
             "outcomeMeasuresModule": {
                 "outcomeMeasures": [
                     {
+                        "title": "Change in score",
+                        "timeFrame": "Week 28",
+                        "type": "PRIMARY",
                         "populationDescription": "Baseline/postbaseline; excludes after rescue.",
                         "denoms": [
                             {"units": "Participants", "counts": [{"groupId": "G1", "value": "18"}]}
@@ -367,6 +422,17 @@ def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_a
         )
         assert "resultsSection.outcomeMeasuresModule" in group["registry_field_paths"]
         assert "protocolSection.outcomesModule" in group["registry_field_paths"]
+        outcome = group["registry_outcomes"][0]
+        assert outcome["title"] == "Change in score"
+        assert outcome["timeFrame"] == "Week 28"
+        assert outcome["type"] == "PRIMARY"
+        assert outcome["populationDescription"] == "Baseline/postbaseline; excludes after rescue."
+        outcome_receipt = _call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "windows": outcome["recovery"]["windows"]},
+        )
+        assert "outcomeMeasures[0].denoms" in str(outcome_receipt)
         recovery = group["registry_recovery"]
         receipt = _call(
             workspace, "read_pages", {"trial_id": "trial", "windows": recovery["windows"]}

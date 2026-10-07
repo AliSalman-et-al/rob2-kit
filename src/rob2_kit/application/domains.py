@@ -431,9 +431,33 @@ def _registry_navigation(
             ).fetchall()
             paths: set[str] = set()
             ranges: dict[tuple[str, int], list[int]] = {}
+            outcomes: dict[str, dict[str, Any]] = {}
             for row in rows:
                 page = int(row["page"])
                 for line_number, line in enumerate(str(row["text"]).splitlines(), 1):
+                    outcome = re.match(
+                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\])\."
+                        r"([^:]+):\s*(.*)$",
+                        line,
+                    )
+                    if outcome:
+                        path, field, value = outcome.groups()
+                        entry = outcomes.setdefault(
+                            path, {"path": path, "ranges": {}, "field_counts": {}}
+                        )
+                        bounds = entry["ranges"].setdefault(page, [line_number, line_number])
+                        bounds[1] = line_number
+                        if field in {"title", "type", "timeFrame", "populationDescription"}:
+                            counts = entry["field_counts"]
+                            counts[field] = counts.get(field, 0) + 1
+                            entry.pop(field, None)
+                            try:
+                                decoded = json.loads(value)
+                            except json.JSONDecodeError:
+                                pass
+                            else:
+                                if isinstance(decoded, str) and counts[field] == 1:
+                                    entry[field] = decoded
                     for path in _REGISTRY_FIELD_PATHS.values():
                         if line.startswith(path + ".") or line.startswith(path + ":"):
                             paths.add(path)
@@ -454,6 +478,29 @@ def _registry_navigation(
                 windows = tuple(all_windows[:20])
                 found[source_id] = {
                     "paths": tuple(sorted(paths)),
+                    "outcomes": tuple(
+                        {
+                            **{
+                                key: value
+                                for key, value in entry.items()
+                                if key not in {"ranges", "field_counts"}
+                            },
+                            "recovery": {
+                                "operation": "read_pages",
+                                "trial_id": trial_id,
+                                "windows": tuple(
+                                    {
+                                        "source_id": source_id,
+                                        "page": page,
+                                        "start_line": bounds[0],
+                                        "end_line": bounds[1],
+                                    }
+                                    for page, bounds in entry["ranges"].items()
+                                ),
+                            },
+                        }
+                        for entry in outcomes.values()
+                    ),
                     "recovery": {
                         "operation": "read_pages",
                         "trial_id": trial_id,
@@ -873,6 +920,9 @@ def _comparison_cards(
                 "registry_window_count": (registry_navigation or {})
                 .get(source_id, {})
                 .get("window_count", 0),
+                "registry_outcomes": (registry_navigation or {})
+                .get(source_id, {})
+                .get("outcomes", ()),
                 "passages": passages,
             }
         )

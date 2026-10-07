@@ -2210,6 +2210,17 @@ class ComparisonPassageRef(PublicModel):
     )
 
 
+class RegistryOutcomeNavigation(PublicModel):
+    """Captured outcome scope, not certified correspondence or observed availability."""
+
+    path: str
+    title: str | None = None
+    type: str | None = None
+    timeFrame: str | None = None
+    populationDescription: str | None = None
+    recovery: EvidenceRecovery
+
+
 class ComparisonPassageGroup(PublicModel):
     source_id: SourceHandle
     source_role: SourceRole
@@ -2223,6 +2234,7 @@ class ComparisonPassageGroup(PublicModel):
     registry_field_paths: tuple[str, ...] = ()
     registry_recovery: EvidenceRecovery | None = None
     registry_window_count: NonNegativeInt = 0
+    registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
     passages: tuple[ComparisonPassageRef, ...] = ()
 
 
