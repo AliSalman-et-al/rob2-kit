@@ -78,6 +78,15 @@ inference. A plan is not demonstrated conduct, and analysis exclusion is not
 necessarily measurement cessation. Correct only what the inspected source
 warrants, retaining the smallest supported qualification.
 
+For text references, use the existing `passage_ref` from `read_pages` or search,
+or an original `cited_spans.evidence_identity`, as `location` with the literal
+`quote`. The validator resolves the exact captured span; it does not widen the
+window or repair the quote. Explicit physical page and absolute page-line
+coordinates remain available. The first and last lines must contain the entire
+quote, including words at line boundaries. Visual references still require
+the actual render receipt and normalized region. Preserve the reviewer's
+disposable read/render cache for validation so fresh receipts are available.
+
 Validate the report's exact snapshot, unchanged clause and source bindings with
 the existing repository utility. Its receipt checks provenance and report
 coverage, not semantic correctness or absence of missed errors. The original

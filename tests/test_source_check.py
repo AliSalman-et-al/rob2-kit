@@ -521,3 +521,79 @@ def test_inactive_questions_do_not_create_audit_claims_or_invented_accepted_answ
     assert len(json.loads((output / "guidance.json").read_text(encoding="utf-8"))["questions"]) == 1
     assert request["accepted_checkpoints_not_model_input"] == [record]
     assert record["answers"][0]["unknowns"] == ["Individual observation records are unavailable."]
+
+
+def test_existing_text_span_references_preserve_exact_quote_offsets_and_scientific_state(
+    assessment: tuple[Path, dict[str, Any]],
+) -> None:
+    workspace, packet = assessment
+    before = _canonical_hash(workspace)
+    working = (workspace / ".rob2-kit/working.sqlite3").read_bytes()
+    span = next(span for span in packet["cited_spans"] if span.get("quote", "").startswith(FACT))
+    page = support._call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {key: span[key] for key in ("source_id", "page", "start_line", "end_line")}
+            ],
+        },
+    )["data"]["pages"][0]
+    for location in (span["evidence_identity"], page["passage_ref"]):
+        report = _report(packet)
+        reference = report["findings"][0]["references"][0]
+        reference.update(
+            location=location, quote="Alpha 20, Beta 30, Gamma 40 randomized participants."
+        )
+        receipt = validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+        resolved = receipt["resolved_references"][0]
+        assert resolved["resolved_subspan"]["start_char"] == len("Period 1: ")
+        assert resolved["resolved_location"]["start_line"] == 1
+        assert "this claim's original" in resolved["binding"]
+        assert not receipt["semantic_support_verified"]
+    assert _canonical_hash(workspace) == before
+    assert (workspace / ".rob2-kit/working.sqlite3").read_bytes() == working
+
+
+def test_text_span_references_reject_widening_wrong_identity_and_visual_handles(
+    assessment: tuple[Path, dict[str, Any]],
+) -> None:
+    workspace, packet = assessment
+    before = _canonical_hash(workspace)
+    span = next(span for span in packet["cited_spans"] if span.get("quote", "").startswith(FACT))
+    support._call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": span["source_id"], "pages": [1]},
+    )
+    narrow = support._call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": span["source_id"],
+            "page": 1,
+            "selected_text": "Alpha 20",
+        },
+    )["data"]["evidence"]
+    report = _report(packet)
+    reference = report["findings"][0]["references"][0]
+    reference.update(location=narrow["handle"], quote="Alpha 20")
+    receipt = validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    assert receipt["resolved_references"][0]["resolved_subspan"]["start_char"] == len("Period 1: ")
+    reference["quote"] = "Period 1: Alpha 20"
+    with pytest.raises(ValueError, match="contiguous source excerpt"):
+        validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    reference.update(location="eh_0000000000000000", quote=FACT)
+    with pytest.raises(ValueError, match="unavailable"):
+        validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    identity = span["evidence_identity"]
+    reference["location"] = identity[:-1] + ("0" if identity[-1] != "0" else "1")
+    with pytest.raises(ValueError, match="identity does not match"):
+        validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    visual = next(span for span in packet["cited_spans"] if span["kind"] == "figure")
+    reference["location"] = visual["evidence_identity"]
+    with pytest.raises(ValueError, match="narrative Evidence"):
+        validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    assert _canonical_hash(workspace) == before
