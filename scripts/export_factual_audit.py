@@ -359,9 +359,9 @@ def prepare_native_review(
             if path.is_file()
         },
         "model_calls": 0,
-        "launch_protocol": "Explicit authorization only. Reuse diagnostic_evidence_preflight."
-        "launch_checked and run_rsi_case._run_owned_codex for bounded native "
-        "execution; freeze research criteria/availability manifest first. "
+        "launch_protocol": "Explicit researcher request only. For a paid scientific diagnostic, "
+        "reuse diagnostic_evidence_preflight.launch_checked and "
+        "run_rsi_case._run_owned_codex; freeze research criteria/availability manifest first. "
         "Preserve events, effective model, usage, stderr and protected hashes. "
         "No retry or canonical tool is part of this request.",
     }
