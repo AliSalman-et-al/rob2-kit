@@ -418,7 +418,8 @@ class WorkingCheckpointDraft(StrictModel):
         exclude_if=lambda value: value is None,
         description="Optional selected-Result reconstruction. Replaces overlapping notes, "
         "premises and drafts; source-linked steps are shared across Domains, "
-        "not signalling answers.",
+        "not signalling answers. After changing this account, reload get_domain_context "
+        "before submitting a Domain, even when state_revision is unchanged.",
     )
     trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
     main_report_source_id: SourceHandle | Literal["missing"] | None = Field(

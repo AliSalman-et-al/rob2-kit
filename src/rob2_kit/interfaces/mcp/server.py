@@ -2748,6 +2748,8 @@ def get_status(
         "step identities with get_status. Facts, counterevidence and unknowns remain "
         "host assertions; "
         "step edits flag depended-on answers for reconsideration without changing labels. "
+        "When result_account changes, reload get_domain_context before submitting the Domain, "
+        "even if state_revision is unchanged. "
         "Account observation/counterevidence sources use the same Evidence handles, text ranges "
         "or delivered visual references as Domain bases; returned handles avoid locator copying. "
         "result_account is directly an array. Preserve or explicitly reconsider unknowns and "
