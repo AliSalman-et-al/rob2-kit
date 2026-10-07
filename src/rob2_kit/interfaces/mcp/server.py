@@ -1815,9 +1815,9 @@ RequestedOutcome = Annotated[
     Field(
         min_length=1,
         description=(
-            "Outcome concept to assess across Trials; preserve only the researcher's outcome "
-            "wording. Omit Trial names, population, comparison, effect estimate, follow-up, and "
-            "other Result-specific scope; those belong in the Proposal."
+            "Preserve the researcher's requested outcome wording, including any explicit "
+            "definition, population, comparison, statistic, follow-up or reported-value anchor. "
+            "These are requested scope, not source-verified facts. Trial labels are separate."
         ),
     ),
     AfterValidator(_nonblank),
@@ -2633,8 +2633,10 @@ def current_batch() -> str:
     name="prepare_batch",
     title="Prepare batch",
     description=(
-        "Use requested_outcome only for the outcome concept, excluding population, comparison, "
-        "effect estimate, follow-up, and other Result facets. If the user names Trials, pass their "
+        "Preserve supplied outcome scope in requested_outcome; do not strip an explicit "
+        "definition, population, comparison, statistic, follow-up or reported-value anchor. "
+        "Keep source-reported facts separate when constructing the Proposal. "
+        "If the user names Trials, pass their "
         "exact input directory labels in trial_labels. Omit trial_labels to capture all immediate "
         "valid Trial directories. The server resolves directories, so no listing is required. "
         "Inspect returned conditions for supplied files that were not included. DOCX captures "

@@ -128,10 +128,13 @@ Call `get_status` first. Follow `head.next_action` and complete any required
 reading before scientific work. Pass server-owned IDs and `expected_revision`
 unchanged.
 
-When the Batch is empty, call `prepare_batch` with only the clinical outcome
-concept from the request. Do not include the Trial name, population, comparison,
-effect estimate, follow-up, or other Result facets in `requested_outcome`; those
-belong in the Proposal. If the researcher named Trials, pass their exact input
+When the Batch is empty, call `prepare_batch` preserving the requested outcome
+wording and any explicit definition, population, comparison, statistic, follow-up
+or reported-value anchor. Keep Trial labels separate. User-supplied scope is the
+target, not source-verified fact; preserve source discrepancies in the Proposal
+comparison and reasoning rather than silently changing the target. A generic
+outcome such as mortality does not uniquely specify a window. If the researcher
+named Trials, pass their exact input
 directory labels. Omit `trial_labels` only when the request covers every input
 Trial.
 

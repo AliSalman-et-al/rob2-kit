@@ -481,14 +481,9 @@ def prepare_batch_for_outcome(
 
 
 def validate_requested_outcome(value: str) -> str:
-    """Keep Result-specific definitions out of the Batch outcome concept."""
+    """Preserve the supplied target wording without interpreting its scientific scope."""
     if not isinstance(value, str) or not value.strip():
         raise ValueError("requested_outcome must contain non-whitespace content")
-    if " defined as " in f" {value.casefold()} ":
-        raise ValueError(
-            "requested_outcome must contain only the outcome concept; move its definition and "
-            "other Result-specific facets to the Proposal"
-        )
     return value
 
 
