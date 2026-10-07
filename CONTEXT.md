@@ -557,9 +557,10 @@ references too. Text ranges retain narrative provenance and never cover graphica
 cells by attaching a rendered page. Proposal construction still uses selected visual
 Evidence; reusable selected handles remain available for long repeated transcriptions.
 
-Opt-in source checking projects existing selected-Trial review into a fresh factual
-context through the existing exporter. It withholds answer/judgment metadata,
-preserves full claims and claim-specific source bindings, and validates advisory
+Opt-in source checking reviews the existing selected-Trial question answers in a
+fresh context through the existing exporter. It pairs each complete accepted answer
+with its official question guidance and asks for retain/revise/uncertain findings,
+using precise canonical entry IDs and captured Source handles. It validates advisory
 locators against current captured Sources and immutable checkpoint identities.
 It certifies provenance only, never semantic support or reviewer correctness.
 There is no automatic application, new canonical ledger or finalization gate; the
