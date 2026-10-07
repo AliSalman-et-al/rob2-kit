@@ -57,6 +57,7 @@ def replay(events: Path, *, max_response_bytes: int | None = None) -> dict[str, 
             "questions",
             "evidence",
             "comparison_cards",
+            "registry_outcomes",
             "delivery_history",
         )
         assert recovered[name] == []

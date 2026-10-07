@@ -175,7 +175,7 @@ def test_registry_outcomes_keep_distinct_scope_and_exact_recovery(tmp_path: Path
         f'{prefix}[0].type: "PRIMARY"\n'
         f'{prefix}[0].denoms[0].counts[0].value: "133"',
         f'{prefix}[0].populationDescription: "Baseline and at least one post-baseline score"\n'
-        f'{prefix}[1].title: "Percentage below threshold"\n'
+        f'{prefix}[1].title: "Change in score"\n'
         f'{prefix}[1].timeFrame: "Week 28"\n'
         f'{prefix}[1].type: "SECONDARY"\n'
         f'{prefix}[1].populationDescription: "Baseline and at least one post-baseline score"',
@@ -196,7 +196,8 @@ def test_registry_outcomes_keep_distinct_scope_and_exact_recovery(tmp_path: Path
     assert [entry.path for entry in entries] == [f"{prefix}[{i}]" for i in range(3)]
     assert entries[0].type == "PRIMARY"
     assert entries[1].type == "SECONDARY"
-    assert entries[0].title != entries[1].title
+    assert entries[0].title == entries[1].title
+    assert entries[0].path != entries[1].path
     assert entries[0].populationDescription == "Baseline and at least one post-baseline score"
     assert navigation["outcomes"][0]["recovery"]["windows"] == (
         {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 4},
@@ -210,6 +211,31 @@ def test_registry_outcomes_keep_distinct_scope_and_exact_recovery(tmp_path: Path
     assert (
         domains._registry_navigation(tmp_path, "trial", [{"id": source_id, "role": "other"}]) == {}
     )
+
+
+def test_registry_outcome_recovery_batches_every_page_without_truncation(tmp_path: Path) -> None:
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    source_id = "sh_" + "b" * 16
+    path = "resultsSection.outcomeMeasuresModule.outcomeMeasures[0]"
+    with sqlite3.connect(internal / "derivative.sqlite3") as connection:
+        connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
+        connection.executemany(
+            "INSERT INTO pages VALUES (?, ?, ?)",
+            [(page, f'{path}.description: "Fragment {page}"', source_id) for page in range(1, 22)],
+        )
+    found = domains._registry_navigation(
+        tmp_path, "trial", [{"id": source_id, "role": "registry"}]
+    )[source_id]
+    entries = [RegistryOutcomeNavigation.model_validate(x) for x in found["outcomes"]]
+    assert [entry.batch_index for entry in entries] == [0, 1]
+    assert all(entry.batch_count == 2 and entry.window_count == 21 for entry in entries)
+    assert all(entry.path == path and entry.source_id == source_id for entry in entries)
+    assert [window.page for entry in entries for window in entry.recovery.windows] == list(
+        range(1, 22)
+    )
+    assert [len(entry.recovery.windows) for entry in entries] == [20, 1]
+    assert all(entry.title is None and entry.timeFrame is None for entry in entries)
 
 
 def test_evidence_recovery_shape_stays_compatible_with_older_projections() -> None:
@@ -350,8 +376,9 @@ def test_public_preview_recovers_handle_outside_active_domain_projection(
     assert domains._state(tmp_path) == before
 
 
+@pytest.mark.parametrize("outcome_count", [1, 200])
 def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_and_d5(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, outcome_count: int
 ) -> None:
     import hashlib
     import json
@@ -391,6 +418,14 @@ def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_a
         },
         "derivedSection": {"miscInfoModule": {"versionHolder": "2026-01-01"}},
     }
+    payload["resultsSection"]["outcomeMeasuresModule"]["outcomeMeasures"].extend(
+        {
+            "title": "Change in score",
+            "type": "SECONDARY",
+            "populationDescription": "population " * 50,
+        }
+        for _ in range(outcome_count - 1)
+    )
     original = support._workspace
 
     def create(path: Path, requested_outcome: str = "requested outcome") -> Path:
@@ -422,7 +457,9 @@ def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_a
         )
         assert "resultsSection.outcomeMeasuresModule" in group["registry_field_paths"]
         assert "protocolSection.outcomesModule" in group["registry_field_paths"]
-        outcome = group["registry_outcomes"][0]
+        assert group["registry_outcome_count"] == outcome_count
+        assert len(context["data"]["registry_outcomes"]) == outcome_count
+        outcome = context["data"]["registry_outcomes"][0]
         assert outcome["title"] == "Change in score"
         assert outcome["timeFrame"] == "Week 28"
         assert outcome["type"] == "PRIMARY"

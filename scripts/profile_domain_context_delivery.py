@@ -13,7 +13,14 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-_SECTIONS = ("primary_report", "questions", "evidence", "comparison_cards", "delivery_history")
+_SECTIONS = (
+    "primary_report",
+    "questions",
+    "evidence",
+    "comparison_cards",
+    "registry_outcomes",
+    "delivery_history",
+)
 
 
 def _structured_response(item: dict[str, Any]) -> dict[str, Any] | None:

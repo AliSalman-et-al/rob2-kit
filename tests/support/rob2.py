@@ -256,7 +256,12 @@ def _call(
                 if len(pages) > 1 and all(isinstance(page.get("data"), dict) for page in pages):
                     merged = dict(pages[0])
                     data = dict(pages[0]["data"])
-                    for section in ("questions", "comparison_cards", "evidence"):
+                    for section in (
+                        "questions",
+                        "comparison_cards",
+                        "registry_outcomes",
+                        "evidence",
+                    ):
                         data[section] = [
                             item for page in pages for item in page["data"].get(section, [])
                         ]

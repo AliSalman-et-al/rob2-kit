@@ -2109,6 +2109,7 @@ class DomainContextData(PublicModel):
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
+    registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
         default=None,
@@ -2179,6 +2180,7 @@ class DomainContextPage(PublicModel):
         "questions",
         "official_guidance",
         "comparison_cards",
+        "registry_outcomes",
         "evidence",
     ]
     item_start: NonNegativeInt = 0
@@ -2214,6 +2216,10 @@ class RegistryOutcomeNavigation(PublicModel):
     """Captured outcome scope, not certified correspondence or observed availability."""
 
     path: str
+    source_id: SourceHandle
+    batch_index: NonNegativeInt
+    batch_count: PositiveInt
+    window_count: PositiveInt
     title: str | None = None
     type: str | None = None
     timeFrame: str | None = None
@@ -2234,7 +2240,7 @@ class ComparisonPassageGroup(PublicModel):
     registry_field_paths: tuple[str, ...] = ()
     registry_recovery: EvidenceRecovery | None = None
     registry_window_count: NonNegativeInt = 0
-    registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
+    registry_outcome_count: NonNegativeInt = 0
     passages: tuple[ComparisonPassageRef, ...] = ()
 
 

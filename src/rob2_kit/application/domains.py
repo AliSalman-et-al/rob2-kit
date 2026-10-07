@@ -495,11 +495,18 @@ def _registry_navigation(
                                         "start_line": bounds[0],
                                         "end_line": bounds[1],
                                     }
-                                    for page, bounds in entry["ranges"].items()
+                                    for page, bounds in list(entry["ranges"].items())[
+                                        start : start + 20
+                                    ]
                                 ),
                             },
+                            "source_id": source_id,
+                            "batch_index": start // 20,
+                            "batch_count": (len(entry["ranges"]) + 19) // 20,
+                            "window_count": len(entry["ranges"]),
                         }
                         for entry in outcomes.values()
+                        for start in range(0, len(entry["ranges"]), 20)
                     ),
                     "recovery": {
                         "operation": "read_pages",
@@ -920,9 +927,14 @@ def _comparison_cards(
                 "registry_window_count": (registry_navigation or {})
                 .get(source_id, {})
                 .get("window_count", 0),
-                "registry_outcomes": (registry_navigation or {})
-                .get(source_id, {})
-                .get("outcomes", ()),
+                "registry_outcome_count": len(
+                    {
+                        item["path"]
+                        for item in (registry_navigation or {})
+                        .get(source_id, {})
+                        .get("outcomes", ())
+                    }
+                ),
                 "passages": passages,
             }
         )
@@ -3791,6 +3803,11 @@ def get_domain_context(
         else None
     )
     participant_flow_rows = canonical_preview if canonical_preview is not None else flow_rows
+    registry_navigation = (
+        _registry_navigation(root, trial_id, trial_sources)
+        if domain_id in {"domain:missing", "domain:selection"}
+        else {}
+    )
     context: dict[str, Any] = {
         "outcome": "success",
         "trial_id": trial_id,
@@ -3875,15 +3892,16 @@ def get_domain_context(
             checkpoint_answers,
             trial_sources,
             canonical_preview,
-            _registry_navigation(root, trial_id, trial_sources)
-            if domain_id in {"domain:missing", "domain:selection"}
-            else None,
+            registry_navigation,
             trial_registry if isinstance(trial_registry, dict) else None,
             participant_flow_data=(
                 reconcile_missing_data(participant_flow_rows) if participant_flow_rows else None
             ),
             candidate_questions=candidate_questions,
         ),
+        "registry_outcomes": [
+            outcome for source in registry_navigation.values() for outcome in source["outcomes"]
+        ],
         "coverage": _source_coverage(
             trial_id,
             trial_sources,

@@ -158,9 +158,11 @@ an automatic requirement to read every appendix page. A No information answer
 retains the host's bounded scientific stopping rationale; the server does not
 turn a navigation match into a signaling answer or risk label.
 
-Registry comparison cards retain a separate navigation entry for each captured
-result-outcome index, with its literal title, type, time frame and population
-description when unambiguous, plus exact source recovery windows. An analyzed
+Registry comparison cards report the number of captured result outcomes;
+separately pageable `registry_outcomes` entries retain each exact source/index,
+literal title, type, time frame and population description when unambiguous,
+plus exact source recovery windows. Outcomes spanning more than twenty pages
+retain numbered recovery batches and their total window count. An analyzed
 denominator is not an observed-outcome count; neighboring outcomes may use
 different definitions or analyses even at the same time point. These entries
 do not certify correspondence with the selected Result or historical plan timing.

@@ -81,7 +81,12 @@ def _wire_context(
                     ):
                         merged = dict(pages[0].structured_content or {})
                         data = dict(pages[0].structured_content["data"])
-                        for section in ("questions", "comparison_cards", "evidence"):
+                        for section in (
+                            "questions",
+                            "comparison_cards",
+                            "registry_outcomes",
+                            "evidence",
+                        ):
                             data[section] = [
                                 item
                                 for page in pages

@@ -386,6 +386,7 @@ _DOMAIN_CONTEXT_PAGE_SECTIONS = (
     "official_guidance",
     "evidence",
     "comparison_cards",
+    "registry_outcomes",
 )
 _REVIEW_TRIAL_RESPONSE_BYTES = 65_536
 # Keep the overview small: deferred details are recovered again in full.
@@ -430,6 +431,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "questions",
             "evidence",
             "comparison_cards",
+            "registry_outcomes",
             "answers",
             "evidence_sufficiency",
             "guidance",
