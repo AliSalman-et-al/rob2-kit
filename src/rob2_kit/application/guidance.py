@@ -13,7 +13,18 @@ def read_guidance(document: str = "SKILL.md") -> dict[str, Any]:
         raise ValueError("Choose SKILL.md or a returned references/*.md guidance document")
     path = _ROOT / document
     if not path.is_file():
-        raise ValueError("Packaged guidance document is unavailable")
+        available = [
+            "SKILL.md",
+            *sorted(
+                candidate.relative_to(_ROOT).as_posix()
+                for candidate in (_ROOT / "references").glob("*.md")
+                if re.fullmatch(r"[a-z][a-z0-9-]*\.md", candidate.name)
+            ),
+        ]
+        raise ValueError(
+            "Packaged guidance document is unavailable. Available documents: "
+            + ", ".join(available)
+        )
     body = path.read_bytes()
     content = body.decode("utf-8")
     links = set()
