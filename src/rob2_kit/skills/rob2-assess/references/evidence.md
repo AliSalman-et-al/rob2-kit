@@ -226,9 +226,17 @@ A relationship label never expands what the passage says. Keep plans separate
 from conduct, analysis populations from observed outcomes, endpoint definitions
 from measurement properties, and absence of reporting from absence of bias.
 Reuse Result Evidence only when its exact premise answers the Domain question.
-State inferred conclusions in the answer's `justification`, with the source
-facts and any unresolved link. The server checks Evidence identity and structure;
-you judge whether those facts support the answer.
+Before selecting an answer, reconcile its justification with its material
+unknowns. If a conclusion depends on an unresolved factual link, consider how the
+applicable question would be answered under the plausible alternatives. Explain
+why the source-grounded probability still supports your conclusion, or qualify
+the claim that the missing link would otherwise make categorical. A recorded
+unknown does not automatically require No information; it must affect the
+reasoning according to the official question.
+
+State the source facts, inference and unresolved link in the answer's
+`justification`. The server checks Evidence identity and structure; you judge
+whether those facts support the answer.
 
 ## Opt-in lean Domain drafting
 
