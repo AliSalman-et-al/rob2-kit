@@ -1,97 +1,88 @@
-# Optional fresh source audit
+# Optional fresh question advisory
 
-Use this path only when the researcher requests a separate source audit. It is
-advisory: omitting it never blocks ordinary assessment, Trial review or
-finalization. It makes no automatic model call and adds no signalling or risk
-rule. A fresh reviewer may find an unsupported factual attribution while
-preserving a reasonable contextual inference; neither a valid locator nor a
-reviewer's disagreement proves a correction is warranted.
+Use this path only when the researcher requests a separate advisory review.
+Omitting it never blocks ordinary assessment, Trial review or finalization.
+It makes no automatic model call and adds no signalling or risk rule. The
+reviewer checks material source facts and application of the official guidance;
+valid provenance and disagreement do not prove a correction is warranted.
 
 ## Prepare the exact handoff
 
-The repository's existing `scripts.export_factual_audit` preparation command
-exports one or all saved Domains from a current workspace, without saving a
-review or requiring finalization. Its bundle exporter reads verified immutable
-bundles. Preparation and structured findings validation are repository utilities,
-not additional installed `rob2` CLI commands. See `docs/source-checking.md` in the
-repository for their exact invocation. Installed clients can read this reference
-through `read_guidance` or `rob2://guidance/source-audit`; `rob2 export-skill`
-includes it in the exported skill.
+`scripts.export_factual_audit` prepares one or all saved Domains from a current
+workspace without saving a review or requiring finalization. Its bundle exporter
+reads verified immutable bundles. These are repository utilities, not installed
+`rob2` subcommands; see `docs/source-checking.md` for invocation. This reference
+is available through `read_guidance`, guidance resources and `rob2 export-skill`.
 
-Keep the exact assessment target, reported Result and relation, complete saved
-warrants, unknowns, counterevidence, missing-data descriptions and original
-source bindings. The reviewer's claims use opaque IDs and withhold signalling
-answers and risk metadata; unchanged prose can reveal the author's view.
-The separate assessor handoff retains exact accepted checkpoints and answers,
-with their identities and routing. Do not supply reference labels, expected
-errors or grader feedback. Do not fabricate answers for inactive questions:
-only accepted canonical answers are claims. Official guidance for conditional
-questions is interpretation, not a request to fill an inactive branch.
+The v2 packet preserves the exact target, reported Result and relation and each
+complete canonical active answer, including warrants, unknowns, counterevidence,
+missing-data descriptions and original qualified citations. Each question is
+paired with its wording, saved signalling answer and complete official
+elaboration. Shared official dependencies are supplied once with source/version
+identities. This is review of the assessor's actual reasoning, not a blind
+reassessment. No human reference labels, expected errors or grader feedback
+belong in the handoff. Inactive questions do not become accepted answers.
 
-Prepared instructions include complete official elaborations for accepted
-questions and the selected Domains' shared guidance, with source version, hash
-and locators. The reviewer can use `read_guidance` for operational dependencies.
-Those documents describe ordinary assessment operations; they do not authorize
-an advisory reviewer to perform them. Scientific authority remains with official
-Cochrane guidance and the assessor.
+## Review material issues, preserving uncertainty
 
-## Protect scientific state and recover sources
+Return exactly one retain/revise/uncertain advisory per saved question's claim_id.
+Retain means no material issue reported, not proof of correctness or complete
+reading. Existing qualified inference or unresolved information may properly
+remain. Do not reproduce every supported clause or treat unavailable individual
+proof as an automatic contradiction. A plan is not demonstrated conduct; analysis
+exclusion is not necessarily measurement cessation. Do not invent observations.
 
-Use a genuinely fresh host session, not a resumed assessor transcript. Specify
-assessor and reviewer settings explicitly and retain effective settings, input
-hashes, source identities, actual tool returns, images, failures and usage.
-Preparation makes no model call and does not certify eventual delivery.
+Revise requires a concise explanation, affected entry_ids and verifiable source
+references. Entry IDs are canonical paths within this unchanged answer, bound by
+claim_id and snapshot; identical text in different entries has different IDs.
+They locate an issue for human review, not an edit operation. Uncertain records
+an unresolved material premise and the bounded investigation limit, with entries
+and references where available. It does not automatically downgrade the assessor.
+The report contains no replacement signalling answer or risk judgment.
 
-Protect an isolated copy's captured Sources and canonical/working checkpoints at
-the host filesystem boundary. A client `read-only` setting does not itself
-constrain a host MCP server. Ordinary source tools can write disposable
-navigation, read and pixel-delivery caches; allow those caches separately while
-protecting scientific state. The exporter alone supplies no OS isolation. If a
-host cannot provide this separation, state the limit before calling the workflow
-read-only. Keep original checkpoints immutable and verify their hashes after
-review.
+Use a bare original Evidence identity or read/search passage_ref to reference its
+entire exact selected span. The resolver recovers source identity, projection and
+character boundaries without requiring copied text. For a narrower excerpt use
+{handle, quote}; quote must match contiguously with only ASCII whitespace collapse.
+Preserve all words, signs, numbers and punctuation. A handle never widens to its
+containing page/line. Fabricated, stale, ambiguous, foreign or mixed identifiers
+fail. An assessor or other agent's assertion is not source Evidence.
 
-All captured Sources remain available through `list_sources`,
-`search_sources`/`search_sources_batch`, `read_pages` and `render_page`. Use
-complete source access instead of squeezing a large dossier into one prompt.
-Investigate uncited context when it can alter a factual attribution. Follow
-pagination and continuation markers; a preview, tool success or availability
-manifest is not proof of complete reading. Inspect inline pixels when layout or
-a figure carries meaning. Preserve original citation support separately from
-follow-up support. Do not acquire new sources silently. See
-[receipt and source recovery](evidence.md#receipt-and-continuation-recovery) and
-[exact Result scope](result.md).
+An existing figure handle preserves the original authenticated region, pixels,
+transcription provenance and uncertainty. It is not a verified textual quote.
+For a new region use the authentic render delivery and VisualEvidenceReference.
+Inspect pixels when layout matters. Preserve the disposable read/render cache
+for validation so new passage handles and render receipts remain available.
+Original citation support stays distinct from newly inspected support; neither
+validity nor successful retrieval certifies semantic entailment. No-hit searches
+do not establish global absence.
 
-Allow productive investigation without arbitrary source-call caps or silent
-truncation. If necessary source context cannot be recovered or retained, record
-that specific limitation rather than claim a complete audit. Scientific
-diagnostics still follow the repository's frozen evidence and launch protocol;
-ordinary advisory use requires the researcher's explicit request.
+## Recover sources and protect the original assessment
 
-## Assess findings before changing an answer
+Use a fresh host session with explicit model/effort, preserving effective settings,
+input/source hashes, actual tool returns, pixels, failures and usage. Preparation
+makes zero calls and does not certify future delivery. Protect an isolated copy's
+Sources and canonical/working checkpoints at the OS boundary: client read-only
+mode alone does not constrain a host MCP process. Ordinary readers/search/render
+may write separately disposable navigation and delivery caches. Verify protected
+hashes after review and state any isolation limit.
 
-The typed report covers every saved claim, including retained facts and
-inferences, and distinguishes unsupported attribution, narrower support and
-unresolved information. Preserve supported probability and uncertainty;
-unavailable individual records do not automatically defeat a qualified
-inference. A plan is not demonstrated conduct, and analysis exclusion is not
-necessarily measurement cessation. Correct only what the inspected source
-warrants, retaining the smallest supported qualification.
+All captured Sources remain available through list_sources, search (single/batch),
+read_pages and render_page; read_guidance recovers operational dependencies.
+Inspect uncited context when material, follow pagination and inspect needed pixels.
+Availability, preview and successful delivery are not proof of complete reading.
+Allow productive investigation without arbitrary source-call caps. Record the
+specific limit if needed context cannot be recovered; do not silently acquire new
+Sources. Paid diagnostics still require their separately authorized frozen
+research/evidence protocol. No retry or mandatory review stage is introduced.
 
-For text references, use the existing `passage_ref` from `read_pages` or search,
-or an original `cited_spans.evidence_identity`, as `location` with the literal
-`quote`. The validator resolves the exact captured span; it does not widen the
-window or repair the quote. Explicit physical page and absolute page-line
-coordinates remain available. The first and last lines must contain the entire
-quote, including words at line boundaries. Visual references still require
-the actual render receipt and normalized region. Preserve the reviewer's
-disposable read/render cache for validation so fresh receipts are available.
+Validate the v2 report's snapshot, exact current canonical answers, affected entries
+and source provenance with the repository utility. The receipt is advisory,
+semantic_support_verified=false and assessment_mutated=false. Only the original
+assessor can inspect, accept/reject advice and make a justified ordinary Domain
+revision. Closed assessments remain immutable; there is no apply or reopen action.
 
-Validate the report's exact snapshot, unchanged clause and source bindings with
-the existing repository utility. Its receipt checks provenance and report
-coverage, not semantic correctness or absence of missed errors. The original
-assessor inspects each finding and its sources, accepts or rejects it, and uses
-ordinary validated Domain submission with explicit revision lineage only when a
-scientific change is warranted. There is no apply operation or automatic answer
-change. Closed assessments remain immutable; an advisory report cannot reopen
-or overwrite them.
+Historical v1 clause-based reports remain under their recorded contract. Use their
+matching code/version for interpretation; do not convert an invalid old report
+into a successful v2 review or claim retrospective scientific gain. The simpler
+contract reduces required representation, not demonstrated scientific error.

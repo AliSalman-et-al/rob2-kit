@@ -195,22 +195,11 @@ def prepare_native_review(
         if record["identity"] in packet["checkpoint_identities"]
     ]
     selected_domains = {record["domain_id"] for record in records}
-    accepted_questions = {
-        answer["question_id"] for record in records for answer in record["answers"]
-    }
     # Official material is interpretive context, not a new assessment or hidden grader.
     # Supply shared dependencies as well as complete accepted-question elaborations.
     guidance = {
         "pack_identity": SCIENTIFIC_PACK.content_hash,
         "provenance": SCIENTIFIC_PACK.provenance.model_dump(mode="json"),
-        "questions": [
-            {
-                "wording": question.wording,
-                "official": question.guidance.official.model_dump(mode="json"),
-            }
-            for question in SCIENTIFIC_PACK.questions
-            if question.id in accepted_questions
-        ],
         "shared_sections": [
             {"source_url": section.source_url, "official": section.guidance.model_dump(mode="json")}
             for section in SCIENTIFIC_PACK.official_sections or ()
@@ -310,26 +299,12 @@ def prepare_native_review(
         "-",
     ]
     state = _state(_root(workspace))
-    routing = [
-        {
-            "claim_id": _identity(
-                {"checkpoint": record["identity"], "question": answer["question_id"]}
-            ),
-            "domain_id": record["domain_id"],
-            "question_id": answer["question_id"],
-            "checkpoint_identity": record["identity"],
-        }
-        for record in state["domain_records"].values()
-        if record["identity"] in packet["checkpoint_identities"]
-        for answer in record["answers"]
-    ]
     manifest = {
-        "assessor_routing_not_model_input": routing,
         "accepted_checkpoints_not_model_input": copy.deepcopy(records),
         "guidance_sha256": hashlib.sha256((output / "guidance.json").read_bytes()).hexdigest(),
         "delivery": {
-            "initial": "Complete saved claims and original citations in prompt; source-bound "
-            "official elaborations and shared guidance in instructions; listed image bytes.",
+            "initial": "Complete active answers, paired official elaborations and original "
+            "citations in prompt; shared guidance in instructions; listed image bytes.",
             "followup": "Complete captured Sources recoverable through ordinary source tools. "
             "Availability is not actual delivery or reading; retain tool returns and pixels.",
             "canonical_writes": "No assessment-writing tools enabled; findings cannot apply edits.",
@@ -387,7 +362,7 @@ def main() -> None:
         "--packet", type=Path, help="original frozen packet for advisory validation"
     )
     parser.add_argument(
-        "--findings", type=Path, help="structured reviewer response; no application"
+        "--findings", type=Path, help="v2 question-level advisory response; no application"
     )
     args = parser.parse_args()
     if args.findings:
