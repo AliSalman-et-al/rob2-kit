@@ -822,15 +822,20 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
     assert intermediate["next_cursor"] is not None
 
 
-def test_larger_budget_delivers_unchanged_full_context_in_one_call(tmp_path: Path) -> None:
+@pytest.mark.parametrize("page_size", [65_536, 131_072])
+def test_larger_budget_delivers_unchanged_full_context_in_one_call(
+    tmp_path: Path, page_size: int
+) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     expected, _bytes = _wire_context(workspace)
-    actual, transport_bytes = _wire_context(workspace, {"max_response_bytes": 131_072}, drain=False)
+    actual, transport_bytes = _wire_context(
+        workspace, {"max_response_bytes": page_size}, drain=False
+    )
     data = dict(actual["data"])
     page = data.pop("context_page")
     assert page["count"] == 1
     assert page["next_cursor"] is None
-    assert transport_bytes <= 131_072
+    assert transport_bytes <= page_size
     assert data == expected["data"]
     assert actual["head"]["next_action"] == expected["head"]["next_action"]
     assert actual["head"]["next_action"]["operation"] == "save_domain_judgment"
@@ -849,6 +854,45 @@ def test_larger_budget_delivers_unchanged_full_context_in_one_call(tmp_path: Pat
         _domain_draft("trial", "domain:randomization", revision, evidence),
     )
     assert saved["outcome"] == "success", saved
+
+
+def test_default_context_budget_delivers_fitting_science_without_section_round_trips(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    value = {
+        "outcome": "success",
+        "head": {"phase": "assessment", "state_revision": 4},
+        "data": {
+            "trial_id": "trial",
+            "domain_id": "domain:randomization",
+            "pack": {"id": "test", "version": "1"},
+            "questions": [{"id": "question", "elaboration": "guidance " * 2_500}],
+            "evidence": [{"identity": "source-bound", "quote": "source " * 2_500}],
+            "unknowns": ["Concealment safeguards are unresolved."],
+            "counterevidence": ["The report describes sealed envelopes."],
+        },
+    }
+    basis = "sha256:" + "a" * 64
+    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 32_768)
+    smaller = _paginate_domain_context_transport(value, None, None, basis, 4)
+    old_cursor = smaller["data"]["context_page"]["next_cursor"]
+    old_next = _paginate_domain_context_transport(value, old_cursor, None, basis, 4)
+    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 65_536)
+    assert _paginate_domain_context_transport(value, old_cursor, None, basis, 4) == old_next
+    automatic = _paginate_domain_context_transport(value, None, None, basis, 4)
+
+    assert smaller["data"]["context_page"]["next_cursor"] is not None
+    data = dict(automatic["data"])
+    page = data.pop("context_page")
+    assert page["max_response_bytes"] == 65_536
+    assert page["count"] == 1 and page["next_cursor"] is None
+    assert _domain_context_transport_bytes(automatic) <= page["max_response_bytes"]
+    assert data == value["data"]
+    assert page["snapshot_digest"] == smaller["data"]["context_page"]["snapshot_digest"]
+    recovered = _paginate_domain_context_transport(
+        value, page["stable_recovery"]["cursor"], None, basis, 4
+    )
+    assert recovered == automatic
 
 
 def test_domain_context_pagination_rejects_oversized_unicode_evidence(

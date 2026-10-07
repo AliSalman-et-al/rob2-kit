@@ -374,7 +374,7 @@ _COMPANION_ADMISSION = ToolAnnotations(
 # projection; this is only a transport window.
 _READ_PAGES_RESPONSE_BYTES = 24_000
 _SEARCH_BATCH_RESPONSE_BYTES = 32_000
-_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 32_768
+_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 65_536
 _DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
 _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
@@ -1649,11 +1649,10 @@ def _paginate_domain_context_transport(
         remaining = items[initial_offset:]
         if remaining:
             page_sections.append((section, remaining, initial_offset))
-    # An explicitly larger budget should not force section-by-section calls
-    # when the unchanged full scientific view fits, including page metadata.
-    # Keep default pagination and all oversized-item safeguards unchanged.
+    # Keep the existing partition of 32 KiB and smaller cursors. Larger budgets,
+    # including the automatic budget, need no section round trips when all fits.
     if (
-        page_size > _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES
+        page_size > 32_768
         and _domain_context_transport_bytes({**value, "data": header_probe_for(data)})
         <= working_budget
     ):
@@ -4497,7 +4496,7 @@ def get_domain_context(
             le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
             description=(
                 "Maximum serialized response size in bytes. Omit for automatic pagination. "
-                "Default: 32768. Valid range: 4096–131072. Example: 65536. Set this only "
+                "Default: 65536. Valid range: 4096–131072. Example: 65536. Set this only "
                 "when an oversized-page condition returns the required byte count."
             ),
             json_schema_extra={"examples": [65_536]},
