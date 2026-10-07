@@ -554,6 +554,15 @@ class MissingDataCensoring(StrictModel):
     )
 
 
+_EVENT_COUNT_DEFINITION_SCHEMA = {
+    "if": {"required": ["event_count"], "properties": {"event_count": {"type": "integer"}}},
+    "then": {
+        "required": ["event_definition"],
+        "properties": {"event_definition": {"type": "string", "minLength": 1}},
+    },
+}
+
+
 class MissingDataSemantics(StrictModel):
     """Optional typed meaning for a participant-flow row.
 
@@ -561,6 +570,8 @@ class MissingDataSemantics(StrictModel):
     denominator, or a safety population is not an observation-availability
     claim. Availability is represented only by ``outcome_status``.
     """
+
+    model_config = ConfigDict(json_schema_extra=_EVENT_COUNT_DEFINITION_SCHEMA)
 
     population_role: MissingDataPopulationRole | None = Field(
         default=None, description="Role of the population represented by the row."
@@ -572,7 +583,12 @@ class MissingDataSemantics(StrictModel):
         default=None, description="Event numerator; never a participant availability count."
     )
     event_definition: NonBlankText | None = Field(
-        default=None, description="Definition or severity threshold for the event count."
+        default=None,
+        description=(
+            "Required when event_count is supplied: the source-supported outcome and counting "
+            "definition, including first-event versus recurrent events when relevant. "
+            "Do not infer an uncertain definition from the assessment target."
+        ),
     )
     post_randomization_exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported exclusions kept separate from missing outcomes."
@@ -610,6 +626,8 @@ class MissingDataRow(StrictModel):
     explicit without allowing an analysis, treatment, exclusion, or event
     count to masquerade as outcome availability.
     """
+
+    model_config = ConfigDict(json_schema_extra=_EVENT_COUNT_DEFINITION_SCHEMA)
 
     arm: NonBlankText = Field(description="Trial arm for this participant-flow row.")
     population: NonBlankText = Field(
@@ -681,7 +699,11 @@ class MissingDataRow(StrictModel):
     )
     event_definition: NonBlankText | None = Field(
         default=None,
-        description="Definition or severity threshold for event_count, when supplied.",
+        description=(
+            "Required when event_count is supplied: the source-supported outcome and counting "
+            "definition, including first-event versus recurrent events when relevant. "
+            "Do not infer an uncertain definition from the assessment target."
+        ),
     )
     exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported reasons for exclusion or missingness."

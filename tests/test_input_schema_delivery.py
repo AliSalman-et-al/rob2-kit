@@ -8,11 +8,17 @@ from typing import Any
 
 import pytest
 from fastmcp import Client
+from pydantic import ValidationError
 from support.rob2 import _assessment_workspace, _domain_draft, _domain_submission
 
 from rob2_kit.application._state import _state
-from rob2_kit.interfaces.mcp.server import mcp
-from rob2_kit.workflow_models import DomainEvidenceCitation, DomainSaveAnswer
+from rob2_kit.interfaces.mcp.server import _construction_schema, mcp
+from rob2_kit.workflow_models import (
+    DomainEvidenceCitation,
+    DomainSaveAnswer,
+    MissingDataRow,
+    MissingDataSemantics,
+)
 
 
 def _has_ref(value: Any) -> bool:
@@ -40,6 +46,30 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
         "unknowns",
         "counterevidence",
     }
+    row = answer["properties"]["missing_data"]["anyOf"][0]["items"]
+    semantics = row["properties"]["semantics"]["anyOf"][0]
+    for model, advertised in ((MissingDataRow, row), (MissingDataSemantics, semantics)):
+        repair = _construction_schema(model)
+        assert (
+            advertised["if"]
+            == repair["if"]
+            == {
+                "required": ["event_count"],
+                "properties": {"event_count": {"type": "integer"}},
+            }
+        )
+        assert (
+            advertised["then"]
+            == repair["then"]
+            == {
+                "required": ["event_definition"],
+                "properties": {"event_definition": {"type": "string", "minLength": 1}},
+            }
+        )
+        assert (
+            "Required when event_count is supplied"
+            in advertised["properties"]["event_definition"]["description"]
+        )
     assert answer["additionalProperties"] is False
     variants = answer["properties"]["bases"]["items"]["anyOf"]
     assert any(item.get("type") == "string" for item in variants)
@@ -71,7 +101,9 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     }
 
 
-@pytest.mark.parametrize("failure", ["wrong_names", "handle_list", "missing_data"])
+@pytest.mark.parametrize(
+    "failure", ["wrong_names", "handle_list", "missing_data", "event_definition"]
+)
 def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     tmp_path: Path, failure: str
 ) -> None:
@@ -99,6 +131,14 @@ def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
                 "post_randomization_exclusions": [],
             }
         ]
+    if failure == "event_definition":
+        draft["answers"][0]["missing_data"][0] = {
+            "arm": "trial arm",
+            "population": "randomized participants",
+            "unit": "participants",
+            "time_point": "follow-up",
+            "event_count": 3,
+        }
     before = _state(workspace)
 
     async def call():
@@ -110,10 +150,14 @@ def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     assert result.is_error
     text = "\n".join(item.text for item in result.content if hasattr(item, "text"))
     assert "invalid_tool_arguments" in text
-    if failure == "missing_data":
-        assert "/answers/0/missing_data/0/outcome_status" in text
+    if failure in {"missing_data", "event_definition"}:
+        if failure == "missing_data":
+            assert "/answers/0/missing_data/0/outcome_status" in text
+        else:
+            assert "event_count requires event_definition" in text
         recovery = json.loads(text.split(" Argument recovery: ", 1)[1])
         row_schema = recovery["missing_data_row_schema"]
+        assert row_schema["then"]["required"] == ["event_definition"]
         assert row_schema["additionalProperties"] is False
         assert {"arm", "population", "unit", "time_point"} <= set(row_schema["required"])
         assert not {"outcome_status", "population_role", "post_randomization_exclusions"} & set(
@@ -175,3 +219,33 @@ def test_malformed_account_citation_reports_public_role_path_without_committing(
     assert "/answers/0/bases/0/role" in text
     assert "DomainAccountStepCitation" not in text
     assert _state(workspace) == before
+
+
+@pytest.mark.parametrize("model", [MissingDataRow, MissingDataSemantics])
+@pytest.mark.parametrize(
+    ("quantities", "valid"),
+    [
+        ({}, True),
+        ({"event_count": None}, True),
+        ({"event_count": 0}, False),
+        ({"event_count": 3, "event_definition": None}, False),
+        ({"event_count": 3, "event_definition": " "}, False),
+        ({"event_count": 0, "event_definition": "Participants with first endpoint event"}, True),
+        ({"event_count": 3, "event_definition": "Recurrent endpoint events"}, True),
+    ],
+)
+def test_event_count_definition_requirement_matches_validated_branches(
+    model: type[MissingDataRow] | type[MissingDataSemantics],
+    quantities: dict[str, Any],
+    valid: bool,
+) -> None:
+    scope = (
+        {"arm": "A", "population": "randomized", "unit": "participants", "time_point": "30 days"}
+        if model is MissingDataRow
+        else {}
+    )
+    if valid:
+        model.model_validate(scope | quantities)
+    else:
+        with pytest.raises(ValidationError):
+            model.model_validate(scope | quantities)
