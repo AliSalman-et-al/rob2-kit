@@ -123,9 +123,18 @@ class VisualEvidenceReference(StrictModel):
     delivery_receipt: Identity = Field(
         description="Receipt returned alongside render_page ImageContent for this Trial."
     )
-    region: tuple[
-        NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
-    ] = Field(description="Normalized x0,y0,x1,y1 bounds of the transcribed image region.")
+    region: (
+        tuple[
+            NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
+        ]
+        | None
+    ) = Field(
+        default=None,
+        description=(
+            "Optional normalized x0,y0,x1,y1 bounds in the delivered image: "
+            "top-left origin, x right, y down. Omit for the exact authenticated delivered view."
+        ),
+    )
     transcription: VisualTranscription = Field(
         description="Literal self-contained account of the region, including relevant labels, "
         "values, units, denominators and footnotes. This is a host observation, not OCR truth."
@@ -139,6 +148,8 @@ class VisualEvidenceReference(StrictModel):
 
     @model_validator(mode="after")
     def ordered_region(self) -> VisualEvidenceReference:
+        if self.region is None:
+            return self
         x0, y0, x1, y1 = self.region
         if not (x0 < x1 and y0 < y1):
             raise ValueError("region must be ordered and inside the render page")

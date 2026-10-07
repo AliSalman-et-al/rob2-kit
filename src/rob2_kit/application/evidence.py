@@ -4732,7 +4732,7 @@ def select_visual_evidence(
     source_id: str,
     delivery_receipt: str,
     transcription: str,
-    region: list[float],
+    region: list[float] | None = None,
     uncertainty: str | None = None,
 ) -> dict[str, Any]:
     root = _root(workspace)
@@ -4778,6 +4778,9 @@ def select_visual_evidence(
         }
     ):
         raise ValueError("cached render is corrupt or outside the requested Source")
+    # Bounds describe authenticated delivered pixels, including PDF CropBox and rotation.
+    if region is None:
+        region = [0.0, 0.0, 1.0, 1.0]
     if len(region) != 4 or not all(math.isfinite(value) for value in region):
         raise ValueError("region must contain four finite normalized bounds")
     x0, y0, x1, y1 = region
@@ -4842,7 +4845,7 @@ def source_reference_resolver(
                     delivery[0],
                     reference.delivery_receipt,
                     reference.transcription,
-                    list(reference.region),
+                    list(reference.region) if reference.region is not None else None,
                     reference.uncertainty,
                 )
             else:

@@ -332,7 +332,10 @@ def test_wrong_full_identity_ambiguous_corrupt_and_foreign_handles_fail(assessme
     assert _protected(workspace) == before
 
 
-def test_visual_handles_keep_original_region_and_new_regions_need_authentic_delivery(assessment):
+@pytest.mark.parametrize("omit_region", [False, True])
+def test_visual_handles_keep_original_region_and_new_regions_need_authentic_delivery(
+    assessment, omit_region: bool
+):
     workspace, packet = assessment
     before = _protected(workspace)
     report = _revise(packet)
@@ -352,6 +355,8 @@ def test_visual_handles_keep_original_region_and_new_regions_need_authentic_deli
         "transcription": "Qualified observation",
         "uncertainty": "Interpretation may be wrong.",
     }
+    if omit_region:
+        del visual["region"]
     row["references"] = [visual]
     assert not validate_report(workspace, packet, SourceCheckReport.model_validate(report))[
         "semantic_support_verified"

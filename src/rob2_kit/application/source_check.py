@@ -372,7 +372,7 @@ def validate_report(
                     row[0],
                     location.delivery_receipt,
                     location.transcription,
-                    list(location.region),
+                    list(location.region) if location.region is not None else None,
                     location.uncertainty,
                 )["evidence"]
                 resolved.append(

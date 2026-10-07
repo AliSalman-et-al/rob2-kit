@@ -549,7 +549,7 @@ Working observations may carry host-asserted Result/group/stage/window/populatio
 Opt-in lean Domain drafting uses the existing bases list: compact selected handles or exact text source ranges assert supporting facts, normalized as indirect_support through the existing selector and canonical validator. Full citations preserve explicit roles and optional annotations. Counterpoints accept the same references. No extra drafting tool, ledger, source-fact duplication, scope inference or answer coercion is introduced; official guidance, active-path and uncertainty checks remain unchanged. Inline annotations omit redundant Domain/question copies supplied by their parent; historical note fields remain valid.
 
 Delivered visual references use the same opt-in Domain basis/counterpoint path:
-`{delivery_receipt, region, transcription, uncertainty?}` resolves through the
+`{delivery_receipt, transcription, region?, uncertainty?}` resolves through the
 existing visual selector. Source, page, render and PNG hash come from the authentic
 current-Trial image receipt; transcription and uncertainty remain host observations,
 not OCR truth or entailment certification. Explicit-role citations accept these

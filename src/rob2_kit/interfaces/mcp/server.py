@@ -3927,7 +3927,7 @@ def select_text_evidence(
     description=(
         "Render one PDF page. Returns metadata and pixels as ImageContent by default; "
         "pass inline=false for metadata/cache-only use. After inspecting pixels, a Domain "
-        "basis may use {delivery_receipt, region, transcription, uncertainty?} directly in "
+        "basis may use {delivery_receipt, transcription, region?, uncertainty?} directly in "
         "save_domain_judgment, or select_visual_evidence can return a reusable handle. "
         "Only the receipt issued alongside pixels supports visual selection."
     ),
@@ -4006,8 +4006,14 @@ def select_visual_evidence(
     ],
     region: tuple[
         NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
-    ] = Field(
-        description=("Normalized x0,y0,x1,y1 bounds in [0,1]; use [0,0,1,1] for the whole page."),
+    ]
+    | None = Field(
+        default=None,
+        description=(
+            "Optional normalized x0,y0,x1,y1 bounds in the delivered image: "
+            "top-left origin, x right, y down. Omit for the exact authenticated "
+            "delivered view, including PDF CropBox and rotation."
+        ),
     ),
     uncertainty: Annotated[
         VisualTranscription | None,
@@ -4029,7 +4035,7 @@ def select_visual_evidence(
             _resolve_source_handle(_workspace(), trial_id, source_id),
             delivery_receipt,
             transcription,
-            list(region),
+            list(region) if region is not None else None,
             uncertainty,
         ),
     )
@@ -4586,7 +4592,7 @@ def get_domain_context(
         "Counterevidence objects give nonempty evidence handle lists and explain the cited "
         "Evidence's joint implication. "
         "For opt-in lean drafting, bases may contain selected Evidence handle strings or exact "
-        "read_pages source ranges, or {delivery_receipt, region, transcription, uncertainty?} "
+        "read_pages source ranges, or {delivery_receipt, transcription, region?, uncertainty?} "
         "from an inspected render_page image. These assert supporting facts and become "
         "indirect_support; the existing selectors resolve exact text or host visual Evidence. "
         "Visual source/page/render/hash are derived from the authentic current-Trial receipt; "

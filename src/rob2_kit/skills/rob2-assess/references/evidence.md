@@ -136,8 +136,9 @@ were delivered; it does not establish that the definition is complete.
 ## Use visual Evidence for visual meaning
 
 Call `render_page` when layout, axes, columns, symbols, or footnotes affect the
-meaning. Inspect the returned pixels, then use their `delivery_receipt`, a normalized
-region and a literal, self-contained transcription. During Domain submission, this
+meaning. Inspect the returned pixels, then use their `delivery_receipt` and a literal,
+self-contained transcription. Omit `region` for the exact delivered view, or supply
+normalized bounds for an inspected narrower region. During Domain submission, this
 reference may go directly in `bases` or `counterevidence[].evidence`; call
 `select_visual_evidence` first when a reusable selected handle is useful (or needed
 for Proposal construction). Both paths use the same visual selector. A receipt is
@@ -458,3 +459,10 @@ full history. This is administrative delivery, not evidence of comprehension. Us
 `delivery_history_recovery` (`get_domain_context` with `include_delivery_history=true`)
 and follow its context pages to recover every interval after restart or cache loss.
 Active Evidence, official guidance, premises and uncertainty remain in the default view.
+
+Visual regions use the delivered PNG coordinate frame: top-left origin, x right,
+y down, normalized to [0,1]. Omit `region` to cite the exact authenticated delivered
+view; the server stores explicit [0,0,1,1] geometry. This includes the PDF CropBox
+and rotation, and does not imply the original uncropped page. Supply narrower
+bounds only when you can identify them in the delivered pixels. A receipt remains
+required; transcription records an assessor observation, not verified semantic truth.
