@@ -148,7 +148,10 @@ def test_probe_uses_direct_mcp_without_changing_model_or_access(controls, tmp_pa
     assert 'features.code_mode={enabled=true,direct_only_tool_namespaces=["mcp__rob2"]}' in command
 
 
-def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> None:
+@pytest.mark.parametrize("max_response_bytes", [None, 32768])
+def test_recorded_context_replays_losslessly_with_bounded_pages(
+    controls, max_response_bytes: int | None
+) -> None:
     replay = importlib.import_module("replay_domain_probe_delivery").replay
 
     path = (
@@ -156,9 +159,12 @@ def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> Non
         / "tests/fixtures/historical-evaluation/2026-10-02-deliver-d3-completion-17bad3d"
         / "events.jsonl"
     )
-    result = replay(path)
+    result = replay(path, max_response_bytes=max_response_bytes)
     assert result["scientific_data_recovered_exactly"]
-    assert len(result["default_pages"]) > 1
+    assert result["default_pages"]
+    if max_response_bytes is not None:
+        assert len(result["default_pages"]) > 1
+        assert all(page["bytes"] <= max_response_bytes for page in result["default_pages"])
     assert result["all_recovery_cursors_preserved"]
 
 

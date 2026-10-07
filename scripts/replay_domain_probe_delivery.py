@@ -9,13 +9,14 @@ from pathlib import Path
 from typing import Any
 
 from rob2_kit.interfaces.mcp.server import (
+    _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES,
     _domain_context_transport_bytes,
     _paginate_domain_context_transport,
 )
 from scripts.profile_domain_context_delivery import _reconstruct
 
 
-def replay(events: Path) -> dict[str, Any]:
+def replay(events: Path, *, max_response_bytes: int | None = None) -> dict[str, Any]:
     rows = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
     item = next(
         row["item"]
@@ -30,14 +31,18 @@ def replay(events: Path) -> dict[str, Any]:
     responses = {}
     while True:
         page = _paginate_domain_context_transport(
-            original, cursor, None, "offline-replay", original["head"]["state_revision"]
+            original,
+            cursor,
+            max_response_bytes,
+            "offline-replay",
+            original["head"]["state_revision"],
         )
         data = page["data"]
         responses[data["context_page"]["index"]] = page
         pages.append(
             {"index": data["context_page"]["index"], "bytes": _domain_context_transport_bytes(page)}
         )
-        assert pages[-1]["bytes"] <= 32768
+        assert pages[-1]["bytes"] <= (max_response_bytes or _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES)
         assert data["context_page"]["stable_recovery"]["operation"] == "get_domain_context"
         cursor = data["context_page"]["next_cursor"]
         if cursor is None:
