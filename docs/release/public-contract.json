@@ -127,7 +127,7 @@
 "output_schema_sha256":"sha256:a6a8724c778b37bfa4e5a79faa2529deba7378d8ea2873ee04aa11e61ed7f189"},
 {"name":"select_visual_evidence",
 "title":"Select visual Evidence",
-"description":"Record visual Evidence from a rendered page. Transcription must be one exact, self-contained account containing every applicable title, axis, series, label, value, unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt returned alongside an ImageContent block by render_page. This tool accepts only trial_id, source_id, delivery_receipt, transcription, region, and optional uncertainty; attach the returned Evidence later through an answer basis.",
+"description":"Record visual Evidence from a rendered page. Transcription must be one exact, self-contained account containing every applicable title, axis, series, label, value, unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt returned alongside an ImageContent block by render_page. This tool accepts only trial_id, source_id, delivery_receipt, transcription, and optional region/uncertainty; attach the returned Evidence later through an answer basis.",
 "read_only":false,
 "destructive":false,
 "idempotent":true,

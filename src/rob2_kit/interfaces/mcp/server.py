@@ -3972,7 +3972,7 @@ def render_page(
         "self-contained account containing every applicable title, axis, series, label, value, "
         "unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt "
         "returned alongside an ImageContent block by render_page. This tool accepts only "
-        "trial_id, source_id, delivery_receipt, transcription, region, and optional uncertainty; "
+        "trial_id, source_id, delivery_receipt, transcription, and optional region/uncertainty; "
         "attach the returned "
         "Evidence later through an answer basis."
     ),
