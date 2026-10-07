@@ -1,8 +1,0 @@
-1|Clinical Study Protocol - Version 4.0, 12th Nov 2020
-2|AstraZeneca
-3|D169CC00001 - Dapa HFpEF
-4|CONFIDENTIAL AND PROPRIETARY
-5|30 of 95
-6|Patients are eligible to be randomised in the study only if all of the following inclusion criteria and
-7|none of the exclusion criteria apply. Enrolled patients who for any reason are not randomised are
-8|considered screen failures Hsee Section 5.4I.

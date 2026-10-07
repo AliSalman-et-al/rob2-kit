@@ -1,19 +1,35 @@
-# Proposed availability-construction diagnostic
+# DELIVER availability evidence archive
 
-One prospective paired Domain 3 diagnostic uses **DELIVER**, from the original Code benchmark at d04473df4a07a3117f3171df2d8471ec0defd522. Selection used source definitions and coverage, not old judgments or correctness. Its flow diagram reports 29/23 incomplete primary-endpoint follow-ups, and its latest SAP defines completeness for the exact first-event outcome. DECLARE-TIMI58 was also screened: its co-primary outcomes and consent/vital-status distinctions require more overlap work. DELIVER is a close scientific analogue to the development case, so this is a mechanism-transfer check, not broad external validation.
+This index preserves access to the October 6, 2026 frozen DELIVER availability experiment. The complete original protocol, source projections, images, review packets, terminal receipt and unblinding records remain unchanged at the already-published immutable commit [bd92fc767fd0a532a5291b694b84983378dccb2f](https://github.com/AliSalman-et-al/rob2-kit/tree/bd92fc767fd0a532a5291b694b84983378dccb2f/docs/evaluation/availability-behavioral-2026-10-06).
 
-The two arms use **gpt-6.1-sol / low**, the same captured Sources and one identical native approved Result: the overall primary time-to-first worsening heart failure or cardiovascular-death HR0.82,95%CI0.73–0.92. The LVEF<60% subgroup, recurrent-event rate and KCCQ outcome are outside scope. Median follow-up is descriptive rather than a fixed target horizon. Each arm stops after its Domain 3 save; no full assessment or benchmark is planned.
+The commit is retained independently of this draft by the existing remote experiment branch `improve/registry-evidence-navigation-20261007` (verified at `972b4eb478ff9e8674dbee73a866a7176558df23`). Keep this ref when pruning experiment branches.
 
-Control is the approved receipt-repair package at7dfddec. Intervention is the availability package at2a8ebd2, including resumed-row restoration and consistent packaged guidance, with the same official Cochrane text. The later release-verifier typing fix changes no packaged files. No evidence-weighting paragraph is included.
+[The exact manifest](archive-manifest.json) records the size and SHA256 of all 461 original files: 425 text projections, 15 PNGs and 21 protocol/review/index files. This index and manifest replace the working-tree archive for packaging only; they are not inputs to the original frozen seals. This cleanup provides no new scientific result or accuracy claim.
 
-The mechanism is specific: known unavailable-outcome extent can be supplied without manufacturing a complementary observed count, persists through save/reconstruction, and is visible beside the exact Result as a source-linked quantity. This may help an assessor distinguish a known extent from unknown event times and loss reasons when applying the official questions. It does not establish “nearly all,” a bias mechanism or a risk label automatically.
+## Restore and verify
 
-[The reachability audit](surface-reachability-audit.json) records actual prior native calls: both DAPA sessions read the packaged missing reference twice and put known counts in censoring metadata while leaving observed null. Production tests now cover new-schema preview, save-to-fresh paged context, stable recovery, derivative-cache loss, source passages and the delivered packaged resource. These establish reachability, not behavioral use.
+From a clone containing the retained experiment ref, restore into a new disposable directory:
 
-[Expected source semantics](source-semantics-freeze.json) are frozen without preferred signalling answers. Correct control reasoning is allowed to use a warranted observed complement or explicit source-grounded account. Merely using the new field or moving a label is not success. Blinded review assesses source fidelity, correct quantity/endpoint role, counterevidence and uncertainty, and the defensibility of the official-guidance warrant. Review must distinguish arithmetic information from scientific confidence.
+```sh
+git fetch origin improve/registry-evidence-navigation-20261007
+mkdir deliver-archive-restored
+git archive bd92fc767fd0a532a5291b694b84983378dccb2f docs/evaluation/availability-behavioral-2026-10-06 | tar -x -C deliver-archive-restored
+```
 
-Adverse controls come from the selected sources and generic offline controls: an already observed first event can complete this primary outcome despite later loss; known competing death and complete administrative censoring are separate from loss before first-event ascertainment. Drug discontinuation444/442, nonreceipt5/5, vital-status unknown2/2 and event numerators512/610 must not be substituted for endpoint incompleteness29/23 or summed without known overlap. The performed COVID-censoring sensitivity analysis is distinct from planned missing-follow-up robustness procedures. No count threshold, certainty gate or mandatory sensitivity analysis is introduced.
+Run from this index directory, adjusting the restoration path if necessary:
 
-[The design freeze](design-freeze.json) pins original Source hashes, scientific scope, launcher/model settings, runtime revisions, necessary source windows/images and launch gates. It is explicitly a scientific/source-design freeze: native intake, native approval identity, exact delivered projections and actual offline instruction delivery still require a separate seal. Private expected semantics and prior logs must never enter model input. Freeze checks will use `diagnostic_evidence_preflight.launch_checked`; actual instruction delivery is checked separately. Source augmentation remains off after the common capture. Usage and failures will be reported; no automatic retry or arbitrary productive-call cap is authorized.
+```python
+import hashlib
+import json
+from pathlib import Path
 
-**No inference has started.** Availability review blockers must be closed for the exact runtime, source-semantic review accepted, both native identities and inventories matched, and the parent must authorize launch. No new merge or full benchmark is part of this proposal.
+manifest = json.loads(Path("archive-manifest.json").read_text(encoding="utf-8"))
+restored = Path("deliver-archive-restored") / manifest["archive_directory"]
+assert len(list(p for p in restored.rglob("*") if p.is_file())) == manifest["file_count"]
+for row in manifest["files"]:
+    data = (restored / row["path"]).read_bytes()
+    assert len(data) == row["bytes"]
+    assert hashlib.sha256(data).hexdigest() == row["sha256"]
+```
+
+Read the restored original README and frozen review/unblinding records together. Their relative links resolve within the complete restored tree. Historical reports elsewhere in the repository are unchanged.

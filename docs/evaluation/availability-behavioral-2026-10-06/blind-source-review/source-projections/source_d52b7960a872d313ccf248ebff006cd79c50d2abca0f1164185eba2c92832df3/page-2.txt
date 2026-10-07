@@ -1,7 +1,0 @@
-1|This supplement contains the following items:
-2|1. Original protocol, final protocol, summary of changes.
-3|2. Original statistical analysis plan, final statistical analysis plan, summary of changes
-4|3. Academic statistical analysis plan
-5|
-6|
-7|

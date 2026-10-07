@@ -1,8 +1,0 @@
-1|Certification
-2|I certify that the information provided in this disclosure is complete and accurate.
-3|2.
-4|What is the manuscript title?
-5|Dapagliflozin in Heart Failure with Mildly Reduced or Preserved Ejection Fraction
-6|3.
-7|Are you the corresponding author?
-8|No.
