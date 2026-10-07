@@ -1001,8 +1001,9 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "no_information",
     ]
     variants = answers["properties"]["bases"]["items"]["anyOf"]
-    assert variants[1]["type"] == "string"
-    assert set(variants[2]["required"]) == {"source_id", "page", "start_line", "end_line"}
+    assert any(variant.get("type") == "string" for variant in variants)
+    location = next(variant for variant in variants if "source_id" in variant.get("properties", {}))
+    assert set(location["required"]) == {"source_id", "page", "start_line", "end_line"}
     citation = variants[0]
     assert citation["additionalProperties"] is False
     assert set(citation["properties"]) == {"evidence", "role", "working_observation"}
