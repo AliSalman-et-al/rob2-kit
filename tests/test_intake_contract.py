@@ -934,7 +934,10 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
     region_description = _tool_schema("select_visual_evidence")["properties"]["region"][
         "description"
     ]
-    assert "Normalized" in region_description
+    assert "normalized" in region_description.casefold()
+    assert "top-left origin" in region_description
+    assert "exact authenticated" in region_description
+    assert "region" not in _tool_schema("select_visual_evidence")["required"]
 
 
 def test_save_proposal_schema_is_closed_and_discriminated() -> None:
