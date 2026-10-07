@@ -2026,7 +2026,27 @@ class OfficialGuidanceRecovery(PublicModel):
     )
 
 
+class DomainDeliveryHistoryArguments(PublicModel):
+    trial_id: TrialId
+    domain_id: DomainId
+    include_delivery_history: Literal[True] = True
+
+
+class DomainDeliveryHistoryRecovery(PublicModel):
+    operation: Literal["get_domain_context"] = "get_domain_context"
+    arguments: DomainDeliveryHistoryArguments
+    detail: str = Field(min_length=1)
+
+
 class DomainContextData(PublicModel):
+    delivery_history: tuple[InvestigationReadRange, ...] = Field(
+        default=(),
+        description="Opt-in complete delivered intervals, recovered in context-page order.",
+    )
+    delivery_history_recovery: DomainDeliveryHistoryRecovery | None = Field(
+        default=None,
+        description="Explicit durable recovery for omitted cumulative delivery history.",
+    )
     trial_id: TrialId | None = None
     domain_id: DomainId | None = None
     pack: DomainPack | None = Field(
@@ -2153,6 +2173,7 @@ class DomainContextPage(PublicModel):
         )
     )
     section: Literal[
+        "delivery_history",
         "complete",
         "primary_report",
         "questions",

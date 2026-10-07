@@ -452,3 +452,9 @@ The parallel-assignment submission contract has no `no_information` option for
 D3.2. Use the complete official elaboration and response semantics for the
 answer’s meaning. Keep source support, counterevidence, coverage limits and
 unknowns explicit; relationship labels do not impose answer-certainty rules.
+
+Domain context summarizes cumulative read-delivery intervals without repeating their
+full history. This is administrative delivery, not evidence of comprehension. Use
+`delivery_history_recovery` (`get_domain_context` with `include_delivery_history=true`)
+and follow its context pages to recover every interval after restart or cache loss.
+Active Evidence, official guidance, premises and uncertainty remain in the default view.

@@ -380,6 +380,7 @@ _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
 _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES = 64
 _DOMAIN_CONTEXT_PAGE_SECTIONS = (
+    "delivery_history",
     "primary_report",
     "questions",
     "official_guidance",
@@ -422,6 +423,8 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "result",
             "primary_report",
             "investigation",
+            "delivery_history_recovery",
+            "delivery_history",
             "questions",
             "evidence",
             "comparison_cards",
@@ -4457,6 +4460,14 @@ def get_domain_context(
             )
         ),
     ] = False,
+    include_delivery_history: Annotated[
+        StrictBool,
+        Field(
+            description="Recover all cumulative read-delivery intervals through context pages. "
+            "Default summaries omit this administrative history; source Evidence, "
+            "guidance and scientific uncertainty remain unchanged."
+        ),
+    ] = False,
     cursor: Annotated[
         StrictStr | None,
         Field(
@@ -4555,6 +4566,7 @@ def get_domain_context(
             if missing_data is not None
             else None,
             include_candidates,
+            include_delivery_history,
         ),
         domain_cursor=cursor,
         domain_page_size=max_response_bytes,

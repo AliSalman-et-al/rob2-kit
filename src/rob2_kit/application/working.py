@@ -555,6 +555,8 @@ def _delivery_projection(
     state: dict[str, Any],
     trial_id: str,
     sources: tuple[WorkingSourceBinding, ...],
+    *,
+    range_limit: int | None = 128,
 ) -> dict[str, Any]:
     """Report text ranges returned by read_pages separately from host note references."""
 
@@ -647,13 +649,13 @@ def _delivery_projection(
     ) and all(source_id in pages_by_source for source_id in source_ids)
     return {
         "state": ("delivered" if all_delivered else "partial" if delivered else "unobserved"),
-        "ranges": tuple(ranges[:128]),
+        "ranges": tuple(ranges if range_limit is None else ranges[:range_limit]),
         "range_count": len(ranges),
         "delivered_sources": tuple(sorted(handles[item] for item in delivered)),
         "sources_without_delivery": tuple(
             sorted(handles[item] for item in set(source_ids) - delivered)
         ),
-        "ranges_truncated": len(ranges) > 128,
+        "ranges_truncated": range_limit is not None and len(ranges) > range_limit,
     }
 
 

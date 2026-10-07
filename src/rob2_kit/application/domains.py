@@ -63,7 +63,12 @@ from .evidence import (
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .source_handles import source_handle
 from .status import _active_trial_and_domain, _continuation
-from .working import investigation_projection, working_checkpoint_status
+from .working import (
+    _delivery_projection,
+    _source_scope,
+    investigation_projection,
+    working_checkpoint_status,
+)
 
 _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
@@ -3031,6 +3036,7 @@ def get_domain_context(
     domain_id: str | None = None,
     preview_missing_data: list[dict[str, Any]] | None = None,
     include_candidates: bool = False,
+    include_delivery_history: bool = False,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -3735,7 +3741,7 @@ def get_domain_context(
         else None
     )
     participant_flow_rows = canonical_preview if canonical_preview is not None else flow_rows
-    context = {
+    context: dict[str, Any] = {
         "outcome": "success",
         "trial_id": trial_id,
         "domain_id": domain_id,
@@ -3854,6 +3860,34 @@ def get_domain_context(
         "primary_report": [],
         "reading_recovery": _main_report_recovery(root, state, trial_id, include_budget=True),
         "continuation": continuation,
+    }
+    # Cumulative read-delivery intervals are administrative history, not source
+    # Evidence or proof of comprehension. Keep the summary in the decision view;
+    # full intervals use the same durable context paging and recovery route.
+    investigation = context.get("investigation")
+    if isinstance(investigation, dict):
+        delivery_coverage = investigation.get("coverage")
+        if isinstance(delivery_coverage, dict):
+            delivery_coverage["ranges"] = ()
+            delivery_coverage["ranges_truncated"] = bool(delivery_coverage.get("range_count", 0))
+    context["delivery_history"] = (
+        list(
+            _delivery_projection(
+                root, state, trial_id, _source_scope(state, trial_id), range_limit=None
+            )["ranges"]
+        )
+        if include_delivery_history
+        else []
+    )
+    context["delivery_history_recovery"] = {
+        "operation": "get_domain_context",
+        "arguments": {
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "include_delivery_history": True,
+        },
+        "detail": "Recover all cumulative delivered intervals through context pages; "
+        "delivery is not scientific support or comprehension.",
     }
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
