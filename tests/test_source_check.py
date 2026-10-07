@@ -160,7 +160,7 @@ def test_full_claims_blind_labels_exact_sources_visual_provenance_and_native_pre
     )
     assert manifest["model_calls"] == 0 and manifest["fresh_exec"]
     assert manifest["accepted_checkpoints_not_model_input"] == [record]
-    guidance = json.loads((output / "guidance.json").read_text())
+    guidance = json.loads((output / "guidance.json").read_text(encoding="utf-8"))
     from rob2_kit.packs import SCIENTIFIC_PACK
 
     accepted_ids = {answer["question_id"] for answer in record["answers"]}
@@ -177,10 +177,9 @@ def test_full_claims_blind_labels_exact_sources_visual_provenance_and_native_pre
         for section in SCIENTIFIC_PACK.official_sections or ()
         if section.domain_id in {"all", record["domain_id"]}
     ]
-    assert (
-        json.dumps(guidance, ensure_ascii=False, indent=2)
-        in (output / "instructions.md").read_text()
-    )
+    assert json.dumps(guidance, ensure_ascii=False, indent=2) in (
+        output / "instructions.md"
+    ).read_text(encoding="utf-8")
     assert (
         manifest["guidance_sha256"]
         == hashlib.sha256((output / "guidance.json").read_bytes()).hexdigest()
@@ -478,7 +477,7 @@ def test_advisory_source_tools_recover_complete_uncited_context_without_checkpoi
         page = receipt["data"]["pages"][0]
         lines.extend(line.split("|", 1)[1] for line in page["numbered_text"].splitlines())
         start = page["next_start_line"]
-    assert lines == (workspace / "input/trial/uncited.txt").read_text().splitlines()
+    assert lines == (workspace / "input/trial/uncited.txt").read_text(encoding="utf-8").splitlines()
     assert len(lines) == 600
     assert (
         support._call(workspace, "read_guidance", {"document": "references/source-audit.md"})[
@@ -518,7 +517,7 @@ def test_inactive_questions_do_not_create_audit_claims_or_invented_accepted_answ
         reviewer_model="declared-reviewer",
         reviewer_effort="low",
     )
-    assert len(json.loads((output / "packet.json").read_text())["claims"]) == 1
-    assert len(json.loads((output / "guidance.json").read_text())["questions"]) == 1
+    assert len(json.loads((output / "packet.json").read_text(encoding="utf-8"))["claims"]) == 1
+    assert len(json.loads((output / "guidance.json").read_text(encoding="utf-8"))["questions"]) == 1
     assert request["accepted_checkpoints_not_model_input"] == [record]
     assert record["answers"][0]["unknowns"] == ["Individual observation records are unavailable."]
