@@ -387,7 +387,9 @@ _DOMAIN_CONTEXT_PAGE_SECTIONS = (
     "evidence",
     "comparison_cards",
 )
-_REVIEW_TRIAL_RESPONSE_BYTES = 24_000
+_REVIEW_TRIAL_RESPONSE_BYTES = 65_536
+# Keep the overview small: deferred details are recovered again in full.
+_REVIEW_TRIAL_SUMMARY_BYTES = 24_000
 _REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES = 256
 _REVIEW_PREVIEW_TEXT_CHARS = 220
 _REVIEW_PREVIEW_ARRAYS = (
@@ -1271,11 +1273,11 @@ def _project_review_trial(
                     preview_chars=preview_chars,
                 ),
             )
-            if _review_transport_bytes(summary) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+            if _review_transport_bytes(summary) <= _REVIEW_TRIAL_SUMMARY_BYTES:
                 break
         else:
             raise ValueError("review_summary_unrecoverable: answer headers exceed the byte limit")
-        if _review_transport_bytes(summary) > _REVIEW_TRIAL_RESPONSE_BYTES:
+        if _review_transport_bytes(summary) > _REVIEW_TRIAL_SUMMARY_BYTES:
             raise ValueError("review_summary_unrecoverable: typed summary exceeds the byte limit")
         if persist:
             _record_review_view(
@@ -1298,7 +1300,7 @@ def _project_review_trial(
             complete_claims=True,
         ),
     )
-    if _review_transport_bytes(summary) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+    if _review_transport_bytes(summary) <= _REVIEW_TRIAL_SUMMARY_BYTES:
         if persist:
             _record_review_view(
                 root, view_id, trial_id, review_identity, digest, selector, normalized

@@ -107,3 +107,10 @@ not token counts or accuracy gains. The recovery run's
 full Codex host rollout carried `Warning: truncated output` for Domain results,
 although its phase JSONL retained the prior representations. No post-fix LLM
 run has been made.
+
+Native `review_trial` responses allow up to 65536 serialized UTF-8 bytes including
+wrapper headroom. An overview remains bounded to 24000 bytes when full detail
+needs paging. Follow its stable recovery cursor and concatenate the lossless
+Unicode fragments through the null next cursor. Existing cursor offsets remain
+valid when the delivery window grows; changed review identities still require
+a fresh review. Decisions, warrants, counterevidence and source bodies are retained.
