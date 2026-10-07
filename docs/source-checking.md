@@ -30,15 +30,21 @@ metadata. Saved prose is not rewritten; it can itself reveal a question or view.
 The private assessor routing map stays in `request.json`, outside model input.
 
 Preparation freezes packet/input/schema/image hashes and emits a fresh native
-`codex exec` command, not a resumed session. It makes zero model calls. The five
-existing source tools are allowlisted: list, search (single/batch), read, render.
+`codex exec` command, not a resumed session. It makes zero model calls. The six
+existing tools are allowlisted: list, search (single/batch), read, render, and
+read_guidance for operational dependencies. Prepared instructions include complete
+source-bound official elaborations for accepted questions and shared guidance for
+the selected Domains. The separate assessor request retains the exact accepted
+checkpoints and answers; it stays outside reviewer input. Inactive questions with
+no accepted answer do not create review claims.
 No status, review or assessment-writing tool is supplied. Full captured source
 follow-up is possible without curated repair pages, case hints or reference labels.
 Original visual receipts/regions/uncertainty stay intact. Verified full-page pixels
 are supplied through native image arguments; this transport is recorded distinctly
 from a new MCP delivery. Further renders use the existing image-delivering adapter.
 
-Execute only under an explicitly authorized, frozen scientific diagnostic. Reuse
+Execute only when the researcher explicitly requests the optional advisory audit.
+For a paid scientific diagnostic, follow the frozen diagnostic protocol: reuse
 `diagnostic_evidence_preflight.launch_checked` and the existing native runner's
 `run_rsi_case._run_owned_codex`, with research criteria and full source availability
 manifest frozen before launch. Preserve native events, images, usage, effective
@@ -77,6 +83,42 @@ canonical Domain edit/submission path and revision basis. There is no apply
 operation, silent correction, historical overwrite, new ledger or finalization
 gate. Closed assessments remain immutable.
 
+
+## Optional fresh context and protected source access
+
+The packaged [optional audit reference](../src/rob2_kit/skills/rob2-assess/references/source-audit.md)
+is discoverable through the skill, MCP guidance tool/resources and exported skill.
+The preparation/validation commands above are repository utilities, not installed
+`rob2` subcommands. No new production stage, default model or mandatory reviewer
+is added. Omission never blocks ordinary assessment or finalization.
+
+The prepared request supports full captured-source follow-up instead of forcing a
+large dossier into one prompt. Follow all needed pagination and inline pixels;
+retain actual source delivery and distinguish it from availability. Do not impose
+an arbitrary productive source-call cap or silently truncate necessary context.
+Record specific limits if investigation cannot be completed. Preserve uncertainty
+and supported contextual probability, without treating missing individual proof
+as an automatic contradiction. Keep analysis exclusion distinct from measurement
+cessation and planned methods distinct from demonstrated conduct.
+
+Preparation does not isolate the host MCP process. Protect an isolated copy's
+Sources and canonical/working checkpoints through the host filesystem boundary;
+client read-only mode alone does not provide that protection. Native source
+navigation/read/render tools write disposable caches, which may remain writable
+separately. Retain effective settings, source/checkpoint hashes, actual tool/image
+receipts, failures and usage. `request.json` distinguishes prepared delivery from
+observed execution and makes no claim that Sources were fully read. Existing
+validated Domain revisions remain the only route for assessor-approved changes;
+closed assessments stay immutable.
+
+Small development audits provide a limited promising signal: a material factual
+attribution was detected while defensible controls were preserved, and a later
+case with no material correction opportunity was also preserved. These do not
+establish general accuracy, superiority, regression freedom or a benefit from a
+mandatory pass. Successful free-prose diagnostics with signalling context do not
+validate transfer to this label-hidden typed exporter. Retain the historical
+negative results below and judge each advisory finding against its actual source.
+
 ## Difference from rejected review experiments
 
 The full-claim tool-free feasibility audit had a qualified-inference false alarm,
@@ -91,7 +133,7 @@ source-verified feedback and keep valid-looking false critiques from editing an
 assessment. They do not prove that a reviewer will find errors or avoid false alarms.
 
 Reuse: one existing exporter replaces its narrative-only finalized-bundle loop;
-current and bundle inputs share one builder. Five existing source tools, selected
+current and bundle inputs share one builder. Six existing source/guidance tools, selected
 Trial review, Evidence integrity/selection, renderer and native exec are reused.
 Zero new MCP tools, canonical record kinds, assessment actions or finalization
 gates. The earlier one-off paired collector remains frozen diagnostic provenance;

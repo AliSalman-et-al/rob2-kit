@@ -518,7 +518,7 @@ wait for a researcher decision.
 ### 7. Review and close every Trial
 
 An explicitly requested separate source check may use the existing opt-in factual
-exporter (`docs/source-checking.md` in the repository). This is advisory and is not
+exporter; see [optional fresh source audit](references/source-audit.md). This is advisory and is not
 part of the default assessment loop. Inspect any returned findings against their
 exact sources, distinguish source facts from legitimate inference, and accept or
 reject them yourself. A valid locator is not proof that a critique is correct.

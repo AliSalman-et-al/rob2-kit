@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,10 @@ def assessment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, d
             "Period 2: Gamma had 9 adverse-event discontinuations.\n"
             "Available-case mean at day 30 used ANCOVA; "
             "randomized counts are not observed counts.\n",
+            encoding="utf-8",
+        )
+        (result / "input/trial/uncited.txt").write_text(
+            "\n".join(f"Line {n}: complete uncited follow-up context." for n in range(1, 601)),
             encoding="utf-8",
         )
         return result
@@ -154,6 +159,34 @@ def test_full_claims_blind_labels_exact_sources_visual_provenance_and_native_pre
         reviewer_effort="low",
     )
     assert manifest["model_calls"] == 0 and manifest["fresh_exec"]
+    assert manifest["accepted_checkpoints_not_model_input"] == [record]
+    guidance = json.loads((output / "guidance.json").read_text())
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    accepted_ids = {answer["question_id"] for answer in record["answers"]}
+    assert guidance["questions"] == [
+        {
+            "wording": question.wording,
+            "official": question.guidance.official.model_dump(mode="json"),
+        }
+        for question in SCIENTIFIC_PACK.questions
+        if question.id in accepted_ids
+    ]
+    assert guidance["shared_sections"] == [
+        {"source_url": section.source_url, "official": section.guidance.model_dump(mode="json")}
+        for section in SCIENTIFIC_PACK.official_sections or ()
+        if section.domain_id in {"all", record["domain_id"]}
+    ]
+    assert (
+        json.dumps(guidance, ensure_ascii=False, indent=2)
+        in (output / "instructions.md").read_text()
+    )
+    assert (
+        manifest["guidance_sha256"]
+        == hashlib.sha256((output / "guidance.json").read_bytes()).hexdigest()
+    )
+    assert "Not supplied" in manifest["delivery"]["filesystem_isolation"]
+    assert "Availability is not actual delivery" in manifest["delivery"]["followup"]
     assert "Attached image 1: Evidence " in (output / "prompt.txt").read_text(encoding="utf-8")
     assert "assessor_routing_not_model_input" not in (output / "prompt.txt").read_text(
         encoding="utf-8"
@@ -422,3 +455,70 @@ def test_excerpt_receipt_and_saved_unknown_entry_identity(
     first["clause"] = " ".join(unknowns)
     with pytest.raises(ValueError, match="one exact saved field entry"):
         validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+
+
+def test_advisory_source_tools_recover_complete_uncited_context_without_checkpoint_edits(
+    assessment: tuple[Path, dict[str, Any]],
+) -> None:
+    workspace, packet = assessment
+    before = _canonical_hash(workspace)
+    working = (workspace / ".rob2-kit/working.sqlite3").read_bytes()
+    sources = support._call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    source = next(item for item in sources if item["label"] == "uncited.txt")
+    assert source["id"] in {item["source_id"] for item in packet["source_inventory"]}
+    assert not any(span["source_id"] == source["id"] for span in packet["cited_spans"])
+    lines = []
+    start = 1
+    while start:
+        receipt = support._call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "source_id": source["id"], "pages": [1], "start_line": start},
+        )
+        page = receipt["data"]["pages"][0]
+        lines.extend(line.split("|", 1)[1] for line in page["numbered_text"].splitlines())
+        start = page["next_start_line"]
+    assert lines == (workspace / "input/trial/uncited.txt").read_text().splitlines()
+    assert len(lines) == 600
+    assert (
+        support._call(workspace, "read_guidance", {"document": "references/source-audit.md"})[
+            "outcome"
+        ]
+        == "success"
+    )
+    assert _canonical_hash(workspace) == before
+    assert (workspace / ".rob2-kit/working.sqlite3").read_bytes() == working
+
+
+def test_inactive_questions_do_not_create_audit_claims_or_invented_accepted_answers(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = support._assessment_workspace(tmp_path)
+    support._call(
+        workspace, "get_domain_context", {"trial_id": "trial", "domain_id": "domain:missing"}
+    )
+    draft = support._domain_draft("trial", "domain:missing", revision, evidence)
+    draft["answers"][0]["answer"] = "yes"
+    draft["answers"][0]["justification"] = "Captured outcome records support availability."
+    draft["answers"][0]["unknowns"] = ["Individual observation records are unavailable."]
+    # Ordinary submission decides the active path. Export must not restore
+    # ignored branches or ask the reviewer to complete new assessments.
+    saved = support._call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    record = _state(workspace)["domain_records"]["trial:domain:missing"]
+    assert len(record["answers"]) == 1
+    output = tmp_path / "fresh-request"
+    request = prepare_native_review(
+        workspace,
+        "trial",
+        "domain:missing",
+        output,
+        assessor_model="declared-assessor",
+        assessor_effort="low",
+        reviewer_model="declared-reviewer",
+        reviewer_effort="low",
+    )
+    assert len(json.loads((output / "packet.json").read_text())["claims"]) == 1
+    assert len(json.loads((output / "guidance.json").read_text())["questions"]) == 1
+    assert request["accepted_checkpoints_not_model_input"] == [record]
+    assert record["answers"][0]["unknowns"] == ["Individual observation records are unavailable."]

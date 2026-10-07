@@ -7,6 +7,7 @@ assessor alone can change a Domain through the existing canonical submission pat
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import sys
@@ -23,9 +24,17 @@ from rob2_kit.application.source_check import (
     export_current_packet,
     validate_report,
 )
+from rob2_kit.packs import SCIENTIFIC_PACK
 from scripts.verify_bundle import verify
 
-READ_TOOLS = ("list_sources", "read_pages", "search_sources", "search_sources_batch", "render_page")
+READ_TOOLS = (
+    "list_sources",
+    "read_pages",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "read_guidance",
+)
 
 
 def export_packet(bundle: Path, trial_id: str, domain_id: str) -> dict[str, Any]:
@@ -179,7 +188,44 @@ def prepare_native_review(
     output.mkdir(parents=True, exist_ok=False)
     _write(output / "packet.json", packet)
     _write(output / "response-schema.json", native_review_schema())
-    (output / "instructions.md").write_text(INSTRUCTION, encoding="utf-8")
+    state = _state(_root(workspace))
+    records = [
+        record
+        for record in state["domain_records"].values()
+        if record["identity"] in packet["checkpoint_identities"]
+    ]
+    selected_domains = {record["domain_id"] for record in records}
+    accepted_questions = {
+        answer["question_id"] for record in records for answer in record["answers"]
+    }
+    # Official material is interpretive context, not a new assessment or hidden grader.
+    # Supply shared dependencies as well as complete accepted-question elaborations.
+    guidance = {
+        "pack_identity": SCIENTIFIC_PACK.content_hash,
+        "provenance": SCIENTIFIC_PACK.provenance.model_dump(mode="json"),
+        "questions": [
+            {
+                "wording": question.wording,
+                "official": question.guidance.official.model_dump(mode="json"),
+            }
+            for question in SCIENTIFIC_PACK.questions
+            if question.id in accepted_questions
+        ],
+        "shared_sections": [
+            {"source_url": section.source_url, "official": section.guidance.model_dump(mode="json")}
+            for section in SCIENTIFIC_PACK.official_sections or ()
+            if section.domain_id in selected_domains or section.domain_id == "all"
+        ],
+        "operational_dependencies": ["SKILL.md", "references/source-audit.md"],
+    }
+    _write(output / "guidance.json", guidance)
+    instructions = (
+        INSTRUCTION
+        + "\n# Official interpretive guidance\n"
+        + json.dumps(guidance, ensure_ascii=False, indent=2)
+        + "\n"
+    )
+    (output / "instructions.md").write_text(instructions, encoding="utf-8")
     images = []
     for span in packet["cited_spans"]:
         if span["kind"] != "figure":
@@ -279,6 +325,18 @@ def prepare_native_review(
     ]
     manifest = {
         "assessor_routing_not_model_input": routing,
+        "accepted_checkpoints_not_model_input": copy.deepcopy(records),
+        "guidance_sha256": hashlib.sha256((output / "guidance.json").read_bytes()).hexdigest(),
+        "delivery": {
+            "initial": "Complete saved claims and original citations in prompt; source-bound "
+            "official elaborations and shared guidance in instructions; listed image bytes.",
+            "followup": "Complete captured Sources recoverable through ordinary source tools. "
+            "Availability is not actual delivery or reading; retain tool returns and pixels.",
+            "canonical_writes": "No assessment-writing tools enabled; findings cannot apply edits.",
+            "filesystem_isolation": "Not supplied by preparation or client read-only setting. "
+            "Host must protect Sources and canonical/working checkpoints in an isolated copy; "
+            "disposable navigation/read/render caches may write.",
+        },
         "snapshot_identity": packet["snapshot_identity"],
         "assessor": {
             "model": assessor_model,
