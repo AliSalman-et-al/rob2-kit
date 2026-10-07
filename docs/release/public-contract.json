@@ -177,7 +177,7 @@
 "destructive":false,
 "idempotent":true,
 "open_world":false,
-"schema_sha256":"sha256:3cf52614a59f5f31541f924fc480b8e21ce30ee36a76c54032f9ebab80197295",
+"schema_sha256":"sha256:012443eee389c02f198212557cfdf28716c50f7ec10c95515196195d0c1ecac5",
 "output_schema_sha256":"sha256:1f1f7568726b952092d3f3f2604cf1acc7629972039a309d09f273cdf817c74d"},
 {"name":"review_trial",
 "title":"Review Trial",

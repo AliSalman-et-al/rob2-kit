@@ -19,11 +19,15 @@ from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overal
 from ..models import canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import (
+    DomainAccountStepCitation,
     DomainCounterpoint,
     DomainDraft,
     DomainEvidenceCitation,
     DomainSaveAnswer,
+    DomainSourceReference,
     WorkingNote,
+    WorkingResultStepReference,
+    WorkingSourceRange,
 )
 from ._state import (
     _canonical_evidence_records,
@@ -1956,15 +1960,46 @@ def resolve_domain_sources(
 
     resolve = source_reference_resolver(workspace, trial_id)
 
+    def citations(
+        citation: DomainEvidenceCitation | DomainAccountStepCitation | DomainSourceReference,
+    ) -> tuple[DomainEvidenceCitation, ...]:
+        if isinstance(citation, DomainEvidenceCitation):
+            return (citation.model_copy(update={"evidence": resolve(citation.evidence)}),)
+        if not isinstance(citation, DomainAccountStepCitation):
+            return (DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support"),)
+        root = _root(workspace)
+        working = working_checkpoint_status(root, _state(root), trial_id)
+        step = next(
+            (
+                item
+                for item in (working.get("checkpoint") or {}).get("result_account") or ()
+                if item["identity"] == citation.step_identity
+            ),
+            None,
+        )
+        if step is None or working.get("reason") in {"result_changed", "source_changed"}:
+            raise ValueError("Use an unchanged step identity from the current Result account")
+        locations = step["observation"]["sources"]
+        if any(item["start_line"] <= 0 for item in locations):
+            raise ValueError(
+                "Visual account steps need original visual Evidence with "
+                "working_observation.step_identity; a page locator cannot determine its region"
+            )
+        return tuple(
+            DomainEvidenceCitation(
+                evidence=resolve(WorkingSourceRange.model_validate(location)),
+                role=citation.role,
+                working_observation=WorkingResultStepReference(
+                    step_identity=citation.step_identity, transfer=citation.transfer
+                ),
+            )
+            for location in locations
+        )
+
     return [
         answer.model_copy(
             update={
-                "bases": tuple(
-                    citation.model_copy(update={"evidence": resolve(citation.evidence)})
-                    if isinstance(citation, DomainEvidenceCitation)
-                    else DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support")
-                    for citation in answer.bases
-                ),
+                "bases": tuple(item for citation in answer.bases for item in citations(citation)),
                 "counterevidence": tuple(
                     DomainCounterpoint(
                         evidence=tuple(resolve(ref) for ref in point.evidence),

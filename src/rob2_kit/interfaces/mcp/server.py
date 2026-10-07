@@ -294,6 +294,7 @@ class _InputSchemaDelivery(Middleware):
                         if step
                         not in {
                             "DomainEvidenceCitation",
+                            "DomainAccountStepCitation",
                             "WorkingSourceRange",
                             "VisualEvidenceReference",
                             "constrained-str",

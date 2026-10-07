@@ -2478,6 +2478,14 @@ class DomainEvidenceCitation(StrictModel):
     )
 
 
+class DomainAccountStepCitation(WorkingResultStepReference):
+    """Resolve a current text-backed account step to its original source citations."""
+
+    role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
+        Field(description="Caller-assessed relationship to this question; not server entailment.")
+    )
+
+
 class DomainInformationLimit(StrictModel):
     premise: NonBlankText = Field(description="Unresolved premise needed to answer this question.")
     stopping_rationale: NonBlankText = Field(
@@ -2521,13 +2529,14 @@ class DomainSaveAnswer(StrictModel):
     answer: Answer = Field(
         description="Submitted response; must be among this question card's permitted options."
     )
-    bases: tuple[DomainEvidenceCitation | DomainSourceReference, ...] = Field(
+    bases: tuple[
+        DomainEvidenceCitation | DomainAccountStepCitation | DomainSourceReference, ...
+    ] = Field(
         default=(),
-        description="Lean support: handles, exact text ranges, copied delivered quotes "
-        "or visual references "
-        "assert supporting "
-        "facts, saved as indirect_support. Use full citations for other roles or annotations. "
-        "Source resolution does not establish entailment or change an answer.",
+        description="Lean handles, exact text ranges, copied delivered quotes or visual "
+        "references are saved as indirect_support. Full citations or a current text-backed "
+        "account step take an explicit role. Source resolution does not establish entailment "
+        "or change an answer.",
     )
     absence_searches: tuple[SubmittedSearchReceiptHandle, ...] = Field(
         default=(),

@@ -42,8 +42,12 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     }
     assert answer["additionalProperties"] is False
     variants = answer["properties"]["bases"]["items"]["anyOf"]
-    assert variants[1]["type"] == "string"
-    citation = variants[0]
+    assert any(item.get("type") == "string" for item in variants)
+    citation = next(item for item in variants if "evidence" in item.get("properties", {}))
+    shortcut = next(item for item in variants if "step_identity" in item.get("properties", {}))
+    assert set(shortcut["required"]) == {"step_identity", "role"}
+    assert set(shortcut["properties"]) == {"step_identity", "role", "transfer"}
+    assert shortcut["additionalProperties"] is False
     assert set(citation["required"]) == {"evidence", "role"}
     references = citation["properties"]["evidence"]["anyOf"]
     assert references[0]["type"] == "string"
@@ -151,4 +155,23 @@ def test_revision_argument_error_returns_revision_grammar_without_answer_reconst
     assert schema["additionalProperties"] is False
     assert "minimal_answer_schema" not in recovery
     assert "Complete answer syntax example" not in text
+    assert _state(workspace) == before
+
+
+def test_malformed_account_citation_reports_public_role_path_without_committing(tmp_path: Path):
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_submission(_domain_draft("trial", "domain:randomization", revision, evidence))
+    draft["answers"][0]["bases"] = [{"step_identity": "sha256:" + "a" * 64, "role": "unknown"}]
+    before = _state(workspace)
+
+    async def call():
+        os.environ["ROB2_WORKSPACE"] = str(workspace)
+        async with Client(mcp) as client:
+            return await client.call_tool("save_domain_judgment", draft, raise_on_error=False)
+
+    result = asyncio.run(call())
+    assert result.is_error
+    text = "\n".join(item.text for item in result.content if hasattr(item, "text"))
+    assert "/answers/0/bases/0/role" in text
+    assert "DomainAccountStepCitation" not in text
     assert _state(workspace) == before

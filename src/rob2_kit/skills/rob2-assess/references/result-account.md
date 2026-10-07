@@ -58,6 +58,23 @@ D2/D3/D5 recover the same complete account and original source coordinates. Use
 `read_pages`/`render_page` and select the original Evidence through the ordinary
 source tools; account prose is not a substitute for cited source material.
 
+For a current text-backed step, an answer may use this optional citation in `bases`:
+
+```json
+{"step_identity":"sha256:<returned step identity>","role":"inference"}
+```
+
+It resolves every original observation text range through the existing Evidence
+selectors and retains the complete unchanged step snapshot, including inference,
+unknowns, counterevidence, scope and counts. Choose the question-specific role and
+explain its warrant; a step identity does not certify scientific support. Existing
+scope-transfer validation applies; supply `transfer` when an explicit inference
+across scopes is warranted. Do not use this shorthand for a visual step: cite its
+original visual Evidence and step identity so region, pixels and transcription
+remain unambiguous. Direct citations and assessments without accounts remain valid.
+This reduces locator copying; improved scientific judgment or model uptake has
+not been demonstrated.
+
 An answer basis can retain its factual-step dependency with:
 
 ```json
