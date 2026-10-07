@@ -162,6 +162,44 @@ def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> Non
     assert result["all_recovery_cursors_preserved"]
 
 
+@pytest.mark.parametrize("range_count", [0, 140])
+def test_replay_preserves_explicit_compact_and_full_delivery_history(
+    controls, tmp_path: Path, range_count: int
+) -> None:
+    replay = importlib.import_module("replay_domain_probe_delivery").replay
+    fixture = (
+        Path(__file__).parents[1]
+        / "tests/fixtures/historical-evaluation/2026-10-02-deliver-d3-completion-17bad3d"
+        / "events.jsonl"
+    )
+    rows = [json.loads(line) for line in fixture.read_text(encoding="utf-8").splitlines()]
+    item = next(
+        row["item"]
+        for row in rows
+        if row.get("type") == "item.completed"
+        and row.get("item", {}).get("tool") == "get_domain_context"
+    )
+    data = item["result"]["structured_content"]["data"]
+    data["delivery_history"] = [
+        {"source_id": "source_" + "a" * 64, "page": 1, "start_line": n, "end_line": n}
+        for n in range(1, range_count * 2, 2)
+    ]
+    data["delivery_history_recovery"] = {
+        "operation": "get_domain_context",
+        "arguments": {
+            "trial_id": data["trial_id"],
+            "domain_id": data["domain_id"],
+            "include_delivery_history": True,
+        },
+    }
+    events = tmp_path / "events.jsonl"
+    events.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+    result = replay(events)
+    assert result["scientific_data_recovered_exactly"]
+    assert result["delivery_history_ranges_recovered"] == range_count
+    assert result["all_recovery_cursors_preserved"]
+
+
 def test_changed_rejection_allows_bounded_correction_but_identical_stops(controls) -> None:
     limits = controls.approved_limits()
     first = {

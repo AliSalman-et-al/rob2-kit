@@ -16,7 +16,7 @@ from scripts.profile_domain_context_delivery import _reconstruct
 
 
 def replay(events: Path) -> dict[str, Any]:
-    rows = [json.loads(line) for line in events.read_text().splitlines()]
+    rows = [json.loads(line) for line in events.read_text(encoding="utf-8").splitlines()]
     item = next(
         row["item"]
         for row in rows
@@ -47,7 +47,13 @@ def replay(events: Path) -> dict[str, Any]:
     # Current transport supplies empty arrays absent from a historical envelope.
     # Remove only those defaults; retain every original field and its exact value.
     for name in set(recovered) - set(original["data"]):
-        assert name in ("primary_report", "questions", "evidence", "comparison_cards")
+        assert name in (
+            "primary_report",
+            "questions",
+            "evidence",
+            "comparison_cards",
+            "delivery_history",
+        )
         assert recovered[name] == []
         del recovered[name]
     assert recovered == original["data"], "scientific data changed during pagination"
@@ -59,6 +65,7 @@ def replay(events: Path) -> dict[str, Any]:
         "default_pages": pages,
         "scientific_data_recovered_exactly": True,
         "all_recovery_cursors_preserved": True,
+        "delivery_history_ranges_recovered": len(recovered.get("delivery_history", [])),
         "limitations": (
             "Server replay only; native client/model delivery has not been run with inference."
         ),
