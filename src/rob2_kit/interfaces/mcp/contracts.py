@@ -2224,6 +2224,12 @@ class RegistryOutcomeNavigation(PublicModel):
     type: str | None = None
     timeFrame: str | None = None
     populationDescription: str | None = None
+    not_inlined_fields: tuple[
+        Literal["title", "type", "timeFrame", "populationDescription"], ...
+    ] = Field(
+        default=(),
+        description="Captured fields omitted from the summary; recover their complete source text.",
+    )
     recovery: EvidenceRecovery
 
 

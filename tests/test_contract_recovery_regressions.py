@@ -208,6 +208,7 @@ def test_registry_outcomes_keep_distinct_scope_and_exact_recovery(tmp_path: Path
     )
     assert entries[2].title is None
     assert entries[2].populationDescription is None
+    assert entries[2].not_inlined_fields == ("populationDescription", "title")
     assert (
         domains._registry_navigation(tmp_path, "trial", [{"id": source_id, "role": "other"}]) == {}
     )
@@ -236,6 +237,52 @@ def test_registry_outcome_recovery_batches_every_page_without_truncation(tmp_pat
     )
     assert [len(entry.recovery.windows) for entry in entries] == [20, 1]
     assert all(entry.title is None and entry.timeFrame is None for entry in entries)
+
+
+@pytest.mark.parametrize("bounded_projection", [False, True])
+def test_oversized_registry_metadata_keeps_complete_source_recovery(
+    tmp_path: Path, bounded_projection: bool
+) -> None:
+    import json
+
+    from rob2_kit.application._state import _bound_projected_lines
+    from rob2_kit.interfaces.mcp.server import _paginate_domain_context_transport
+
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    source_id = "sh_" + "b" * 16
+    path = "resultsSection.outcomeMeasuresModule.outcomeMeasures[0]"
+    text = f'{path}.title: "Change in score"\n{path}.populationDescription: ' + json.dumps(
+        "x" * 140_000
+    )
+    if bounded_projection:
+        text = _bound_projected_lines(text)
+    with sqlite3.connect(internal / "derivative.sqlite3") as connection:
+        connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
+        connection.execute("INSERT INTO pages VALUES (1, ?, ?)", (text, source_id))
+    navigation = domains._registry_navigation(
+        tmp_path, "trial", [{"id": source_id, "role": "registry"}]
+    )[source_id]
+    entry = RegistryOutcomeNavigation.model_validate(navigation["outcomes"][0])
+    assert entry.title == "Change in score"
+    assert entry.populationDescription is None
+    assert entry.not_inlined_fields == ("populationDescription",)
+    window = entry.recovery.windows[0]
+    assert window.start_line == 1 and window.end_line == len(text.splitlines())
+    assert "".join(text.splitlines()) == (
+        f'{path}.title: "Change in score"{path}.populationDescription: ' + json.dumps("x" * 140_000)
+    )
+    value = {
+        "outcome": "success",
+        "head": {"phase": "assessment", "state_revision": 4},
+        "data": {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "registry_outcomes": [entry.model_dump(mode="json")],
+        },
+    }
+    response = _paginate_domain_context_transport(value, None, None, "sha256:" + "a" * 64, 4)
+    assert response["data"]["registry_outcomes"] == value["data"]["registry_outcomes"]
 
 
 def test_evidence_recovery_shape_stays_compatible_with_older_projections() -> None:

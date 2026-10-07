@@ -30,6 +30,7 @@ from ..workflow_models import (
     WorkingSourceRange,
 )
 from ._state import (
+    _MAX_PROJECTED_LINE_LENGTH,
     _canonical_evidence_records,
     _commit_records,
     _db,
@@ -432,9 +433,12 @@ def _registry_navigation(
             paths: set[str] = set()
             ranges: dict[tuple[str, int], list[int]] = {}
             outcomes: dict[str, dict[str, Any]] = {}
+            page_line_counts: dict[int, int] = {}
             for row in rows:
                 page = int(row["page"])
-                for line_number, line in enumerate(str(row["text"]).splitlines(), 1):
+                lines = str(row["text"]).splitlines()
+                page_line_counts[page] = len(lines)
+                for line_number, line in enumerate(lines, 1):
                     outcome = re.match(
                         r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\])\."
                         r"([^:]+):\s*(.*)$",
@@ -443,7 +447,13 @@ def _registry_navigation(
                     if outcome:
                         path, field, value = outcome.groups()
                         entry = outcomes.setdefault(
-                            path, {"path": path, "ranges": {}, "field_counts": {}}
+                            path,
+                            {
+                                "path": path,
+                                "ranges": {},
+                                "field_counts": {},
+                                "not_inlined_fields": set(),
+                            },
                         )
                         bounds = entry["ranges"].setdefault(page, [line_number, line_number])
                         bounds[1] = line_number
@@ -451,13 +461,20 @@ def _registry_navigation(
                             counts = entry["field_counts"]
                             counts[field] = counts.get(field, 0) + 1
                             entry.pop(field, None)
+                            entry["not_inlined_fields"].add(field)
                             try:
                                 decoded = json.loads(value)
                             except json.JSONDecodeError:
                                 pass
                             else:
-                                if isinstance(decoded, str) and counts[field] == 1:
+                                if (
+                                    isinstance(decoded, str)
+                                    and counts[field] == 1
+                                    and len(json.dumps(decoded, ensure_ascii=False).encode("utf-8"))
+                                    <= _MAX_PROJECTED_LINE_LENGTH
+                                ):
                                     entry[field] = decoded
+                                    entry["not_inlined_fields"].discard(field)
                     for path in _REGISTRY_FIELD_PATHS.values():
                         if line.startswith(path + ".") or line.startswith(path + ":"):
                             paths.add(path)
@@ -483,8 +500,9 @@ def _registry_navigation(
                             **{
                                 key: value
                                 for key, value in entry.items()
-                                if key not in {"ranges", "field_counts"}
+                                if key not in {"ranges", "field_counts", "not_inlined_fields"}
                             },
+                            "not_inlined_fields": tuple(sorted(entry["not_inlined_fields"])),
                             "recovery": {
                                 "operation": "read_pages",
                                 "trial_id": trial_id,
@@ -492,8 +510,12 @@ def _registry_navigation(
                                     {
                                         "source_id": source_id,
                                         "page": page,
-                                        "start_line": bounds[0],
-                                        "end_line": bounds[1],
+                                        "start_line": 1
+                                        if entry["not_inlined_fields"]
+                                        else bounds[0],
+                                        "end_line": page_line_counts[page]
+                                        if entry["not_inlined_fields"]
+                                        else bounds[1],
                                     }
                                     for page, bounds in list(entry["ranges"].items())[
                                         start : start + 20

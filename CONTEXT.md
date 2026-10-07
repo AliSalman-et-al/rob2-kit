@@ -162,7 +162,10 @@ Registry comparison cards report the number of captured result outcomes;
 separately pageable `registry_outcomes` entries retain each exact source/index,
 literal title, type, time frame and population description when unambiguous,
 plus exact source recovery windows. Outcomes spanning more than twenty pages
-retain numbered recovery batches and their total window count. An analyzed
+retain numbered recovery batches and their total window count. A metadata field that exceeds the existing projected-line budget, is malformed,
+or has multiple projected fragments is explicitly listed in `not_inlined_fields`;
+its recovery covers the complete containing pages, including wrapped text.
+Normal concise fields remain literal. An analyzed
 denominator is not an observed-outcome count; neighboring outcomes may use
 different definitions or analyses even at the same time point. These entries
 do not certify correspondence with the selected Result or historical plan timing.
