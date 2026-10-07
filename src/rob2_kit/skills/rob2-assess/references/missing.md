@@ -88,6 +88,12 @@ describe deviations or analysis populations; they do not become observed
 outcomes. Explicit `observed` or `unavailable` outcome quantities participate in
 missing-count arithmetic; generic censoring does not.
 
+Registry Source groups provide recovery windows for reported outcome measures
+and participant flow, including labelled population descriptions, group IDs,
+denominator units and counts. Read those qualifiers together. A results analysis
+denominator is not a count of observed outcomes, and participant-flow completion
+is not necessarily outcome ascertainment for the approved Result.
+
 When participant-count comparisons support the 3.1 answer, retain the
 source-supported `missing_data` rows in `save_domain_judgment`. Give each row its
 named scope and keep the reported analysis population distinct from the approved

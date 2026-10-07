@@ -393,6 +393,13 @@ _REGISTRY_FIELD_PATHS = {
     "lastUpdatePostDateStruct": "protocolSection.statusModule.lastUpdatePostDateStruct",
     "startDateStruct": "protocolSection.statusModule.startDateStruct",
     "armsInterventionsModule": "protocolSection.armsInterventionsModule",
+    "statusModule": "protocolSection.statusModule",
+    "outcomesModule": "protocolSection.outcomesModule",
+    "designModule": "protocolSection.designModule",
+    "outcomeMeasuresModule": "resultsSection.outcomeMeasuresModule",
+    "participantFlowModule": "resultsSection.participantFlowModule",
+    "moreInfoModule": "resultsSection.moreInfoModule",
+    "versionHolder": "derivedSection.miscInfoModule.versionHolder",
 }
 
 
@@ -3813,7 +3820,7 @@ def get_domain_context(
             trial_sources,
             canonical_preview,
             _registry_navigation(root, trial_id, trial_sources)
-            if domain_id == "domain:selection"
+            if domain_id in {"domain:missing", "domain:selection"}
             else None,
             trial_registry if isinstance(trial_registry, dict) else None,
             participant_flow_data=(

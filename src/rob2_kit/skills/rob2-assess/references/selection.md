@@ -40,10 +40,18 @@ coordinates, and recover omitted text before using it as plan Evidence.
 provenance; they do not establish when a plan was finalized or which Trial
 comparison it covered.
 
-For a registry group with `registry_recovery`, call `read_pages` with that
-object's `trial_id` and `windows`. Inspect the captured fields identified by
-`registry_field_paths`. These are navigation paths into the immutable projection,
-not a historical plan or an applicability judgment. `windows` contains at most
+For a registry group, inspect `registry_field_paths`. Use the approved Result's
+outcome, arm and time-point wording with those paths to locate applicable
+entries through `search_sources`. `registry_recovery` supplies exact `read_pages`
+windows when needed; a results module may contain many unrelated analyses, so
+these ranges are available context, not a requirement to read every result.
+These are navigation paths into the immutable projection,
+not a historical plan or an applicability judgment. Protocol outcome/design
+fields describe the captured current record; results-section outcome/analysis
+fields describe reported results. Status dates and version descriptors do not
+date individual endpoint content or establish historical plan finalization.
+Read population, group and denominator qualifiers with any reported analysis.
+`windows` contains at most
 20 windows; `registry_window_count` reports the total. If more remain, navigate
 the captured Source using its page count and `search_sources` with the field
 paths. Refreshing context does not advance these registry windows. For omitted selected

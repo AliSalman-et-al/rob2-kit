@@ -296,3 +296,94 @@ def test_public_preview_recovers_handle_outside_active_domain_projection(
     visible = {item["handle"]: item for item in context["data"]["evidence"]}
     assert visible[preview_evidence["handle"]]["identity"] == preview_evidence["identity"]
     assert domains._state(tmp_path) == before
+
+
+def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_and_d5(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import hashlib
+    import json
+
+    from support import rob2 as support
+
+    payload = {
+        "protocolSection": {
+            "statusModule": {
+                "studyFirstPostDateStruct": {"date": "2010-01-01"},
+                "lastUpdatePostDateStruct": {"date": "2025-01-01"},
+                "studyFirstSubmitDate": "2009-12-15",
+            },
+            "outcomesModule": {
+                "primaryOutcomes": [{"measure": "requested outcome", "timeFrame": "day 30"}]
+            },
+            "designModule": {"enrollmentInfo": {"count": 20, "type": "ACTUAL"}},
+        },
+        "resultsSection": {
+            "outcomeMeasuresModule": {
+                "outcomeMeasures": [
+                    {
+                        "populationDescription": "Baseline/postbaseline; excludes after rescue.",
+                        "denoms": [
+                            {"units": "Participants", "counts": [{"groupId": "G1", "value": "18"}]}
+                        ],
+                    }
+                ]
+            },
+            "participantFlowModule": {"preAssignmentDetails": "Two randomized groups."},
+            "moreInfoModule": {
+                "limitationsAndCaveats": "Analysis counts are not ascertainment counts."
+            },
+        },
+        "derivedSection": {"miscInfoModule": {"versionHolder": "2026-01-01"}},
+    }
+    original = support._workspace
+
+    def create(path: Path, requested_outcome: str = "requested outcome") -> Path:
+        workspace = original(path, requested_outcome)
+        trial = workspace / "input/trial"
+        (trial / "registry.json").write_text(json.dumps(payload), encoding="utf-8")
+        (trial / "sources.toml").write_text(
+            'roles = { "main.txt" = "main_article", "registry.json" = "registry" }\n',
+            encoding="utf-8",
+        )
+        return workspace
+
+    monkeypatch.setattr(support, "_workspace", create)
+    workspace, _text, _revision = _assessment_workspace(tmp_path)
+    canonical = (workspace / ".rob2-kit/canonical.sqlite3").read_bytes()
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    source = next(item for item in sources if item["role"] == "registry")
+    source_bytes = (workspace / "input/trial/registry.json").read_bytes()
+    assert source["sha256"] == "sha256:" + hashlib.sha256(source_bytes).hexdigest()
+    for domain_id in ("domain:missing", "domain:selection"):
+        context = _call(
+            workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
+        )
+        group = next(
+            group
+            for card in context["data"]["comparison_cards"]
+            for group in card["passage_groups"]
+            if group["source_id"] == source["id"]
+        )
+        assert "resultsSection.outcomeMeasuresModule" in group["registry_field_paths"]
+        assert "protocolSection.outcomesModule" in group["registry_field_paths"]
+        recovery = group["registry_recovery"]
+        receipt = _call(
+            workspace, "read_pages", {"trial_id": "trial", "windows": recovery["windows"]}
+        )
+        delivered = "\n".join(page["numbered_text"] for page in receipt["data"]["pages"])
+        for qualifier in (
+            "populationDescription",
+            "excludes after rescue",
+            "Participants",
+            "groupId",
+            '"18"',
+            "studyFirstSubmitDate",
+            "2009-12-15",
+            "2025-01-01",
+            "versionHolder",
+        ):
+            assert qualifier in delivered
+        assert group["sha256"] == source["sha256"]
+    assert (workspace / ".rob2-kit/canonical.sqlite3").read_bytes() == canonical
+    assert (workspace / "input/trial/registry.json").read_bytes() == source_bytes
