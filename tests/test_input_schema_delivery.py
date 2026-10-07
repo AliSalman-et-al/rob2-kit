@@ -99,9 +99,14 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     objects = [item for item in references if item.get("type") == "object"]
     assert {frozenset(item["required"]) for item in objects} == {
         frozenset({"source_id", "page", "start_line", "end_line"}),
-        frozenset({"delivery_receipt", "region", "transcription"}),
+        frozenset({"delivery_receipt", "transcription"}),
         frozenset({"source_id", "page", "selected_text"}),
     }
+    visual = next(item for item in objects if "delivery_receipt" in item["properties"])
+    region = visual["properties"]["region"]
+    assert region["default"] is None
+    bounds = next(item for item in region["anyOf"] if item["type"] == "array")
+    assert bounds["minItems"] == bounds["maxItems"] == 4
     assert all(item["additionalProperties"] is False for item in objects)
     assert citation["additionalProperties"] is False
     point = answer["properties"]["counterevidence"]["items"]
