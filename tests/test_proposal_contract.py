@@ -104,6 +104,7 @@ def test_exact_relation_rationale_is_preserved(tmp_path: Path) -> None:
     scope = validation["data"]["scope_review"][0]
     assert scope["verification"] == "requires_source_interpretation"
     assert scope["reported_time_point_or_window"] is None
+    assert scope["reported_effect_measure"] is None
     saved = _call(
         workspace,
         "save_proposal",

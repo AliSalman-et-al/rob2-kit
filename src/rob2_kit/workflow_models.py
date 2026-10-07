@@ -1782,6 +1782,12 @@ class ResultScopeReview(StrictModel):
     target: ScopeTargetSummary
     reported_endpoint: ScopeEndpointSummary
     reported_analysis_population: NonBlankText
+    reported_effect_measure: NonBlankText | None = Field(
+        default=None,
+        description=(
+            "Source-reported comparative effect-measure label when present; not an estimand."
+        ),
+    )
     reported_time_point_or_window: None = None
     reported_effect_of_interest: None = None
     source_bound_reported_fields: tuple[NonBlankText, ...]
@@ -1789,7 +1795,8 @@ class ResultScopeReview(StrictModel):
     verification: Literal["requires_source_interpretation"] = "requires_source_interpretation"
     instruction: NonBlankText = (
         "Compare outcome definition, time window, estimand and population against the selected "
-        "source passages. Null reported timing/estimand means not separately represented, not "
+        "source passages. A reported effect-measure label does not establish the estimand. "
+        "Null reported timing/estimand means not separately represented, not "
         "absent from the source. Known target fields, a matching endpoint label, or bound numbers "
         "do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; "
         "choose a supported non-exact relation or another candidate when exact scope is not "

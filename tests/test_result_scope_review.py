@@ -49,10 +49,12 @@ def test_scope_gaps_are_explicit_without_relabeling_inherited_exactness() -> Non
     assert review["target"]["outcome"] == original["target"]["outcome_definition"]
     assert review["reported_endpoint"] == original["reported"]["endpoint"]
     assert review["reported_analysis_population"] == original["reported"]["analysis_population"]
+    assert review["reported_effect_measure"] == original["reported"]["effect_measure"]
     assert review["reported_time_point_or_window"] is None
     assert review["reported_effect_of_interest"] is None
     assert review["verification"] == "requires_source_interpretation"
     assert "/reported/estimate" in review["source_bound_reported_fields"]
+    assert "/reported/effect_measure" in review["source_bound_reported_fields"]
     assert not any("time" in path for path in review["source_bound_reported_fields"])
     assert raw == original
 

@@ -107,6 +107,8 @@ page only while its Source, Result, pack, and Domain checkpoint basis remains cu
 
 Proposal validation, pending status and approval display a read-only `scope_review`
 of the exact target, reported endpoint/population and source-bound field paths.
+For comparative effects, it also shows the source-reported effect measure;
+that label does not establish the effect of interest or estimand.
 Reported timing and estimand are not separately represented in the Result type;
 their null projection calls for source interpretation, not an absence finding.
 Exactness is a host assertion about equivalent scope, not a consequence of known
