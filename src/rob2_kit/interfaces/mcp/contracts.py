@@ -583,6 +583,9 @@ class EvidenceReadWindow(PublicModel):
 class EvidenceRecovery(PublicModel):
     """Exact recovery metadata for text omitted from a context projection."""
 
+    # The repeated schema already names this type in $defs; omit its duplicate label.
+    model_config = ConfigDict(json_schema_extra=lambda schema: schema.pop("title", None))
+
     operation: Literal["read_pages"]
     trial_id: TrialId
     windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
@@ -2212,8 +2215,16 @@ class ComparisonPassageRef(PublicModel):
     )
 
 
+def _omit_navigation_schema_labels(schema: dict[str, Any]) -> None:
+    schema.pop("title", None)
+    for property_schema in schema.get("properties", {}).values():
+        property_schema.pop("title", None)
+
+
 class RegistryOutcomeNavigation(PublicModel):
     """Captured outcome scope, not certified correspondence or observed availability."""
+
+    model_config = ConfigDict(json_schema_extra=_omit_navigation_schema_labels)
 
     path: str
     source_id: SourceHandle
@@ -2234,6 +2245,8 @@ class RegistryOutcomeNavigation(PublicModel):
 
 
 class ComparisonPassageGroup(PublicModel):
+    model_config = ConfigDict(json_schema_extra=_omit_navigation_schema_labels)
+
     source_id: SourceHandle
     source_role: SourceRole
     source_label: str = Field(min_length=1)
