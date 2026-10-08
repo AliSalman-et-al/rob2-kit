@@ -212,7 +212,7 @@ def test_missing_reference_and_skill_use_official_science_and_preserve_recovery(
         assert term in reference, term
 
 
-@pytest.mark.parametrize("name", ["missing", "measurement"])
+@pytest.mark.parametrize("name", ["missing", "measurement", "selection"])
 def test_domain_reference_delivered_through_production_mcp_resource(name: str) -> None:
     import asyncio
 

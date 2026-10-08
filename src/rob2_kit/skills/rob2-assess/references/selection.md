@@ -81,6 +81,36 @@ update. Current registry content does not establish unseen historical intent.
 A data cutoff or database lock does not by itself establish when investigators
 could access unblinded outcomes.
 
+The public registry API supplies the current record, not dated historical
+versions. API refresh timestamps and `versionHolder` ingestion dates are not
+historical version IDs. For linked documents, `date` is the latest document
+update/approval date and `uploadDate` is upload to PRS, not first public posting.
+Neither date alone establishes pre-unblinding finalization.
+
+When historical content could resolve a material premise and the host has browser
+capture capability, use the official Record History view and select the dated
+version. Its **Download current study** control exports the current record, not
+the selected historical view. Preserve the captured version as a separate
+immutable artifact, recording the NCT ID, displayed version ID, separately
+labelled submission/QC/posting dates and qualifiers, exact URL, retrieval time,
+capture format, artifact hash and coverage limitations. Do not replace the old
+registry Source or describe rendered content as API JSON. Keep the version's
+displayed date distinct from its labelled date fields and the outer current-study
+header; preserve each field's literal label and scope. Existing intake can
+capture supplied UTF-8 text or a rendered-page PDF plus readable provenance as
+Other Sources in a fresh prospective dossier. Explicitly declare their `other`
+roles in `sources.toml`; an undeclared PDF may be classified as a main article.
+Text has synthetic pagination and
+PDF capture pages are not original registry pagination. HTML and standalone
+screenshots are not supported intake formats. Read the new Sources normally.
+This is an optional host capability, not a server history-fetch operation or an
+open-Trial companion import. If it is unavailable, continue with captured Sources
+and explicitly bound the historical-content uncertainty; do not invent a fetch
+or infer that historical intentions were absent. Early outcome wording may date
+a measurement intention without specifying the selected analysis. Plan
+correspondence still requires applicable content and separately supported
+investigator access/unblinding chronology.
+
 Compare source-located plan content with the reported analysis. Retain
 applicability, finalization, amendments and access to unblinded outcome data as
 separate recorded premises. Apply the complete official question guidance to
