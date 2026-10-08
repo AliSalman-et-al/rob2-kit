@@ -173,6 +173,7 @@ _CONDITIONAL_AGGREGATION_CONTRACT = "rob2-kit.overall.cochrane-conditional.v1"
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
     {
         _SCIENTIFIC_PACK["content_hash"],
+        "sha256:5517ffe68111a6c7fadead95852073cf161ccd7b5ac186be7301c7eda464bf35",
         "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
     }
 )
