@@ -61,6 +61,7 @@ from .evidence import (
     main_report_reading_status,
     source_reading_status,
 )
+from .missing_data import missing_data_context
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .source_handles import source_handle
 from .status import _active_trial_and_domain, _continuation
@@ -1033,7 +1034,7 @@ def _comparison_cards(
             missing_data = reconcile_missing_data(preview_missing_data)
             answer = {"missing_data": missing_data}
         if isinstance(answer, dict) and isinstance(answer.get("missing_data"), dict):
-            missing_data = answer["missing_data"]
+            missing_data = missing_data_context(answer["missing_data"])
             for field in ("randomized", "observed", "unavailable"):
                 rows = [
                     row
@@ -1042,7 +1043,7 @@ def _comparison_cards(
                 ]
                 if not rows:
                     continue
-                field_conflicted = any(
+                field_conflicted = any(row.get("quantity_conflict") for row in rows) or any(
                     len(
                         {
                             report.get(field)
@@ -1128,6 +1129,8 @@ def _comparison_cards(
     participant_flow: list[dict[str, Any]] = []
     flow_data: Any = participant_flow_data if participant_flow_data is not None else missing_data
     if domain_id in {"domain:deviations", "domain:missing"} and isinstance(flow_data, dict):
+        if domain_id == "domain:missing":
+            flow_data = missing_data_context(flow_data)
         rows = [row for row in flow_data.get("rows", []) if isinstance(row, dict)]
         conflict_fields: dict[tuple[Any, ...], set[str]] = {}
         for conflict in flow_data.get("conflicts", []):
@@ -1238,7 +1241,11 @@ def _comparison_cards(
                 value = row.get(field)
                 status = (
                     "conflicted"
-                    if field in conflict_fields.get(row_scope, set())
+                    if (
+                        row.get("quantity_conflict")
+                        and field in {"randomized", "observed", "unavailable", "imputed"}
+                    )
+                    or field in conflict_fields.get(row_scope, set())
                     or (kind == "event" and "event_count" in conflict_fields.get(row_scope, set()))
                     else "supported"
                     if isinstance(value, int)

@@ -1713,3 +1713,42 @@ def test_saved_unavailable_count_survives_fresh_context_cache_loss_and_recovery(
     restarted, _ = fresh()
     assert restarted["data"]["domain_id"] == "domain:missing"
     assert _state(workspace) == canonical
+
+
+def test_imputation_quantity_conflict_is_source_bound_in_native_preview(tmp_path: Path) -> None:
+    workspace, evidence, _ = _assessment_workspace(tmp_path)
+    before = copy.deepcopy(_state(workspace))
+    first, _ = _wire_context(
+        workspace,
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "missing_data": [
+                {
+                    "arm": "A",
+                    "population": "all randomized participants",
+                    "unit": "participants",
+                    "time_point": "week 8",
+                    "window": "week 8",
+                    "endpoint": "selected endpoint",
+                    "randomized": 20,
+                    "observed": 20,
+                    "analyzed": 20,
+                    "imputed": 3,
+                    "semantics": {"population_role": "randomized", "outcome_status": "imputed"},
+                    "basis": [evidence["handle"]],
+                }
+            ],
+        },
+    )
+    card = first["data"]["comparison_cards"][0]
+    row = card["missing_data"]["rows"][0]
+    assert row["quantity_conflict"] and row["missing"] is None
+    assert row["missing_fraction"] is row["missing_bounds"] is None
+    assert row["basis"] == [evidence["identity"]]
+    assert all(
+        r["status"] == "conflicted" and r["passages"]
+        for r in card["participant_flow"]
+        if r["kind"] in {"observed", "imputed"}
+    )
+    assert _state(workspace) == before

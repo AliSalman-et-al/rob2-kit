@@ -2488,6 +2488,7 @@ class MissingDataReconciledRow(PublicModel):
     missing: StrictInt | None = Field(default=None, ge=0)
     missing_fraction: float | None = Field(default=None, ge=0)
     missing_bounds: MissingDataBounds | None = None
+    quantity_conflict: str | None = Field(default=None, exclude_if=lambda value: value is None)
     semantics: MissingDataSemantics | None = Field(
         default=None,
         exclude_if=lambda value: value is None,

@@ -228,3 +228,109 @@ def test_completion_conflicts_survive_canonical_bundle_validation() -> None:
     assert not independent_verifier(
         data, "sq:missing:data-available", {evidence_id: {"trial_id": "trial"}}, "trial", result_id
     )
+
+
+def _scoped_imputation_row(**counts: int | None) -> dict:
+    return {
+        "arm": "A",
+        "population": "all randomized participants",
+        "unit": "participants",
+        "time_point": "week 8",
+        "window": "week 8",
+        "endpoint": "selected endpoint",
+        "result_identity": "sha256:" + "a" * 64,
+        "basis": ["sha256:" + "b" * 64],
+        "randomized": 100,
+        "analyzed": 100,
+        "imputed": 10,
+        "semantics": {"population_role": "randomized", "outcome_status": "imputed"},
+        **counts,
+    }
+
+
+@pytest.mark.parametrize("counts", [{"observed": 100}, {"unavailable": 5}])
+def test_context_withholds_arithmetic_inconsistent_with_selected_outcome_imputation(counts) -> None:
+    import copy
+
+    from rob2_kit.application.missing_data import missing_data_context
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    official = next(q for q in SCIENTIFIC_PACK.questions if q.id == "sq:missing:data-available")
+    assert "imputed" in official.guidance.official.source_excerpt.lower()
+    canonical = reconcile_missing_data([_scoped_imputation_row(**counts)])
+    before = copy.deepcopy(canonical)
+    context = missing_data_context(canonical)
+    row = context["rows"][0]
+    assert row["quantity_conflict"] and "question 3.1" in row["quantity_conflict"]
+    assert row["missing"] is row["missing_fraction"] is row["missing_bounds"] is None
+    assert row["imputed"] == 10 and row["analyzed"] == 100
+    assert row["basis"] == before["rows"][0]["basis"]
+    assert canonical == before
+    MissingDataReconciliation.model_validate(context)
+    assert "answer" not in row and "judgment" not in row
+
+
+@pytest.mark.parametrize("observed", [90, None])
+def test_coherent_imputation_keeps_exact_or_bounded_arithmetic(observed) -> None:
+    from rob2_kit.application.missing_data import missing_data_context
+
+    canonical = reconcile_missing_data([_scoped_imputation_row(observed=observed)])
+    assert missing_data_context(canonical) == canonical
+    assert canonical["rows"][0]["missing_bounds"]["lower"] == 10
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"imputed": None},  # A method mention without a count establishes no lower bound.
+        {"semantics": {"population_role": "randomized", "outcome_status": "unknown"}},
+        {"semantics": {"population_role": "analyzed", "outcome_status": "imputed"}},
+        {"window": "another visit"},
+        {"endpoint": None},
+        {"unit": "components"},
+        {
+            "event_definition": "final composite",
+            "semantics": {
+                "population_role": "randomized",
+                "outcome_status": "imputed",
+                "event_definition": "one component",
+            },
+        },
+    ],
+)
+def test_context_does_not_resolve_unknown_or_different_imputation_meaning(change) -> None:
+    from rob2_kit.application.missing_data import missing_data_context
+
+    canonical = reconcile_missing_data([_scoped_imputation_row(observed=100) | change])
+    assert missing_data_context(canonical) == canonical
+
+
+def test_context_does_not_transfer_imputation_between_row_scopes() -> None:
+    from rob2_kit.application.missing_data import missing_data_context
+
+    first = _scoped_imputation_row(observed=100, imputed=None)
+    second = _scoped_imputation_row(observed=90) | {
+        "time_point": "week 4",
+        "window": "week 4",
+        "endpoint": "another endpoint",
+    }
+    canonical = reconcile_missing_data([first, second])
+    assert missing_data_context(canonical) == canonical
+
+
+def test_context_withholds_conflicted_reports_arithmetic_without_editing_facts() -> None:
+    from rob2_kit.application.missing_data import missing_data_context
+
+    canonical = reconcile_missing_data(
+        [
+            _scoped_imputation_row(observed=100),
+            _scoped_imputation_row(observed=100, imputed=12),
+        ]
+    )
+    context = missing_data_context(canonical)
+    assert len(context["conflicts"]) == 1
+    reports = context["conflicts"][0]["reports"]
+    assert [row["imputed"] for row in reports] == [10, 12]
+    assert all(row["quantity_conflict"] and row["missing"] is None for row in reports)
+    assert all(row["missing"] == 0 for row in canonical["conflicts"][0]["reports"])
+    MissingDataReconciliation.model_validate(context)
