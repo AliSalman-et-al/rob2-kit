@@ -330,6 +330,12 @@ structural references and must match target group IDs.
 
 A complete descriptive profile for one randomized group is not a comparative
 effect or a complete pair of group values. Do not send it into RoB 2 assessment.
+Likewise, a within-group comparison of exposure periods is not a contrast of
+randomized assignments when those periods were not randomized. Establish the
+assignment mechanism for the selected comparison, not only for the trial as a
+whole. Do not relabel before/after periods as randomized arms. Inspect reported
+comparisons or complete group values for the actual randomized assignments
+before concluding that their comparative Result is unavailable.
 Keep the exact source passage selected as Evidence and use an unavailable Result
 whose `missing_facts` names the unreported comparative result. Use
 `missing_reporting` with that Evidence as the basis. Do not invent comparator
