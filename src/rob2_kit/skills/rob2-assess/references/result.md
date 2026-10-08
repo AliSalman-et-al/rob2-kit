@@ -29,8 +29,10 @@ An optional group value needs separate `group_id` and `value`, supported by the
 source. `statistic` and `unit` are literal source labels (string or null). A null
 unit preserves an unreported or unresolved unit; it does not assert dimensionless.
 Put a scientific unit interpretation and its basis in `scope_rationale`, rather
-than inventing a printed label. Keep `source_table_meaning` unresolved when a
-statistic or unit is null, and preserve conflicting units in the rationale.
+than inventing a printed label. A missing printed statistic or unit does not
+itself make scientific meaning unclear. Establish that meaning from inspected
+definitions, scales, headers or methods; keep genuinely unresolved or conflicting
+meaning explicit in `source_table_meaning` and the rationale.
 Non-null units remain strictly source-bound. Timing value and unit must be given
 together or both omitted. `source_passages` is the one shared citation array;
 `unknowns` a string array, and `counterevidence` an object array or `[]`.
@@ -140,6 +142,13 @@ scientific fields in the complete card; omit `effect_measure`, `estimate`, and
 }
 ```
 
+With either form, preserve ancillary comparison statistics in
+`reported_statistics`, for example `["p = 0.68"]`, only when selected Evidence
+supports the expression for this Result. An ancillary statistic does not supply
+a missing comparative estimate, group value, randomized contrast or endpoint.
+Keep an effect estimate's interval in `precision`; do not duplicate a p-value in
+that field or invent an estimate to carry it.
+
 Keep `target.comparison_groups` and `reported.group_values` limited to the
 requested comparison. Other arms can remain in the cited Source and context,
 but do not add them to the assessment target merely for completeness. A requested
@@ -213,6 +222,15 @@ establishing the design and unit of randomization.
 
 ## Choose the closest complete Result
 
+Keep the shared requested wording and its explicit constraints distinct from
+each Trial's reported result. Unspecified measurement, horizon or effect measure
+is not permission to guess one from trial duration. Describe the selected
+source window and analysis in the card and rationale, and identify which details
+the researcher actually constrained. Match definitions and component sets,
+not literal name equality: overall survival, recurrence-free survival and a
+survival/hospitalization composite are different constructs. A one-year survival
+probability is not automatically a time-to-event hazard ratio or six-month survival.
+
 Before selecting, inventory the complete set of materially plausible candidates
 and apply the same comparison convention to each candidate. Do not enumerate
 every endpoint in the Source: show one competing candidate when ambiguity could
@@ -221,6 +239,14 @@ Choose an exact assessable Result first. If none exists, choose the closest
 complete non-exact assessable candidate. Use unavailable when no comparative
 Result is reported for the requested outcome and the missing premise is
 supported by selected Evidence.
+
+If materially different candidates remain eligible, ask a focused researcher
+choice using the actual source alternatives before submitting the final card.
+Resolve component/composite, landmark, subgroup, randomized contrast or competing
+analysis choices that change the question. Do not ask about absent details that
+leave a unique selection unchanged. A nonmatching alternative requires explicit
+disclosure and deliberate researcher selection; do not silently broaden the
+shared request to fit it. Apply shared constraints consistently across Trials.
 
 Inventory complete main-article candidates and any materially competing
 candidates in other Sources. Compare:
@@ -319,11 +345,13 @@ row label such as `Total`.
 Keep quantities as Source strings. Put a comparative estimate's reported
 interval in `precision`. Keep a group statistic's label, value, and unit in
 their separate fields. Omit `statistic` or use `statistic: null` when the source
-gives a group value but does not identify its statistic; keep `source_table_meaning` unclear and
-explain the unresolved meaning in the Result rationale. A nearby verb such as
+gives a group value but does not identify its printed statistic label. Keep
+`source_table_meaning` unclear only when scientific meaning remains unresolved
+after source review, and explain that uncertainty in the rationale. A nearby verb such as
 “changed” is not a statistic label. Do not invent statistics or units. For a
-comparative effect, omit optional `group_values` unless the Source states one
-unambiguous statistic and unit for every target group. Reported group IDs are
+comparative effect, include optional `group_values` only when the Source
+establishes complete values with unambiguous scientific meaning for every target
+group. Keep missing printed statistic or unit labels null. Reported group IDs are
 structural references and must match target group IDs.
 
 ## Keep one-arm descriptions out of comparative assessment

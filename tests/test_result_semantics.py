@@ -812,13 +812,7 @@ def test_unidentified_group_statistic_survives_assessment_without_inventing_a_la
         {key: item for key, item in value.items() if key != "statistic"}
         for value in reported["group_values"]
     ]
-    # Omission retains unresolved meaning and must not pass as specified clarity.
-    result["clarity"]["source_table_meaning"] = "specified"
-    overclaim = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert overclaim["outcome"] == "repair", overclaim
-    assert any(
-        item["code"] == "unknown_statistic_conflicts_with_clarity" for item in overclaim["repairs"]
-    )
+    # The Source still leaves scientific meaning unresolved; preserve that assertion.
     result["clarity"]["source_table_meaning"] = "unclear"
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
     assert saved["outcome"] == "review_required", saved
@@ -847,7 +841,7 @@ def test_unidentified_group_statistic_survives_assessment_without_inventing_a_la
     )
     assert (
         canonical["scientific_pack"]["result_semantics_version"]
-        == "rob2-kit.result-semantics.v0.10"
+        == "rob2-kit.result-semantics.v0.11"
     )
     standalone_shape = runpy.run_path("scripts/verify_bundle.py")["_valid_result_shape"]
     # v0.8 claimed complete statistic labels; its interpretation must stay strict.
@@ -926,6 +920,7 @@ def test_null_source_unit_preserves_interpretation_without_literal_binding(
         assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.9")
         stored["clarity"]["source_table_meaning"] = "specified"
         assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.10")
+        assert validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.11")
         stored["clarity"]["source_table_meaning"] = "unclear"
     if statistic == "GMR":
         _review(workspace)

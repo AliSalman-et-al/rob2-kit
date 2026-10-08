@@ -206,38 +206,6 @@ def _proposal_shape_repairs(
             reported_path = ""
             reported_ids = []
         if reported_path:
-            for value_index, value in enumerate(reported_values):
-                if (
-                    value.statistic is None
-                    and result.clarity is not None
-                    and result.clarity.source_table_meaning == "specified"
-                ):
-                    result_repairs.append(
-                        {
-                            "path": f"{path}/clarity/source_table_meaning",
-                            "code": "unknown_statistic_conflicts_with_clarity",
-                            "detail": (
-                                "A null statistic preserves unresolved meaning; do not mark "
-                                "source_table_meaning as specified."
-                            ),
-                        }
-                    )
-                if (
-                    value.unit is None
-                    and result.clarity is not None
-                    and result.clarity.source_table_meaning == "specified"
-                ):
-                    result_repairs.append(
-                        {
-                            "path": f"{reported_path}/{value_index}/unit",
-                            "code": "unknown_unit_conflicts_with_clarity",
-                            "detail": (
-                                "A null source unit preserves unreported or unresolved meaning; "
-                                "do not mark source_table_meaning as specified. Record any "
-                                "scientific unit interpretation separately in scope_rationale."
-                            ),
-                        }
-                    )
             result_repairs.extend(
                 _duplicate_values(
                     reported_ids,
@@ -874,8 +842,12 @@ def _coherent_anchor_indices(
     endpoint_name = reported["endpoint"]["name"]
 
     quantitative_tuples = _reported_quantitative_paths(reported)
+    ancillary = tuple(
+        (f"/reported/reported_statistics/{index}", value)
+        for index, value in enumerate(reported.get("reported_statistics", []))
+    )
     quantitative_tuples = [
-        tuple((path, value) for path, value in items if value is not None)
+        tuple((path, value) for path, value in items + ancillary if value is not None)
         for items in quantitative_tuples
     ]
 

@@ -39,7 +39,7 @@ server, and the portable `rob2-assess` skill.
 To install a wheel instead, use its path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.11.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.12.0-py3-none-any.whl
 ```
 
 ### Prepare a workspace

@@ -70,7 +70,7 @@ The lower-level commands remain available for isolated contract work:
 ```powershell
 uv run python docs/release/verify.py
 uv build --wheel --out-dir dist
-uv run python docs/release/verify.py --wheel dist/rob2_kit-0.11.0-py3-none-any.whl
+uv run python docs/release/verify.py --wheel dist/rob2_kit-0.12.0-py3-none-any.whl
 ```
 
 See `docs/adr/0031-v0-4-evidence-first-interaction.md` for the public input

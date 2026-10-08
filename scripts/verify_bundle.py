@@ -208,6 +208,10 @@ _NULL_UNIT_SCIENTIFIC_PACK = {
     **_D4_FAQ_CONDITIONAL_PACK,
     "result_semantics_version": "rob2-kit.result-semantics.v0.10",
 }
+_REPORTED_STATISTICS_SCIENTIFIC_PACK = {
+    **_NULL_UNIT_SCIENTIFIC_PACK,
+    "result_semantics_version": "rob2-kit.result-semantics.v0.11",
+}
 _PRE_MASKING_SCIENTIFIC_PACK = {
     **_SCIENTIFIC_PACK,
     "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
@@ -3710,7 +3714,7 @@ def _decimal_text(value: Decimal) -> str:
 def _valid_requested_result(
     result: object,
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.10",
+    semantics_version: str = "rob2-kit.result-semantics.v0.11",
 ) -> bool:
     if not isinstance(result, dict) or _relation_name(
         result.get("requested_outcome")
@@ -3732,7 +3736,7 @@ def _valid_requested_result(
 def _valid_result_shape(
     result: dict[str, object],
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.10",
+    semantics_version: str = "rob2-kit.result-semantics.v0.11",
 ) -> bool:
     if not _valid_requested_result(result, requested_outcome, semantics_version):
         return False
@@ -3888,7 +3892,8 @@ def _valid_result_shape(
                 or not (
                     _nonblank(item.get("unit"))
                     or (
-                        semantics_version == "rob2-kit.result-semantics.v0.10"
+                        semantics_version
+                        in {"rob2-kit.result-semantics.v0.10", "rob2-kit.result-semantics.v0.11"}
                         and item.get("unit") is None
                     )
                 )
@@ -3896,23 +3901,42 @@ def _valid_result_shape(
                     _nonblank(item.get("statistic"))
                     or (
                         semantics_version
-                        in {"rob2-kit.result-semantics.v0.9", "rob2-kit.result-semantics.v0.10"}
+                        in {
+                            "rob2-kit.result-semantics.v0.9",
+                            "rob2-kit.result-semantics.v0.10",
+                            "rob2-kit.result-semantics.v0.11",
+                        }
                         and item.get("statistic") is None
                     )
                 )
             ):
                 return False, set()
-            if (item.get("statistic") is None or item.get("unit") is None) and clarity.get(
-                "source_table_meaning"
-            ) == "specified":
+            if (
+                semantics_version != "rob2-kit.result-semantics.v0.11"
+                and (item.get("statistic") is None or item.get("unit") is None)
+                and clarity.get("source_table_meaning") == "specified"
+            ):
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
 
+    reported_keys = set(reported)
+    if "reported_statistics" in reported:
+        statistics = reported["reported_statistics"]
+        if (
+            semantics_version != "rob2-kit.result-semantics.v0.11"
+            or reported.get("form") not in {"comparative_effect", "group_bound_values"}
+            or not isinstance(statistics, list)
+            or not statistics
+            or not all(_nonblank(value) for value in statistics)
+        ):
+            return False
+        reported_keys.remove("reported_statistics")
+
     form = reported.get("form")
     if form == "comparative_effect":
         if (
-            set(reported)
+            reported_keys
             != {
                 "form",
                 "effect_measure",
@@ -3935,15 +3959,16 @@ def _valid_result_shape(
                 "rob2-kit.result-semantics.v0.8",
                 "rob2-kit.result-semantics.v0.9",
                 "rob2-kit.result-semantics.v0.10",
+                "rob2-kit.result-semantics.v0.11",
             }
             else "values"
         )
-        if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
+        if reported_keys != {"form", "analysis_population", "endpoint", values_key}:
             return False
         valid, reported_ids = valid_values(reported[values_key])
     elif form == "single_group_category_profile":
         if (
-            set(reported)
+            reported_keys
             != {
                 "form",
                 "analysis_population",
@@ -3992,7 +4017,7 @@ def _reported_result_has_coherent_anchor(
     by_handle: dict[str, dict[str, object]],
     *,
     strict_numeric: bool = True,
-    semantics_version: str = "rob2-kit.result-semantics.v0.10",
+    semantics_version: str = "rob2-kit.result-semantics.v0.11",
 ) -> bool:
     reported = cast(dict[str, Any], result["reported"])
     endpoint = reported["endpoint"]
@@ -4062,6 +4087,7 @@ def _reported_result_has_coherent_anchor(
                 "rob2-kit.result-semantics.v0.8",
                 "rob2-kit.result-semantics.v0.9",
                 "rob2-kit.result-semantics.v0.10",
+                "rob2-kit.result-semantics.v0.11",
             }
             else "values"
         )
@@ -4090,8 +4116,12 @@ def _reported_result_has_coherent_anchor(
             for index, item in enumerate(reported["categories"])
         ]
 
+    ancillary = tuple(
+        (f"/reported/reported_statistics/{index}", value)
+        for index, value in enumerate(reported.get("reported_statistics", []))
+    )
     quantitative_tuples = [
-        tuple((path, value) for path, value in items if value is not None)
+        tuple((path, value) for path, value in items + ancillary if value is not None)
         for items in quantitative_tuples
     ]
 
@@ -4176,7 +4206,7 @@ def _valid_result_evidence(
     sources: dict[str, dict[str, object]],
     requested_outcomes: dict[str, str],
     batch: object = None,
-    semantics_version: str = "rob2-kit.result-semantics.v0.10",
+    semantics_version: str = "rob2-kit.result-semantics.v0.11",
 ) -> bool:
     """Replay the closed Result Evidence contract from exported selections."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
@@ -4268,6 +4298,7 @@ def _valid_result_evidence(
         "rob2-kit.result-semantics.v0.8",
         "rob2-kit.result-semantics.v0.9",
         "rob2-kit.result-semantics.v0.10",
+        "rob2-kit.result-semantics.v0.11",
     }
 
     def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
@@ -5139,6 +5170,7 @@ def verify(path: Path) -> tuple[bool, str]:
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _NULL_UNIT_SCIENTIFIC_PACK,
+                _REPORTED_STATISTICS_SCIENTIFIC_PACK,
                 _D4_FAQ_CONDITIONAL_PACK,
                 _PRE_D4_FAQ_NULL_UNIT_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,

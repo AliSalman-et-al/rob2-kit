@@ -230,7 +230,7 @@ def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Pat
     assert _state_proposal(workspace)["results"][0]["reported"]["group_values"] == []
 
 
-def test_missing_group_value_unit_cannot_claim_specified_clarity(tmp_path: Path) -> None:
+def test_missing_printed_group_unit_does_not_force_unclear_meaning(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
@@ -248,8 +248,8 @@ def test_missing_group_value_unit_cannot_claim_specified_clarity(tmp_path: Path)
         _raw=True,
     )
 
-    assert repair["outcome"] == "repair"
-    assert any(item["code"] == "unknown_unit_conflicts_with_clarity" for item in repair["repairs"])
+    assert repair["outcome"] == "success", repair
+    assert repair["data"]["scope_review"][0]["reported_group_values"][0]["unit"] is None
 
 
 def test_endpoint_definition_can_be_omitted_when_no_coherent_definition_is_selected(

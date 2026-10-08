@@ -1219,14 +1219,14 @@ class GroupResultValue(StrictModel):
     statistic: NonBlankText | None = Field(
         default=None,
         description="Source statistic label when identified. Omission or null preserves "
-        "unresolved meaning; the server does not infer a label.",
+        "an absent literal label; scientific interpretation remains separately justified.",
     )
     value: NonBlankText = Field(description="Source-reported value for this group.")
     unit: NonBlankText | None = Field(
         default=None,
         description="Literal source-reported unit, or null when unreported or unresolved. "
         "A scientifically inferred unit belongs in scope_rationale, never in this literal field. "
-        "Null does not assert dimensionless; retain uncertainty in source_table_meaning.",
+        "Null does not assert dimensionless or require unclear scientific meaning by itself.",
     )
 
 
@@ -1257,7 +1257,8 @@ class ComparativeEffectResult(StrictModel):
     estimate: NonBlankText = Field(
         description=(
             "Source-reported point estimate as one string, for example '0.68'. Do not include "
-            "a confidence interval, P value, or other precision; put those in precision."
+            "a confidence interval or P value. Put intervals in precision and ancillary "
+            "comparison statistics in reported_statistics."
         ),
         json_schema_extra={"examples": ["0.68"]},
     )
@@ -1311,10 +1312,16 @@ class ComparativeEffectResult(StrictModel):
     group_values: tuple[GroupResultValue, ...] = Field(
         default=(),
         description=(
-            "Optional source-reported values for each randomized group. Omit these when the "
-            "comparative estimate is complete and the source does not state an unambiguous "
-            "statistic and unit for every group."
+            "Optional complete source-reported values for each randomized group. Include them "
+            "only when scientific meaning is unambiguous; keep absent printed statistic or "
+            "unit labels null."
         ),
+    )
+    reported_statistics: tuple[NonBlankText, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
+        description="Ancillary source-reported expressions for this comparison, such as "
+        "'p = 0.68'; they are neither an effect estimate nor its precision interval.",
     )
 
     @model_validator(mode="after")
@@ -1342,6 +1349,12 @@ class GroupBoundValuesResult(StrictModel):
     group_values: tuple[GroupResultValue, ...] = Field(
         min_length=2,
         description="One complete source-reported value for every randomized group.",
+    )
+    reported_statistics: tuple[NonBlankText, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
+        description="Ancillary source-reported expressions for this comparison, such as "
+        "'p = 0.68'; they do not require a fabricated comparative estimate.",
     )
 
 
@@ -1789,19 +1802,26 @@ class ResultScopeReview(StrictModel):
             "Source-reported comparative effect-measure label when present; not an estimand."
         ),
     )
+    reported_estimate: NonBlankText | None = None
+    reported_precision: NonBlankText | None = None
+    reported_group_values: tuple[GroupResultValue, ...] = ()
+    reported_statistics: tuple[NonBlankText, ...] = ()
     reported_time_point_or_window: None = None
     reported_effect_of_interest: None = None
     source_bound_reported_fields: tuple[NonBlankText, ...]
     caller_declared_clarity: ResultClarity
     verification: Literal["requires_source_interpretation"] = "requires_source_interpretation"
     instruction: NonBlankText = (
-        "Compare outcome definition, time window, estimand and population against the selected "
+        "Keep the shared requested wording distinct from this selected Trial Result. "
+        "Compare outcome definition/components, time window, randomized assignment contrast, "
+        "estimand and population against the selected "
         "source passages. A reported effect-measure label does not establish the estimand. "
         "Null reported timing/estimand means not separately represented, not "
         "absent from the source. Known target fields, a matching endpoint label, or bound numbers "
         "do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; "
         "choose a supported non-exact relation or another candidate when exact scope is not "
-        "established. Do not redefine the target."
+        "established. Resolve a material choice between actual source candidates before "
+        "approval; do not guess unspecified request details or silently redefine the target."
     )
 
 
@@ -2042,6 +2062,12 @@ class ProposedReportedResult(StrictModel):
         description="Optional verbatim source interval expression for this estimate, preserving "
         "confidence level and units when stated; interpreted meaning belongs in scope_rationale.",
     )
+    reported_statistics: tuple[NonBlankText, ...] = Field(
+        default=(),
+        description="Optional literal ancillary comparison statistics, for example "
+        "['p = 0.68'], with either a comparative estimate or complete group values. "
+        "Keep intervals attached to an effect estimate in precision.",
+    )
     group_values: tuple[GroupResultValue, ...] = Field(
         default=(),
         description="Complete paired source values when no comparative estimate is reported; "
@@ -2093,7 +2119,11 @@ class ProposedReportedResult(StrictModel):
             "endpoint": {"name": self.reported_outcome, "definition": self.reported_definition},
             "group_values": self.group_values,
         }
+        if self.reported_statistics:
+            reported["reported_statistics"] = self.reported_statistics
         if self.category_group_id is not None or self.categories:
+            if self.reported_statistics:
+                raise ValueError("reported_statistics requires a comparative Result")
             if self.estimate is not None or self.effect_measure is not None or self.group_values:
                 raise ValueError("a category profile cannot also be a comparative estimate")
             if self.precision is not None:

@@ -114,7 +114,7 @@ def _public_result(result: dict[str, Any]) -> dict[str, Any]:
     advanced = [item for item in evidence if item["kind"] not in {"narrative", "figure"}]
     if advanced:
         value["evidence"] = advanced
-    for key in ("effect_measure", "estimate", "precision", "group_values"):
+    for key in ("effect_measure", "estimate", "precision", "group_values", "reported_statistics"):
         if key in reported:
             value[key] = reported[key]
     if reported["form"] == "single_group_category_profile":

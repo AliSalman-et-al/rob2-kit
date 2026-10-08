@@ -134,6 +134,10 @@ and wait for a null cursor before assessing.
 Call `get_status` first. Follow `head.next_action` and complete any required
 reading before scientific work. Pass server-owned IDs and `expected_revision`
 unchanged.
+Recover status again on a new conversation continuation. An earlier pending or
+declined approval does not establish the current product state: the researcher
+may since have approved the exact Review through the CLI. Follow the recorded
+status rather than inferring approval or continued refusal from conversation text.
 
 When the Batch is empty, call `prepare_batch` preserving the requested outcome
 wording and any explicit definition, population, comparison, statistic, follow-up

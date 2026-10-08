@@ -81,7 +81,8 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.10"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.11"
+_NULL_UNIT_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.10"
 _NULL_STATISTIC_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
 _GROUP_VALUES_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
 _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
@@ -1749,29 +1750,52 @@ def _valid_result_shape(
                 or not all(_nonblank(item.get(key)) for key in ("group_id", "value"))
                 or not (
                     _nonblank(item.get("unit"))
-                    or (semantics_version == _RESULT_SEMANTICS_VERSION and item.get("unit") is None)
+                    or (
+                        semantics_version
+                        in {_RESULT_SEMANTICS_VERSION, _NULL_UNIT_RESULT_SEMANTICS_VERSION}
+                        and item.get("unit") is None
+                    )
                 )
                 or not (
                     _nonblank(item.get("statistic"))
                     or (
                         semantics_version
-                        in {_RESULT_SEMANTICS_VERSION, _NULL_STATISTIC_RESULT_SEMANTICS_VERSION}
+                        in {
+                            _RESULT_SEMANTICS_VERSION,
+                            _NULL_UNIT_RESULT_SEMANTICS_VERSION,
+                            _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+                        }
                         and item.get("statistic") is None
                     )
                 )
             ):
                 return False, set()
-            if (item.get("statistic") is None or item.get("unit") is None) and clarity.get(
-                "source_table_meaning"
-            ) == "specified":
+            if (
+                semantics_version != _RESULT_SEMANTICS_VERSION
+                and (item.get("statistic") is None or item.get("unit") is None)
+                and clarity.get("source_table_meaning") == "specified"
+            ):
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
 
+    reported_keys = set(reported)
+    if "reported_statistics" in reported:
+        statistics = reported["reported_statistics"]
+        if (
+            semantics_version != _RESULT_SEMANTICS_VERSION
+            or reported.get("form") not in {"comparative_effect", "group_bound_values"}
+            or not isinstance(statistics, list)
+            or not statistics
+            or not all(_nonblank(value) for value in statistics)
+        ):
+            return False
+        reported_keys.remove("reported_statistics")
+
     form = reported.get("form")
     if form == "comparative_effect":
         if (
-            set(reported)
+            reported_keys
             != {
                 "form",
                 "effect_measure",
@@ -1792,16 +1816,17 @@ def _valid_result_shape(
             if semantics_version
             in {
                 _RESULT_SEMANTICS_VERSION,
+                _NULL_UNIT_RESULT_SEMANTICS_VERSION,
                 _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
                 _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
             }
             else "values"
         )
-        if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
+        if reported_keys != {"form", "analysis_population", "endpoint", values_key}:
             return False
         valid, reported_ids = valid_values(reported[values_key])
     elif form == "single_group_category_profile":
-        if set(reported) != {
+        if reported_keys != {
             "form",
             "analysis_population",
             "endpoint",
@@ -1922,6 +1947,7 @@ def _reported_result_has_coherent_anchor(
             if semantics_version
             in {
                 _RESULT_SEMANTICS_VERSION,
+                _NULL_UNIT_RESULT_SEMANTICS_VERSION,
                 _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
                 _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
             }
@@ -1952,8 +1978,12 @@ def _reported_result_has_coherent_anchor(
             for index, item in enumerate(reported["categories"])
         ]
 
+    ancillary = tuple(
+        (f"/reported/reported_statistics/{index}", value)
+        for index, value in enumerate(reported.get("reported_statistics", []))
+    )
     quantitative_tuples = [
-        tuple((path, value) for path, value in items if value is not None)
+        tuple((path, value) for path, value in items + ancillary if value is not None)
         for items in quantitative_tuples
     ]
 
@@ -2127,6 +2157,7 @@ def _verify_result_evidence(
         return False
     strict_numeric = semantics_version in {
         _RESULT_SEMANTICS_VERSION,
+        _NULL_UNIT_RESULT_SEMANTICS_VERSION,
         _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
         _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
     }
@@ -3216,12 +3247,14 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value in (
         expected,
+        {**expected, "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION},
         {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
     ):
         return True
     pre_d4_faq = {
         **expected,
         "content_hash": "sha256:c7ba52a378c886fcfe997273058cdce06b2a601605ab1b1019e8df958a1eebf6",
+        "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION,
     }
     if value in (
         pre_d4_faq,
@@ -3240,7 +3273,7 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
     }
     if value in (
-        {**pre_masking, "result_semantics_version": _RESULT_SEMANTICS_VERSION},
+        {**pre_masking, "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION},
         pre_masking,
         {
             key: item
