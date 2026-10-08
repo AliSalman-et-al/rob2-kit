@@ -159,7 +159,7 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+    "content_hash": "sha256:c7ba52a378c886fcfe997273058cdce06b2a601605ab1b1019e8df958a1eebf6",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -171,7 +171,10 @@ _CONDITIONAL_AGGREGATION_CONTRACT = "rob2-kit.overall.cochrane-conditional.v1"
 # Basis validation does not certify entailment or prescribe answer modality.
 # Retain predecessor modality rules for old bundles.
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
-    {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
+    {
+        _SCIENTIFIC_PACK["content_hash"],
+        "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+    }
 )
 _DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.reasoned-adjudication.v1"
 _PRE_DOMAIN_ADJUDICATION_PACK = {
@@ -195,6 +198,18 @@ _CONDITIONAL_SCIENTIFIC_PACK = {
 _NULL_UNIT_SCIENTIFIC_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
     "result_semantics_version": "rob2-kit.result-semantics.v0.10",
+}
+_PRE_MASKING_SCIENTIFIC_PACK = {
+    **_SCIENTIFIC_PACK,
+    "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+}
+_PRE_MASKING_CONDITIONAL_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+}
+_PRE_MASKING_NULL_UNIT_PACK = {
+    **_NULL_UNIT_SCIENTIFIC_PACK,
+    "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
 }
 _PRE_BOX9_ORDER_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
@@ -5116,6 +5131,9 @@ def verify(path: Path) -> tuple[bool, str]:
                 _SCIENTIFIC_PACK,
                 _NULL_UNIT_SCIENTIFIC_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
+                _PRE_MASKING_SCIENTIFIC_PACK,
+                _PRE_MASKING_CONDITIONAL_PACK,
+                _PRE_MASKING_NULL_UNIT_PACK,
                 _PRE_BOX9_ORDER_PACK,
                 _PRE_OFFICIAL_CORE_PACK,
                 _PRE_QUALIFICATION_PACK,

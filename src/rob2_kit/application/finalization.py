@@ -92,7 +92,10 @@ _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 # Basis validation does not certify entailment or prescribe answer modality.
 # Retain predecessor modality rules for old bundles.
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
-    {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
+    {
+        SCIENTIFIC_PACK.content_hash,
+        "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+    }
 )
 
 
@@ -3214,6 +3217,29 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     if isinstance(value, dict) and value in (
         expected,
         {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+    ):
+        return True
+    pre_masking = {
+        **expected,
+        "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+        "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+    }
+    if value in (
+        {**pre_masking, "result_semantics_version": _RESULT_SEMANTICS_VERSION},
+        pre_masking,
+        {
+            key: item
+            for key, item in pre_masking.items()
+            if key not in {"domain_judgment_contract", "aggregation_contract"}
+        },
+        {
+            **{
+                key: item
+                for key, item in pre_masking.items()
+                if key not in {"domain_judgment_contract", "aggregation_contract"}
+            },
+            "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
+        },
     ):
         return True
     expected = {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION}
