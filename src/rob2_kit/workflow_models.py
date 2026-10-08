@@ -123,9 +123,18 @@ class VisualEvidenceReference(StrictModel):
     delivery_receipt: Identity = Field(
         description="Receipt returned alongside render_page ImageContent for this Trial."
     )
-    region: tuple[
-        NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
-    ] = Field(description="Normalized x0,y0,x1,y1 bounds of the transcribed image region.")
+    region: (
+        tuple[
+            NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
+        ]
+        | None
+    ) = Field(
+        default=None,
+        description=(
+            "Optional normalized x0,y0,x1,y1 bounds in the delivered image: "
+            "top-left origin, x right, y down. Omit for the exact authenticated delivered view."
+        ),
+    )
     transcription: VisualTranscription = Field(
         description="Literal self-contained account of the region, including relevant labels, "
         "values, units, denominators and footnotes. This is a host observation, not OCR truth."
@@ -139,6 +148,8 @@ class VisualEvidenceReference(StrictModel):
 
     @model_validator(mode="after")
     def ordered_region(self) -> VisualEvidenceReference:
+        if self.region is None:
+            return self
         x0, y0, x1, y1 = self.region
         if not (x0 < x1 and y0 < y1):
             raise ValueError("region must be ordered and inside the render page")
@@ -407,7 +418,8 @@ class WorkingCheckpointDraft(StrictModel):
         exclude_if=lambda value: value is None,
         description="Optional selected-Result reconstruction. Replaces overlapping notes, "
         "premises and drafts; source-linked steps are shared across Domains, "
-        "not signalling answers.",
+        "not signalling answers. After changing this account, reload get_domain_context "
+        "before submitting a Domain, even when state_revision is unchanged.",
     )
     trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
     main_report_source_id: SourceHandle | Literal["missing"] | None = Field(
@@ -554,6 +566,29 @@ class MissingDataCensoring(StrictModel):
     )
 
 
+_EVENT_COUNT_DEFINITION_SCHEMA = {
+    "if": {
+        "required": ["event_count"],
+        "properties": {
+            "event_count": {
+                "type": "integer",
+                "description": "Event numerator requiring an explicit definition.",
+            }
+        },
+    },
+    "then": {
+        "required": ["event_definition"],
+        "properties": {
+            "event_definition": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Source-supported definition of the event numerator.",
+            }
+        },
+    },
+}
+
+
 class MissingDataSemantics(StrictModel):
     """Optional typed meaning for a participant-flow row.
 
@@ -561,6 +596,8 @@ class MissingDataSemantics(StrictModel):
     denominator, or a safety population is not an observation-availability
     claim. Availability is represented only by ``outcome_status``.
     """
+
+    model_config = ConfigDict(json_schema_extra=_EVENT_COUNT_DEFINITION_SCHEMA)
 
     population_role: MissingDataPopulationRole | None = Field(
         default=None, description="Role of the population represented by the row."
@@ -572,7 +609,12 @@ class MissingDataSemantics(StrictModel):
         default=None, description="Event numerator; never a participant availability count."
     )
     event_definition: NonBlankText | None = Field(
-        default=None, description="Definition or severity threshold for the event count."
+        default=None,
+        description=(
+            "Required when event_count is supplied: the source-supported outcome and counting "
+            "definition, including first-event versus recurrent events when relevant. "
+            "Do not infer an uncertain definition from the assessment target."
+        ),
     )
     post_randomization_exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported exclusions kept separate from missing outcomes."
@@ -594,6 +636,7 @@ ParticipantFlowKind = Literal[
     "treated",
     "completed",
     "observed",
+    "unavailable",
     "analyzed",
     "imputed",
     "excluded",
@@ -609,6 +652,8 @@ class MissingDataRow(StrictModel):
     explicit without allowing an analysis, treatment, exclusion, or event
     count to masquerade as outcome availability.
     """
+
+    model_config = ConfigDict(json_schema_extra=_EVENT_COUNT_DEFINITION_SCHEMA)
 
     arm: NonBlankText = Field(description="Trial arm for this participant-flow row.")
     population: NonBlankText = Field(
@@ -654,6 +699,17 @@ class MissingDataRow(StrictModel):
     observed: NonNegativeInt | None = Field(
         default=None, description="Number with observed outcome data when reported."
     )
+    unavailable: NonNegativeInt | None = Field(
+        default=None,
+        description=(
+            "Reported total number with unavailable data for this exact outcome and window. "
+            "For time-to-first-event outcomes, use the source's endpoint follow-up definition; "
+            "unknown individual event times do not erase a reported unavailable count. "
+            "Do not substitute all censoring, treatment discontinuation, or incomplete later "
+            "follow-up after an already observed first event. Omit when the availability "
+            "meaning or overlap is unresolved."
+        ),
+    )
     analyzed: NonNegativeInt | None = Field(
         default=None, description="Number included in the analysis when reported."
     )
@@ -669,7 +725,11 @@ class MissingDataRow(StrictModel):
     )
     event_definition: NonBlankText | None = Field(
         default=None,
-        description="Definition or severity threshold for event_count, when supplied.",
+        description=(
+            "Required when event_count is supplied: the source-supported outcome and counting "
+            "definition, including first-event versus recurrent events when relevant. "
+            "Do not infer an uncertain definition from the assessment target."
+        ),
     )
     exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported reasons for exclusion or missingness."
@@ -1149,9 +1209,6 @@ class ResultClarity(StrictModel):
     )
 
 
-MISSING_GROUP_VALUE_UNIT = "__rob2_missing_group_unit__"
-
-
 class GroupResultValue(StrictModel):
     group_id: NonBlankText = Field(
         description=(
@@ -1161,11 +1218,16 @@ class GroupResultValue(StrictModel):
     )
     statistic: NonBlankText | None = Field(
         default=None,
-        description="Source statistic label when identified. Omission or null preserves "
-        "unresolved meaning; the server does not infer a label.",
+        description="Printed source statistic label, or null when absent; "
+        "justify scientific meaning separately.",
     )
     value: NonBlankText = Field(description="Source-reported value for this group.")
-    unit: NonBlankText = Field(description="Source-reported unit for this group value.")
+    unit: NonBlankText | None = Field(
+        default=None,
+        description="Printed source unit, or null when absent/unresolved. "
+        "Justify inferred meaning in scope_rationale; null neither asserts dimensionless "
+        "nor forces unclear meaning.",
+    )
 
 
 class ReportedEndpoint(StrictModel):
@@ -1195,7 +1257,8 @@ class ComparativeEffectResult(StrictModel):
     estimate: NonBlankText = Field(
         description=(
             "Source-reported point estimate as one string, for example '0.68'. Do not include "
-            "a confidence interval, P value, or other precision; put those in precision."
+            "a confidence interval or P value. Put intervals in precision and ancillary "
+            "comparison statistics in reported_statistics."
         ),
         json_schema_extra={"examples": ["0.68"]},
     )
@@ -1249,10 +1312,16 @@ class ComparativeEffectResult(StrictModel):
     group_values: tuple[GroupResultValue, ...] = Field(
         default=(),
         description=(
-            "Optional source-reported values for each randomized group. Omit these when the "
-            "comparative estimate is complete and the source does not state an unambiguous "
-            "statistic and unit for every group."
+            "Optional complete source-reported values for each randomized group. Include them "
+            "only when scientific meaning is unambiguous; keep absent printed statistic or "
+            "unit labels null."
         ),
+    )
+    reported_statistics: tuple[NonBlankText, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
+        description="Literal ancillary comparison statistics, such as 'p = 0.68'; "
+        "separate from effect estimates and intervals.",
     )
 
     @model_validator(mode="after")
@@ -1280,6 +1349,12 @@ class GroupBoundValuesResult(StrictModel):
     group_values: tuple[GroupResultValue, ...] = Field(
         min_length=2,
         description="One complete source-reported value for every randomized group.",
+    )
+    reported_statistics: tuple[NonBlankText, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
+        description="Literal ancillary comparison statistics; "
+        "complete group values do not require a comparative estimate.",
     )
 
 
@@ -1721,18 +1796,30 @@ class ResultScopeReview(StrictModel):
     target: ScopeTargetSummary
     reported_endpoint: ScopeEndpointSummary
     reported_analysis_population: NonBlankText
+    reported_effect_measure: NonBlankText | None = Field(
+        default=None,
+        description=(
+            "Source-reported comparative effect-measure label when present; not an estimand."
+        ),
+    )
+    reported_estimate: NonBlankText | None = None
+    reported_precision: NonBlankText | None = None
+    reported_group_values: tuple[GroupResultValue, ...] = ()
+    reported_statistics: tuple[NonBlankText, ...] = ()
     reported_time_point_or_window: None = None
     reported_effect_of_interest: None = None
     source_bound_reported_fields: tuple[NonBlankText, ...]
     caller_declared_clarity: ResultClarity
     verification: Literal["requires_source_interpretation"] = "requires_source_interpretation"
     instruction: NonBlankText = (
-        "Compare outcome definition, time window, estimand and population against the selected "
-        "source passages. Null reported timing/estimand means not separately represented, not "
-        "absent from the source. Known target fields, a matching endpoint label, or bound numbers "
-        "do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; "
-        "choose a supported non-exact relation or another candidate when exact scope is not "
-        "established. Do not redefine the target."
+        "Keep shared request constraints separate from this Trial's selected Result. "
+        "Compare endpoint/components, window, randomized assignment contrast, population and "
+        "estimand with inspected source passages. Bound numbers or matching labels do not prove "
+        "exactness; an effect-measure label does not establish the estimand. Null reported "
+        "timing/estimand means unrepresented, not absent from Source. Preserve material "
+        "uncertainty/conflict in clarity and rationale. Choose another supported candidate or "
+        "a non-exact relation when needed; resolve material choices before approval without "
+        "guessing request details or redefining the target."
     )
 
 
@@ -1973,6 +2060,11 @@ class ProposedReportedResult(StrictModel):
         description="Optional verbatim source interval expression for this estimate, preserving "
         "confidence level and units when stated; interpreted meaning belongs in scope_rationale.",
     )
+    reported_statistics: tuple[NonBlankText, ...] = Field(
+        default=(),
+        description="Literal ancillary comparison statistics with an estimate or complete group "
+        "values. Keep effect intervals in precision.",
+    )
     group_values: tuple[GroupResultValue, ...] = Field(
         default=(),
         description="Complete paired source values when no comparative estimate is reported; "
@@ -2005,18 +2097,6 @@ class ProposedReportedResult(StrictModel):
         "Use selection.source_passages for narrative/figure handles.",
     )
 
-    @field_validator("group_values", mode="before")
-    @classmethod
-    def missing_units_reach_scientific_repair(cls, value: Any) -> Any:
-        if not isinstance(value, (list, tuple)):
-            return value
-        return [
-            {**group, "unit": MISSING_GROUP_VALUE_UNIT}
-            if isinstance(group, dict) and group.get("unit") is None
-            else group
-            for group in value
-        ]
-
     def to_draft(
         self,
         trial_id: TrialId,
@@ -2036,7 +2116,11 @@ class ProposedReportedResult(StrictModel):
             "endpoint": {"name": self.reported_outcome, "definition": self.reported_definition},
             "group_values": self.group_values,
         }
+        if self.reported_statistics:
+            reported["reported_statistics"] = self.reported_statistics
         if self.category_group_id is not None or self.categories:
+            if self.reported_statistics:
+                raise ValueError("reported_statistics requires a comparative Result")
             if self.estimate is not None or self.effect_measure is not None or self.group_values:
                 raise ValueError("a category profile cannot also be a comparative estimate")
             if self.precision is not None:
@@ -2476,6 +2560,14 @@ class DomainEvidenceCitation(StrictModel):
     )
 
 
+class DomainAccountStepCitation(WorkingResultStepReference):
+    """Resolve a current text-backed account step to its original source citations."""
+
+    role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
+        Field(description="Caller-assessed relationship to this question; not server entailment.")
+    )
+
+
 class DomainInformationLimit(StrictModel):
     premise: NonBlankText = Field(description="Unresolved premise needed to answer this question.")
     stopping_rationale: NonBlankText = Field(
@@ -2519,13 +2611,14 @@ class DomainSaveAnswer(StrictModel):
     answer: Answer = Field(
         description="Submitted response; must be among this question card's permitted options."
     )
-    bases: tuple[DomainEvidenceCitation | DomainSourceReference, ...] = Field(
+    bases: tuple[
+        DomainEvidenceCitation | DomainAccountStepCitation | DomainSourceReference, ...
+    ] = Field(
         default=(),
-        description="Lean support: handles, exact text ranges, copied delivered quotes "
-        "or visual references "
-        "assert supporting "
-        "facts, saved as indirect_support. Use full citations for other roles or annotations. "
-        "Source resolution does not establish entailment or change an answer.",
+        description="Lean handles, exact text ranges, copied delivered quotes or visual "
+        "references are saved as indirect_support. Full citations or a current text-backed "
+        "account step take an explicit role. Source resolution does not establish entailment "
+        "or change an answer.",
     )
     absence_searches: tuple[SubmittedSearchReceiptHandle, ...] = Field(
         default=(),

@@ -39,7 +39,7 @@ server, and the portable `rob2-assess` skill.
 To install a wheel instead, use its path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.11.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.12.0-py3-none-any.whl
 ```
 
 ### Prepare a workspace
@@ -136,6 +136,11 @@ Invoke the skill with the outcome shared by the selected trials:
 ```text
 /rob2-assess Assess risk of bias for the primary outcome across TRIAL-A and TRIAL-B.
 ```
+
+The packaged assessment supports individually randomized parallel trials and the
+effect of assignment. An explicit adherence-effect request needs the corresponding
+official Domain 2 variant, which this pack does not include. A per-protocol
+reported estimate alone does not change the requested effect of interest.
 
 The host prepares the batch, searches the captured sources, and proposes one
 Result for each trial. Review and approve the Result mapping before assessment.

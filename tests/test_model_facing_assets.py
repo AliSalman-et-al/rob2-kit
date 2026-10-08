@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from rob2_kit.workflow_models import (
     DomainInformationLimit,
     DomainSaveAnswer,
@@ -24,12 +26,18 @@ MODEL_FACING_PATHS = (
     Path("src/rob2_kit/workflow_models.py"),
 )
 PRIVATE_EVALUATION_TERMS = re.compile(
-    r"CHAARTED|STAMPEDE|TITAN|progression[-_ ]free|\bPFS\b|overall[_ -]survival|"
+    r"CHAARTED|STAMPEDE|TITAN|progression[-_ ]free|\bPFS\b|"
     r"NCT00309985|docetaxel|castration|prostate|androgen deprivation|\bADT\b|"
     r"adverse[-_ ]events?",
     re.IGNORECASE,
 )
 TEXT_SUFFIXES = {".json", ".md", ".py"}
+
+
+def test_generic_survival_endpoint_is_not_private_trial_leakage() -> None:
+    assert PRIVATE_EVALUATION_TERMS.search("overall survival") is None
+    for private_identifier in ("CHAARTED", "STAMPEDE", "TITAN", "NCT00309985"):
+        assert PRIVATE_EVALUATION_TERMS.search(private_identifier)
 
 
 def _model_facing_files() -> list[Path]:
@@ -176,7 +184,9 @@ def test_skill_requires_complete_proposal_construction_before_validation() -> No
 
 def test_measurement_reference_uses_official_science_and_source_reconstruction() -> None:
     normalized = " ".join(
-        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text().split()
+        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md")
+        .read_text(encoding="utf-8")
+        .split()
     )
     for marker in (
         "complete official Box 10 elaborations",
@@ -208,3 +218,29 @@ def test_missing_reference_and_skill_use_official_science_and_preserve_recovery(
     assert "For D3.1, run the **availability audit**" not in skill
     for term in ("unopened supplements", "read_pages", "basis", "randomized - observed", "scoped"):
         assert term in reference, term
+
+
+@pytest.mark.parametrize("name", ["missing", "measurement", "selection"])
+def test_domain_reference_delivered_through_production_mcp_resource(name: str) -> None:
+    import asyncio
+
+    from fastmcp import Client
+
+    from rob2_kit.interfaces.mcp.server import mcp
+
+    async def read() -> str:
+        async with Client(mcp) as client:
+            contents = await client.read_resource(f"rob2://guidance/{name}")
+            return "\n".join(item.text for item in contents if hasattr(item, "text"))
+
+    delivered = asyncio.run(read())
+    assert delivered == Path(
+        f"src/rob2_kit/skills/rob2-assess/references/{name}.md"
+    ).read_bytes().decode("utf-8")
+    if name != "missing":
+        return
+    assert "`observed` or `unavailable`" in delivered
+    assert "does not synthesize `observed`" in delivered
+    assert "generic censoring does not" in delivered
+    assert "Only an explicit `observed`" not in delivered
+    assert "only derives `randomized - observed`" not in delivered

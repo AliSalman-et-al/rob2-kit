@@ -59,3 +59,11 @@ def test_native_tools_deliver_transitive_packaged_guidance_without_state_mutatio
 def test_guidance_cannot_read_arbitrary_local_files(document: str) -> None:
     with pytest.raises(ValueError):
         read_guidance(document)
+
+
+def test_unavailable_guidance_returns_exact_readable_packaged_paths() -> None:
+    with pytest.raises(ValueError, match="Available documents:") as error:
+        read_guidance("references/domain.md")
+    documents = str(error.value).split("Available documents: ", 1)[1].split(", ")
+    assert set(documents) == {path.relative_to(_ROOT).as_posix() for path in _ROOT.rglob("*.md")}
+    assert all(read_guidance(document)["document"] == document for document in documents)

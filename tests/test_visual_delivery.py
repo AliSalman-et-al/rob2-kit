@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import base64
 import json
+import sqlite3
 import zipfile
 from pathlib import Path
 
 import pymupdf
 import pytest
+from fastmcp.exceptions import ToolError
 from support.rob2 import (
     _call,
     _domain_draft,
@@ -319,8 +322,10 @@ def test_delivery_failure_returns_no_image_block_or_receipt(
     assert failed.get("data", {}).get("delivery_receipt") is None
 
 
+@pytest.mark.parametrize("omit_region", [False, True])
 def test_visual_delivery_receipt_survives_approved_result_and_bundle_verification(
     tmp_path: Path,
+    omit_region: bool,
 ) -> None:
     workspace = _workspace(tmp_path)
     visual_definition = (
@@ -368,7 +373,7 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
                 "assigned to intervention; assigned to control; randomized population; "
                 "risk ratio; risk; 1; events; 2."
             ),
-            "region": [0.0, 0.2, 1.0, 1.0],
+            **({} if omit_region else {"region": [0.0, 0.2, 1.0, 1.0]}),
             "uncertainty": "The event-count label is partly obscured by the diagram line.",
         },
     )["data"]["evidence"]
@@ -439,3 +444,65 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
     assert visual_basis["source"] == selected["transcription"]
     assert note["scope"]["uncertainty"] == "Applicability is unresolved."
     assert "result_identity" not in note["scope"]
+
+
+@pytest.mark.parametrize("rotation", [0, 90, 180, 270])
+def test_omitted_region_uses_exact_delivered_cropped_rotated_view(
+    tmp_path: Path, rotation: int
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    page = document.new_page(width=600, height=800)
+    page.draw_rect(pymupdf.Rect(100, 200, 200, 300))
+    page.set_cropbox(pymupdf.Rect(50, 100, 450, 700))
+    page.set_rotation(rotation)
+    expected = page.get_pixmap(matrix=pymupdf.Matrix(1.5, 1.5), alpha=False)
+    document.save(workspace / "input/trial/cropped.pdf")
+    document.close()
+    source = _prepare(workspace)["cropped.pdf"]
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    first = _call(workspace, "render_page", args)
+    # Reopening the client uses persistent receipt/cache state, not live process state.
+    second = _call(workspace, "render_page", args)
+    assert first["data"]["delivery_receipt"] == second["data"]["delivery_receipt"]
+    pixels = pymupdf.Pixmap(base64.b64decode(first["_image_content"][0].data))
+    assert (pixels.width, pixels.height) == (expected.width, expected.height)
+    selection = {
+        "trial_id": "trial",
+        "source_id": source["id"],
+        "delivery_receipt": first["data"]["delivery_receipt"],
+        "transcription": "An unlabeled rectangle is visible.",
+    }
+    omitted = _call(workspace, "select_visual_evidence", selection)["data"]["evidence"]
+    explicit = _call(workspace, "select_visual_evidence", {**selection, "region": [0, 0, 1, 1]})[
+        "data"
+    ]["evidence"]
+    assert omitted == explicit
+    assert omitted["region"] == [0.0, 0.0, 1.0, 1.0]
+    narrow = _call(
+        workspace, "select_visual_evidence", {**selection, "region": [0.1, 0.2, 0.7, 0.8]}
+    )["data"]["evidence"]
+    assert narrow["region"] == [0.1, 0.2, 0.7, 0.8]
+    assert (
+        _call(workspace, "select_visual_evidence", {**selection, "region": [0.7, 0.2, 0.1, 0.8]})[
+            "outcome"
+        ]
+        == "condition"
+    )
+    with pytest.raises(ToolError, match="greater than or equal to 0"):
+        _call(workspace, "select_visual_evidence", {**selection, "region": [-0.1, 0, 1, 1]})
+
+    # A fabricated crop/zoom recipe cannot identify an authenticated current view.
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        identity = omitted["render"]["identity"]
+        payload = json.loads(
+            connection.execute(
+                "SELECT payload FROM renders WHERE identity=?", (identity,)
+            ).fetchone()[0]
+        )
+        payload["recipe"] = "pymupdf-1.5-crop"
+        connection.execute(
+            "UPDATE renders SET payload=? WHERE identity=?", (json.dumps(payload), identity)
+        )
+    rejected = _call(workspace, "select_visual_evidence", selection)
+    assert rejected["outcome"] == "condition"

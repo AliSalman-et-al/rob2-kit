@@ -107,12 +107,15 @@ def _reference(workspace: Path, source: dict[str, Any], page: int) -> dict[str, 
     }
 
 
+@pytest.mark.parametrize("omit_region", [False, True])
 @pytest.mark.parametrize("page", [1, 2, 3], ids=["multiarm-table", "allocation-flow", "score-plot"])
 def test_inline_visual_preserves_same_evidence_result_unknowns_and_counterclaim(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, page: int
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, page: int, omit_region: bool
 ) -> None:
     workspace, text, revision, source = _prepared(tmp_path, monkeypatch)
     ref = _reference(workspace, source, page)
+    if omit_region:
+        del ref["region"]
     support._call(
         workspace, "get_domain_context", {"trial_id": "trial", "domain_id": "domain:selection"}
     )
@@ -136,7 +139,7 @@ def test_inline_visual_preserves_same_evidence_result_unknowns_and_counterclaim(
     visual = next(item for item in catalog.values() if item["kind"] == "figure")
     assert visual["transcription"] == ref["transcription"]
     assert visual["uncertainty"] == ref["uncertainty"]
-    assert visual["region"] == ref["region"]
+    assert visual["region"] == [0.0, 0.0, 1.0, 1.0]
     assert visual["delivery_receipt"] == ref["delivery_receipt"]
     assert visual["render"]["page"] == page
     assert visual["provenance"] == "host_visual"
@@ -173,6 +176,7 @@ def test_text_caption_remains_narrative_without_graphical_values(
     assert "transcription" not in caption and "render" not in caption
 
 
+@pytest.mark.parametrize("omit_region", [False, True])
 @pytest.mark.parametrize(
     "defect",
     [
@@ -186,10 +190,12 @@ def test_text_caption_remains_narrative_without_graphical_values(
     ],
 )
 def test_inline_visual_rejects_invalid_provenance_without_canonical_commit(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, defect: str
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, defect: str, omit_region: bool
 ) -> None:
     workspace, text, revision, source = _prepared(tmp_path, monkeypatch)
     ref = _reference(workspace, source, 1)
+    if omit_region:
+        del ref["region"]
     if defect == "text-receipt":
         ref["delivery_receipt"] = text["handle"]
     elif defect == "stale-receipt":

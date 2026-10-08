@@ -44,7 +44,11 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
         for variant in evidence_variants
         if "delivery_receipt" in variant.get("properties", {})
     )
-    assert set(visual_shape["required"]) == {"delivery_receipt", "region", "transcription"}
+    assert set(visual_shape["required"]) == {"delivery_receipt", "transcription"}
+    region = visual_shape["properties"]["region"]
+    assert region["default"] is None
+    bounds = next(item for item in region["anyOf"] if item["type"] == "array")
+    assert bounds["minItems"] == bounds["maxItems"] == 4
     assert counterevidence_shape["properties"]["implication"]["type"] == "string"
     answer = DomainSaveAnswer.model_validate(
         {

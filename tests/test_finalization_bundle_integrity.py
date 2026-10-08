@@ -47,11 +47,26 @@ from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import TrialDeclaration
 
 
-def _rewrite_rehashed(source: Path, target: Path, mutate: Callable[[dict[str, Any]], None]) -> None:
+def _rewrite_rehashed(
+    source: Path,
+    target: Path,
+    mutate: Callable[[dict[str, Any]], None],
+    *,
+    legacy_report: bool = False,
+) -> None:
     with zipfile.ZipFile(source) as archive:
         files = {info.filename: archive.read(info) for info in archive.infolist()}
     canonical = json.loads(files["canonical.json"])
     mutate(canonical)
+    if legacy_report:
+        canonical.pop("report_format", None)
+        # Historical Result conversion must also use its historical presentation,
+        # rather than retain a new report bound to the unconverted Result.
+        files["report.html"] = (
+            "<html><body><h1>Batch finalized</h1><pre>"
+            + json.dumps(json.loads(files["claims.json"]), sort_keys=True)
+            + "</pre></body></html>"
+        ).encode()
     files["canonical.json"] = json.dumps(
         canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode()
@@ -718,7 +733,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
-        "result_semantics_version": "rob2-kit.result-semantics.v0.9",
+        "result_semantics_version": "rob2-kit.result-semantics.v0.11",
     }
     assert _standalone_verify(artifact).returncode == 0
 
@@ -749,6 +764,7 @@ def test_pre_d27_clarification_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 
     def use_previous_guidance(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.9"
         _historical_count_fixture(canonical)
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
@@ -794,7 +810,7 @@ def test_previous_v07_scientific_packs_remain_verifiable(tmp_path: Path, content
         _convert_group_bound_result_to_legacy(canonical)
 
     previous = tmp_path / "previous-v07.rob2.zip"
-    _rewrite_rehashed(source, previous, use_previous_pack)
+    _rewrite_rehashed(source, previous, use_previous_pack, legacy_report=True)
     assert verify_bundle(previous)
     assert _standalone_verify(previous).returncode == 0
 
@@ -974,7 +990,7 @@ def test_rehashed_v06_empty_derived_inputs_fail_both_verifiers(tmp_path: Path) -
         )
 
     legacy = tmp_path / "v06-base.rob2.zip"
-    _rewrite_rehashed(source, legacy, convert_to_v06)
+    _rewrite_rehashed(source, legacy, convert_to_v06, legacy_report=True)
     assert verify_bundle(legacy)
     assert _standalone_verify(legacy).returncode == 0
 

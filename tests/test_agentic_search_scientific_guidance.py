@@ -142,6 +142,7 @@ def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() ->
                 "approved_outcome",
                 "randomized",
                 "observed",
+                "unavailable",
                 "follow_up_availability",
                 "censoring",
                 "missingness_reason",

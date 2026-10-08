@@ -354,7 +354,12 @@ def test_proposal_rejects_object_group_value_fields_in_the_closed_reported_form(
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
-    result["reported"]["group_values"][0] = {"group_id": "a", "value": "1"}
+    result["reported"]["group_values"][0] = {
+        "group_id": "a",
+        "statistic": "risk",
+        "value": {"number": "1"},
+        "unit": "events",
+    }
     with pytest.raises(ValidationError):
         ProposalDraft.model_validate(
             {"results": [result], "expected_revision": int(get_status(workspace)["state_revision"])}

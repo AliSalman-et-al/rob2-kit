@@ -49,12 +49,76 @@ def test_scope_gaps_are_explicit_without_relabeling_inherited_exactness() -> Non
     assert review["target"]["outcome"] == original["target"]["outcome_definition"]
     assert review["reported_endpoint"] == original["reported"]["endpoint"]
     assert review["reported_analysis_population"] == original["reported"]["analysis_population"]
+    assert review["reported_effect_measure"] == original["reported"]["effect_measure"]
     assert review["reported_time_point_or_window"] is None
     assert review["reported_effect_of_interest"] is None
     assert review["verification"] == "requires_source_interpretation"
     assert "/reported/estimate" in review["source_bound_reported_fields"]
+    assert "/reported/effect_measure" in review["source_bound_reported_fields"]
     assert not any("time" in path for path in review["source_bound_reported_fields"])
     assert raw == original
+
+
+@pytest.mark.parametrize(
+    ("requested", "reported", "facet", "mismatch"),
+    [
+        (
+            "Overall survival",
+            "Survival or hospitalization composite",
+            "outcome_definition",
+            "The selected composite adds hospitalization; it is not overall survival alone.",
+        ),
+        (
+            "Patients surviving one year",
+            "Recurrence-free survival at six months",
+            "time_point",
+            "Both the recurrence-free construct and six-month horizon differ.",
+        ),
+        (
+            "Patients surviving one year",
+            "Overall survival hazard ratio",
+            "measurement",
+            "The source time-to-event analysis is not a one-year landmark probability.",
+        ),
+    ],
+)
+def test_material_matching_conflicts_remain_visible_and_cannot_claim_exactness(
+    requested: str, reported: str, facet: str, mismatch: str
+) -> None:
+    raw = _allsop_result()
+    raw["requested_outcome"] = requested
+    raw["target"]["outcome_definition"] = requested
+    raw["target"]["measurement"]["metric"] = requested
+    raw["reported"]["endpoint"] = {"name": reported, "definition": None}
+    raw["clarity"][facet] = "conflicting"
+    raw["relation_rationale"] = mismatch
+    original = copy.deepcopy(raw)
+    review = result_scope_review([raw])[0]
+    assert review["target"]["outcome"] == requested
+    assert review["reported_endpoint"]["name"] == reported
+    assert review["relation_rationale"] == mismatch
+    assert review["verification"] == "requires_source_interpretation"
+    repairs = _proposal_shape_repairs(_draft(raw), {raw["trial_id"]: requested})
+    assert any(item["path"].endswith("/" + facet) for item in repairs)
+    assert raw == original
+
+
+def test_review_does_not_certify_observation_periods_as_randomized_assignments() -> None:
+    raw = _allsop_result()
+    raw["target"]["comparison_groups"] = [
+        {"id": "on", "assignment": "Week 8 within one regimen, on exposure"},
+        {"id": "off", "assignment": "Week 28 within the same regimen, off exposure"},
+    ]
+    raw["clarity"]["comparison_groups"] = "conflicting"
+    raw["relation_rationale"] = "These periods were not the trial's randomized assignments."
+    review = result_scope_review([raw])[0]
+    assert review["target"]["comparison"] == [
+        group["assignment"] for group in raw["target"]["comparison_groups"]
+    ]
+    assert "randomized assignment contrast" in review["instruction"]
+    assert review["verification"] == "requires_source_interpretation"
+    repairs = _proposal_shape_repairs(_draft(raw), {raw["trial_id"]: raw["requested_outcome"]})
+    assert any(item["path"].endswith("/comparison_groups") for item in repairs)
 
 
 @pytest.mark.parametrize("facet", ["outcome_definition", "time_point", "analysis_population"])

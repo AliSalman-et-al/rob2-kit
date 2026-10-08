@@ -1,0 +1,18 @@
+{
+  "url": "https://www.accessdata.fda.gov/drugsatfda_docs/nda/2023/202293Orig1s026.pdf",
+  "sha256": "2433c2adf5f20e2a3d1690c3546729526a411f2f8aee2c655b9d75ad2fb959d5",
+  "source_category": "Regulatory review, containing sponsor/reviewer analysis reports; not the trial SAP or independent patient data.",
+  "excluded_from_frozen_arms": true,
+  "page_windows": [
+    {
+      "physical_page": 101,
+      "printed_page": 31,
+      "meaning": "FDA reviewers describe their worst-case endpoint-at-censoring analysis; Applicant considered tipping-point analysis. This is performed regulatory analysis, not a trial SAP plan."
+    },
+    {
+      "physical_page": 108,
+      "printed_page": 38,
+      "meaning": "DELIVER FAS primary endpoint analysis; worst-case HR0.85,95%CI0.77\u20130.96. Applicant analyses and reviewer-added analyses are separately identified."
+    }
+  ]
+}

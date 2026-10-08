@@ -583,6 +583,9 @@ class EvidenceReadWindow(PublicModel):
 class EvidenceRecovery(PublicModel):
     """Exact recovery metadata for text omitted from a context projection."""
 
+    # The repeated schema already names this type in $defs; omit its duplicate label.
+    model_config = ConfigDict(json_schema_extra=lambda schema: schema.pop("title", None))
+
     operation: Literal["read_pages"]
     trial_id: TrialId
     windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
@@ -2026,7 +2029,27 @@ class OfficialGuidanceRecovery(PublicModel):
     )
 
 
+class DomainDeliveryHistoryArguments(PublicModel):
+    trial_id: TrialId
+    domain_id: DomainId
+    include_delivery_history: Literal[True] = True
+
+
+class DomainDeliveryHistoryRecovery(PublicModel):
+    operation: Literal["get_domain_context"] = "get_domain_context"
+    arguments: DomainDeliveryHistoryArguments
+    detail: str = Field(min_length=1)
+
+
 class DomainContextData(PublicModel):
+    delivery_history: tuple[InvestigationReadRange, ...] = Field(
+        default=(),
+        description="Opt-in complete delivered intervals, recovered in context-page order.",
+    )
+    delivery_history_recovery: DomainDeliveryHistoryRecovery | None = Field(
+        default=None,
+        description="Explicit durable recovery for omitted cumulative delivery history.",
+    )
     trial_id: TrialId | None = None
     domain_id: DomainId | None = None
     pack: DomainPack | None = Field(
@@ -2089,6 +2112,7 @@ class DomainContextData(PublicModel):
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
+    registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
         default=None,
@@ -2153,11 +2177,13 @@ class DomainContextPage(PublicModel):
         )
     )
     section: Literal[
+        "delivery_history",
         "complete",
         "primary_report",
         "questions",
         "official_guidance",
         "comparison_cards",
+        "registry_outcomes",
         "evidence",
     ]
     item_start: NonNegativeInt = 0
@@ -2189,7 +2215,38 @@ class ComparisonPassageRef(PublicModel):
     )
 
 
+def _omit_navigation_schema_labels(schema: dict[str, Any]) -> None:
+    schema.pop("title", None)
+    for property_schema in schema.get("properties", {}).values():
+        property_schema.pop("title", None)
+
+
+class RegistryOutcomeNavigation(PublicModel):
+    """Captured outcome scope, not certified correspondence or observed availability."""
+
+    model_config = ConfigDict(json_schema_extra=_omit_navigation_schema_labels)
+
+    path: str
+    source_id: SourceHandle
+    batch_index: NonNegativeInt
+    batch_count: PositiveInt
+    window_count: PositiveInt
+    title: str | None = None
+    type: str | None = None
+    timeFrame: str | None = None
+    populationDescription: str | None = None
+    not_inlined_fields: tuple[
+        Literal["title", "type", "timeFrame", "populationDescription"], ...
+    ] = Field(
+        default=(),
+        description="Captured fields omitted from the summary; recover their complete source text.",
+    )
+    recovery: EvidenceRecovery
+
+
 class ComparisonPassageGroup(PublicModel):
+    model_config = ConfigDict(json_schema_extra=_omit_navigation_schema_labels)
+
     source_id: SourceHandle
     source_role: SourceRole
     source_label: str = Field(min_length=1)
@@ -2202,6 +2259,7 @@ class ComparisonPassageGroup(PublicModel):
     registry_field_paths: tuple[str, ...] = ()
     registry_recovery: EvidenceRecovery | None = None
     registry_window_count: NonNegativeInt = 0
+    registry_outcome_count: NonNegativeInt = 0
     passages: tuple[ComparisonPassageRef, ...] = ()
 
 
@@ -2415,6 +2473,9 @@ class MissingDataReconciledRow(PublicModel):
     treated: StrictInt | None = Field(default=None, ge=0)
     completed: StrictInt | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
     observed: StrictInt | None = Field(default=None, ge=0)
+    unavailable: StrictInt | None = Field(
+        default=None, ge=0, exclude_if=lambda value: value is None
+    )
     analyzed: StrictInt | None = Field(default=None, ge=0)
     imputed: StrictInt | None = Field(default=None, ge=0)
     excluded: StrictInt | None = Field(default=None, ge=0)
@@ -2427,6 +2488,7 @@ class MissingDataReconciledRow(PublicModel):
     missing: StrictInt | None = Field(default=None, ge=0)
     missing_fraction: float | None = Field(default=None, ge=0)
     missing_bounds: MissingDataBounds | None = None
+    quantity_conflict: str | None = Field(default=None, exclude_if=lambda value: value is None)
     semantics: MissingDataSemantics | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
@@ -2469,6 +2531,14 @@ class ClaimTrace(PublicModel):
     evidence: tuple[Identity, ...] = ()
     search_receipts: tuple[Identity, ...] = ()
     unresolved_premises: tuple[str, ...] = ()
+    declared_unknowns: tuple[str, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description=(
+            "Unknowns explicitly declared with this answer, preserved independently of "
+            "Evidence roles and support status. They do not mandate an answer downgrade."
+        ),
+    )
     support_attribution: Literal["host_asserted", "not_established"] = Field(
         default="not_established",
         description=(
@@ -2622,7 +2692,9 @@ class ReviewEvidenceReference(PublicModel):
 class ReviewFact(PublicModel):
     """One source-bound fact shown before the host's answer warrant."""
 
-    text: str = Field(
+    text: str | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
         min_length=1,
         max_length=4_000,
         description=(
@@ -2631,7 +2703,14 @@ class ReviewFact(PublicModel):
         ),
     )
     evidence: ReviewEvidenceReference | None = None
+    source_body: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
     role: Literal["support", "counterevidence", "context"] = "support"
+
+    @model_validator(mode="after")
+    def quoted_text_is_reachable(self) -> ReviewFact:
+        if self.text is None and self.source_body is None:
+            raise ValueError("review fact requires quoted text or an exact source body")
+        return self
 
 
 class ReviewLimitation(PublicModel):
@@ -2930,7 +3009,17 @@ class ReviewTrialPage(PublicModel):
         return self
 
 
+class ReviewEvidenceBody(PublicModel):
+    """Exact quoted text shared by unchanged Evidence identity and handle."""
+
+    evidence: ReviewEvidenceReference
+    text: str = Field(min_length=1, max_length=4_000)
+
+
 class ReviewTrialData(PublicModel):
+    evidence_bodies: dict[Identity, ReviewEvidenceBody] = Field(
+        default_factory=dict, exclude_if=lambda value: not value
+    )
     review: TrialReviewSummary
     result: dict[str, Any] | None = Field(
         default=None,
@@ -2949,6 +3038,26 @@ class ReviewTrialData(PublicModel):
         exclude_if=lambda value: value is None,
         description="Completeness, summary counts, and explicit detail recovery for this review.",
     )
+
+    @model_validator(mode="after")
+    def exact_source_body_bindings(self) -> ReviewTrialData:
+        for identity, body in self.evidence_bodies.items():
+            if identity != body.evidence.identity:
+                raise ValueError("review source body key differs from Evidence identity")
+        for domain in self.domain_findings:
+            for answer in domain.answers:
+                for fact in answer.facts:
+                    identity = fact.source_body or (
+                        fact.evidence.identity if fact.evidence else None
+                    )
+                    body = self.evidence_bodies.get(identity) if identity else None
+                    if fact.source_body is not None and (
+                        body is None or fact.evidence != body.evidence
+                    ):
+                        raise ValueError("review source body is missing or differently bound")
+                    if body is not None and fact.text is not None and fact.text != body.text:
+                        raise ValueError("inline quote differs from its source body")
+        return self
 
 
 class TrialClosureSummary(PublicModel):
@@ -3343,7 +3452,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
             )
         }
         data["checkpoint"]["evidence_sufficiency"] = _host_asserted_sufficiency(
-            checkpoint.get("evidence_sufficiency")
+            checkpoint.get("evidence_sufficiency"), checkpoint.get("answers")
         )
     if tool == "prepare_batch" and "batch" in data:
         batch = data.pop("batch")

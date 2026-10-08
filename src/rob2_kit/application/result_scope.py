@@ -4,6 +4,7 @@ from typing import Any
 
 from ..workflow_models import (
     AssessableResult,
+    ComparativeEffectResult,
     ResultScopeReview,
     ScopeEndpointSummary,
     ScopeTargetSummary,
@@ -33,6 +34,23 @@ def result_scope_review(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 ),
                 reported_endpoint=ScopeEndpointSummary(**result.reported.endpoint.model_dump()),
                 reported_analysis_population=result.reported.analysis_population,
+                reported_effect_measure=(
+                    result.reported.effect_measure
+                    if isinstance(result.reported, ComparativeEffectResult)
+                    else None
+                ),
+                reported_estimate=(
+                    result.reported.estimate
+                    if isinstance(result.reported, ComparativeEffectResult)
+                    else None
+                ),
+                reported_precision=(
+                    result.reported.precision
+                    if isinstance(result.reported, ComparativeEffectResult)
+                    else None
+                ),
+                reported_group_values=getattr(result.reported, "group_values", ()),
+                reported_statistics=getattr(result.reported, "reported_statistics", ()),
                 source_bound_reported_fields=tuple(item.field.path for item in result.bindings),
                 caller_declared_clarity=result.clarity,
             ).model_dump(mode="json")

@@ -1,0 +1,259 @@
+{
+  "base": "77926d48047e6a632a36d5960c0240039069f2c8",
+  "retained_head": "45f1a2f3e1a5b0b452ee02666df9060cec757a25",
+  "branch": "improve/outcome-availability-counts-20261006",
+  "diff_sha256": "88d9d7c6c0ea99321539e9904be77b55f27ddb672e7e0a0006ca004c58847e87",
+  "exact_changed_files": [
+    "docs/release/public-contract.json",
+    "docs/release/verify.py",
+    "scripts/verify_bundle.py",
+    "src/rob2_kit/application/domains.py",
+    "src/rob2_kit/application/finalization.py",
+    "src/rob2_kit/application/missing_data.py",
+    "src/rob2_kit/application/trials.py",
+    "src/rob2_kit/interfaces/mcp/contracts.py",
+    "src/rob2_kit/interfaces/mcp/server.py",
+    "src/rob2_kit/skills/rob2-assess/references/missing.md",
+    "src/rob2_kit/workflow_models.py",
+    "tests/test_agentic_search_scientific_guidance.py",
+    "tests/test_bounded_domain_context.py",
+    "tests/test_checkpoint_support_attribution.py",
+    "tests/test_model_facing_assets.py",
+    "tests/test_time_to_event_availability.py"
+  ],
+  "installed_manifest_sha256": "90df6312ed359477d31e01673bb12a5a317b35f06a5ee218b7d635746d050459",
+  "installed_source_hashes_equal": true,
+  "installed_source_files_checked": 62,
+  "sealed_runtime_revision": "6c0e698635a0af43835cd4b911eafe10ee488ec1",
+  "runtime_and_release_files_byte_identical": true,
+  "exact_head_ci": [
+    {
+      "name": "Lint (3.12 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933923"
+    },
+    {
+      "name": "Lint (3.12 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933894"
+    },
+    {
+      "name": "Lint (3.11 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933857"
+    },
+    {
+      "name": "Lint (3.13 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933844"
+    },
+    {
+      "name": "Tests (3.12 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933842"
+    },
+    {
+      "name": "Package (3.12 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933828"
+    },
+    {
+      "name": "Tests (3.11 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933818"
+    },
+    {
+      "name": "Tests (3.13 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933802"
+    },
+    {
+      "name": "Type check (3.13 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933772"
+    },
+    {
+      "name": "Lint (3.12 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933717"
+    },
+    {
+      "name": "Tests (3.12 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933709"
+    },
+    {
+      "name": "Tests (3.13 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933700"
+    },
+    {
+      "name": "Type check (3.11 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933680"
+    },
+    {
+      "name": "Package (3.12 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933669"
+    },
+    {
+      "name": "Tests (3.11 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933657"
+    },
+    {
+      "name": "Tests (3.12 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933644"
+    },
+    {
+      "name": "Lint (3.11 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933636"
+    },
+    {
+      "name": "Tests (3.11 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933615"
+    },
+    {
+      "name": "Type check (3.12 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933610"
+    },
+    {
+      "name": "Package (3.13 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933578"
+    },
+    {
+      "name": "Package (3.13 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933577"
+    },
+    {
+      "name": "Package (3.12 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933556"
+    },
+    {
+      "name": "Lint (3.11 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933548"
+    },
+    {
+      "name": "Package (3.11 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933546"
+    },
+    {
+      "name": "Format (3.12 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933544"
+    },
+    {
+      "name": "Type check (3.11 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933541"
+    },
+    {
+      "name": "Package (3.13 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933531"
+    },
+    {
+      "name": "Lint (3.13 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933528"
+    },
+    {
+      "name": "Lint (3.13 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933489"
+    },
+    {
+      "name": "Format (3.11 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933477"
+    },
+    {
+      "name": "Package (3.11 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933467"
+    },
+    {
+      "name": "Type check (3.13 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933450"
+    },
+    {
+      "name": "Tests (3.13 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933438"
+    },
+    {
+      "name": "Format (3.13 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933437"
+    },
+    {
+      "name": "Type check (3.13 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933409"
+    },
+    {
+      "name": "Type check (3.12 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933395"
+    },
+    {
+      "name": "Format (3.12 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933392"
+    },
+    {
+      "name": "Format (3.13 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933391"
+    },
+    {
+      "name": "Package (3.11 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933371"
+    },
+    {
+      "name": "Type check (3.12 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933365"
+    },
+    {
+      "name": "Type check (3.11 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933353"
+    },
+    {
+      "name": "Format (3.11 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933334"
+    },
+    {
+      "name": "Format (3.12 / macos-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933333"
+    },
+    {
+      "name": "Format (3.13 / ubuntu-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933237"
+    },
+    {
+      "name": "Format (3.11 / windows-latest)",
+      "conclusion": "success",
+      "html_url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37492609996/job/112368933043"
+    }
+  ],
+  "test_job": "1688 passed, 8 skipped Ubuntu Python3.12",
+  "no_large_suite_rerun": true,
+  "no_new_assessment_external_source_fetch_or_merge": true
+}

@@ -17,6 +17,7 @@ from typing import Any
 
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
+from mcp.types import TextResourceContents
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs" / "release" / "public-contract.json"
@@ -34,7 +35,7 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.11.0":
+    if value["contract_version"] != "0.12.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "read_guidance",
@@ -164,6 +165,9 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
             "read_pages",
             "basis",
             "randomized - observed",
+            "`observed` or `unavailable`",
+            "does not synthesize `observed`",
+            "generic censoring does not",
             "scoped",
         )
     ):
@@ -202,6 +206,12 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
     descriptions = {str(item.uri): (item.description or "").strip() for item in resource_items}
     if descriptions != contract["resource_descriptions"]:
         raise ValueError("MCP resource descriptions differ")
+    skill_resource = await client.read_resource("rob2://guidance/SKILL")
+    missing_resource = await client.read_resource("rob2://guidance/missing")
+    _verify_packaged_skill(
+        "\n".join(item.text for item in skill_resource if isinstance(item, TextResourceContents)),
+        "\n".join(item.text for item in missing_resource if isinstance(item, TextResourceContents)),
+    )
     current = await client.read_resource("rob2://current-batch")
     if len(current) != 1 or not getattr(current[0], "text", None):
         raise ValueError("current-batch resource is unreadable")

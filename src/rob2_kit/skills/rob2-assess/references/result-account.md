@@ -1,8 +1,9 @@
 # Selected Result reconstruction (optional typed format)
 
 Sources → how this Result was produced → independent official propositions →
-canonical judgments. This replaces question-first fact gathering, not Cochrane
-question wording or decision rules. The reconstruction is an editable working
+canonical judgments. When used, this optional account organizes shared facts
+before answering independent questions. It preserves Cochrane question wording
+and decision rules. The reconstruction is an editable working
 account, never a server-certified causal model or Evidence.
 
 Keep only connected facts material to understanding the approved Result:
@@ -57,6 +58,23 @@ previous answers do not fill its gaps. Caller-supplied previews remain possible.
 D2/D3/D5 recover the same complete account and original source coordinates. Use
 `read_pages`/`render_page` and select the original Evidence through the ordinary
 source tools; account prose is not a substitute for cited source material.
+
+For a current text-backed step, an answer may use this optional citation in `bases`:
+
+```json
+{"step_identity":"sha256:<returned step identity>","role":"inference"}
+```
+
+It resolves every original observation text range through the existing Evidence
+selectors and retains the complete unchanged step snapshot, including inference,
+unknowns, counterevidence, scope and counts. Choose the question-specific role and
+explain its warrant; a step identity does not certify scientific support. Existing
+scope-transfer validation applies; supply `transfer` when an explicit inference
+across scopes is warranted. Do not use this shorthand for a visual step: cite its
+original visual Evidence and step identity so region, pixels and transcription
+remain unambiguous. Direct citations and assessments without accounts remain valid.
+This reduces locator copying; improved scientific judgment or model uptake has
+not been demonstrated.
 
 An answer basis can retain its factual-step dependency with:
 

@@ -7,6 +7,7 @@ assessor alone can change a Domain through the existing canonical submission pat
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import sys
@@ -23,9 +24,17 @@ from rob2_kit.application.source_check import (
     export_current_packet,
     validate_report,
 )
+from rob2_kit.packs import SCIENTIFIC_PACK
 from scripts.verify_bundle import verify
 
-READ_TOOLS = ("list_sources", "read_pages", "search_sources", "search_sources_batch", "render_page")
+READ_TOOLS = (
+    "list_sources",
+    "read_pages",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "read_guidance",
+)
 
 
 def export_packet(bundle: Path, trial_id: str, domain_id: str) -> dict[str, Any]:
@@ -179,7 +188,33 @@ def prepare_native_review(
     output.mkdir(parents=True, exist_ok=False)
     _write(output / "packet.json", packet)
     _write(output / "response-schema.json", native_review_schema())
-    (output / "instructions.md").write_text(INSTRUCTION, encoding="utf-8")
+    state = _state(_root(workspace))
+    records = [
+        record
+        for record in state["domain_records"].values()
+        if record["identity"] in packet["checkpoint_identities"]
+    ]
+    selected_domains = {record["domain_id"] for record in records}
+    # Official material is interpretive context, not a new assessment or hidden grader.
+    # Supply shared dependencies as well as complete accepted-question elaborations.
+    guidance = {
+        "pack_identity": SCIENTIFIC_PACK.content_hash,
+        "provenance": SCIENTIFIC_PACK.provenance.model_dump(mode="json"),
+        "shared_sections": [
+            {"source_url": section.source_url, "official": section.guidance.model_dump(mode="json")}
+            for section in SCIENTIFIC_PACK.official_sections or ()
+            if section.domain_id in selected_domains or section.domain_id == "all"
+        ],
+        "operational_dependencies": ["SKILL.md", "references/source-audit.md"],
+    }
+    _write(output / "guidance.json", guidance)
+    instructions = (
+        INSTRUCTION
+        + "\n# Official interpretive guidance\n"
+        + json.dumps(guidance, ensure_ascii=False, indent=2)
+        + "\n"
+    )
+    (output / "instructions.md").write_text(instructions, encoding="utf-8")
     images = []
     for span in packet["cited_spans"]:
         if span["kind"] != "figure":
@@ -264,21 +299,19 @@ def prepare_native_review(
         "-",
     ]
     state = _state(_root(workspace))
-    routing = [
-        {
-            "claim_id": _identity(
-                {"checkpoint": record["identity"], "question": answer["question_id"]}
-            ),
-            "domain_id": record["domain_id"],
-            "question_id": answer["question_id"],
-            "checkpoint_identity": record["identity"],
-        }
-        for record in state["domain_records"].values()
-        if record["identity"] in packet["checkpoint_identities"]
-        for answer in record["answers"]
-    ]
     manifest = {
-        "assessor_routing_not_model_input": routing,
+        "accepted_checkpoints_not_model_input": copy.deepcopy(records),
+        "guidance_sha256": hashlib.sha256((output / "guidance.json").read_bytes()).hexdigest(),
+        "delivery": {
+            "initial": "Complete active answers, paired official elaborations and original "
+            "citations in prompt; shared guidance in instructions; listed image bytes.",
+            "followup": "Complete captured Sources recoverable through ordinary source tools. "
+            "Availability is not actual delivery or reading; retain tool returns and pixels.",
+            "canonical_writes": "No assessment-writing tools enabled; findings cannot apply edits.",
+            "filesystem_isolation": "Not supplied by preparation or client read-only setting. "
+            "Host must protect Sources and canonical/working checkpoints in an isolated copy; "
+            "disposable navigation/read/render caches may write.",
+        },
         "snapshot_identity": packet["snapshot_identity"],
         "assessor": {
             "model": assessor_model,
@@ -301,9 +334,9 @@ def prepare_native_review(
             if path.is_file()
         },
         "model_calls": 0,
-        "launch_protocol": "Explicit authorization only. Reuse diagnostic_evidence_preflight."
-        "launch_checked and run_rsi_case._run_owned_codex for bounded native "
-        "execution; freeze research criteria/availability manifest first. "
+        "launch_protocol": "Explicit researcher request only. For a paid scientific diagnostic, "
+        "reuse diagnostic_evidence_preflight.launch_checked and "
+        "run_rsi_case._run_owned_codex; freeze research criteria/availability manifest first. "
         "Preserve events, effective model, usage, stderr and protected hashes. "
         "No retry or canonical tool is part of this request.",
     }
@@ -329,7 +362,7 @@ def main() -> None:
         "--packet", type=Path, help="original frozen packet for advisory validation"
     )
     parser.add_argument(
-        "--findings", type=Path, help="structured reviewer response; no application"
+        "--findings", type=Path, help="v2 question-level advisory response; no application"
     )
     args = parser.parse_args()
     if args.findings:

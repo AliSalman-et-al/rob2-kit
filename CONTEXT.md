@@ -107,6 +107,8 @@ page only while its Source, Result, pack, and Domain checkpoint basis remains cu
 
 Proposal validation, pending status and approval display a read-only `scope_review`
 of the exact target, reported endpoint/population and source-bound field paths.
+For comparative effects, it also shows the source-reported effect measure;
+that label does not establish the effect of interest or estimand.
 Reported timing and estimand are not separately represented in the Result type;
 their null projection calls for source interpretation, not an absence finding.
 Exactness is a host assertion about equivalent scope, not a consequence of known
@@ -155,6 +157,18 @@ selected Evidence, extracted participant counts, a lexical absence receipt, or
 an automatic requirement to read every appendix page. A No information answer
 retains the host's bounded scientific stopping rationale; the server does not
 turn a navigation match into a signaling answer or risk label.
+
+Registry comparison cards report the number of captured result outcomes;
+separately pageable `registry_outcomes` entries retain each exact source/index,
+literal title, type, time frame and population description when unambiguous,
+plus exact source recovery windows. Outcomes spanning more than twenty pages
+retain numbered recovery batches and their total window count. A metadata field that exceeds the existing projected-line budget, is malformed,
+or has multiple projected fragments is explicitly listed in `not_inlined_fields`;
+its recovery covers the complete containing pages, including wrapped text.
+Normal concise fields remain literal. An analyzed
+denominator is not an observed-outcome count; neighboring outcomes may use
+different definitions or analyses even at the same time point. These entries
+do not certify correspondence with the selected Result or historical plan timing.
 
 Main-report identification is separate from reading coverage. A unique declared
 `main_article` role identifies the report. Inferred roles and fallback reading
@@ -472,6 +486,18 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
+New static reports project the approved Result, saved Domain answers and warrants,
+unresolved premises, proposed/adopted judgments, and local selected-Evidence links
+from Canonical records. Algorithm routes describe derivations, not empirical
+findings; an included No information answer remains explicitly unresolved without
+asserting that it determined the judgment. New exports bind
+`report_format: rob2-kit.human-report.v1` into the Canonical bundle identity. Both
+verifiers require that format's exact report; unmarked historical bundles retain
+their aggregate-only HTML. Result, Domain and Evidence identities are unchanged;
+the format marker changes the bundle identity. Existing valid artifacts are not
+rewritten. Replacing the report or stripping its marker cannot retain that bundle
+identity. Hashes do not authenticate provenance against wholesale re-identification.
+
 Result semantics v0.9 allow an explicitly null group statistic when its meaning
 is not identified in the Source. Values, units, and endpoint identifiers remain
 source-bound, and unclear statistic meaning cannot be marked specified.
@@ -537,7 +563,7 @@ Working observations may carry host-asserted Result/group/stage/window/populatio
 Opt-in lean Domain drafting uses the existing bases list: compact selected handles or exact text source ranges assert supporting facts, normalized as indirect_support through the existing selector and canonical validator. Full citations preserve explicit roles and optional annotations. Counterpoints accept the same references. No extra drafting tool, ledger, source-fact duplication, scope inference or answer coercion is introduced; official guidance, active-path and uncertainty checks remain unchanged. Inline annotations omit redundant Domain/question copies supplied by their parent; historical note fields remain valid.
 
 Delivered visual references use the same opt-in Domain basis/counterpoint path:
-`{delivery_receipt, region, transcription, uncertainty?}` resolves through the
+`{delivery_receipt, transcription, region?, uncertainty?}` resolves through the
 existing visual selector. Source, page, render and PNG hash come from the authentic
 current-Trial image receipt; transcription and uncertainty remain host observations,
 not OCR truth or entailment certification. Explicit-role citations accept these
@@ -545,9 +571,10 @@ references too. Text ranges retain narrative provenance and never cover graphica
 cells by attaching a rendered page. Proposal construction still uses selected visual
 Evidence; reusable selected handles remain available for long repeated transcriptions.
 
-Opt-in source checking projects existing selected-Trial review into a fresh factual
-context through the existing exporter. It withholds answer/judgment metadata,
-preserves full claims and claim-specific source bindings, and validates advisory
+Opt-in source checking reviews the existing selected-Trial question answers in a
+fresh context through the existing exporter. It pairs each complete accepted answer
+with its official question guidance and asks for retain/revise/uncertain findings,
+using precise canonical entry IDs and captured Source handles. It validates advisory
 locators against current captured Sources and immutable checkpoint identities.
 It certifies provenance only, never semantic support or reviewer correctness.
 There is no automatic application, new canonical ledger or finalization gate; the
@@ -577,3 +604,11 @@ relied-on snapshot, not a current account revision or server-verified entailment
 Existing bounded review detail recovery preserves this optional state without
 adding a consistency gate, scientific answer coercion or default account-first
 workflow. Proposed/adopted judgments remain separate and unchanged.
+
+Reported group units may be null when no literal source unit is established.
+A non-null unit remains source-bound; null neither asserts dimensionless nor
+resolves a conflict. Put scientific unit interpretations and limitations in the
+existing scope rationale, and keep source-table clarity unresolved when a unit
+is null. Result semantics v0.10 records this distinction; historical v0.9 and
+older exports retain their original non-null unit requirements. This changes
+representation, not RoB judgments or source-entailment authority.

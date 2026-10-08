@@ -1,83 +1,93 @@
-# Opt-in source checking of an existing Trial review
+# Optional question-level advisory review
 
-This is an advisory source-fidelity path, disabled unless explicitly prepared.
-It does not introduce a model into the server, change scientific authority, or
-add a closure gate. Official Cochrane guidance and the original assessor remain
-authoritative. The Freeman recovery experiment is rejected for default adoption: it missed known
-cross-arm and original-citation errors and gave false assurance. No scientific gain
-was demonstrated. Its frozen report is not endorsed feedback for the original author.
+The v2 optional advisory reuses canonical answers and ordinary source readers.
+It checks material source/guidance issues without changing scientific authority,
+adding a model to the server or introducing a closure gate. No scientific accuracy
+improvement is established by this contract replacement.
 
-Prepare a fresh native request from a current workspace (one Domain or all saved
-Domains), with explicit assessor/reviewer identities and settings:
+Prepare one or all saved Domains with explicit model settings (omit DOMAIN for all):
 
 ```bash
 PYTHONPATH=src:. python -m scripts.export_factual_audit WORKSPACE TRIAL DOMAIN \
   --prepare NEW_DIRECTORY \
-  --assessor-model ACTUAL_ASSESSOR --assessor-effort medium \
-  --reviewer-model AUTHORIZED_REVIEWER --reviewer-effort medium
+  --assessor-model ACTUAL_ASSESSOR --assessor-effort low \
+  --reviewer-model AUTHORIZED_REVIEWER --reviewer-effort low
 ```
 
-The existing exporter also reads verified immutable bundles. Both use one shared
-packet builder. Current-workspace export reuses selected-Trial review findings to
-locate the exact current checkpoint set and the existing Evidence resolver to
-recover complete cited material. It does not save a Trial review or require
-finalization. A missing or corrupt exact citation fails preparation explicitly.
-The packet contains the exact target, reported result, relation, full saved
-warrants, unknowns, counterclaims, missing-data descriptions and original citation
-roles/bindings. Claims have deterministic opaque IDs. Signalling answers, risk
-judgments, driver flags, question IDs and Domain IDs are withheld where those are
-metadata. Saved prose is not rewritten; it can itself reveal a question or view.
-The private assessor routing map stays in `request.json`, outside model input.
+The packet pairs each saved active question's wording and actual canonical answer
+with its complete official elaboration. Full warrants, unknowns, counterevidence,
+missing-data semantics, source scopes and original citation roles remain intact.
+Entry IDs are exact canonical paths within an answer, bound by claim_id and snapshot;
+identical text in separate entries stays distinct. Shared official dependencies
+appear once in instructions. Cited spans use one numbered text representation;
+raw source text remains recoverable and verified. No human reference label or
+expected correction belongs in the input. Saved answers can anchor a reviewer;
+this is explicit review of the original reasoning, not a blind reassessment.
 
-Preparation freezes packet/input/schema/image hashes and emits a fresh native
-`codex exec` command, not a resumed session. It makes zero model calls. The five
-existing source tools are allowlisted: list, search (single/batch), read, render.
-No status, review or assessment-writing tool is supplied. Full captured source
-follow-up is possible without curated repair pages, case hints or reference labels.
-Original visual receipts/regions/uncertainty stay intact. Verified full-page pixels
-are supplied through native image arguments; this transport is recorded distinctly
-from a new MCP delivery. Further renders use the existing image-delivering adapter.
+The v2 report has format=rob2-kit.source-check.v2, snapshot_identity and questions.
+Exactly one row covers each accepted claim_id:
 
-Execute only under an explicitly authorized, frozen scientific diagnostic. Reuse
-`diagnostic_evidence_preflight.launch_checked` and the existing native runner's
-`run_rsi_case._run_owned_codex`, with research criteria and full source availability
-manifest frozen before launch. Preserve native events, images, usage, effective
-model/effort, stderr, source/code hashes and canonical preservation checks. The
-prepared command does not claim that its declared settings were observed at run
-time. No new paid runner, default reviewer, retry loop or automatic stage is added.
+- retain: claim_id/disposition only; no material issue reported, not proof of correctness.
+- revise: claim_id/disposition, affected_entries, reason and nonempty references.
+- uncertain: claim_id/disposition, bounded reason, affected_entries/references where available.
 
-Validate the frozen structured response locally:
+No exhaustive sentence findings or copied saved clauses are required. Keep existing
+legitimate uncertainty and supported probability; do not invent unavailable facts.
+Revise locates a material issue for the original assessor, not a replacement answer.
+Retain cannot erase unknowns or counterevidence from the canonical assessment.
+
+A bare Evidence identity or read/search passage_ref resolves its exact immutable
+selected span. No retyped quote is necessary. {handle, quote} narrows a textual
+span only when the quote matches contiguously under ASCII-whitespace collapse;
+case, words, numbers, signs and punctuation remain exact. Invented, stale, foreign,
+ambiguous and mixed identifiers fail. Selected offsets never widen to page/line
+boundaries. An intermediate agent assertion is not Evidence. Existing figure
+handles retain authenticated pixels/region and qualified interpretation; a new
+region uses the existing authentic VisualEvidenceReference route. Source validity
+does not establish semantic support or correctness of a proposed correction.
+
+Validate a separately frozen response (the existing --findings argument names the
+response file; its v2 content is question-level):
 
 ```bash
 PYTHONPATH=src:. python -m scripts.export_factual_audit WORKSPACE TRIAL \
   --packet NEW_DIRECTORY/packet.json --findings NEW_DIRECTORY/response.json
 ```
 
-Findings locate an exact clause in its saved field and classify supported facts,
-legitimate inference, narrower support, citation gaps, contradictions or unresolved
-support. Each has explicit uncertainty. Every saved claim must be represented,
-including retained facts/inferences; that checks report coverage, not scientific
-completeness of its conclusions. Non-unresolved findings require source references.
-Narrative quotes may be complete windows or contiguous excerpts within explicitly
-bound windows. The resolver collapses only ASCII whitespace runs to one space and
-records the exact original subspan as half-open Unicode codepoint offsets in the
-page projection. It does not change case, punctuation, signs, numbers or Unicode
-characters, join omitted words, splice Sources, or merge saved unknown entries.
-Repeated excerpts need narrower windows. Excerpt binding does not validate meaning. Source ownership,
-captured integrity, current Result/checkpoints and unchanged canonical claims are
-verified. Visual observations require authentic receipts and retain interpretation
-uncertainty; provenance does not certify transcription truth. Claim-specific
-original windows are distinguished from follow-up support, which never silently
-repairs an original citation. A valid but irrelevant quote can still yield a false
-critique: the receipt explicitly does **not** certify semantic support.
+Exact packet recomputation, approved Result/checkpoint freshness and accepted-question
+coverage protect provenance. The receipt recovers precise affected entries and
+source spans, preserving original citation versus follow-up support. It remains
+advisory_only=true, semantic_support_verified=false and assessment_mutated=false.
+Only the original assessor inspects Sources and accepts/rejects a change through
+ordinary canonical Domain submission with revision lineage. There is no apply,
+retry, additional ledger or automatic label gate. Closed assessments stay immutable.
 
-The original assessor reads the advisory receipt and routing map, inspects its
-sources, and accepts or rejects findings. A warranted change uses the existing
-canonical Domain edit/submission path and revision basis. There is no apply
-operation, silent correction, historical overwrite, new ledger or finalization
-gate. Closed assessments remain immutable.
+Preparation makes zero model calls, supplies six existing read/guidance tools and
+records hashes, native output schema and full-page image transport. Complete
+captured Sources remain available through readers, search and render; follow
+pagination, inspect uncited context and pixels as needed. Availability does not
+prove reading. Keep disposable cache/receipt state for validation. No new source
+acquisition, default model or paid runner is introduced.
 
-## Difference from rejected review experiments
+The exporter does not isolate the MCP host. Protect an isolated copy's Sources and
+canonical/working files at the OS boundary, allowing only disposable caches to write.
+Client read-only mode is insufficient. For any separately authorized paid diagnostic,
+reuse diagnostic_evidence_preflight.launch_checked and run_rsi_case._run_owned_codex;
+freeze research criteria and complete required evidence availability before launch.
+Retain actual delivery, effective settings, usage, errors and preservation checks.
+Do not impose arbitrary productive caps or claim completeness after a recovery limit.
+
+The packaged optional reference is available via the ordinary guidance tool/resource
+and skill export. Omission does not block assessment, Trial review or finalization.
+Historical v1 inputs/outputs are not accepted as v2; use their recorded code contract
+for interpretation. Preserved invalid reports stay invalid, not retroactive successes.
+
+## Historical v1 experiments and validation
+
+The following records describe earlier contracts and results, not current v2 instructions.
+Their artifacts and failures remain unchanged; none establishes v2 effectiveness.
+
+### Difference from rejected review experiments
 
 The full-claim tool-free feasibility audit had a qualified-inference false alarm,
 a wrong corrective line range and pooled support across warrants. The native D4
@@ -91,7 +101,7 @@ source-verified feedback and keep valid-looking false critiques from editing an
 assessment. They do not prove that a reviewer will find errors or avoid false alarms.
 
 Reuse: one existing exporter replaces its narrative-only finalized-bundle loop;
-current and bundle inputs share one builder. Five existing source tools, selected
+current and bundle inputs share one builder. Six existing source/guidance tools, selected
 Trial review, Evidence integrity/selection, renderer and native exec are reused.
 Zero new MCP tools, canonical record kinds, assessment actions or finalization
 gates. The earlier one-off paired collector remains frozen diagnostic provenance;
@@ -104,7 +114,7 @@ and visual binding, explicit uncertainty, altered snapshot rejection, and immuta
 canonical state even after a dubious advisory critique. No benchmark case rule or
 risk-label agreement test is used.
 
-## Offline validation at this checkpoint
+### Offline validation at the historical checkpoint
 
 Focused current source-check, immutable bundle export, bounded Trial review and
 wire schema checks: **26 passed in 62.98 seconds**. Changed-file lint/format and
@@ -134,7 +144,7 @@ documented keyword profile (local text-length/nonblank checks remain authoritati
 required nullable fields, supported vocabulary and local resolved references before
 preparation. This is an offline check; provider acceptance must still be observed.
 
-## Freeman experiment closure
+### Freeman experiment closure
 
 The immutable recovery report and original rejection receipt remain in
 `docs/evaluation/2026-10-04-freeman-source-check-recovery/`. Their historical

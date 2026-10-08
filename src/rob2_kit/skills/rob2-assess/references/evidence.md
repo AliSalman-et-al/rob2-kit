@@ -136,8 +136,9 @@ were delivered; it does not establish that the definition is complete.
 ## Use visual Evidence for visual meaning
 
 Call `render_page` when layout, axes, columns, symbols, or footnotes affect the
-meaning. Inspect the returned pixels, then use their `delivery_receipt`, a normalized
-region and a literal, self-contained transcription. During Domain submission, this
+meaning. Inspect the returned pixels, then use their `delivery_receipt` and a literal,
+self-contained transcription. Omit `region` for the exact delivered view, or supply
+normalized bounds for an inspected narrower region. During Domain submission, this
 reference may go directly in `bases` or `counterevidence[].evidence`; call
 `select_visual_evidence` first when a reusable selected handle is useful (or needed
 for Proposal construction). Both paths use the same visual selector. A receipt is
@@ -225,9 +226,17 @@ A relationship label never expands what the passage says. Keep plans separate
 from conduct, analysis populations from observed outcomes, endpoint definitions
 from measurement properties, and absence of reporting from absence of bias.
 Reuse Result Evidence only when its exact premise answers the Domain question.
-State inferred conclusions in the answer's `justification`, with the source
-facts and any unresolved link. The server checks Evidence identity and structure;
-you judge whether those facts support the answer.
+Before selecting an answer, reconcile its justification with its material
+unknowns. If a conclusion depends on an unresolved factual link, consider how the
+applicable question would be answered under the plausible alternatives. Explain
+why the source-grounded probability still supports your conclusion, or qualify
+the claim that the missing link would otherwise make categorical. A recorded
+unknown does not automatically require No information; it must affect the
+reasoning according to the official question.
+
+State the source facts, inference and unresolved link in the answer's
+`justification`. The server checks Evidence identity and structure; you judge
+whether those facts support the answer.
 
 ## Opt-in lean Domain drafting
 
@@ -452,3 +461,16 @@ The parallel-assignment submission contract has no `no_information` option for
 D3.2. Use the complete official elaboration and response semantics for the
 answer’s meaning. Keep source support, counterevidence, coverage limits and
 unknowns explicit; relationship labels do not impose answer-certainty rules.
+
+Domain context summarizes cumulative read-delivery intervals without repeating their
+full history. This is administrative delivery, not evidence of comprehension. Use
+`delivery_history_recovery` (`get_domain_context` with `include_delivery_history=true`)
+and follow its context pages to recover every interval after restart or cache loss.
+Active Evidence, official guidance, premises and uncertainty remain in the default view.
+
+Visual regions use the delivered PNG coordinate frame: top-left origin, x right,
+y down, normalized to [0,1]. Omit `region` to cite the exact authenticated delivered
+view; the server stores explicit [0,0,1,1] geometry. This includes the PDF CropBox
+and rotation, and does not imply the original uncropped page. Supply narrower
+bounds only when you can identify them in the delivered pixels. A receipt remains
+required; transcription records an assessor observation, not verified semantic truth.

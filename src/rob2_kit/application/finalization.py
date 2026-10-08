@@ -1,4 +1,5 @@
 import hashlib
+import html
 import json
 import math
 import os
@@ -80,7 +81,9 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.11"
+_NULL_UNIT_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.10"
+_NULL_STATISTIC_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
 _GROUP_VALUES_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
 _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
@@ -90,7 +93,10 @@ _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 # Basis validation does not certify entailment or prescribe answer modality.
 # Retain predecessor modality rules for old bundles.
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
-    {"sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8"}
+    {
+        SCIENTIFIC_PACK.content_hash,
+        "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+    }
 )
 
 
@@ -206,7 +212,9 @@ def _valid_missing_data(
     )
     legacy_optional = {"semantics"}
     current_optional = (
-        legacy_optional | set(result_scope_fields[1:]) | {"result_identity", "completed"}
+        legacy_optional
+        | set(result_scope_fields[1:])
+        | {"result_identity", "completed", "unavailable"}
     )
     current_schema = any(isinstance(row, dict) and "missing_bounds" in row for row in value["rows"])
     required = current_required if current_schema else legacy_required
@@ -224,7 +232,9 @@ def _valid_missing_data(
             return False
         numeric_fields = ["randomized", "observed", "analyzed", "imputed"]
         if current_schema:
-            numeric_fields.extend(["eligible", "treated", "completed", "excluded", "event_count"])
+            numeric_fields.extend(
+                ["eligible", "treated", "completed", "unavailable", "excluded", "event_count"]
+            )
         if any(
             row.get(key) is not None
             and (isinstance(row[key], bool) or not isinstance(row[key], int) or row[key] < 0)
@@ -258,6 +268,7 @@ def _valid_missing_data(
             "treated",
             "completed",
             "observed",
+            "unavailable",
             "analyzed",
             "imputed",
             "excluded",
@@ -281,13 +292,21 @@ def _valid_missing_data(
             return False
 
         randomized, observed = row["randomized"], row["observed"]
+        unavailable = row.get("unavailable")
+        incompatible = isinstance(randomized, int) and (
+            isinstance(observed, int)
+            and observed > randomized
+            or isinstance(unavailable, int)
+            and unavailable > randomized
+            or isinstance(observed, int)
+            and isinstance(unavailable, int)
+            and observed + unavailable != randomized
+        )
         expected_missing = (
             randomized - observed
-            if isinstance(randomized, int)
-            and not isinstance(randomized, bool)
-            and isinstance(observed, int)
-            and not isinstance(observed, bool)
-            and randomized >= observed
+            if isinstance(randomized, int) and isinstance(observed, int) and not incompatible
+            else unavailable
+            if isinstance(randomized, int) and isinstance(unavailable, int) and not incompatible
             else None
         )
         missing = row["missing"]
@@ -317,7 +336,6 @@ def _valid_missing_data(
             imputed = row["imputed"]
             imputed_is_int = isinstance(imputed, int) and not isinstance(imputed, bool)
             randomized_is_int = isinstance(randomized, int) and not isinstance(randomized, bool)
-            observed_is_int = isinstance(observed, int) and not isinstance(observed, bool)
             expected_bounds: dict[str, object] | None = None
             if expected_missing is not None:
                 expected_bounds = {
@@ -325,7 +343,7 @@ def _valid_missing_data(
                     "upper": expected_missing,
                     "kind": "exact",
                 }
-            elif randomized_is_int and observed_is_int and observed > randomized:
+            elif incompatible:
                 expected_bounds = None
             elif randomized_is_int and (not imputed_is_int or imputed <= randomized):
                 expected_bounds = {
@@ -364,6 +382,7 @@ def _valid_missing_data(
             "treated",
             "completed",
             "observed",
+            "unavailable",
             "analyzed",
             "imputed",
             "excluded",
@@ -473,6 +492,11 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path.endswith("/statistic") and leaf is None)
+            or (
+                leaf_path.startswith("/reported/group_values/")
+                and leaf_path.endswith("/unit")
+                and leaf is None
+            )
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
@@ -1723,25 +1747,55 @@ def _valid_result_shape(
             if (
                 not isinstance(item, dict)
                 or set(item) != {"group_id", "statistic", "value", "unit"}
-                or not all(_nonblank(item.get(key)) for key in ("group_id", "value", "unit"))
+                or not all(_nonblank(item.get(key)) for key in ("group_id", "value"))
+                or not (
+                    _nonblank(item.get("unit"))
+                    or (
+                        semantics_version
+                        in {_RESULT_SEMANTICS_VERSION, _NULL_UNIT_RESULT_SEMANTICS_VERSION}
+                        and item.get("unit") is None
+                    )
+                )
                 or not (
                     _nonblank(item.get("statistic"))
                     or (
-                        semantics_version == "rob2-kit.result-semantics.v0.9"
+                        semantics_version
+                        in {
+                            _RESULT_SEMANTICS_VERSION,
+                            _NULL_UNIT_RESULT_SEMANTICS_VERSION,
+                            _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+                        }
                         and item.get("statistic") is None
                     )
                 )
             ):
                 return False, set()
-            if item.get("statistic") is None and clarity.get("source_table_meaning") == "specified":
+            if (
+                semantics_version != _RESULT_SEMANTICS_VERSION
+                and (item.get("statistic") is None or item.get("unit") is None)
+                and clarity.get("source_table_meaning") == "specified"
+            ):
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
 
+    reported_keys = set(reported)
+    if "reported_statistics" in reported:
+        statistics = reported["reported_statistics"]
+        if (
+            semantics_version != _RESULT_SEMANTICS_VERSION
+            or reported.get("form") not in {"comparative_effect", "group_bound_values"}
+            or not isinstance(statistics, list)
+            or not statistics
+            or not all(_nonblank(value) for value in statistics)
+        ):
+            return False
+        reported_keys.remove("reported_statistics")
+
     form = reported.get("form")
     if form == "comparative_effect":
         if (
-            set(reported)
+            reported_keys
             != {
                 "form",
                 "effect_measure",
@@ -1760,14 +1814,19 @@ def _valid_result_shape(
         values_key = (
             "group_values"
             if semantics_version
-            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            in {
+                _RESULT_SEMANTICS_VERSION,
+                _NULL_UNIT_RESULT_SEMANTICS_VERSION,
+                _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+                _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+            }
             else "values"
         )
-        if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
+        if reported_keys != {"form", "analysis_population", "endpoint", values_key}:
             return False
         valid, reported_ids = valid_values(reported[values_key])
     elif form == "single_group_category_profile":
-        if set(reported) != {
+        if reported_keys != {
             "form",
             "analysis_population",
             "endpoint",
@@ -1886,7 +1945,12 @@ def _reported_result_has_coherent_anchor(
         values_key = (
             "group_values"
             if semantics_version
-            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            in {
+                _RESULT_SEMANTICS_VERSION,
+                _NULL_UNIT_RESULT_SEMANTICS_VERSION,
+                _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+                _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+            }
             else "values"
         )
         quantitative_tuples = [
@@ -1914,8 +1978,12 @@ def _reported_result_has_coherent_anchor(
             for index, item in enumerate(reported["categories"])
         ]
 
+    ancillary = tuple(
+        (f"/reported/reported_statistics/{index}", value)
+        for index, value in enumerate(reported.get("reported_statistics", []))
+    )
     quantitative_tuples = [
-        tuple((path, value) for path, value in items if value is not None)
+        tuple((path, value) for path, value in items + ancillary if value is not None)
         for items in quantitative_tuples
     ]
 
@@ -2089,6 +2157,8 @@ def _verify_result_evidence(
         return False
     strict_numeric = semantics_version in {
         _RESULT_SEMANTICS_VERSION,
+        _NULL_UNIT_RESULT_SEMANTICS_VERSION,
+        _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
         _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
     }
 
@@ -3175,8 +3245,52 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         expected = _scientific_contract_descriptor()
     except (AttributeError, StopIteration, ValueError):
         return False
-    if isinstance(value, dict) and value == expected:
+    if isinstance(value, dict) and value in (
+        expected,
+        {**expected, "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION},
+        {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+    ):
         return True
+    pre_d4_faq = {
+        **expected,
+        "content_hash": "sha256:c7ba52a378c886fcfe997273058cdce06b2a601605ab1b1019e8df958a1eebf6",
+        "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION,
+    }
+    if value in (
+        pre_d4_faq,
+        {**pre_d4_faq, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+        {
+            key: item
+            for key, item in pre_d4_faq.items()
+            if key not in {"domain_judgment_contract", "aggregation_contract"}
+        }
+        | {"result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+    ):
+        return True
+    pre_masking = {
+        **expected,
+        "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+        "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION,
+    }
+    if value in (
+        {**pre_masking, "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION},
+        pre_masking,
+        {
+            key: item
+            for key, item in pre_masking.items()
+            if key not in {"domain_judgment_contract", "aggregation_contract"}
+        },
+        {
+            **{
+                key: item
+                for key, item in pre_masking.items()
+                if key not in {"domain_judgment_contract", "aggregation_contract"}
+            },
+            "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
+        },
+    ):
+        return True
+    expected = {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION}
     # Exact predecessor guidance pins retain their original contract shape.
     if value in (
         {
@@ -3573,6 +3687,154 @@ def _valid_trial_review_closures(
     }
 
 
+def _human_report(canonical: dict[str, Any], claims: dict[str, Any]) -> str:
+    """Render stored warrants; rule routes are derivations, not new source findings."""
+
+    def text(value: object) -> str:
+        return html.escape(str(value), quote=True)
+
+    def details(title: str, value: object) -> str:
+        return (
+            f"<details><summary>{text(title)}</summary><pre>"
+            + text(json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2))
+            + "</pre></details>"
+        )
+
+    evidence = canonical["proposal"]["evidence"]
+
+    def links(value: object) -> str:
+        identities: set[str] = set()
+
+        def collect(item: object) -> None:
+            if isinstance(item, dict):
+                for child in item.values():
+                    collect(child)
+            elif isinstance(item, list):
+                for child in item:
+                    collect(child)
+            elif isinstance(item, str) and item in evidence:
+                identities.add(item)
+
+        collect(value)
+        return " ".join(
+            f'<a href="#evidence-{identity[7:]}">{text(identity)}</a>'
+            for identity in sorted(identities)
+            if re.fullmatch(r"sha256:[0-9a-f]{64}", identity)
+        )
+
+    parts = [
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">',
+        "<title>RoB 2 assessment</title><style>body{max-width:75em;margin:2em auto;"
+        "padding:0 1em;font-family:sans-serif}pre{white-space:pre-wrap;overflow-wrap:anywhere}"
+        "a{overflow-wrap:anywhere}details{margin:1em 0}</style></head><body>",
+        "<h1>Batch finalized</h1>",
+        f"<p>{text(claims['authoritative_wording'])}</p>",
+        "<p>Answers and warrants are assessor statements. Algorithm rule identifiers describe "
+        "derivations, not empirical findings. Evidence links recover selected excerpts and exact "
+        "locations; original Source files are not included.</p>",
+        details("Batch claims", claims),
+    ]
+    results = {item["trial_id"]: item for item in canonical["proposal"]["payload"]["results"]}
+    for trial_id, disposition in sorted(canonical["dispositions"].items()):
+        parts.append(f"<h2>{text(trial_id)}</h2><p>Disposition: {text(disposition)}</p>")
+        if trial_id in claims["overall"]:
+            parts.append(f"<p>Overall judgment: {text(claims['overall'][trial_id])}</p>")
+        if trial_id in results:
+            result = results[trial_id]
+            parts.append(details("Approved Result: target, reported result and scope", result))
+            parts.append(links(result))
+        records = sorted(
+            (item for item in canonical["domain_records"].values() if item["trial_id"] == trial_id),
+            key=lambda item: (
+                "domain:randomization",
+                "domain:deviations",
+                "domain:missing",
+                "domain:measurement",
+                "domain:selection",
+            ).index(item["domain_id"]),
+        )
+        for record in records:
+            decision = record.get("decision") or {}
+            parts.append(f"<h3>{text(record['domain_id'])}</h3>")
+            parts.append(
+                f"<p>Adopted judgment: {text(record['judgment'])}; algorithm proposal: "
+                f"{text(decision.get('proposed', record['judgment']))}; "
+                f"authority: {text(decision.get('authority', 'algorithm'))}.</p>"
+            )
+            if any(
+                answer["question_id"] in record.get("driver_questions", [])
+                and answer["answer"] == "no_information"
+                for answer in record["answers"]
+            ):
+                parts.append(
+                    "<p>The recorded algorithm route includes a No information answer. "
+                    "That premise remains unresolved; the route is not empirical evidence "
+                    "establishing it.</p>"
+                )
+            parts.append(
+                details(
+                    "Proposed algorithm route",
+                    {
+                        "trace": record.get("trace", []),
+                        "driver_questions": record.get("driver_questions", []),
+                    },
+                )
+            )
+            if decision.get("adjudication") is not None:
+                parts.append(details("Recorded host adjudication", decision["adjudication"]))
+                parts.append(links(decision["adjudication"]))
+            for answer in record["answers"]:
+                parts.append(
+                    f"<h4><code>{text(answer['question_id'])}</code> — "
+                    f"{text(answer['answer'].replace('_', ' ').capitalize())}</h4>"
+                )
+                parts.append(f"<p>Saved warrant: {text(answer.get('justification') or '')}</p>")
+                if answer.get("unknowns"):
+                    parts.append(
+                        "<p>Unresolved premises:</p><ul>"
+                        + "".join(f"<li>{text(unknown)}</li>" for unknown in answer["unknowns"])
+                        + "</ul>"
+                    )
+                parts.append(links(answer))
+                parts.append(
+                    details(
+                        "Bases, limitations and counterevidence",
+                        {
+                            key: value
+                            for key, value in answer.items()
+                            if key not in {"question_id", "answer", "justification", "unknowns"}
+                        },
+                    )
+                )
+    sources = {
+        source["id"]: source
+        for trial in canonical["batch"]["trials"]
+        for source in trial["sources"]
+    }
+    parts.append("<h2>Selected Evidence and Source locations</h2>")
+    for identity, item in sorted(evidence.items()):
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", identity):
+            raise ValueError("report Evidence identity is invalid")
+        parts.append(f'<section id="evidence-{identity[7:]}">')
+        source = sources.get(item.get("source_id"))
+        if source is not None:
+            parts.append(
+                f"<p>Source: {text(source.get('label', source['id']))}; "
+                f"{text(source['id'])}; {text(source['sha256'])}</p>"
+            )
+        parts.append(details(identity, item))
+        parts.append(f'<p><a href="evidence/{identity[7:]}.json">Evidence JSON</a></p>')
+        render = item.get("render") or {}
+        render_identity = render.get("identity", "")
+        if item.get("kind") == "figure" and re.fullmatch(r"sha256:[0-9a-f]{64}", render_identity):
+            parts.append(
+                f'<p><a href="visual/{render_identity[7:]}.png">Rendered Source page</a></p>'
+            )
+        parts.append("</section>")
+    parts.append("</body></html>")
+    return "".join(parts)
+
+
 def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     final_root = internal_path(root, "finalized")
     proposal = state.get("proposal")
@@ -3674,6 +3936,7 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
             visual_files[path] = png
     canonical_proposal = {**proposal, "evidence": evidence}
     canonical = {
+        "report_format": "rob2-kit.human-report.v1",
         "batch": state.get("batch"),
         "proposal": canonical_proposal,
         "proposal_review": proposal_review,
@@ -3754,11 +4017,7 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     files: dict[str, bytes] = {
         "canonical.json": canonical_json_bytes(canonical),
         "claims.json": canonical_json_bytes(claims),
-        "report.html": (
-            "<html><body><h1>Batch finalized</h1><pre>"
-            + json.dumps(claims, sort_keys=True)
-            + "</pre></body></html>"
-        ).encode(),
+        "report.html": _human_report(canonical, claims).encode(),
     }
     files.update(visual_files)
     files.update(
@@ -3876,7 +4135,8 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
             )
         # A process can terminate after the canonical state commit and before
         # the final path is made durable.  Rebuild the content-addressed file
-        # from the committed final state; this does not create a new identity.
+        # from the committed final state and current presentation format. Scientific
+        # records retain their identities; a format upgrade changes the bundle identity.
         rebuilt = _bundle(root, state)
         if rebuilt != artifact:
             state = _commit_records(
@@ -4255,6 +4515,9 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                     shape | {"batch_history", "source_admissions"}
                     for shape in tuple(canonical_shapes)
                 }
+            )
+            canonical_shapes.update(
+                {shape | {"report_format"} for shape in tuple(canonical_shapes)}
             )
             if not isinstance(canonical_value, dict) or set(canonical_value) not in (
                 *canonical_shapes,
@@ -5293,7 +5556,20 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
             }
             if not isinstance(claims, dict) or claims != expected_claims:
                 return fail()
-            if json.dumps(claims, sort_keys=True) not in report:
+            legacy_report = (
+                "<html><body><h1>Batch finalized</h1><pre>"
+                + json.dumps(claims, sort_keys=True)
+                + "</pre></body></html>"
+            )
+            report_format = canonical_value.get("report_format")
+            if "report_format" in canonical_value and report_format != "rob2-kit.human-report.v1":
+                return fail()
+            expected_report = (
+                _human_report(canonical_value, claims)
+                if report_format == "rob2-kit.human-report.v1"
+                else legacy_report
+            )
+            if report != expected_report:
                 return fail()
             proposal = canonical_value.get("proposal") or {}
             proposal_review = canonical_value.get("proposal_review")

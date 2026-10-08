@@ -100,7 +100,12 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # that surface; continuation payloads themselves no longer repeat it.
     # Two companion operations and durable typed status recovery add 18 KB.
     # Authored bookmark provenance and bound outline/read actions add 14 KB; measured 667054.
-    assert total_bytes < 675_000
+    # Conditional event-definition disclosure and field descriptions measure 680803 bytes.
+    # v0.12 adds source-bound ancillary statistics and numerical-role scope review.
+    # After removing redundant descriptions: 688577 aggregate bytes (+7774 from
+    # 680803, 1.14%). This sums 23 closed input/output schemas, not observed host
+    # prompt tokens. Keep the new observations typed rather than hiding them.
+    assert total_bytes < 690_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -240,7 +245,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.11.0"
+    assert mcp.version == "0.12.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]

@@ -19,13 +19,18 @@ from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overal
 from ..models import canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import (
+    DomainAccountStepCitation,
     DomainCounterpoint,
     DomainDraft,
     DomainEvidenceCitation,
     DomainSaveAnswer,
+    DomainSourceReference,
     WorkingNote,
+    WorkingResultStepReference,
+    WorkingSourceRange,
 )
 from ._state import (
+    _MAX_PROJECTED_LINE_LENGTH,
     _canonical_evidence_records,
     _commit_records,
     _db,
@@ -56,10 +61,16 @@ from .evidence import (
     main_report_reading_status,
     source_reading_status,
 )
+from .missing_data import missing_data_context
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .source_handles import source_handle
 from .status import _active_trial_and_domain, _continuation
-from .working import investigation_projection, working_checkpoint_status
+from .working import (
+    _delivery_projection,
+    _source_scope,
+    investigation_projection,
+    working_checkpoint_status,
+)
 
 _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
@@ -389,6 +400,13 @@ _REGISTRY_FIELD_PATHS = {
     "lastUpdatePostDateStruct": "protocolSection.statusModule.lastUpdatePostDateStruct",
     "startDateStruct": "protocolSection.statusModule.startDateStruct",
     "armsInterventionsModule": "protocolSection.armsInterventionsModule",
+    "statusModule": "protocolSection.statusModule",
+    "outcomesModule": "protocolSection.outcomesModule",
+    "designModule": "protocolSection.designModule",
+    "outcomeMeasuresModule": "resultsSection.outcomeMeasuresModule",
+    "participantFlowModule": "resultsSection.participantFlowModule",
+    "moreInfoModule": "resultsSection.moreInfoModule",
+    "versionHolder": "derivedSection.miscInfoModule.versionHolder",
 }
 
 
@@ -415,9 +433,49 @@ def _registry_navigation(
             ).fetchall()
             paths: set[str] = set()
             ranges: dict[tuple[str, int], list[int]] = {}
+            outcomes: dict[str, dict[str, Any]] = {}
+            page_line_counts: dict[int, int] = {}
             for row in rows:
                 page = int(row["page"])
-                for line_number, line in enumerate(str(row["text"]).splitlines(), 1):
+                lines = str(row["text"]).splitlines()
+                page_line_counts[page] = len(lines)
+                for line_number, line in enumerate(lines, 1):
+                    outcome = re.match(
+                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\])\."
+                        r"([^:]+):\s*(.*)$",
+                        line,
+                    )
+                    if outcome:
+                        path, field, value = outcome.groups()
+                        entry = outcomes.setdefault(
+                            path,
+                            {
+                                "path": path,
+                                "ranges": {},
+                                "field_counts": {},
+                                "not_inlined_fields": set(),
+                            },
+                        )
+                        bounds = entry["ranges"].setdefault(page, [line_number, line_number])
+                        bounds[1] = line_number
+                        if field in {"title", "type", "timeFrame", "populationDescription"}:
+                            counts = entry["field_counts"]
+                            counts[field] = counts.get(field, 0) + 1
+                            entry.pop(field, None)
+                            entry["not_inlined_fields"].add(field)
+                            try:
+                                decoded = json.loads(value)
+                            except json.JSONDecodeError:
+                                pass
+                            else:
+                                if (
+                                    isinstance(decoded, str)
+                                    and counts[field] == 1
+                                    and len(json.dumps(decoded, ensure_ascii=False).encode("utf-8"))
+                                    <= _MAX_PROJECTED_LINE_LENGTH
+                                ):
+                                    entry[field] = decoded
+                                    entry["not_inlined_fields"].discard(field)
                     for path in _REGISTRY_FIELD_PATHS.values():
                         if line.startswith(path + ".") or line.startswith(path + ":"):
                             paths.add(path)
@@ -438,6 +496,41 @@ def _registry_navigation(
                 windows = tuple(all_windows[:20])
                 found[source_id] = {
                     "paths": tuple(sorted(paths)),
+                    "outcomes": tuple(
+                        {
+                            **{
+                                key: value
+                                for key, value in entry.items()
+                                if key not in {"ranges", "field_counts", "not_inlined_fields"}
+                            },
+                            "not_inlined_fields": tuple(sorted(entry["not_inlined_fields"])),
+                            "recovery": {
+                                "operation": "read_pages",
+                                "trial_id": trial_id,
+                                "windows": tuple(
+                                    {
+                                        "source_id": source_id,
+                                        "page": page,
+                                        "start_line": 1
+                                        if entry["not_inlined_fields"]
+                                        else bounds[0],
+                                        "end_line": page_line_counts[page]
+                                        if entry["not_inlined_fields"]
+                                        else bounds[1],
+                                    }
+                                    for page, bounds in list(entry["ranges"].items())[
+                                        start : start + 20
+                                    ]
+                                ),
+                            },
+                            "source_id": source_id,
+                            "batch_index": start // 20,
+                            "batch_count": (len(entry["ranges"]) + 19) // 20,
+                            "window_count": len(entry["ranges"]),
+                        }
+                        for entry in outcomes.values()
+                        for start in range(0, len(entry["ranges"]), 20)
+                    ),
                     "recovery": {
                         "operation": "read_pages",
                         "trial_id": trial_id,
@@ -717,6 +810,7 @@ def _comparison_cards(
             "approved_outcome",
             "randomized",
             "observed",
+            "unavailable",
             "follow_up_availability",
             "censoring",
             "missingness_reason",
@@ -856,6 +950,14 @@ def _comparison_cards(
                 "registry_window_count": (registry_navigation or {})
                 .get(source_id, {})
                 .get("window_count", 0),
+                "registry_outcome_count": len(
+                    {
+                        item["path"]
+                        for item in (registry_navigation or {})
+                        .get(source_id, {})
+                        .get("outcomes", ())
+                    }
+                ),
                 "passages": passages,
             }
         )
@@ -932,8 +1034,8 @@ def _comparison_cards(
             missing_data = reconcile_missing_data(preview_missing_data)
             answer = {"missing_data": missing_data}
         if isinstance(answer, dict) and isinstance(answer.get("missing_data"), dict):
-            missing_data = answer["missing_data"]
-            for field in ("randomized", "observed"):
+            missing_data = missing_data_context(answer["missing_data"])
+            for field in ("randomized", "observed", "unavailable"):
                 rows = [
                     row
                     for row in missing_data.get("rows", [])
@@ -941,7 +1043,7 @@ def _comparison_cards(
                 ]
                 if not rows:
                     continue
-                field_conflicted = any(
+                field_conflicted = any(row.get("quantity_conflict") for row in rows) or any(
                     len(
                         {
                             report.get(field)
@@ -1027,6 +1129,8 @@ def _comparison_cards(
     participant_flow: list[dict[str, Any]] = []
     flow_data: Any = participant_flow_data if participant_flow_data is not None else missing_data
     if domain_id in {"domain:deviations", "domain:missing"} and isinstance(flow_data, dict):
+        if domain_id == "domain:missing":
+            flow_data = missing_data_context(flow_data)
         rows = [row for row in flow_data.get("rows", []) if isinstance(row, dict)]
         conflict_fields: dict[tuple[Any, ...], set[str]] = {}
         for conflict in flow_data.get("conflicts", []):
@@ -1060,6 +1164,7 @@ def _comparison_cards(
                     "treated",
                     "completed",
                     "observed",
+                    "unavailable",
                     "analyzed",
                     "imputed",
                     "excluded",
@@ -1074,6 +1179,7 @@ def _comparison_cards(
             ("treated", "treated"),
             ("completed", "completed"),
             ("observed", "observed"),
+            ("unavailable", "unavailable"),
             ("analyzed", "analyzed"),
             ("imputed", "imputed"),
             ("excluded", "excluded"),
@@ -1130,12 +1236,16 @@ def _comparison_cards(
                 if isinstance(evidence, dict) and evidence.get("kind") == "figure"
             ]
             for kind, field in flow_fields:
-                if kind == "completed" and field not in row:
+                if kind in {"completed", "unavailable"} and field not in row:
                     continue
                 value = row.get(field)
                 status = (
                     "conflicted"
-                    if field in conflict_fields.get(row_scope, set())
+                    if (
+                        row.get("quantity_conflict")
+                        and field in {"randomized", "observed", "unavailable", "imputed"}
+                    )
+                    or field in conflict_fields.get(row_scope, set())
                     or (kind == "event" and "event_count" in conflict_fields.get(row_scope, set()))
                     else "supported"
                     if isinstance(value, int)
@@ -1696,7 +1806,9 @@ def _evidence_sufficiency(
     return summary
 
 
-def _host_asserted_sufficiency(summary: dict[str, Any] | None) -> dict[str, Any] | None:
+def _host_asserted_sufficiency(
+    summary: dict[str, Any] | None, answers: list[dict[str, Any]] | None = None
+) -> dict[str, Any] | None:
     """Annotate a model-facing receipt without changing canonical history.
 
     Historical bundles and the standalone verifier intentionally retain the
@@ -1710,11 +1822,15 @@ def _host_asserted_sufficiency(summary: dict[str, Any] | None) -> dict[str, Any]
     claims = summary.get("claims")
     if not isinstance(claims, (list, tuple)):
         return summary
+    declared_unknowns = {
+        answer.get("question_id"): tuple(answer.get("unknowns", ())) for answer in answers or []
+    }
     return {
         **summary,
         "claims": tuple(
             {
                 **claim,
+                "declared_unknowns": declared_unknowns.get(claim.get("question_id"), ()),
                 "support_attribution": (
                     "host_asserted"
                     if isinstance(claim, dict)
@@ -1947,15 +2063,46 @@ def resolve_domain_sources(
 
     resolve = source_reference_resolver(workspace, trial_id)
 
+    def citations(
+        citation: DomainEvidenceCitation | DomainAccountStepCitation | DomainSourceReference,
+    ) -> tuple[DomainEvidenceCitation, ...]:
+        if isinstance(citation, DomainEvidenceCitation):
+            return (citation.model_copy(update={"evidence": resolve(citation.evidence)}),)
+        if not isinstance(citation, DomainAccountStepCitation):
+            return (DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support"),)
+        root = _root(workspace)
+        working = working_checkpoint_status(root, _state(root), trial_id)
+        step = next(
+            (
+                item
+                for item in (working.get("checkpoint") or {}).get("result_account") or ()
+                if item["identity"] == citation.step_identity
+            ),
+            None,
+        )
+        if step is None or working.get("reason") in {"result_changed", "source_changed"}:
+            raise ValueError("Use an unchanged step identity from the current Result account")
+        locations = step["observation"]["sources"]
+        if any(item["start_line"] <= 0 for item in locations):
+            raise ValueError(
+                "Visual account steps need original visual Evidence with "
+                "working_observation.step_identity; a page locator cannot determine its region"
+            )
+        return tuple(
+            DomainEvidenceCitation(
+                evidence=resolve(WorkingSourceRange.model_validate(location)),
+                role=citation.role,
+                working_observation=WorkingResultStepReference(
+                    step_identity=citation.step_identity, transfer=citation.transfer
+                ),
+            )
+            for location in locations
+        )
+
     return [
         answer.model_copy(
             update={
-                "bases": tuple(
-                    citation.model_copy(update={"evidence": resolve(citation.evidence)})
-                    if isinstance(citation, DomainEvidenceCitation)
-                    else DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support")
-                    for citation in answer.bases
-                ),
+                "bases": tuple(item for citation in answer.bases for item in citations(citation)),
                 "counterevidence": tuple(
                     DomainCounterpoint(
                         evidence=tuple(resolve(ref) for ref in point.evidence),
@@ -2794,6 +2941,12 @@ def save_domain_judgment(
                         "changed. Restart get_domain_context before submitting this assessment."
                     ),
                 },
+                continuation={
+                    "operation": "get_domain_context",
+                    "authority": "host",
+                    "trial_id": parsed.trial_id,
+                    "domain_id": parsed.domain_id,
+                },
             )
     if delivery is not None and not bool(delivery.get("complete")):
         next_cursor = delivery.get("next_cursor")
@@ -2974,6 +3127,7 @@ def get_domain_context(
     domain_id: str | None = None,
     preview_missing_data: list[dict[str, Any]] | None = None,
     include_candidates: bool = False,
+    include_delivery_history: bool = False,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -3122,6 +3276,7 @@ def get_domain_context(
                             "treated",
                             "completed",
                             "observed",
+                            "unavailable",
                             "analyzed",
                             "imputed",
                             "excluded",
@@ -3677,7 +3832,12 @@ def get_domain_context(
         else None
     )
     participant_flow_rows = canonical_preview if canonical_preview is not None else flow_rows
-    context = {
+    registry_navigation = (
+        _registry_navigation(root, trial_id, trial_sources)
+        if domain_id in {"domain:missing", "domain:selection"}
+        else {}
+    )
+    context: dict[str, Any] = {
         "outcome": "success",
         "trial_id": trial_id,
         "domain_id": domain_id,
@@ -3711,7 +3871,8 @@ def get_domain_context(
         ),
         "working_checkpoint": _domain_working_context(premise_status),
         "evidence_sufficiency": _host_asserted_sufficiency(
-            existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
+            existing.get("evidence_sufficiency") if isinstance(existing, dict) else None,
+            existing.get("answers") if isinstance(existing, dict) else None,
         ),
         "current_checkpoint": checkpoint_identity,
         "decision": existing.get("decision") if isinstance(existing, dict) else None,
@@ -3760,15 +3921,16 @@ def get_domain_context(
             checkpoint_answers,
             trial_sources,
             canonical_preview,
-            _registry_navigation(root, trial_id, trial_sources)
-            if domain_id == "domain:selection"
-            else None,
+            registry_navigation,
             trial_registry if isinstance(trial_registry, dict) else None,
             participant_flow_data=(
                 reconcile_missing_data(participant_flow_rows) if participant_flow_rows else None
             ),
             candidate_questions=candidate_questions,
         ),
+        "registry_outcomes": [
+            outcome for source in registry_navigation.values() for outcome in source["outcomes"]
+        ],
         "coverage": _source_coverage(
             trial_id,
             trial_sources,
@@ -3795,6 +3957,34 @@ def get_domain_context(
         "primary_report": [],
         "reading_recovery": _main_report_recovery(root, state, trial_id, include_budget=True),
         "continuation": continuation,
+    }
+    # Cumulative read-delivery intervals are administrative history, not source
+    # Evidence or proof of comprehension. Keep the summary in the decision view;
+    # full intervals use the same durable context paging and recovery route.
+    investigation = context.get("investigation")
+    if isinstance(investigation, dict):
+        delivery_coverage = investigation.get("coverage")
+        if isinstance(delivery_coverage, dict):
+            delivery_coverage["ranges"] = ()
+            delivery_coverage["ranges_truncated"] = bool(delivery_coverage.get("range_count", 0))
+    context["delivery_history"] = (
+        list(
+            _delivery_projection(
+                root, state, trial_id, _source_scope(state, trial_id), range_limit=None
+            )["ranges"]
+        )
+        if include_delivery_history
+        else []
+    )
+    context["delivery_history_recovery"] = {
+        "operation": "get_domain_context",
+        "arguments": {
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "include_delivery_history": True,
+        },
+        "detail": "Recover all cumulative delivered intervals through context pages; "
+        "delivery is not scientific support or comprehension.",
     }
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(

@@ -6,6 +6,19 @@ sections 8.1–8.3 in `get_domain_context`. They supply the scientific interpret
 including review-defined eligible alternatives; the instructions below guide
 source acquisition, navigation and recording.
 
+The selected Result identifies the estimate being assessed; it does not by itself
+define the review's eligible measurement or analysis family. Establish that
+boundary from the researcher's stated review restrictions, separately from the
+trial's intended measurements and analyses. Honor genuine restrictions on scales,
+time points or analyses; other reported outcomes are not automatically eligible
+alternatives. Do not infer such a restriction merely from the selected estimate's
+scale, threshold, time point or analysis. Review eligibility also does not establish
+trial prespecification or correspondence with all intended eligible results.
+No visible competing result is not evidence that only one eligible measurement
+or analysis was possible, or that all intended eligible results were reported.
+Apply the official Box 11 conditions to the source evidence and contextual
+probabilities; an unavailable plan alone does not determine an answer.
+
 ## Establish the analysis plan
 
 A missing protocol/SAP in this captured dossier does not show publication
@@ -40,10 +53,18 @@ coordinates, and recover omitted text before using it as plan Evidence.
 provenance; they do not establish when a plan was finalized or which Trial
 comparison it covered.
 
-For a registry group with `registry_recovery`, call `read_pages` with that
-object's `trial_id` and `windows`. Inspect the captured fields identified by
-`registry_field_paths`. These are navigation paths into the immutable projection,
-not a historical plan or an applicability judgment. `windows` contains at most
+For a registry group, inspect `registry_field_paths`. Use the approved Result's
+outcome, arm and time-point wording with those paths to locate applicable
+entries through `search_sources`. `registry_recovery` supplies exact `read_pages`
+windows when needed; a results module may contain many unrelated analyses, so
+these ranges are available context, not a requirement to read every result.
+These are navigation paths into the immutable projection,
+not a historical plan or an applicability judgment. Protocol outcome/design
+fields describe the captured current record; results-section outcome/analysis
+fields describe reported results. Status dates and version descriptors do not
+date individual endpoint content or establish historical plan finalization.
+Read population, group and denominator qualifiers with any reported analysis.
+`windows` contains at most
 20 windows; `registry_window_count` reports the total. If more remain, navigate
 the captured Source using its page count and `search_sources` with the field
 paths. Refreshing context does not advance these registry windows. For omitted selected
@@ -59,6 +80,36 @@ registry's first-posted date does not date endpoint content added in a later
 update. Current registry content does not establish unseen historical intent.
 A data cutoff or database lock does not by itself establish when investigators
 could access unblinded outcomes.
+
+The public registry API supplies the current record, not dated historical
+versions. API refresh timestamps and `versionHolder` ingestion dates are not
+historical version IDs. For linked documents, `date` is the latest document
+update/approval date and `uploadDate` is upload to PRS, not first public posting.
+Neither date alone establishes pre-unblinding finalization.
+
+When historical content could resolve a material premise and the host has browser
+capture capability, use the official Record History view and select the dated
+version. Its **Download current study** control exports the current record, not
+the selected historical view. Preserve the captured version as a separate
+immutable artifact, recording the NCT ID, displayed version ID, separately
+labelled submission/QC/posting dates and qualifiers, exact URL, retrieval time,
+capture format, artifact hash and coverage limitations. Do not replace the old
+registry Source or describe rendered content as API JSON. Keep the version's
+displayed date distinct from its labelled date fields and the outer current-study
+header; preserve each field's literal label and scope. Existing intake can
+capture supplied UTF-8 text or a rendered-page PDF plus readable provenance as
+Other Sources in a fresh prospective dossier. Explicitly declare their `other`
+roles in `sources.toml`; an undeclared PDF may be classified as a main article.
+Text has synthetic pagination and
+PDF capture pages are not original registry pagination. HTML and standalone
+screenshots are not supported intake formats. Read the new Sources normally.
+This is an optional host capability, not a server history-fetch operation or an
+open-Trial companion import. If it is unavailable, continue with captured Sources
+and explicitly bound the historical-content uncertainty; do not invent a fetch
+or infer that historical intentions were absent. Early outcome wording may date
+a measurement intention without specifying the selected analysis. Plan
+correspondence still requires applicable content and separately supported
+investigator access/unblinding chronology.
 
 Compare source-located plan content with the reported analysis. Retain
 applicability, finalization, amendments and access to unblinded outcome data as

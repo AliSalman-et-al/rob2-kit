@@ -1,0 +1,42 @@
+{
+  "case": "bendix-1996",
+  "question_id": "sq:deviations:appropriate-analysis",
+  "source_trace": "preserved authoritative Code benchmark diagnostic, assessment-events.jsonl and terminal state",
+  "submitted": {
+    "answer": "no",
+    "justification": "The 45-person treatment analysis is restricted to completers returning at follow-up; two nonstarters and seven dropouts are expressly excluded, including two contactable patients. This is a naive completion-based restriction, not simply an analysis omitting missing outcomes. It is inappropriate for the all-randomized assignment effect.",
+    "unknowns": [
+      "Which of the contacted excluded patients had ascertained workability is unknown; contact alone does not prove outcome observation."
+    ],
+    "limitations": []
+  },
+  "canonical": {
+    "answer": "no",
+    "justification": "The 45-person treatment analysis is restricted to completers returning at follow-up; two nonstarters and seven dropouts are expressly excluded, including two contactable patients. This is a naive completion-based restriction, not simply an analysis omitting missing outcomes. It is inappropriate for the all-randomized assignment effect.",
+    "unknowns": [
+      "Which of the contacted excluded patients had ascertained workability is unknown; contact alone does not prove outcome observation."
+    ]
+  },
+  "save_receipt": {
+    "question_id": "sq:deviations:appropriate-analysis",
+    "status": "supported",
+    "evidence": [
+      "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660",
+      "sha256:06b9041f390846f0dffd306b2c0f522a562fd8f1cdc51402a9000789da0ba048",
+      "sha256:c776ca0a5e7a9f7472e5cd7cddf60b2d373c706af01c64ebd2ba816d8ed75949"
+    ],
+    "search_receipts": [],
+    "unresolved_premises": [],
+    "support_attribution": "host_asserted"
+  },
+  "delivered_review_occurrences": [
+    {
+      "path": "/data/domain_findings/1/answers/0",
+      "unknowns": [
+        "Which of the contacted excluded patients had ascertained workability is unknown; contact alone does not prove outcome observation."
+      ],
+      "warrant": "The 45-person treatment analysis is restricted to completers returning at follow-up; two nonstarters and seven dropouts are expressly excluded, including two contactable patients. This is a naive completion-based restriction, not simply an analysis omitting missing outcomes. It is inappropriate for the all-randomized assignment effect."
+    }
+  ],
+  "finding": "Unknowns were typed in the submission, retained in canonical state and delivered beside the warrant in full review. Compact sufficiency receipt omits them because only formal limitation bases populate unresolved_premises. No storage loss; scientific overstatement already present in submitted warrant. Receipt repair is transparency, not established accuracy improvement."
+}

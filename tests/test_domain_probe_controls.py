@@ -148,7 +148,10 @@ def test_probe_uses_direct_mcp_without_changing_model_or_access(controls, tmp_pa
     assert 'features.code_mode={enabled=true,direct_only_tool_namespaces=["mcp__rob2"]}' in command
 
 
-def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> None:
+@pytest.mark.parametrize("max_response_bytes", [None, 32768])
+def test_recorded_context_replays_losslessly_with_bounded_pages(
+    controls, max_response_bytes: int | None
+) -> None:
     replay = importlib.import_module("replay_domain_probe_delivery").replay
 
     path = (
@@ -156,9 +159,50 @@ def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> Non
         / "tests/fixtures/historical-evaluation/2026-10-02-deliver-d3-completion-17bad3d"
         / "events.jsonl"
     )
-    result = replay(path)
+    result = replay(path, max_response_bytes=max_response_bytes)
     assert result["scientific_data_recovered_exactly"]
-    assert len(result["default_pages"]) > 1
+    assert result["default_pages"]
+    if max_response_bytes is not None:
+        assert len(result["default_pages"]) > 1
+        assert all(page["bytes"] <= max_response_bytes for page in result["default_pages"])
+    assert result["all_recovery_cursors_preserved"]
+
+
+@pytest.mark.parametrize("range_count", [0, 140])
+def test_replay_preserves_explicit_compact_and_full_delivery_history(
+    controls, tmp_path: Path, range_count: int
+) -> None:
+    replay = importlib.import_module("replay_domain_probe_delivery").replay
+    fixture = (
+        Path(__file__).parents[1]
+        / "tests/fixtures/historical-evaluation/2026-10-02-deliver-d3-completion-17bad3d"
+        / "events.jsonl"
+    )
+    rows = [json.loads(line) for line in fixture.read_text(encoding="utf-8").splitlines()]
+    item = next(
+        row["item"]
+        for row in rows
+        if row.get("type") == "item.completed"
+        and row.get("item", {}).get("tool") == "get_domain_context"
+    )
+    data = item["result"]["structured_content"]["data"]
+    data["delivery_history"] = [
+        {"source_id": "source_" + "a" * 64, "page": 1, "start_line": n, "end_line": n}
+        for n in range(1, range_count * 2, 2)
+    ]
+    data["delivery_history_recovery"] = {
+        "operation": "get_domain_context",
+        "arguments": {
+            "trial_id": data["trial_id"],
+            "domain_id": data["domain_id"],
+            "include_delivery_history": True,
+        },
+    }
+    events = tmp_path / "events.jsonl"
+    events.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+    result = replay(events)
+    assert result["scientific_data_recovered_exactly"]
+    assert result["delivery_history_ranges_recovered"] == range_count
     assert result["all_recovery_cursors_preserved"]
 
 

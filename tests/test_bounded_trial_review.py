@@ -12,7 +12,7 @@ from rob2_kit.interfaces.mcp.contracts import normalize
 _DOMAIN = "domain:randomization"
 _QUESTION = "sq:randomization:sequence"
 _SELECTOR = {"domain_id": _DOMAIN, "question_id": _QUESTION}
-_LIMIT = 24_000
+_LIMIT = 65_536
 
 
 def _identity(value: str) -> str:
@@ -117,7 +117,7 @@ def test_small_review_keeps_legacy_shape_and_selected_bound_includes_typed_defau
     small = _review()
     assert _project(small, root) == small
     assert "review_page" not in small["data"]
-    for length in range(21_500, 23_901, 100):
+    for length in range(62_500, 65_101, 100):
         receipt = _review(justification="x" * length)
         selected = _project(receipt, root, selector=_SELECTOR, persist=True)
         assert server._review_transport_bytes(selected) <= _LIMIT
@@ -137,8 +137,8 @@ def test_small_review_keeps_legacy_shape_and_selected_bound_includes_typed_defau
 def test_oversized_unicode_reason_and_evidence_are_explicit_and_recoverable(
     tmp_path: Path, kind: str
 ) -> None:
-    text = 'é🧪"\\\n' * 5_000
-    receipt = _review(reason=text) if kind == "terminal_reason" else _review(evidence_count=360)
+    text = 'é🧪"\\\n' * 10_000
+    receipt = _review(reason=text) if kind == "terminal_reason" else _review(evidence_count=960)
     root = server._root(tmp_path)
     summary = _project(receipt, root, persist=True)
     page = summary["data"]["review_page"]
@@ -152,7 +152,7 @@ def test_oversized_unicode_reason_and_evidence_are_explicit_and_recoverable(
     else:
         answer = summary["data"]["domain_findings"][0]["answers"][0]
         detail = answer["detail_projection"]
-        assert detail["counts"]["evidence"] == 360
+        assert detail["counts"]["evidence"] == 960
         assert "evidence" in detail["deferred_fields"]
         assert detail["counts"]["unknowns"] == 0
         assert "unknowns" not in detail["deferred_fields"]
@@ -250,7 +250,7 @@ def test_compact_review_colocates_authored_claims_without_resolving_them(later_w
     ("case", "domain_id"), [("baby", "domain:measurement"), ("exscel", "domain:selection")]
 )
 def test_selected_summary_keeps_full_saved_claims_and_recovers_exact_sources(
-    tmp_path: Path, case: str, domain_id: str
+    tmp_path: Path, case: str, domain_id: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     artifact = (
         Path(__file__).parents[1]
@@ -263,7 +263,10 @@ def test_selected_summary_keeps_full_saved_claims_and_recovers_exact_sources(
     _, expected = server._review_target(receipt, selector)
     assert expected is not None
     root = server._root(tmp_path)
-    first = _project(receipt, root, selector=selector, persist=True)
+    # Existing 24 KB summaries and cursors remain recoverable at the new window.
+    with monkeypatch.context() as historical:
+        historical.setattr(server, "_REVIEW_TRIAL_RESPONSE_BYTES", 24_000)
+        first = _project(receipt, root, selector=selector, persist=True)
     page = first["data"]["review_page"]
     assert page["mode"] == "summary"
     assert page["complete"] is False
@@ -319,11 +322,8 @@ def test_selected_summary_does_not_defer_counterfacts_or_clip_oversized_saved_un
     answer = receipt["data"]["domain_findings"][0]["answers"][0]
     answer.update(
         unknowns=["Actual execution is unknown."],
-        facts=[
-            {"text": "long supporting quote " * 150, "role": "support"},
-            {"text": "contrary observation " * 100, "role": "counterevidence"},
-        ]
-        * 8,
+        facts=[{"text": "long supporting quote " * 150, "role": "support"}] * 24
+        + [{"text": "contrary observation " * 100, "role": "counterevidence"}] * 8,
         counterevidence=[
             {"basis_index": 0, "implication": "Contrary observations limit this claim."}
         ],
@@ -346,3 +346,34 @@ def test_selected_summary_does_not_defer_counterfacts_or_clip_oversized_saved_un
         json.loads(_collect(huge, root, first=fallback, selector=_SELECTOR))
         == (huge["data"]["domain_findings"][0]["answers"][0])
     )
+
+
+def test_larger_review_window_delivers_fitting_full_science_without_an_overview(
+    tmp_path: Path,
+) -> None:
+    receipt = _review(justification="Qualified source-bound interpretation. " * 1_100)
+    answer = receipt["data"]["domain_findings"][0]["answers"][0]
+    answer.update(
+        unknowns=["The procedure's implementation is not reported."],
+        counterevidence=[{"basis_index": 0, "implication": "The plan is not proof of conduct."}],
+    )
+    receipt = server._validate_response("review_trial", receipt)
+    assert 24_000 < server._review_transport_bytes(receipt) < 65_536
+    actual = _project(receipt, server._root(tmp_path))
+    assert actual == receipt
+    assert "review_page" not in actual["data"]
+
+
+def test_review_window_growth_preserves_an_issued_unicode_cursor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    receipt = _review(justification='é🧪"\\\n' * 16_000)
+    root = server._root(tmp_path)
+    with monkeypatch.context() as historical:
+        historical.setattr(server, "_REVIEW_TRIAL_RESPONSE_BYTES", 24_000)
+        first = _project(receipt, root, selector=_SELECTOR, persist=True)
+    assert first["data"]["review_page"]["mode"] == "fragment"
+    assert server._review_transport_bytes(first) <= 24_000
+    restored = json.loads(_collect(receipt, root, first=first, selector=_SELECTOR))
+    assert restored == receipt["data"]["domain_findings"][0]["answers"][0]

@@ -294,6 +294,7 @@ class _InputSchemaDelivery(Middleware):
                         if step
                         not in {
                             "DomainEvidenceCitation",
+                            "DomainAccountStepCitation",
                             "WorkingSourceRange",
                             "VisualEvidenceReference",
                             "constrained-str",
@@ -373,19 +374,23 @@ _COMPANION_ADMISSION = ToolAnnotations(
 # projection; this is only a transport window.
 _READ_PAGES_RESPONSE_BYTES = 24_000
 _SEARCH_BATCH_RESPONSE_BYTES = 32_000
-_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 32_768
+_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 65_536
 _DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
 _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
 _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES = 64
 _DOMAIN_CONTEXT_PAGE_SECTIONS = (
+    "delivery_history",
     "primary_report",
     "questions",
     "official_guidance",
     "evidence",
     "comparison_cards",
+    "registry_outcomes",
 )
-_REVIEW_TRIAL_RESPONSE_BYTES = 24_000
+_REVIEW_TRIAL_RESPONSE_BYTES = 65_536
+# Keep the overview small: deferred details are recovered again in full.
+_REVIEW_TRIAL_SUMMARY_BYTES = 24_000
 _REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES = 256
 _REVIEW_PREVIEW_TEXT_CHARS = 220
 _REVIEW_PREVIEW_ARRAYS = (
@@ -421,10 +426,14 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "result",
             "primary_report",
             "investigation",
+            "delivery_history_recovery",
+            "delivery_history",
             "questions",
             "evidence",
             "comparison_cards",
+            "registry_outcomes",
             "answers",
+            "evidence_sufficiency",
             "guidance",
             "traps",
             "completion_rule",
@@ -1122,6 +1131,45 @@ def _review_fragment_response(
     return best
 
 
+def _share_review_fact_text(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Share only exact repeated source text; preserve all answer-specific fields."""
+    projected = json.loads(json.dumps(snapshot))
+    data = projected["data"]
+    if data.get("evidence_bodies"):
+        return snapshot
+    bodies: dict[str, dict[str, Any]] = {}
+    occurrences: dict[str, list[dict[str, Any]]] = {}
+    for domain in data.get("domain_findings", []):
+        for answer in domain.get("answers", []):
+            for fact in answer.get("facts", []):
+                reference = fact.get("evidence")
+                if not isinstance(reference, dict) or not isinstance(fact.get("text"), str):
+                    continue
+                identity = reference["identity"]
+                body = {"evidence": reference, "text": fact["text"]}
+                if identity in bodies and bodies[identity] != body:
+                    return snapshot
+                bodies[identity] = body
+                if fact.get("role") != "counterevidence":
+                    occurrences.setdefault(identity, []).append(fact)
+    shared = {
+        identity: bodies[identity] for identity, facts in occurrences.items() if len(facts) > 1
+    }
+    if not shared:
+        return snapshot
+    for identity in shared:
+        for fact in occurrences[identity]:
+            fact["source_body"] = identity
+            fact.pop("text")
+    data["evidence_bodies"] = shared
+    projected = _validate_response("review_trial", projected)
+    return (
+        projected
+        if _review_transport_bytes(projected) < _review_transport_bytes(snapshot)
+        else snapshot
+    )
+
+
 def _project_review_trial(
     normalized: dict[str, Any],
     *,
@@ -1133,6 +1181,13 @@ def _project_review_trial(
     data = normalized.get("data")
     if not isinstance(data, dict) or not isinstance(data.get("review"), dict):
         return normalized
+    recovery_snapshot = normalized
+    if selector is None and cursor is None:
+        recovery_snapshot = _share_review_fact_text(normalized)
+        # Keep existing summaries unchanged when the full projection still needs paging.
+        if _review_transport_bytes(recovery_snapshot) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+            normalized = recovery_snapshot
+    data = normalized["data"]
     review = data["review"]
     trial_id = review.get("trial_id")
     review_identity = review.get("identity")
@@ -1169,7 +1224,7 @@ def _project_review_trial(
         return _validate_response("review_trial", response)
 
     selected = _select_review_receipt(normalized, selector)
-    digest = _review_view_digest(normalized, selector)
+    digest = _review_view_digest(recovery_snapshot, selector)
     if selector is None and _review_transport_bytes(normalized) <= _REVIEW_TRIAL_RESPONSE_BYTES:
         return normalized
     target_kind, _target = _review_target(normalized, selector)
@@ -1220,14 +1275,16 @@ def _project_review_trial(
                     preview_chars=preview_chars,
                 ),
             )
-            if _review_transport_bytes(summary) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+            if _review_transport_bytes(summary) <= _REVIEW_TRIAL_SUMMARY_BYTES:
                 break
         else:
             raise ValueError("review_summary_unrecoverable: answer headers exceed the byte limit")
-        if _review_transport_bytes(summary) > _REVIEW_TRIAL_RESPONSE_BYTES:
+        if _review_transport_bytes(summary) > _REVIEW_TRIAL_SUMMARY_BYTES:
             raise ValueError("review_summary_unrecoverable: typed summary exceeds the byte limit")
         if persist:
-            _record_review_view(root, view_id, trial_id, review_identity, digest, None, normalized)
+            _record_review_view(
+                root, view_id, trial_id, review_identity, digest, None, recovery_snapshot
+            )
         return summary
 
     summary = _validate_response(
@@ -1245,7 +1302,7 @@ def _project_review_trial(
             complete_claims=True,
         ),
     )
-    if _review_transport_bytes(summary) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+    if _review_transport_bytes(summary) <= _REVIEW_TRIAL_SUMMARY_BYTES:
         if persist:
             _record_review_view(
                 root, view_id, trial_id, review_identity, digest, selector, normalized
@@ -1596,11 +1653,10 @@ def _paginate_domain_context_transport(
         remaining = items[initial_offset:]
         if remaining:
             page_sections.append((section, remaining, initial_offset))
-    # An explicitly larger budget should not force section-by-section calls
-    # when the unchanged full scientific view fits, including page metadata.
-    # Keep default pagination and all oversized-item safeguards unchanged.
+    # Keep the existing partition of 32 KiB and smaller cursors. Larger budgets,
+    # including the automatic budget, need no section round trips when all fits.
     if (
-        page_size > _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES
+        page_size > 32_768
         and _domain_context_transport_bytes({**value, "data": header_probe_for(data)})
         <= working_budget
     ):
@@ -1762,9 +1818,9 @@ RequestedOutcome = Annotated[
     Field(
         min_length=1,
         description=(
-            "Outcome concept to assess across Trials; preserve only the researcher's outcome "
-            "wording. Omit Trial names, population, comparison, effect estimate, follow-up, and "
-            "other Result-specific scope; those belong in the Proposal."
+            "Preserve the researcher's requested outcome wording, including any explicit "
+            "definition, population, comparison, statistic, follow-up or reported-value anchor. "
+            "These are requested scope, not source-verified facts. Trial labels are separate."
         ),
     ),
     AfterValidator(_nonblank),
@@ -2580,8 +2636,15 @@ def current_batch() -> str:
     name="prepare_batch",
     title="Prepare batch",
     description=(
-        "Use requested_outcome only for the outcome concept, excluding population, comparison, "
-        "effect estimate, follow-up, and other Result facets. If the user names Trials, pass their "
+        "This pack supports individually randomized parallel trials and the effect of assignment. "
+        "Establish the requested effect of interest before Proposal Review; an explicit adherence "
+        "request requires the corresponding official Domain 2 variant and must not silently be "
+        "reinterpreted as assignment. A reported per-protocol estimate does not itself change "
+        "the requested effect of interest. Preserve supplied outcome scope in requested_outcome; "
+        "do not strip an explicit "
+        "definition, population, comparison, statistic, follow-up or reported-value anchor. "
+        "Keep source-reported facts separate when constructing the Proposal. "
+        "If the user names Trials, pass their "
         "exact input directory labels in trial_labels. Omit trial_labels to capture all immediate "
         "valid Trial directories. The server resolves directories, so no listing is required. "
         "Inspect returned conditions for supplied files that were not included. DOCX captures "
@@ -2694,6 +2757,8 @@ def get_status(
         "step identities with get_status. Facts, counterevidence and unknowns remain "
         "host assertions; "
         "step edits flag depended-on answers for reconsideration without changing labels. "
+        "When result_account changes, reload get_domain_context before submitting the Domain, "
+        "even if state_revision is unchanged. "
         "Account observation/counterevidence sources use the same Evidence handles, text ranges "
         "or delivered visual references as Domain bases; returned handles avoid locator copying. "
         "result_account is directly an array. Preserve or explicitly reconsider unknowns and "
@@ -3874,7 +3939,7 @@ def select_text_evidence(
     description=(
         "Render one PDF page. Returns metadata and pixels as ImageContent by default; "
         "pass inline=false for metadata/cache-only use. After inspecting pixels, a Domain "
-        "basis may use {delivery_receipt, region, transcription, uncertainty?} directly in "
+        "basis may use {delivery_receipt, transcription, region?, uncertainty?} directly in "
         "save_domain_judgment, or select_visual_evidence can return a reusable handle. "
         "Only the receipt issued alongside pixels supports visual selection."
     ),
@@ -3919,7 +3984,7 @@ def render_page(
         "self-contained account containing every applicable title, axis, series, label, value, "
         "unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt "
         "returned alongside an ImageContent block by render_page. This tool accepts only "
-        "trial_id, source_id, delivery_receipt, transcription, region, and optional uncertainty; "
+        "trial_id, source_id, delivery_receipt, transcription, and optional region/uncertainty; "
         "attach the returned "
         "Evidence later through an answer basis."
     ),
@@ -3953,8 +4018,14 @@ def select_visual_evidence(
     ],
     region: tuple[
         NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
-    ] = Field(
-        description=("Normalized x0,y0,x1,y1 bounds in [0,1]; use [0,0,1,1] for the whole page."),
+    ]
+    | None = Field(
+        default=None,
+        description=(
+            "Optional normalized x0,y0,x1,y1 bounds in the delivered image: "
+            "top-left origin, x right, y down. Omit for the exact authenticated "
+            "delivered view, including PDF CropBox and rotation."
+        ),
     ),
     uncertainty: Annotated[
         VisualTranscription | None,
@@ -3976,7 +4047,7 @@ def select_visual_evidence(
             _resolve_source_handle(_workspace(), trial_id, source_id),
             delivery_receipt,
             transcription,
-            list(region),
+            list(region) if region is not None else None,
             uncertainty,
         ),
     )
@@ -3996,8 +4067,11 @@ def select_visual_evidence(
         "window and distinguish eligibility from analysis exclusions or missing observations. "
         "Enrollment eligibility alone does not narrow an all-randomized target in this Trial; "
         "external generalizability is separate. "
-        "Candidate estimate/precision are source strings. Group values require group_id, value "
-        "and unit; statistic is optional and unresolved when omitted. Timing value/unit must "
+        "Candidate estimate/precision are source strings. Group values require group_id and "
+        "value; statistic and unit may be null when unreported or unresolved. Null does not "
+        "assert dimensionless or make scientific meaning unclear by itself. Preserve ancillary "
+        "comparison statistics in reported_statistics with either reported form; do not invent "
+        "an estimate to carry a p-value. Timing value/unit must "
         "be supplied together. Exact requires all eight clarity facets explicitly specified; "
         "do not infer clarity. Design-specific evidence remains explicit. Narrative/figure "
         "handles go in source_passages; candidate.evidence is only for advanced typed proofs. "
@@ -4151,8 +4225,7 @@ class ProposalApprovalDecision(StrictModel):
     name="request_proposal_approval",
     title="Request Proposal approval",
     description=(
-        "Present the exact immutable Proposal Review and obtain the researcher’s explicit "
-        "approval in conversation. Then call "
+        "Present the exact immutable Proposal Review. Call "
         "request_proposal_approval with {} to "
         "record the approval through elicitation. Call get_status after the approval succeeds. "
         "This tool has no approval arguments: only a directly accepted elicitation with "
@@ -4407,6 +4480,14 @@ def get_domain_context(
             )
         ),
     ] = False,
+    include_delivery_history: Annotated[
+        StrictBool,
+        Field(
+            description="Recover all cumulative read-delivery intervals through context pages. "
+            "Default summaries omit this administrative history; source Evidence, "
+            "guidance and scientific uncertainty remain unchanged."
+        ),
+    ] = False,
     cursor: Annotated[
         StrictStr | None,
         Field(
@@ -4428,7 +4509,7 @@ def get_domain_context(
             le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
             description=(
                 "Maximum serialized response size in bytes. Omit for automatic pagination. "
-                "Default: 32768. Valid range: 4096–131072. Example: 65536. Set this only "
+                "Default: 65536. Valid range: 4096–131072. Example: 65536. Set this only "
                 "when an oversized-page condition returns the required byte count."
             ),
             json_schema_extra={"examples": [65_536]},
@@ -4505,6 +4586,7 @@ def get_domain_context(
             if missing_data is not None
             else None,
             include_candidates,
+            include_delivery_history,
         ),
         domain_cursor=cursor,
         domain_page_size=max_response_bytes,
@@ -4524,7 +4606,7 @@ def get_domain_context(
         "Counterevidence objects give nonempty evidence handle lists and explain the cited "
         "Evidence's joint implication. "
         "For opt-in lean drafting, bases may contain selected Evidence handle strings or exact "
-        "read_pages source ranges, or {delivery_receipt, region, transcription, uncertainty?} "
+        "read_pages source ranges, or {delivery_receipt, transcription, region?, uncertainty?} "
         "from an inspected render_page image. These assert supporting facts and become "
         "indirect_support; the existing selectors resolve exact text or host visual Evidence. "
         "Visual source/page/render/hash are derived from the authentic current-Trial receipt; "
@@ -4637,6 +4719,11 @@ def save_domain_judgment(
         "that their combined impact substantially lowers confidence in this exact Result. "
         "Omission preserves the default proposal. A review is "
         "not closure: inspect its Result and checkpoint identities, correct any Domain if needed. "
+        "Exact repeated source quotations may be shared in data.evidence_bodies, bound to "
+        "each facts[].source_body by unchanged Evidence identity and handle. Contrary quotes "
+        "stay inline. Per-answer warrants, qualifiers and source recovery actions remain intact; "
+        "selected Domain/answer views retain inline source text. These references do not certify "
+        "inference. "
         "Review fact text is bounded to 4,000 characters. Use evidence_expansions to recover the "
         "exact Evidence when more context is needed, then read a narrower Source window. Review "
         "expansion objects contain operation and Evidence metadata, not direct tool arguments; "

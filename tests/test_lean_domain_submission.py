@@ -253,6 +253,7 @@ def test_valid_basis_structure_does_not_certify_entailment_or_rewrite_modality(
     predecessor = tmp_path / "predecessor-limitation-only.rob2.zip"
 
     def declare_predecessor(canonical: dict) -> None:
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.9"
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08"
         )

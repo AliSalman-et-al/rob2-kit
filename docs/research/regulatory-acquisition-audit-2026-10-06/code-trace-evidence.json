@@ -1,0 +1,268 @@
+{
+  "benchmark_repository": "/home/ali/Documents/Code/rob2-kit-benchmark",
+  "commit": "d04473df4a07a3117f3171df2d8471ec0defd522",
+  "selection": "Purposeful five-case read-only diagnostic, not prevalence estimate or re-scoring. Original Oct1 native traces; no source substitution or paid assessment. Historical traces do not establish whether recently added companion tools would have been used.",
+  "cases": [
+    {
+      "case": "dapa-hf",
+      "database": "benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/canonical.sqlite3",
+      "database_sha256": "f471f2d8e732a042bbab155d190b0eeddb87c6cdf646dcd663edddc4b8d86be8",
+      "source_labels": [
+        "NEJMoa1911303.pdf",
+        "nejmoa1911303_appendix.pdf",
+        "nejmoa1911303_data-sharing.pdf",
+        "nejmoa1911303_disclosures.pdf",
+        "nejmoa1911303_protocol.pdf",
+        "ClinicalTrials.gov NCT03036124"
+      ],
+      "responses": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "probably_yes",
+          "justification": "The randomized groups were 2373 and 2371. The outcome flow reports incomplete primary-outcome follow-up for 14 dapagliflozin and 20 placebo participants, plus two placebo participants with unknown vital status. Even counting the two unknown statuses separately, fewer than 1% of randomized participants lacked complete outcome follow-up. Given this small fraction and the common primary event (386 and 502 events), outcome data were probably available for nearly all randomized participants. The diagram does not establish whether the two unknown vital statuses overlap with the 20 incomplete-follow-up count.",
+          "unknowns": [
+            "The report does not clarify whether the two placebo participants with unknown vital status are included among the 20 with incomplete primary-outcome follow-up."
+          ]
+        },
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "yes",
+          "justification": "The protocol states that SAP amendments would be completed before unblinding. The captured SAP version 3.0 is dated 23 July 2019 and specifies this dapagliflozin\u2013placebo primary composite, time-to-first-event, ITT/FAS population, Cox model, covariates, censoring rules, and HR with 95% CI. The report's primary analysis and reported estimate correspond to that plan.",
+          "unknowns": []
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no",
+          "justification": "The SAP identifies the primary measurement as time to first occurrence of the specified composite and separately prespecifies analyses of its three components. The report gives the primary composite result and reports component results. I found no indication that an eligible alternative primary composite definition or time point was withheld in favor of this result.",
+          "unknowns": []
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no",
+          "justification": "The SAP specifies an ITT/FAS Cox proportional-hazards analysis, stratification by diabetes status, adjustment for prior HF hospitalization, censoring rules, and the HR/CI reporting. The report states that all randomized participants were analyzed by ITT and describes the Cox model and HR/CI, matching the planned primary analysis. Although the SAP also includes prespecified component and sensitivity analyses, there is no evidence that the primary result was selected from competing eligible analyses based on the results.",
+          "unknowns": []
+        }
+      ],
+      "search_call_count": 8,
+      "acquisition_calls": []
+    },
+    {
+      "case": "declare-timi-58",
+      "database": "benchmark-luna6-medium-2026-10-01/cases/declare-timi-58/.rob2-kit/canonical.sqlite3",
+      "database_sha256": "dfebc87c1cc489d2983314ceeef635fa68cadf1f2294350e1bdbb1fe3388781d",
+      "source_labels": [
+        "NEJMoa1812389.pdf",
+        "nejmoa1812389_appendix.pdf",
+        "nejmoa1812389_data-sharing.pdf",
+        "nejmoa1812389_disclosures.pdf",
+        "nejmoa1812389_protocol.pdf",
+        "ClinicalTrials.gov NCT01730534"
+      ],
+      "responses": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "no_information",
+          "justification": "The supplement reports withdrawals and loss to follow-up, including patients whose vital status was not searched; the SAP explains how primary composite events might be censored after treatment discontinuation and proposes sensitivity analyses. Neither establishes actual MACE outcome availability by arm. Treatment discontinuation and the ITT label do not resolve this.",
+          "unknowns": [
+            "Actual MACE-specific observed outcome and censoring counts by randomized arm, and results of any missing-follow-up sensitivity analysis, are not available in the inspected passages."
+          ]
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "probably_no",
+          "justification": "The SAP only states that sensitivity analyses of informative censoring may be done and describes them prospectively; this passage does not show they were performed or that plausible missingness assumptions left the MACE result unchanged. Thus the inspected evidence does not support reassurance that the result was unbiased.",
+          "unknowns": [
+            "Whether informative-censoring analyses were conducted and their impact on the MACE result are unknown."
+          ]
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "answer": "probably_yes",
+          "justification": "Some participants withdrew consent or were lost to follow-up, with adverse events and subject decisions among reported reasons. These mechanisms could relate to health status and MACE risk, though individual missingness is not linked to subsequent events.",
+          "unknowns": [
+            "The relationship between individual withdrawal or loss to follow-up and true subsequent MACE is not reported."
+          ]
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "answer": "no_information",
+          "justification": "The evidence establishes possible outcome-related missingness, but does not show that dependence on true outcome was likely. Small, similar loss-to-follow-up counts do not resolve this for consent withdrawals or unobserved MACE.",
+          "unknowns": [
+            "Arm-specific extent and outcome relationship of missing MACE data are unknown."
+          ]
+        },
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "yes",
+          "justification": "The May 2018 SAP defines MACE as a primary outcome analyzed as time to first event. The main report states MACE was the original primary safety outcome and that the added efficacy outcomes were adopted before the monitoring committee viewed MACE data and without knowledge of comparative MACE data.",
+          "unknowns": [
+            "The passages inspected do not state the exact date of database lock or first investigator access to unblinded outcome data."
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no",
+          "justification": "The SAP specifies a single time-to-first-event MACE composite with stated event components, and the report gives that endpoint; there is no evidence that one among multiple eligible MACE definitions or time points was selected based on results.",
+          "unknowns": []
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no",
+          "justification": "The SAP specifies the primary MACE endpoint and planned time-to-event analyses, while the main report presents the prespecified randomized-group comparison. Planned secondary or sensitivity analyses do not establish result-based selection of this primary analysis.",
+          "unknowns": []
+        }
+      ],
+      "search_call_count": 5,
+      "acquisition_calls": []
+    },
+    {
+      "case": "canvas-program",
+      "database": "benchmark-luna6-medium-2026-10-01/cases/canvas-program/.rob2-kit/canonical.sqlite3",
+      "database_sha256": "676bff774cfeb095481bcca6411c8f9f3aa7a5177de01fad91ebf8fa7683dd1a",
+      "source_labels": [
+        "NEJMoa1611925.pdf",
+        "nejmoa1611925_appendix.pdf",
+        "nejmoa1611925_disclosures.pdf",
+        "nejmoa1611925_protocol.pdf"
+      ],
+      "responses": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "no_information",
+          "justification": "The flow chart reports 95.7% and 96.1% completed or died before trial end and final vital status known for 99.5% and 99.6%, respectively. But completion combines reaching the late follow-up window with death, and vital-status retrieval does not establish availability of nonfatal MI or stroke follow-up after the last trial contact. The protocol defines time from last contact to the global trial end date as missing for participants lost to follow-up or withdrawing consent, yet the realized missing MACE duration is not reported. The extent and possible impact for this composite therefore remain unresolved.",
+          "unknowns": [
+            "Arm-specific observed primary-composite follow-up and realized missing follow-up duration to the global trial end date are not reported."
+          ]
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "probably_yes",
+          "justification": "The main report says the primary estimate was nearly unchanged after imputation for missing events (HR 0.85 versus 0.86; both 95% CIs 0.75 to 0.97). The protocol describes an imputation model aimed at informative censoring, using observed time-to-MACE data among early treatment discontinuers, stratifying by trial and baseline cardiovascular disease, and adjusting for treatment and covariates related to missingness and MACE risk. This offers relevant reassurance, although only one imputation sensitivity estimate is reported and the realized missing follow-up extent is unknown, so probably yes is more appropriate than a definitive yes.",
+          "unknowns": [
+            "The report does not show a range of sensitivity results under multiple plausible missingness assumptions, and the actual missing follow-up extent remains unreported."
+          ]
+        },
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "probably_yes",
+          "justification": "The CANVAS protocol identified the exact MACE composite as the primary CV risk-reduction endpoint and described a prespecified integrated safety analysis. The integrated plan specifies the pooled canagliflozin versus placebo ITT comparison, time to first MACE and a stratified Cox hazard ratio; the selected Result follows those features. The 2016 approved SAP preceded completion and says post-November 2012 MACE data remained blinded. An interim CANVAS summary had been unblinded before the integrated plan, and the captured 2013 SAP itself is not available to inspect; therefore timing/correspondence is probable rather than certain. The 2017 revision's stated changes do not indicate a result-driven change to the primary analysis.",
+          "unknowns": [
+            "The exact contents of the October 2013 integrated SAP are not captured, and the 2016 version was prepared after the 2012 CANVAS interim results had been unblinded."
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no",
+          "justification": "The protocol names the MACE composite of cardiovascular death, nonfatal MI, and nonfatal stroke as the primary endpoint. The integrated SAP specifies the same composite for the primary analysis; the selected report presents this primary outcome. No alternative eligible definition or time point for this outcome domain is identified.",
+          "unknowns": []
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "probably_no",
+          "justification": "The plan specifies one primary ITT time-to-first-MACE model (stratified Cox) and identifies other analyses as supportive or as separate component/subgroup assessments. Figure 2 reports the primary HR and the protocol-described endpoint, and the paper also reports a missing-data imputation sensitivity analysis. Although multiple analyses were planned, there is no evidence the reported primary model was chosen because its result was favorable or that relevant primary analyses were selectively withheld.",
+          "unknowns": [
+            "The captured Sources do not provide a complete inventory of every analysis conducted and reported."
+          ]
+        }
+      ],
+      "search_call_count": 10,
+      "acquisition_calls": []
+    },
+    {
+      "case": "monarch-plus",
+      "database": "benchmark-luna6-medium-2026-10-01/cases/monarch-plus/.rob2-kit/canonical.sqlite3",
+      "database_sha256": "9f075b290664c0f22deee798e5673777754dedebfb650c491c41c443c168eda5",
+      "source_labels": [
+        "10.1177_1758835920963925.pdf",
+        "monarch_plus_supplement_27jul20.pdf",
+        "ClinicalTrials.gov NCT02763566"
+      ],
+      "responses": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "probably_yes",
+          "justification": "The registry identifies all randomized cohort A participants and reports 141 censored in the abemaciclib arm and 46 in the placebo arm; the report gives 66 and 53 PFS events, respectively, so event and censoring records account for the randomized totals at this interim analysis. The trial profile lists two participants lost to follow-up in cohort A's placebo arm and two abemaciclib-assigned participants not treated because inclusion criteria were not met; all randomized participants remained in the ITT analysis. This supports that outcome data were probably available for nearly all participants, while exact radiographic follow-up after treatment discontinuation and for the untreated participants is not specified.",
+          "unknowns": [
+            "The sources do not state whether PFS assessments continued after each treatment discontinuation or how many participants were censored at randomization for having no post-baseline assessment."
+          ]
+        },
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "no_information",
+          "justification": "The article identifies the cohort A interim PFS analysis as prespecified after 119 events and specifies the stratified log-rank test, Cox hazard ratio, and ITT population. However, the actual registry-listed SAP attachment is not present among the captured Sources, and the article only says the protocol and SAP may be provided on request. Therefore its applicability, finalization date, and timing relative to investigators' access to unblinded outcomes cannot be established. The plan mention and interim threshold alone do not establish that finalization preceded unblinded access.",
+          "unknowns": [
+            "Whether the available SAP applied to this precise comparison and reported HR analysis.",
+            "When the analysis intentions were finalized and when investigators could access unblinded outcome data."
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no_information",
+          "justification": "The report specifies investigator-assessed radiographic PFS by CT/MRI under RECIST 1.1 and reports the interim result, but the eligible measurement set and analysis intentions are not available in sufficient detail. The SAP attachment is not captured, so I cannot determine whether other eligible PFS definitions, assessors, or time points existed and how they were handled.",
+          "unknowns": [
+            "Whether the applicable plan allowed other eligible PFS measurements, assessors, or time points, and whether all were reported."
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no_information",
+          "justification": "The article reports the planned stratified log-rank interim test and stratified Cox hazard ratio, but the eligible analysis choices and reporting intentions are not sufficiently detailed without the SAP. Thus it is not possible to determine whether this HR was chosen from multiple eligible analyses or whether any choice depended on results.",
+          "unknowns": [
+            "Whether other eligible PFS analysis methods, populations, adjustments, or missing-data strategies were prespecified and reported."
+          ]
+        }
+      ],
+      "search_call_count": 18,
+      "acquisition_calls": []
+    },
+    {
+      "case": "deliver",
+      "database": "benchmark-luna6-medium-2026-10-01/cases/deliver/.rob2-kit/canonical.sqlite3",
+      "database_sha256": "a688e2e32b9f8c05f08c1e587da4f395bbf85189c309552758869f239d22f1ad",
+      "source_labels": [
+        "NEJMoa2206286.pdf",
+        "nejmoa2206286_appendix.pdf",
+        "nejmoa2206286_data-sharing.pdf",
+        "nejmoa2206286_disclosures.pdf",
+        "nejmoa2206286_protocol.pdf",
+        "ClinicalTrials.gov NCT03619213"
+      ],
+      "responses": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "probably_yes",
+          "justification": "The outcome-specific flow chart reports incomplete primary-endpoint follow-up for 29/3131 dapagliflozin participants and 23/3132 placebo participants, under 1% in either arm. It separately reports unknown survival status for two patients in each arm, and the main report confirms vital status was known at trial end for all but two per group. This supports outcome information for nearly all randomized participants, although follow-up was not complete for every participant.",
+          "unknowns": [
+            "Reasons and timing for the 29 and 23 incomplete primary-endpoint follow-ups are not given here; the source also does not clarify whether unknown survival status counts overlap with those totals."
+          ]
+        },
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "probably_yes",
+          "justification": "The protocol states that the comprehensive SAP would be developed before the first participant was randomized and that final amendments would be completed before database lock. The dated final SAP was approved on 15 December 2021 and specifies the approved full-population comparison, the composite time-to-first-event outcome, ITT/FAS population, diabetes-stratified Cox model, and HR with 95% CI. This closely matches the reported result. The chronology supports prespecification, but the captured sources do not date access to unblinded interim results relative to the December 2021 SAP approval.",
+          "unknowns": [
+            "The sources do not establish the exact date the final database was locked or the date when the DMC or any analysis personnel first accessed unblinded outcome data."
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "probably_no",
+          "justification": "The SAP defines the primary variable as time to first event in the composite and specifies the full-population analysis. It separately describes component analyses and Kaplan\u2013Meier displays, rather than alternative definitions or time points for the reported primary outcome. The article reports the prespecified composite result. There is no indication that a measurement or definition was selected because of its observed result.",
+          "unknowns": [
+            "The dossier does not include correspondence or a complete reporting inventory to verify every measurement considered."
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "probably_no",
+          "justification": "The SAP prespecifies the ITT/FAS Cox model stratified by diabetes status and the reported HR and 95% CI for the full-population primary analysis. Although it also specifies the LVEF subgroup, components, and sensitivity analyses, these are distinct planned analyses; their existence alone does not indicate result-driven selection. The reported result corresponds to the planned full-population analysis, and the sources provide no sign that alternative eligible analyses were withheld because of their results.",
+          "unknowns": [
+            "No complete analysis output inventory or dated correspondence about reporting choices is included."
+          ]
+        }
+      ],
+      "search_call_count": 5,
+      "acquisition_calls": []
+    }
+  ]
+}

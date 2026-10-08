@@ -104,6 +104,7 @@ def test_exact_relation_rationale_is_preserved(tmp_path: Path) -> None:
     scope = validation["data"]["scope_review"][0]
     assert scope["verification"] == "requires_source_interpretation"
     assert scope["reported_time_point_or_window"] is None
+    assert scope["reported_effect_measure"] is None
     saved = _call(
         workspace,
         "save_proposal",
@@ -229,7 +230,7 @@ def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Pat
     assert _state_proposal(workspace)["results"][0]["reported"]["group_values"] == []
 
 
-def test_missing_group_value_unit_reaches_structured_repair(tmp_path: Path) -> None:
+def test_missing_printed_group_unit_does_not_force_unclear_meaning(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
@@ -247,8 +248,8 @@ def test_missing_group_value_unit_reaches_structured_repair(tmp_path: Path) -> N
         _raw=True,
     )
 
-    assert repair["outcome"] == "repair"
-    assert any(item["code"] == "reported_group_value_unit_required" for item in repair["repairs"])
+    assert repair["outcome"] == "success", repair
+    assert repair["data"]["scope_review"][0]["reported_group_values"][0]["unit"] is None
 
 
 def test_endpoint_definition_can_be_omitted_when_no_coherent_definition_is_selected(

@@ -43,7 +43,7 @@ async def _manifest() -> dict[str, object]:
     hosts = Path(__file__).parent / "hosts"
     host = json.loads((hosts / "codex.json").read_text(encoding="utf-8"))
     return {
-        "contract_version": "0.11.0",
+        "contract_version": "0.12.0",
         "tools": [
             {
                 "name": tool.name,

@@ -55,13 +55,42 @@ def test_background_and_faq_wording_preserve_source_versions_and_scope() -> None
         assert official.guidance.source_excerpt == " ".join(record["text"].split())
         assert official.guidance.version == background["version"]
         assert official.guidance.source_sha256 == background["source_sha256"]
-    for record in faq["sections"]:
+    current_faq = json.loads(
+        Path("tests/fixtures/official-guidance-audit-2019/faq-20261008.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    for record in [*faq["sections"], *current_faq["sections"]]:
         official = by_locator[record["source_locator"]]
         assert official.source_url == record["source_url"]
         assert official.guidance.source_excerpt == record["source_excerpt"]
         assert official.guidance.source_sha256 == record["source_sha256"]
         assert official.guidance.version == record["version"]
         assert len(official.question_ids) == 1
+
+
+def test_measurement_awareness_delivers_captured_masking_caveat() -> None:
+    capture = json.loads(
+        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    original = next(
+        section for section in capture["sections"] if "successful guesses" in section["text"]
+    )
+    text = " ".join(original["text"].split())
+    expected = text[text.index("Several groups have suggested") :]
+    sections = _official_guidance_recovery("domain:measurement")["sections"]
+    delivered = next(section for section in sections if "successful guesses" in section["excerpt"])
+    assert delivered["excerpt"] == expected
+    assert delivered["question_ids"] == ("sq:measurement:assessor-aware",)
+    assert delivered["source_version"] == capture["version"]
+    assert delivered["source_sha256"] == capture["source_sha256"]
+    assert "p. 23, section 5.1" in delivered["source_locator"]
+    assert all(
+        "successful guesses" not in section["excerpt"]
+        for section in _official_guidance_recovery("domain:missing")["sections"]
+    )
 
 
 @pytest.mark.parametrize("budget", [16_384, 32_768])

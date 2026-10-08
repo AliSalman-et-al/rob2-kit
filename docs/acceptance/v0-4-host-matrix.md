@@ -77,9 +77,12 @@ including `head`, `data.result`, `questions`, `comparison_cards`, `evidence`,
 `evidence_workspace`, and recovery fields.
 For `render_page`, keep image content blocks separate from deduplicated JSON and
 render/inspect the image when layout carries meaning.
-The optional `max_response_bytes` input defaults to 32768 bytes and accepts
+The optional `max_response_bytes` input defaults to 65536 bytes and accepts
 4096–131072 bytes; use a value that the host can deliver as one structured
-response. If the server returns `domain_context_header_oversized` or
+response. The automatic window reduces paging when the full scientific context
+fits; explicit smaller windows and existing cursors retain their partitions.
+Scientific content, evidence identities, and freshness checks are unchanged.
+If the server returns `domain_context_header_oversized` or
 `domain_context_item_oversized`, retry the same Trial/Domain scope with the
 reported larger `required_page_size` as `max_response_bytes`; an unrecoverable condition requires
 review without omitting the record.
@@ -104,3 +107,10 @@ not token counts or accuracy gains. The recovery run's
 full Codex host rollout carried `Warning: truncated output` for Domain results,
 although its phase JSONL retained the prior representations. No post-fix LLM
 run has been made.
+
+Native `review_trial` responses allow up to 65536 serialized UTF-8 bytes including
+wrapper headroom. An overview remains bounded to 24000 bytes when full detail
+needs paging. Follow its stable recovery cursor and concatenate the lossless
+Unicode fragments through the null next cursor. Existing cursor offsets remain
+valid when the delivery window grows; changed review identities still require
+a fresh review. Decisions, warrants, counterevidence and source bodies are retained.

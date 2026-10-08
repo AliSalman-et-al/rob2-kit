@@ -13,7 +13,11 @@ from support.rob2 import (
 )
 
 from rob2_kit.application import domains
-from rob2_kit.interfaces.mcp.contracts import EvidenceRecovery, MainReportRecovery
+from rob2_kit.interfaces.mcp.contracts import (
+    EvidenceRecovery,
+    MainReportRecovery,
+    RegistryOutcomeNavigation,
+)
 
 
 def _verifier():
@@ -160,6 +164,127 @@ def test_registry_navigation_keeps_first_twenty_windows_and_count(tmp_path: Path
     assert found[source_id]["window_count"] == 25
 
 
+def test_registry_outcomes_keep_distinct_scope_and_exact_recovery(tmp_path: Path) -> None:
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    source_id = "sh_" + "b" * 16
+    prefix = "resultsSection.outcomeMeasuresModule.outcomeMeasures"
+    pages = [
+        f'{prefix}[0].title: "Change in score"\n'
+        f'{prefix}[0].timeFrame: "Week 28"\n'
+        f'{prefix}[0].type: "PRIMARY"\n'
+        f'{prefix}[0].denoms[0].counts[0].value: "133"',
+        f'{prefix}[0].populationDescription: "Baseline and at least one post-baseline score"\n'
+        f'{prefix}[1].title: "Change in score"\n'
+        f'{prefix}[1].timeFrame: "Week 28"\n'
+        f'{prefix}[1].type: "SECONDARY"\n'
+        f'{prefix}[1].populationDescription: "Baseline and at least one post-baseline score"',
+        f"{prefix}[2].title: malformed\n"
+        f'{prefix}[2].populationDescription: "First fragment"\n'
+        f'{prefix}[2].populationDescription: "Second fragment"',
+    ]
+    with sqlite3.connect(internal / "derivative.sqlite3") as connection:
+        connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
+        connection.executemany(
+            "INSERT INTO pages VALUES (?, ?, ?)",
+            [(page, text, source_id) for page, text in enumerate(pages, 1)],
+        )
+    navigation = domains._registry_navigation(
+        tmp_path, "trial", [{"id": source_id, "role": "registry"}]
+    )[source_id]
+    entries = [RegistryOutcomeNavigation.model_validate(x) for x in navigation["outcomes"]]
+    assert [entry.path for entry in entries] == [f"{prefix}[{i}]" for i in range(3)]
+    assert entries[0].type == "PRIMARY"
+    assert entries[1].type == "SECONDARY"
+    assert entries[0].title == entries[1].title
+    assert entries[0].path != entries[1].path
+    assert entries[0].populationDescription == "Baseline and at least one post-baseline score"
+    assert navigation["outcomes"][0]["recovery"]["windows"] == (
+        {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 4},
+        {"source_id": source_id, "page": 2, "start_line": 1, "end_line": 1},
+    )
+    assert navigation["outcomes"][1]["recovery"]["windows"] == (
+        {"source_id": source_id, "page": 2, "start_line": 2, "end_line": 5},
+    )
+    assert entries[2].title is None
+    assert entries[2].populationDescription is None
+    assert entries[2].not_inlined_fields == ("populationDescription", "title")
+    assert (
+        domains._registry_navigation(tmp_path, "trial", [{"id": source_id, "role": "other"}]) == {}
+    )
+
+
+def test_registry_outcome_recovery_batches_every_page_without_truncation(tmp_path: Path) -> None:
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    source_id = "sh_" + "b" * 16
+    path = "resultsSection.outcomeMeasuresModule.outcomeMeasures[0]"
+    with sqlite3.connect(internal / "derivative.sqlite3") as connection:
+        connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
+        connection.executemany(
+            "INSERT INTO pages VALUES (?, ?, ?)",
+            [(page, f'{path}.description: "Fragment {page}"', source_id) for page in range(1, 22)],
+        )
+    found = domains._registry_navigation(
+        tmp_path, "trial", [{"id": source_id, "role": "registry"}]
+    )[source_id]
+    entries = [RegistryOutcomeNavigation.model_validate(x) for x in found["outcomes"]]
+    assert [entry.batch_index for entry in entries] == [0, 1]
+    assert all(entry.batch_count == 2 and entry.window_count == 21 for entry in entries)
+    assert all(entry.path == path and entry.source_id == source_id for entry in entries)
+    assert [window.page for entry in entries for window in entry.recovery.windows] == list(
+        range(1, 22)
+    )
+    assert [len(entry.recovery.windows) for entry in entries] == [20, 1]
+    assert all(entry.title is None and entry.timeFrame is None for entry in entries)
+
+
+@pytest.mark.parametrize("bounded_projection", [False, True])
+def test_oversized_registry_metadata_keeps_complete_source_recovery(
+    tmp_path: Path, bounded_projection: bool
+) -> None:
+    import json
+
+    from rob2_kit.application._state import _bound_projected_lines
+    from rob2_kit.interfaces.mcp.server import _paginate_domain_context_transport
+
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    source_id = "sh_" + "b" * 16
+    path = "resultsSection.outcomeMeasuresModule.outcomeMeasures[0]"
+    text = f'{path}.title: "Change in score"\n{path}.populationDescription: ' + json.dumps(
+        "x" * 140_000
+    )
+    if bounded_projection:
+        text = _bound_projected_lines(text)
+    with sqlite3.connect(internal / "derivative.sqlite3") as connection:
+        connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
+        connection.execute("INSERT INTO pages VALUES (1, ?, ?)", (text, source_id))
+    navigation = domains._registry_navigation(
+        tmp_path, "trial", [{"id": source_id, "role": "registry"}]
+    )[source_id]
+    entry = RegistryOutcomeNavigation.model_validate(navigation["outcomes"][0])
+    assert entry.title == "Change in score"
+    assert entry.populationDescription is None
+    assert entry.not_inlined_fields == ("populationDescription",)
+    window = entry.recovery.windows[0]
+    assert window.start_line == 1 and window.end_line == len(text.splitlines())
+    assert "".join(text.splitlines()) == (
+        f'{path}.title: "Change in score"{path}.populationDescription: ' + json.dumps("x" * 140_000)
+    )
+    value = {
+        "outcome": "success",
+        "head": {"phase": "assessment", "state_revision": 4},
+        "data": {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "registry_outcomes": [entry.model_dump(mode="json")],
+        },
+    }
+    response = _paginate_domain_context_transport(value, None, None, "sha256:" + "a" * 64, 4)
+    assert response["data"]["registry_outcomes"] == value["data"]["registry_outcomes"]
+
+
 def test_evidence_recovery_shape_stays_compatible_with_older_projections() -> None:
     recovery = EvidenceRecovery(
         operation="read_pages",
@@ -296,3 +421,119 @@ def test_public_preview_recovers_handle_outside_active_domain_projection(
     visible = {item["handle"]: item for item in context["data"]["evidence"]}
     assert visible[preview_evidence["handle"]]["identity"] == preview_evidence["identity"]
     assert domains._state(tmp_path) == before
+
+
+@pytest.mark.parametrize("outcome_count", [1, 200])
+def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_and_d5(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, outcome_count: int
+) -> None:
+    import hashlib
+    import json
+
+    from support import rob2 as support
+
+    payload = {
+        "protocolSection": {
+            "statusModule": {
+                "studyFirstPostDateStruct": {"date": "2010-01-01"},
+                "lastUpdatePostDateStruct": {"date": "2025-01-01"},
+                "studyFirstSubmitDate": "2009-12-15",
+            },
+            "outcomesModule": {
+                "primaryOutcomes": [{"measure": "requested outcome", "timeFrame": "day 30"}]
+            },
+            "designModule": {"enrollmentInfo": {"count": 20, "type": "ACTUAL"}},
+        },
+        "resultsSection": {
+            "outcomeMeasuresModule": {
+                "outcomeMeasures": [
+                    {
+                        "title": "Change in score",
+                        "timeFrame": "Week 28",
+                        "type": "PRIMARY",
+                        "populationDescription": "Baseline/postbaseline; excludes after rescue.",
+                        "denoms": [
+                            {"units": "Participants", "counts": [{"groupId": "G1", "value": "18"}]}
+                        ],
+                    }
+                ]
+            },
+            "participantFlowModule": {"preAssignmentDetails": "Two randomized groups."},
+            "moreInfoModule": {
+                "limitationsAndCaveats": "Analysis counts are not ascertainment counts."
+            },
+        },
+        "derivedSection": {"miscInfoModule": {"versionHolder": "2026-01-01"}},
+    }
+    payload["resultsSection"]["outcomeMeasuresModule"]["outcomeMeasures"].extend(
+        {
+            "title": "Change in score",
+            "type": "SECONDARY",
+            "populationDescription": "population " * 50,
+        }
+        for _ in range(outcome_count - 1)
+    )
+    original = support._workspace
+
+    def create(path: Path, requested_outcome: str = "requested outcome") -> Path:
+        workspace = original(path, requested_outcome)
+        trial = workspace / "input/trial"
+        (trial / "registry.json").write_text(json.dumps(payload), encoding="utf-8")
+        (trial / "sources.toml").write_text(
+            'roles = { "main.txt" = "main_article", "registry.json" = "registry" }\n',
+            encoding="utf-8",
+        )
+        return workspace
+
+    monkeypatch.setattr(support, "_workspace", create)
+    workspace, _text, _revision = _assessment_workspace(tmp_path)
+    canonical = (workspace / ".rob2-kit/canonical.sqlite3").read_bytes()
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    source = next(item for item in sources if item["role"] == "registry")
+    source_bytes = (workspace / "input/trial/registry.json").read_bytes()
+    assert source["sha256"] == "sha256:" + hashlib.sha256(source_bytes).hexdigest()
+    for domain_id in ("domain:missing", "domain:selection"):
+        context = _call(
+            workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
+        )
+        group = next(
+            group
+            for card in context["data"]["comparison_cards"]
+            for group in card["passage_groups"]
+            if group["source_id"] == source["id"]
+        )
+        assert "resultsSection.outcomeMeasuresModule" in group["registry_field_paths"]
+        assert "protocolSection.outcomesModule" in group["registry_field_paths"]
+        assert group["registry_outcome_count"] == outcome_count
+        assert len(context["data"]["registry_outcomes"]) == outcome_count
+        outcome = context["data"]["registry_outcomes"][0]
+        assert outcome["title"] == "Change in score"
+        assert outcome["timeFrame"] == "Week 28"
+        assert outcome["type"] == "PRIMARY"
+        assert outcome["populationDescription"] == "Baseline/postbaseline; excludes after rescue."
+        outcome_receipt = _call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "windows": outcome["recovery"]["windows"]},
+        )
+        assert "outcomeMeasures[0].denoms" in str(outcome_receipt)
+        recovery = group["registry_recovery"]
+        receipt = _call(
+            workspace, "read_pages", {"trial_id": "trial", "windows": recovery["windows"]}
+        )
+        delivered = "\n".join(page["numbered_text"] for page in receipt["data"]["pages"])
+        for qualifier in (
+            "populationDescription",
+            "excludes after rescue",
+            "Participants",
+            "groupId",
+            '"18"',
+            "studyFirstSubmitDate",
+            "2009-12-15",
+            "2025-01-01",
+            "versionHolder",
+        ):
+            assert qualifier in delivered
+        assert group["sha256"] == source["sha256"]
+    assert (workspace / ".rob2-kit/canonical.sqlite3").read_bytes() == canonical
+    assert (workspace / "input/trial/registry.json").read_bytes() == source_bytes

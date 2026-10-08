@@ -81,7 +81,12 @@ def _wire_context(
                     ):
                         merged = dict(pages[0].structured_content or {})
                         data = dict(pages[0].structured_content["data"])
-                        for section in ("questions", "comparison_cards", "evidence"):
+                        for section in (
+                            "questions",
+                            "comparison_cards",
+                            "registry_outcomes",
+                            "evidence",
+                        ):
                             data[section] = [
                                 item
                                 for page in pages
@@ -518,6 +523,66 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     ), fresh_candidates["data"]["evidence_workspace"]
 
 
+@pytest.mark.parametrize("domain_id", ["domain:deviations", "domain:missing"])
+def test_stale_submission_restarts_attempted_domain(tmp_path: Path, domain_id: str) -> None:
+    workspace, evidence, _revision = _assessment_workspace(tmp_path)
+    scope: dict[str, object] = {"trial_id": "trial", "domain_id": domain_id}
+    _call(workspace, "get_domain_context", scope)
+    updated = _call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "result_account": [
+                    {
+                        "id": "ascertainment",
+                        "aspect": "outcome_ascertainment",
+                        "observation": {
+                            "text": "The selected report supplies the assessment context.",
+                            "sources": [
+                                {
+                                    "source_id": evidence["source_id"],
+                                    "page": 1,
+                                    "start_line": 1,
+                                    "end_line": 1,
+                                }
+                            ],
+                        },
+                    }
+                ],
+            }
+        },
+    )
+    assert updated["outcome"] == "success", updated
+    revision = updated["head"]["state_revision"]
+    before = _state(workspace)
+    blocked = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", domain_id, revision, evidence),
+    )
+    assert blocked["outcome"] == "condition", blocked
+    assert blocked["condition"]["code"] == "domain_context_delivery_stale"
+    action = blocked["head"]["next_action"]
+    assert action["operation"] == "get_domain_context"
+    assert action["trial_id"] == "trial"
+    assert action["domain_id"] == domain_id
+    assert action["cursor"] is None
+    assert blocked["condition"]["recovery"] is None
+    assert _state(workspace) == before
+    assert _call(workspace, "get_status", {})["head"]["next_action"]["domain_id"] == (
+        "domain:randomization"
+    )
+    _call(workspace, action["operation"], scope)
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", domain_id, revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+
+
 def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     scope: dict[str, object] = {"trial_id": "trial", "domain_id": "domain:deviations"}
@@ -762,15 +827,20 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
     assert intermediate["next_cursor"] is not None
 
 
-def test_larger_budget_delivers_unchanged_full_context_in_one_call(tmp_path: Path) -> None:
+@pytest.mark.parametrize("page_size", [65_536, 131_072])
+def test_larger_budget_delivers_unchanged_full_context_in_one_call(
+    tmp_path: Path, page_size: int
+) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     expected, _bytes = _wire_context(workspace)
-    actual, transport_bytes = _wire_context(workspace, {"max_response_bytes": 131_072}, drain=False)
+    actual, transport_bytes = _wire_context(
+        workspace, {"max_response_bytes": page_size}, drain=False
+    )
     data = dict(actual["data"])
     page = data.pop("context_page")
     assert page["count"] == 1
     assert page["next_cursor"] is None
-    assert transport_bytes <= 131_072
+    assert transport_bytes <= page_size
     assert data == expected["data"]
     assert actual["head"]["next_action"] == expected["head"]["next_action"]
     assert actual["head"]["next_action"]["operation"] == "save_domain_judgment"
@@ -789,6 +859,45 @@ def test_larger_budget_delivers_unchanged_full_context_in_one_call(tmp_path: Pat
         _domain_draft("trial", "domain:randomization", revision, evidence),
     )
     assert saved["outcome"] == "success", saved
+
+
+def test_default_context_budget_delivers_fitting_science_without_section_round_trips(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    value = {
+        "outcome": "success",
+        "head": {"phase": "assessment", "state_revision": 4},
+        "data": {
+            "trial_id": "trial",
+            "domain_id": "domain:randomization",
+            "pack": {"id": "test", "version": "1"},
+            "questions": [{"id": "question", "elaboration": "guidance " * 2_500}],
+            "evidence": [{"identity": "source-bound", "quote": "source " * 2_500}],
+            "unknowns": ["Concealment safeguards are unresolved."],
+            "counterevidence": ["The report describes sealed envelopes."],
+        },
+    }
+    basis = "sha256:" + "a" * 64
+    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 32_768)
+    smaller = _paginate_domain_context_transport(value, None, None, basis, 4)
+    old_cursor = smaller["data"]["context_page"]["next_cursor"]
+    old_next = _paginate_domain_context_transport(value, old_cursor, None, basis, 4)
+    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 65_536)
+    assert _paginate_domain_context_transport(value, old_cursor, None, basis, 4) == old_next
+    automatic = _paginate_domain_context_transport(value, None, None, basis, 4)
+
+    assert smaller["data"]["context_page"]["next_cursor"] is not None
+    data = dict(automatic["data"])
+    page = data.pop("context_page")
+    assert page["max_response_bytes"] == 65_536
+    assert page["count"] == 1 and page["next_cursor"] is None
+    assert _domain_context_transport_bytes(automatic) <= page["max_response_bytes"]
+    assert data == value["data"]
+    assert page["snapshot_digest"] == smaller["data"]["context_page"]["snapshot_digest"]
+    recovered = _paginate_domain_context_transport(
+        value, page["stable_recovery"]["cursor"], None, basis, 4
+    )
+    assert recovered == automatic
 
 
 def test_domain_context_pagination_rejects_oversized_unicode_evidence(
@@ -1474,3 +1583,172 @@ def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence
     )["data"]["pages"][0]["numbered_text"]
     assert "Ascertainment was incomplete" in adjacent
     assert "An unrelated neutral passage" in adjacent
+
+
+def test_declared_unknowns_survive_production_context_pages_and_recovery(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
+    gap = "Outcome availability among excluded participants remains unknown."
+    question_id = draft["answers"][0]["question_id"]
+    draft["answers"][0]["unknowns"] = [gap]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success"
+    expected = next(
+        c
+        for c in saved["data"]["checkpoint"]["evidence_sufficiency"]["claims"]
+        if c["question_id"] == question_id
+    )
+    assert expected["declared_unknowns"] == [gap]
+    first, _ = _wire_context(
+        workspace,
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 32_768},
+        drain=False,
+    )
+    pages = [first]
+    while pages[-1]["data"]["context_page"]["next_cursor"]:
+        page, _ = _wire_context(
+            workspace, {"cursor": pages[-1]["data"]["context_page"]["next_cursor"]}, drain=False
+        )
+        pages.append(page)
+    assert len(pages) > 1
+    summaries = [
+        p["data"]["evidence_sufficiency"] for p in pages if "evidence_sufficiency" in p["data"]
+    ]
+    assert summaries
+    assert any(expected in summary["claims"] for summary in summaries)
+    recovered, _ = _wire_context(
+        workspace,
+        {"cursor": first["data"]["context_page"]["stable_recovery"]["cursor"]},
+        drain=False,
+    )
+    assert recovered["data"]["evidence_sufficiency"] == first["data"]["evidence_sufficiency"]
+
+
+def test_unavailable_count_is_visible_in_production_preview(tmp_path: Path) -> None:
+    workspace, evidence, _ = _assessment_workspace(tmp_path)
+    first, _ = _wire_context(
+        workspace,
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "missing_data": [
+                {
+                    "arm": "A",
+                    "population": "randomized",
+                    "unit": "participants",
+                    "time_point": "primary endpoint follow-up",
+                    "randomized": 20,
+                    "unavailable": 3,
+                    "basis": [evidence["handle"]],
+                }
+            ],
+        },
+    )
+    counts = [
+        row
+        for card in first["data"]["comparison_cards"]
+        for row in card.get("participant_flow", [])
+        if row["kind"] == "unavailable"
+    ]
+    assert counts and all(row["value"] == 3 for row in counts)
+    assert all(row["passages"] for row in counts)
+
+
+def test_saved_unavailable_count_survives_fresh_context_cache_loss_and_recovery(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    _wire_context(workspace, {"trial_id": "trial", "domain_id": "domain:missing"})
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    answer = next(a for a in draft["answers"] if a["question_id"] == "sq:missing:data-available")
+    answer["missing_data"] = [
+        {
+            "arm": "A",
+            "population": "randomized",
+            "unit": "participants",
+            "time_point": "primary endpoint follow-up",
+            "randomized": 20,
+            "unavailable": 3,
+        }
+    ]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success"
+    canonical = copy.deepcopy(_state(workspace))
+
+    def fresh() -> tuple[dict, dict]:
+        first, _ = _wire_context(
+            workspace,
+            {"trial_id": "trial", "domain_id": "domain:missing", "max_response_bytes": 32_768},
+            drain=False,
+        )
+        pages = [first]
+        while pages[-1]["data"]["context_page"]["next_cursor"]:
+            page, _ = _wire_context(
+                workspace, {"cursor": pages[-1]["data"]["context_page"]["next_cursor"]}, drain=False
+            )
+            pages.append(page)
+        cards = [c for p in pages for c in p["data"].get("comparison_cards", [])]
+        rows = [r for c in cards for r in (c.get("missing_data") or {}).get("rows", [])]
+        assert rows and all(r["unavailable"] == 3 for r in rows)
+        assert all(r["observed"] is None for r in rows)
+        assert all(r["missing_bounds"] == {"lower": 3, "upper": 3, "kind": "exact"} for r in rows)
+        counts = [
+            r for c in cards for r in c.get("participant_flow", []) if r["kind"] == "unavailable"
+        ]
+        assert counts and all(r["value"] == 3 and r["passages"] for r in counts)
+        slots = [s for c in cards for s in c.get("slots", []) if s["name"] == "unavailable"]
+        assert slots and all(s["status"] == "supported" and s["passages"] for s in slots)
+        recovered, _ = _wire_context(
+            workspace,
+            {"cursor": first["data"]["context_page"]["stable_recovery"]["cursor"]},
+            drain=False,
+        )
+        return first, recovered
+
+    first, recovered = fresh()
+    assert first["data"] == recovered["data"]
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        connection.execute("DELETE FROM domain_context_views")
+        connection.execute("DELETE FROM domain_context_delivery")
+    restarted, _ = fresh()
+    assert restarted["data"]["domain_id"] == "domain:missing"
+    assert _state(workspace) == canonical
+
+
+def test_imputation_quantity_conflict_is_source_bound_in_native_preview(tmp_path: Path) -> None:
+    workspace, evidence, _ = _assessment_workspace(tmp_path)
+    before = copy.deepcopy(_state(workspace))
+    first, _ = _wire_context(
+        workspace,
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "missing_data": [
+                {
+                    "arm": "A",
+                    "population": "all randomized participants",
+                    "unit": "participants",
+                    "time_point": "week 8",
+                    "window": "week 8",
+                    "endpoint": "selected endpoint",
+                    "randomized": 20,
+                    "observed": 20,
+                    "analyzed": 20,
+                    "imputed": 3,
+                    "semantics": {"population_role": "randomized", "outcome_status": "imputed"},
+                    "basis": [evidence["handle"]],
+                }
+            ],
+        },
+    )
+    card = first["data"]["comparison_cards"][0]
+    row = card["missing_data"]["rows"][0]
+    assert row["quantity_conflict"] and row["missing"] is None
+    assert row["missing_fraction"] is row["missing_bounds"] is None
+    assert row["basis"] == [evidence["identity"]]
+    assert all(
+        r["status"] == "conflicted" and r["passages"]
+        for r in card["participant_flow"]
+        if r["kind"] in {"observed", "imputed"}
+    )
+    assert _state(workspace) == before

@@ -359,10 +359,9 @@ def test_prepare_batch_schema_is_closed_and_requires_outcome_request() -> None:
     }
     assert schema["properties"]["requested_outcome"]["type"] == "string"
     outcome_description = schema["properties"]["requested_outcome"]["description"]
-    assert all(
-        excluded in outcome_description
-        for excluded in ("Trial names", "population", "comparison", "effect estimate")
-    )
+    assert "Preserve" in outcome_description
+    assert "not source-verified facts" in outcome_description
+    assert "follow-up" in outcome_description
     trial_labels = schema["properties"]["trial_labels"]
     array_schema = next(item for item in trial_labels["anyOf"] if item.get("type") == "array")
     assert array_schema["minItems"] == 1
@@ -488,24 +487,36 @@ def test_prepare_batch_rejects_empty_or_blank_trial_labels(
     asyncio.run(prepare())
 
 
-def test_prepare_batch_rejects_result_definition_in_outcome_concept(tmp_path: Path) -> None:
-    (tmp_path / "input" / "Trial A").mkdir(parents=True)
-
-    async def prepare() -> None:
-        os.environ["ROB2_WORKSPACE"] = str(tmp_path)
-        async with Client(mcp) as client:
-            with pytest.raises(ToolError, match="only the outcome concept"):
-                await client.call_tool(
-                    "prepare_batch",
-                    {
-                        "requested_outcome": (
-                            "Overall Survival defined as time from randomization to death"
-                        ),
-                        "expected_revision": 0,
-                    },
-                )
-
-    asyncio.run(prepare())
+@pytest.mark.parametrize(
+    "target",
+    [
+        "Death by 9 months after randomization defined as 113 versus 114 deaths",
+        "Grade 3 or 4 adverse events during the first 16 weeks of chemotherapy",
+    ],
+)
+def test_requested_target_scope_survives_approval_and_context_recovery(
+    tmp_path: Path, target: str
+) -> None:
+    workspace = _workspace(tmp_path, target)
+    evidence = _prepared_evidence(workspace, target)
+    assert _state(workspace)["batch"]["trials"][0]["requested_outcome"] == target
+    draft = _result(evidence)
+    draft["relation"] = "related"
+    draft["relation_rationale"] = "Reported source scope does not establish the complete target."
+    draft["clarity"]["time_point"] = "unclear"
+    saved = workflow_call(workspace, "save_proposal", _proposal_args(workspace, [draft]))
+    assert saved["outcome"] == "review_required", saved
+    canonical = _state(workspace)["proposal"]["payload"]["results"][0]
+    assert canonical["requested_outcome"] == target
+    assert canonical["target"]["outcome_definition"] == target
+    assert canonical["reported"]["endpoint"]["name"] == "requested outcome"
+    _review(workspace)
+    recovered = workflow_call(
+        workspace, "get_domain_context", {"trial_id": "trial", "domain_id": "domain:missing"}
+    )
+    assert recovered["data"]["result"]["requested_outcome"] == target
+    assert recovered["data"]["result"]["relation"] == "related"
+    assert recovered["data"]["result"]["clarity"]["time_point"] == "unclear"
 
 
 def test_prepare_batch_retries_subset_idempotently_when_label_order_changes(tmp_path: Path) -> None:
@@ -934,7 +945,10 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
     region_description = _tool_schema("select_visual_evidence")["properties"]["region"][
         "description"
     ]
-    assert "Normalized" in region_description
+    assert "normalized" in region_description.casefold()
+    assert "top-left origin" in region_description
+    assert "exact authenticated" in region_description
+    assert "region" not in _tool_schema("select_visual_evidence")["required"]
 
 
 def test_save_proposal_schema_is_closed_and_discriminated() -> None:
@@ -1001,8 +1015,9 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "no_information",
     ]
     variants = answers["properties"]["bases"]["items"]["anyOf"]
-    assert variants[1]["type"] == "string"
-    assert set(variants[2]["required"]) == {"source_id", "page", "start_line", "end_line"}
+    assert any(variant.get("type") == "string" for variant in variants)
+    location = next(variant for variant in variants if "source_id" in variant.get("properties", {}))
+    assert set(location["required"]) == {"source_id", "page", "start_line", "end_line"}
     citation = variants[0]
     assert citation["additionalProperties"] is False
     assert set(citation["properties"]) == {"evidence", "role", "working_observation"}

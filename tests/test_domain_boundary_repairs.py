@@ -298,7 +298,7 @@ def test_domain_public_shape_is_closed_with_optional_observation_link() -> None:
         "absence_searches",
     }
     base_variants = answer["properties"]["bases"]["items"]["anyOf"]
-    assert base_variants[1]["type"] == "string"
+    assert any(variant.get("type") == "string" for variant in base_variants)
     direct = _resolve_local(draft, base_variants[0])
     assert set(direct["properties"]) == {"role", "evidence", "working_observation"}
     assert set(direct["required"]) == {"role", "evidence"}
