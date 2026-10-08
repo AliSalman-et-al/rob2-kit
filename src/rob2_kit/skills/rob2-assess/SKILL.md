@@ -156,6 +156,8 @@ Examples:
 
 Confirm from the receipt that the captured Trial labels match the requested
 scope. Inspect intake conditions before concluding that evidence is unavailable.
+In Codex, finish a pending host call using the exact returned cell ID as described
+in [Codex receipt snippets](references/codex.md#finish-a-pending-host-call).
 Search covers captured text projections only. Supplied files listed as
 unsupported, unreadable, or missing were not searched. A declared role does not
 establish document contents. DOCX support covers ordinary paragraphs, table

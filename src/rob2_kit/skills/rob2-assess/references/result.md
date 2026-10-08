@@ -13,6 +13,13 @@ or figure handles belong in `source_passages`; `candidate.evidence` is only for 
 proof objects. Handles already carry record-kind/source metadata, but cannot
 supply scientific scope, clarity, units or uncertainty.
 
+The comparative fields describe a between-group effect, such as a difference,
+ratio or hazard ratio. An arm's mean or median is a group value, even when both
+arms report the same number. A comparison p-value does not turn an arm statistic
+into a comparative estimate. When the report supplies only arm statistics,
+use the complete `group_values` form below; do not invent a contrast by subtracting
+them or place one arm's value in `estimate`.
+
 For `exact`, `candidate.clarity` requires eight explicit facets: `outcome_definition`,
 `measurement`, `time_point`, `analysis_population`, `comparison_groups`,
 `effect_measure`, `source_table_meaning` and `eligible_result_choice`. Each accepts
