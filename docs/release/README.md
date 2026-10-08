@@ -21,6 +21,20 @@ can reject a bundle produced under different scientific guidance. Update that
 descriptor only when the scientific pack changes, and update its acceptance and
 tamper tests in the same change.
 
+After changing scientific guidance, run the existing descriptor check before
+pushing, even when the selected scientific tests do not finalize bundles:
+
+```powershell
+uv run python -m pytest tests/test_pack_descriptor_compatibility.py::test_current_descriptor_pin_and_recognized_history_match_installed_pack -q
+```
+
+This compares the independently pinned descriptor with the installed pack and
+checks that recognized historical descriptors remain accepted while altered
+source identities fail. It does not regenerate the independent pin. Retain exact
+previous descriptors when preserving historical bundle compatibility; do not
+replace verification with a computed current hash. Then run the relevant bundle
+acceptance and tamper tests and the installed-wheel release check below.
+
 The dependency-free verifier is distributed with the repository and tagged
 source releases, not inside the wheel. Wheel-only installations provide
 `rob2 verify`; independent verification uses `scripts/verify_bundle.py` from
