@@ -6,6 +6,19 @@ sections 8.1–8.3 in `get_domain_context`. They supply the scientific interpret
 including review-defined eligible alternatives; the instructions below guide
 source acquisition, navigation and recording.
 
+The selected Result identifies the estimate being assessed; it does not by itself
+define the review's eligible measurement or analysis family. Establish that
+boundary from the researcher's stated review restrictions, separately from the
+trial's intended measurements and analyses. Honor genuine restrictions on scales,
+time points or analyses; other reported outcomes are not automatically eligible
+alternatives. Do not infer such a restriction merely from the selected estimate's
+scale, threshold, time point or analysis. Review eligibility also does not establish
+trial prespecification or correspondence with all intended eligible results.
+No visible competing result is not evidence that only one eligible measurement
+or analysis was possible, or that all intended eligible results were reported.
+Apply the official Box 11 conditions to the source evidence and contextual
+probabilities; an unavailable plan alone does not determine an answer.
+
 ## Establish the analysis plan
 
 A missing protocol/SAP in this captured dossier does not show publication
