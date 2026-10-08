@@ -3219,6 +3219,21 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
     ):
         return True
+    pre_d4_faq = {
+        **expected,
+        "content_hash": "sha256:c7ba52a378c886fcfe997273058cdce06b2a601605ab1b1019e8df958a1eebf6",
+    }
+    if value in (
+        pre_d4_faq,
+        {**pre_d4_faq, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+        {
+            key: item
+            for key, item in pre_d4_faq.items()
+            if key not in {"domain_judgment_contract", "aggregation_contract"}
+        }
+        | {"result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+    ):
+        return True
     pre_masking = {
         **expected,
         "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",

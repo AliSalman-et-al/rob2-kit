@@ -55,7 +55,12 @@ def test_background_and_faq_wording_preserve_source_versions_and_scope() -> None
         assert official.guidance.source_excerpt == " ".join(record["text"].split())
         assert official.guidance.version == background["version"]
         assert official.guidance.source_sha256 == background["source_sha256"]
-    for record in faq["sections"]:
+    current_faq = json.loads(
+        Path("tests/fixtures/official-guidance-audit-2019/faq-20261008.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    for record in [*faq["sections"], *current_faq["sections"]]:
         official = by_locator[record["source_locator"]]
         assert official.source_url == record["source_url"]
         assert official.guidance.source_excerpt == record["source_excerpt"]

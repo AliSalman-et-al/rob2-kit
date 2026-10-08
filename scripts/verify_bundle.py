@@ -195,8 +195,16 @@ _CONDITIONAL_SCIENTIFIC_PACK = {
     "domain_judgment_contract": _DOMAIN_JUDGMENT_CONTRACT,
     "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
 }
-_NULL_UNIT_SCIENTIFIC_PACK = {
+_PRE_D4_FAQ_NULL_UNIT_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
+    "result_semantics_version": "rob2-kit.result-semantics.v0.10",
+}
+_D4_FAQ_CONDITIONAL_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "content_hash": "sha256:5517ffe68111a6c7fadead95852073cf161ccd7b5ac186be7301c7eda464bf35",
+}
+_NULL_UNIT_SCIENTIFIC_PACK = {
+    **_D4_FAQ_CONDITIONAL_PACK,
     "result_semantics_version": "rob2-kit.result-semantics.v0.10",
 }
 _PRE_MASKING_SCIENTIFIC_PACK = {
@@ -5130,6 +5138,8 @@ def verify(path: Path) -> tuple[bool, str]:
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _NULL_UNIT_SCIENTIFIC_PACK,
+                _D4_FAQ_CONDITIONAL_PACK,
+                _PRE_D4_FAQ_NULL_UNIT_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
                 _PRE_MASKING_SCIENTIFIC_PACK,
                 _PRE_MASKING_CONDITIONAL_PACK,

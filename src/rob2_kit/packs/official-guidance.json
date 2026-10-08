@@ -161,6 +161,17 @@
       "question_ids": [
         "sq:missing:evidence-unbiased"
       ]
+    },
+    {
+      "domain_id": "domain:measurement",
+      "question_ids": [
+        "sq:measurement:assessor-aware"
+      ],
+      "source_url": "https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2",
+      "version": "Undated page; retrieved 8 October 2026",
+      "source_sha256": "92E9357324F441E6202059DEF5027B35FCF398616D14C7270174B65C51236B05",
+      "source_locator": "Official RoB 2 FAQ, Domain 4, SQ 4.3: assessor awareness with unexplained double-blind description; conditional answer excerpt",
+      "source_excerpt": "If there is no other information, then either use ‘NI’ or assume they were aware of the assignment."
     }
   ],
   "pdf_license": "CC BY-NC-ND 4.0; unmodified wording, whitespace-normalized extraction",

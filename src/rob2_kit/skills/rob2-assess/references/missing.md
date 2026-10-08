@@ -16,10 +16,9 @@ the server commits only the dependency-closed active path.
 
 ## Scientific authority and source recovery
 
-Use the official question elaborations and shared response guidance delivered
-by `get_domain_context`, with the exact approved Result and activation path.
-Use the complete official question elaborations and the shared response semantics in the official core,
-including each question's permitted options. The official source version,
+Use the complete official question elaborations, shared response semantics and
+permitted options delivered by `get_domain_context`, with the exact approved
+Result and activation path. The official source version,
 hash and full-source URL accompany the text, including the distinction between
 available outcomes excluded from analysis and measurements not obtained.
 
@@ -64,7 +63,7 @@ Keep these quantities distinct for each arm and time point:
 - participants with the outcome observed (`observed`);
 - the reported total with unavailable outcome data (`unavailable`), when its scope is established;
 - participants included in the reported analysis;
-- participants whose outcomes were imputed; and
+- participants whose outcomes were imputed;
 - post-randomization exclusions; and
 - outcome events, which are a numerator rather than an observed-participant count.
 

@@ -1,8 +1,9 @@
 # Selected Result reconstruction (optional typed format)
 
 Sources → how this Result was produced → independent official propositions →
-canonical judgments. This replaces question-first fact gathering, not Cochrane
-question wording or decision rules. The reconstruction is an editable working
+canonical judgments. When used, this optional account organizes shared facts
+before answering independent questions. It preserves Cochrane question wording
+and decision rules. The reconstruction is an editable working
 account, never a server-certified causal model or Evidence.
 
 Keep only connected facts material to understanding the approved Result:

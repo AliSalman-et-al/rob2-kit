@@ -2636,7 +2636,12 @@ def current_batch() -> str:
     name="prepare_batch",
     title="Prepare batch",
     description=(
-        "Preserve supplied outcome scope in requested_outcome; do not strip an explicit "
+        "This pack supports individually randomized parallel trials and the effect of assignment. "
+        "Establish the requested effect of interest before Proposal Review; an explicit adherence "
+        "request requires the corresponding official Domain 2 variant and must not silently be "
+        "reinterpreted as assignment. A reported per-protocol estimate does not itself change "
+        "the requested effect of interest. Preserve supplied outcome scope in requested_outcome; "
+        "do not strip an explicit "
         "definition, population, comparison, statistic, follow-up or reported-value anchor. "
         "Keep source-reported facts separate when constructing the Proposal. "
         "If the user names Trials, pass their "
@@ -4062,8 +4067,9 @@ def select_visual_evidence(
         "window and distinguish eligibility from analysis exclusions or missing observations. "
         "Enrollment eligibility alone does not narrow an all-randomized target in this Trial; "
         "external generalizability is separate. "
-        "Candidate estimate/precision are source strings. Group values require group_id, value "
-        "and unit; statistic is optional and unresolved when omitted. Timing value/unit must "
+        "Candidate estimate/precision are source strings. Group values require group_id and "
+        "value; statistic and unit may be null when unreported or unresolved. Null does not "
+        "assert dimensionless; retain uncertainty in source_table_meaning. Timing value/unit must "
         "be supplied together. Exact requires all eight clarity facets explicitly specified; "
         "do not infer clarity. Design-specific evidence remains explicit. Narrative/figure "
         "handles go in source_passages; candidate.evidence is only for advanced typed proofs. "
@@ -4217,8 +4223,7 @@ class ProposalApprovalDecision(StrictModel):
     name="request_proposal_approval",
     title="Request Proposal approval",
     description=(
-        "Present the exact immutable Proposal Review and obtain the researcher’s explicit "
-        "approval in conversation. Then call "
+        "Present the exact immutable Proposal Review. Call "
         "request_proposal_approval with {} to "
         "record the approval through elicitation. Call get_status after the approval succeeds. "
         "This tool has no approval arguments: only a directly accepted elicitation with "

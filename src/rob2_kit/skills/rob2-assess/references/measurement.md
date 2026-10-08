@@ -6,6 +6,12 @@ The official background includes assessor identity, intervention-provider
 decisions and component contributions to composite outcomes. Apply that source
 material with the exact approved Result and independent question dependencies.
 
+An unexplained “double blind” label does not establish the identity or blinding
+of this outcome’s assessor. Apply the specific official FAQ for question 4.3
+delivered in Domain context; keep its advice separate from the contextual
+blinding judgment for questions 2.1 and 2.2. Additional source information may
+resolve assessor awareness. Awareness still does not determine question 4.5.
+
 Locate the selected outcome’s definition, measurement procedures, assessors,
 reported blinding, group-specific schedules and relevant component information.
 Keep reported facts, planned procedures, actual conduct, inference and uncertainty

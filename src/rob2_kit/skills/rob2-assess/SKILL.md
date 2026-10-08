@@ -1,9 +1,16 @@
 ---
 name: rob2-assess
-description: Assess or resume RoB 2 for a requested outcome in one or more Trials with rob2-kit. Use for Result selection, Proposal Review, Domain assessment, and finalization.
+description: Assess or resume RoB 2 for the effect of assignment in individually randomized parallel Trials with rob2-kit. Use for Result selection, Proposal Review, Domain assessment, and finalization.
 ---
 
 # Assess a trial result
+
+This packaged assessment supports individually randomized parallel trials and
+the effect of assignment. Establish the requested effect of interest before
+Proposal Review. An explicit adherence-effect request requires the corresponding
+official Domain 2 variant; explain that this pack does not support that request
+and do not silently substitute assignment. A reported per-protocol estimate
+does not by itself change the requested effect of interest.
 
 Packaged reference links are available through `read_guidance(document="references/<name>.md")`
 when filesystem reading is unavailable. Start with `read_guidance(document="SKILL.md")`
@@ -262,14 +269,17 @@ notes to the saved Result and preserves their source locations. Notes are host
 working memory; their presence does not establish comprehension, Evidence
 authority, or scientific sufficiency.
 
-Present the exact immutable Proposal Review and stop for the researcher. If the
+Present the exact immutable Proposal Review for the researcher to approve. If the
 researcher corrects a Result, use it as source-review direction, validate and
 save a complete replacement card, then reassess the notes against that Result
 again before presenting the fresh Review.
 
-After explicit approval in conversation, call `request_proposal_approval` with
-the empty arguments object `{}`. Its
-client elicitation binds approval to that Review. Then call `get_status`.
+Call `request_proposal_approval` with the empty arguments object `{}` to obtain
+and record approval through the host's researcher elicitation. This is the
+approval interaction, not a second confirmation after conversational approval.
+If the host does not support elicitation, report the returned capability condition
+and use researcher approval through `rob2 review`; repeating the call cannot add
+that capability. Then call `get_status`.
 For each approved assessable Trial, recover its approved Result and
 source-bound working context when the Trial becomes active. If the checkpoint is
 current, use its observations and open premises to carry the completed
@@ -515,8 +525,10 @@ path. Keep an inactive answer when it is already available and has valid
 reasoning. Do not invent inactive questions or reasoning. The server ignores
 inactive answers.
 The server computes the whole-Trial overall judgment from the five Domain
-judgments when the fifth checkpoint is saved; do not add an overall override or
-wait for a researcher decision.
+judgments when the fifth checkpoint is saved. No ad hoc overall override field
+is accepted. Check adopted Domain judgments through the existing justified
+adjudication route; use the existing cumulative-concerns route when warranted.
+Continue without waiting for a researcher decision.
 
 ### 7. Review and close every Trial
 
