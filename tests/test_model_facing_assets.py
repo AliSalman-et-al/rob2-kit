@@ -178,7 +178,9 @@ def test_skill_requires_complete_proposal_construction_before_validation() -> No
 
 def test_measurement_reference_uses_official_science_and_source_reconstruction() -> None:
     normalized = " ".join(
-        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text(encoding="utf-8").split()
+        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md")
+        .read_text(encoding="utf-8")
+        .split()
     )
     for marker in (
         "complete official Box 10 elaborations",
