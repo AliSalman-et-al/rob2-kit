@@ -13,6 +13,23 @@ separate in source-linked notes. Preserve which actor, arm, period and endpoint
 each passage describes. A later classification committee and an earlier clinical
 decision maker remain separate actors in the reconstruction.
 
+The [Cochrane FAQ, Domain 4](https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2)
+distinguishes actions changing the true outcome from how that outcome is
+portrayed or measured. Do not count the same mechanism twice across Domains 2
+and 4. A true treatment effect alone establishes neither a deviation from the
+intended intervention nor measurement bias. Identify the actor and causal step
+for the selected Result rather than inferring measurement bias from a change
+in care or event membership alone.
+
+Preserve section 7.1's intervention-provider decision outcomes: when the outcome
+reflects a clinical decision, accurately recording that decision does not remove
+possible influence of assignment knowledge on the decision itself. Explain how
+the proposed mechanism affects measurement, ascertainment or portrayal, or the
+decision reflected in the selected outcome. Question 4.4 asks whether influence
+could occur; question 4.5 separately asks whether it was likely. Awareness alone
+does not establish likely influence, and absence of documented influence alone
+does not establish that influence was impossible or unlikely.
+
 Inspect complete relevant passages and visible report material. Source roles,
 OCR availability, metadata and arithmetic are not scientific authority. Recover
 omitted text or pixels through the existing reading tools; preserve unknown

@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from rob2_kit.workflow_models import (
     DomainInformationLimit,
     DomainSaveAnswer,
@@ -210,7 +212,8 @@ def test_missing_reference_and_skill_use_official_science_and_preserve_recovery(
         assert term in reference, term
 
 
-def test_missing_reference_delivered_through_production_mcp_resource() -> None:
+@pytest.mark.parametrize("name", ["missing", "measurement"])
+def test_domain_reference_delivered_through_production_mcp_resource(name: str) -> None:
     import asyncio
 
     from fastmcp import Client
@@ -219,13 +222,15 @@ def test_missing_reference_delivered_through_production_mcp_resource() -> None:
 
     async def read() -> str:
         async with Client(mcp) as client:
-            contents = await client.read_resource("rob2://guidance/missing")
+            contents = await client.read_resource(f"rob2://guidance/{name}")
             return "\n".join(item.text for item in contents if hasattr(item, "text"))
 
     delivered = asyncio.run(read())
     assert delivered == Path(
-        "src/rob2_kit/skills/rob2-assess/references/missing.md"
+        f"src/rob2_kit/skills/rob2-assess/references/{name}.md"
     ).read_bytes().decode("utf-8")
+    if name != "missing":
+        return
     assert "`observed` or `unavailable`" in delivered
     assert "does not synthesize `observed`" in delivered
     assert "generic censoring does not" in delivered
