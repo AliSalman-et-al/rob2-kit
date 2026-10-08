@@ -1218,15 +1218,15 @@ class GroupResultValue(StrictModel):
     )
     statistic: NonBlankText | None = Field(
         default=None,
-        description="Source statistic label when identified. Omission or null preserves "
-        "an absent literal label; scientific interpretation remains separately justified.",
+        description="Printed source statistic label, or null when absent; "
+        "justify scientific meaning separately.",
     )
     value: NonBlankText = Field(description="Source-reported value for this group.")
     unit: NonBlankText | None = Field(
         default=None,
-        description="Literal source-reported unit, or null when unreported or unresolved. "
-        "A scientifically inferred unit belongs in scope_rationale, never in this literal field. "
-        "Null does not assert dimensionless or require unclear scientific meaning by itself.",
+        description="Printed source unit, or null when absent/unresolved. "
+        "Justify inferred meaning in scope_rationale; null neither asserts dimensionless "
+        "nor forces unclear meaning.",
     )
 
 
@@ -1320,8 +1320,8 @@ class ComparativeEffectResult(StrictModel):
     reported_statistics: tuple[NonBlankText, ...] = Field(
         default=(),
         exclude_if=lambda value: not value,
-        description="Ancillary source-reported expressions for this comparison, such as "
-        "'p = 0.68'; they are neither an effect estimate nor its precision interval.",
+        description="Literal ancillary comparison statistics, such as 'p = 0.68'; "
+        "separate from effect estimates and intervals.",
     )
 
     @model_validator(mode="after")
@@ -1353,8 +1353,8 @@ class GroupBoundValuesResult(StrictModel):
     reported_statistics: tuple[NonBlankText, ...] = Field(
         default=(),
         exclude_if=lambda value: not value,
-        description="Ancillary source-reported expressions for this comparison, such as "
-        "'p = 0.68'; they do not require a fabricated comparative estimate.",
+        description="Literal ancillary comparison statistics; "
+        "complete group values do not require a comparative estimate.",
     )
 
 
@@ -1812,16 +1812,14 @@ class ResultScopeReview(StrictModel):
     caller_declared_clarity: ResultClarity
     verification: Literal["requires_source_interpretation"] = "requires_source_interpretation"
     instruction: NonBlankText = (
-        "Keep the shared requested wording distinct from this selected Trial Result. "
-        "Compare outcome definition/components, time window, randomized assignment contrast, "
-        "estimand and population against the selected "
-        "source passages. A reported effect-measure label does not establish the estimand. "
-        "Null reported timing/estimand means not separately represented, not "
-        "absent from the source. Known target fields, a matching endpoint label, or bound numbers "
-        "do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; "
-        "choose a supported non-exact relation or another candidate when exact scope is not "
-        "established. Resolve a material choice between actual source candidates before "
-        "approval; do not guess unspecified request details or silently redefine the target."
+        "Keep shared request constraints separate from this Trial's selected Result. "
+        "Compare endpoint/components, window, randomized assignment contrast, population and "
+        "estimand with inspected source passages. Bound numbers or matching labels do not prove "
+        "exactness; an effect-measure label does not establish the estimand. Null reported "
+        "timing/estimand means unrepresented, not absent from Source. Preserve material "
+        "uncertainty/conflict in clarity and rationale. Choose another supported candidate or "
+        "a non-exact relation when needed; resolve material choices before approval without "
+        "guessing request details or redefining the target."
     )
 
 
@@ -2064,9 +2062,8 @@ class ProposedReportedResult(StrictModel):
     )
     reported_statistics: tuple[NonBlankText, ...] = Field(
         default=(),
-        description="Optional literal ancillary comparison statistics, for example "
-        "['p = 0.68'], with either a comparative estimate or complete group values. "
-        "Keep intervals attached to an effect estimate in precision.",
+        description="Literal ancillary comparison statistics with an estimate or complete group "
+        "values. Keep effect intervals in precision.",
     )
     group_values: tuple[GroupResultValue, ...] = Field(
         default=(),

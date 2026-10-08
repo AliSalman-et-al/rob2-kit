@@ -1684,6 +1684,10 @@ def _result_value_contains(material: str, phrase: str, field_path: str | None = 
         and field_path.startswith("/reported/")
         and field_path.endswith("/value")
     )
+    numeric_field = numeric_field or (
+        field_path is not None
+        and re.fullmatch(r"/reported/reported_statistics/\d+", field_path) is not None
+    )
     allow_percent_suffix = field_path is None or field_path.endswith("/value")
     return (
         _numeric_contains(

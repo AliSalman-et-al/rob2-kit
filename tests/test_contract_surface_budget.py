@@ -101,7 +101,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # Two companion operations and durable typed status recovery add 18 KB.
     # Authored bookmark provenance and bound outline/read actions add 14 KB; measured 667054.
     # Conditional event-definition disclosure and field descriptions measure 680803 bytes.
-    assert total_bytes < 685_000
+    # v0.12 adds source-bound ancillary statistics and numerical-role scope review.
+    # After removing redundant descriptions: 688577 aggregate bytes (+7774 from
+    # 680803, 1.14%). This sums 23 closed input/output schemas, not observed host
+    # prompt tokens. Keep the new observations typed rather than hiding them.
+    assert total_bytes < 690_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations

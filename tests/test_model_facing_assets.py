@@ -26,12 +26,18 @@ MODEL_FACING_PATHS = (
     Path("src/rob2_kit/workflow_models.py"),
 )
 PRIVATE_EVALUATION_TERMS = re.compile(
-    r"CHAARTED|STAMPEDE|TITAN|progression[-_ ]free|\bPFS\b|overall[_ -]survival|"
+    r"CHAARTED|STAMPEDE|TITAN|progression[-_ ]free|\bPFS\b|"
     r"NCT00309985|docetaxel|castration|prostate|androgen deprivation|\bADT\b|"
     r"adverse[-_ ]events?",
     re.IGNORECASE,
 )
 TEXT_SUFFIXES = {".json", ".md", ".py"}
+
+
+def test_generic_survival_endpoint_is_not_private_trial_leakage() -> None:
+    assert PRIVATE_EVALUATION_TERMS.search("overall survival") is None
+    for private_identifier in ("CHAARTED", "STAMPEDE", "TITAN", "NCT00309985"):
+        assert PRIVATE_EVALUATION_TERMS.search(private_identifier)
 
 
 def _model_facing_files() -> list[Path]:
