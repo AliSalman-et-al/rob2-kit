@@ -733,7 +733,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
-        "result_semantics_version": "rob2-kit.result-semantics.v0.10",
+        "result_semantics_version": "rob2-kit.result-semantics.v0.11",
     }
     assert _standalone_verify(artifact).returncode == 0
 
