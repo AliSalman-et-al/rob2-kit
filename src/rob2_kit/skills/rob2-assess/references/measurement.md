@@ -1,46 +1,79 @@
-# Assess outcome measurement
+# Domain 4: bias in measurement of the outcome
 
-Use this reference for Domain 4. Read the complete official Box 10 elaborations,
-shared response semantics and section 7.1 background in `get_domain_context`.
-The official background includes assessor identity, intervention-provider
-decisions and component contributions to composite outcomes. Apply that source
-material with the exact approved Result and independent question dependencies.
+Source: RoB 2 full guidance, section 7 and Box 10, plus the Cochrane RoB 2 FAQ
+for 4.3. The complete official text is returned by `get_domain_context`.
 
-An unexplained “double blind” label does not establish the identity or blinding
-of this outcome’s assessor. Apply the specific official FAQ for question 4.3
-delivered in Domain context; keep its advice separate from the contextual
-blinding judgment for questions 2.1 and 2.2. Additional source information may
-resolve assessor awareness. Awareness still does not determine question 4.5.
+This domain is mainly about differential measurement error: error related to
+the assigned intervention, which is less likely when assessors are blinded.
 
-Locate the selected outcome’s definition, measurement procedures, assessors,
-reported blinding, group-specific schedules and relevant component information.
-Keep reported facts, planned procedures, actual conduct, inference and uncertainty
-separate in source-linked notes. Preserve which actor, arm, period and endpoint
-each passage describes. A later classification committee and an earlier clinical
-decision maker remain separate actors in the reconstruction.
+## Read first
 
-The [Cochrane FAQ, Domain 4](https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2)
-distinguishes actions changing the true outcome from how that outcome is
-portrayed or measured. Do not count the same mechanism twice across Domains 2
-and 4. A true treatment effect alone establishes neither a deviation from the
-intended intervention nor measurement bias. Identify the actor and causal step
-for the selected Result rather than inferring measurement bias from a change
-in care or event membership alone.
+Read the outcome definition and how and when it was measured for each group;
+who assessed it (the participant, the clinician delivering care, an independent
+assessor or adjudication committee, an automated test); and who was blinded to
+assignment. For a composite, identify which components drive the events.
 
-Preserve section 7.1's intervention-provider decision outcomes: when the outcome
-reflects a clinical decision, accurately recording that decision does not remove
-possible influence of assignment knowledge on the decision itself. Explain how
-the proposed mechanism affects measurement, ascertainment or portrayal, or the
-decision reflected in the selected outcome. Question 4.4 asks whether influence
-could occur; question 4.5 separately asks whether it was likely. Awareness alone
-does not establish likely influence, and absence of documented influence alone
-does not establish that influence was impossible or unlikely.
+## Identify the outcome type and assessor
 
-Inspect complete relevant passages and visible report material. Source roles,
-OCR availability, metadata and arithmetic are not scientific authority. Recover
-omitted text or pixels through the existing reading tools; preserve unknown
-contributions and source conflicts instead of manufacturing missing facts.
+| Outcome type | Assessor | Can knowledge of assignment influence it? |
+| --- | --- | --- |
+| Participant-reported (pain, quality of life, symptom scores) | The participant, even if a blinded interviewer records the answers | Yes |
+| Observer-reported, no judgement (all-cause mortality, automated laboratory value) | The observer | Usually not |
+| Observer-reported, some judgement (clinical examination, imaging read, events other than death adjudicated from records) | The observer | Yes, if aware |
+| Intervention-provider decision (hospitalization, discharge, stopping treatment, caesarean section) | The care provider making the decision | Usually yes, if aware |
+| Composite | Each component's assessor | Judge by the most influential components |
 
-Use [Build a Domain answer](evidence.md#build-a-domain-answer) for exact Evidence,
-counterevidence and uncertainty shapes. Inspect the proposed Domain label and
-use the existing source-bound adjudication route for a justified departure.
+## 4.1 Was the method of measuring the outcome inappropriate?
+
+For pre-specified outcomes this is usually **No / Probably no**. Answer **Yes**
+only if the method is unlikely to be sensitive to plausible effects, or the
+instrument has demonstrated poor validity. This question does not judge whether
+the outcome itself (for example a surrogate) was a sensible choice.
+
+## 4.2 Could measurement or ascertainment of the outcome have differed between groups?
+
+- **No / Probably no:** the same methods and thresholds at comparable times in
+  both groups. This is usually the case for pre-specified outcomes.
+- **Yes / Probably yes:** passive collection where one intervention prompts more
+  testing or visits (diagnostic detection), or an intervention involving extra
+  contacts that create more opportunities to detect events.
+
+## 4.3 If N/PN/NI to 4.1 and 4.2: were outcome assessors aware of the intervention received?
+
+Identify the assessor from the table above first. For participant-reported
+outcomes the participant is the assessor, so answer as for 2.1. Answer **No**
+if the assessor was blinded. "Double blind" alone does not say whether the
+outcome assessor was blinded; read who was masked. A blinded adjudication
+committee makes assessors unaware for the events it classifies, but not for an
+earlier clinical decision by an aware care provider that the outcome records.
+
+## 4.4 If Y/PY/NI to 4.3: could assessment of the outcome have been influenced by knowledge of intervention received?
+
+- **No / Probably no:** observer-reported outcomes not involving judgement,
+  such as all-cause mortality or an automated test, even when assessors knew
+  the assignment.
+- **Yes / Probably yes:** participant-reported outcomes, observer-reported
+  outcomes involving judgement, and intervention-provider decisions.
+
+## 4.5 If Y/PY/NI to 4.4: is it likely that assessment was influenced by knowledge of intervention received?
+
+This separates "could" (Some concerns) from "likely" (High). Influence is more
+likely when there are strong beliefs in either beneficial or harmful effects
+of the intervention, for example participant-reported symptoms in trials of
+homeopathy, or recovery of function assessed by the physiotherapist who
+delivered the intervention. Awareness alone does not make influence likely; a severe or
+unexpected harm recorded long after starting the intervention is unlikely to
+be influenced.
+
+## Algorithm
+
+- **High:** 4.1 Yes/Probably yes; or 4.2 Yes/Probably yes; or 4.5 Yes/Probably
+  yes/No information.
+- **Some concerns:** 4.2 No information; or 4.5 No/Probably no.
+- **Low:** otherwise (for example assessors blinded, or influence not possible).
+
+Do not count one mechanism in both Domains 2 and 4: a change in care that
+changes the true outcome belongs to Domain 2; a change in how the outcome is
+measured, recorded or decided belongs here. Use
+[Build a Domain answer](evidence.md#build-a-domain-answer) for the submission
+shape.

@@ -1,17 +1,77 @@
-# Assess randomization
+# Domain 1: bias arising from the randomization process
 
-Use this reference for Domain 1. Read the complete official Box 4 elaborations,
-shared response semantics and source-bound background in `get_domain_context`.
-Use the returned wording, options and activation for each independent question.
-Scientific interpretation, including minimization and probable responses, comes
-from that official core rather than a separate documentation prerequisite here.
+Source: RoB 2 full guidance (22 August 2019), section 4 and Box 4. The complete
+official text is returned by `get_domain_context`; this page restates how to
+apply it.
 
-Locate the reported allocation methods, enrolment/assignment procedures and
-arm-specific baseline information in the captured Sources. Preserve the exact
-passage scope and separate reported conduct from your inference. Read table
-headers, group labels and relevant notes together; keep missing information and
-source conflicts explicit. Optional lexical hints are alternatives, not a checklist.
+Randomization protects the comparison only if the sequence was unpredictable
+(1.1) and nobody enrolling participants could know or influence the next
+assignment (1.2). Baseline comparisons (1.3) can reveal that it failed.
 
-Use [Build a Domain answer](evidence.md#build-a-domain-answer) for the submission
-shape. Inspect the proposed label separately; a justified departure uses the
-existing source-bound Domain adjudication route.
+## Read first
+
+Read the randomization, allocation and enrolment paragraphs of every Source that
+describes methods: the main report, its supplements, any protocol or SAP, and
+the registry record. Reports often describe these methods in a supplement or
+protocol rather than the main article. Then read the baseline characteristics
+table. Reports rarely use the word "concealment"; read the methods rather than
+relying on searches for that word.
+
+## 1.1 Was the allocation sequence random?
+
+- **Yes:** a random component was used: computer-generated random numbers, a
+  random number table, coin tossing, shuffled cards or envelopes, dice, drawing
+  lots. Minimization usually includes a random element and counts as random.
+- **No:** no random element, or a predictable sequence: alternation, dates of
+  birth or admission, record numbers, clinician or participant choice,
+  availability of the intervention.
+- **Probably yes:** specific methods are not described but the circumstances
+  make a random sequence reasonable to assume, for example a large trial run by
+  an experienced clinical trials unit and reported in a journal with strict
+  word limits.
+- **No information:** the only information is that the study was "randomized"
+  and the circumstances give no reasonable basis for a probable answer.
+
+## 1.2 Was the allocation sequence concealed until participants were enrolled and assigned?
+
+- **Yes:** allocation was remote or centrally administered by a unit
+  independent of enrolment staff: a central or independent pharmacy, a
+  telephone, web-based or interactive voice/web response randomization service.
+  Also Yes for opaque, sequentially numbered, sealed envelopes opened only after
+  irreversible assignment, or sequentially numbered drug containers of
+  identical appearance dispensed only after irreversible assignment.
+- **No:** there is reason to suspect that the enrolling investigator or the
+  participant knew the forthcoming allocation (open lists, alternation,
+  unsealed or translucent envelopes, envelopes without safeguards).
+- **Probably yes / probably no:** the guidance expects judgement here because
+  full detail is rarely reported. A placebo-controlled trial with identical,
+  numbered study drug supplied centrally supports Probably yes.
+- **No information:** after reading every methods Source, nothing describes how
+  assignments were made or protected and the circumstances support neither
+  probable answer.
+
+## 1.3 Did baseline differences between groups suggest a problem with randomization?
+
+- **No:** no imbalances, or imbalances compatible with chance. A few
+  "significant" differences at p < 0.05 are usually compatible with chance.
+- **Yes:** group sizes differ substantially from the intended ratio; there are
+  substantially more significant baseline differences than chance would give;
+  a key prognostic factor or baseline outcome measure is imbalanced in a way
+  very unlikely to be chance and large enough to bias the result; or baseline
+  characteristics are too similar to be compatible with chance.
+- **No information:** no useful baseline data (for example an abstract only, or
+  baseline data only for the analysed participants).
+
+Answer 1.3 independently: adequate methods in 1.1 and 1.2 stay adequate even
+when baseline imbalance is present, and imbalance does not change 1.1 or 1.2.
+
+## Algorithm
+
+- **High:** 1.2 is No or Probably no; or 1.2 is No information and 1.3 is Yes
+  or Probably yes.
+- **Some concerns:** 1.1 is No or Probably no; or 1.2 is No information; or 1.3
+  is Yes or Probably yes.
+- **Low:** otherwise.
+
+Use [Build a Domain answer](evidence.md#build-a-domain-answer) for the
+submission shape.
