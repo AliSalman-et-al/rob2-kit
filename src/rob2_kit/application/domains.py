@@ -395,6 +395,15 @@ def _main_report_recovery(
     }
 
 
+# Registered plan fields that date the registration relative to the trial (Box 11, 5.1).
+_REGISTRATION_DATES = {
+    "first_submitted": "protocolSection.statusModule.studyFirstSubmitDate",
+    "first_posted": "protocolSection.statusModule.studyFirstPostDateStruct.date",
+    "start": "protocolSection.statusModule.startDateStruct.date",
+    "primary_completion": "protocolSection.statusModule.primaryCompletionDateStruct.date",
+    "completion": "protocolSection.statusModule.completionDateStruct.date",
+    "last_update_posted": "protocolSection.statusModule.lastUpdatePostDateStruct.date",
+}
 _REGISTRY_FIELD_PATHS = {
     "studyFirstPostDateStruct": "protocolSection.statusModule.studyFirstPostDateStruct",
     "lastUpdatePostDateStruct": "protocolSection.statusModule.lastUpdatePostDateStruct",
@@ -434,19 +443,36 @@ def _registry_navigation(
             paths: set[str] = set()
             ranges: dict[tuple[str, int], list[int]] = {}
             outcomes: dict[str, dict[str, Any]] = {}
+            dates: dict[str, str] = {}
+            date_lines: dict[int, list[int]] = {}
             page_line_counts: dict[int, int] = {}
             for row in rows:
                 page = int(row["page"])
                 lines = str(row["text"]).splitlines()
                 page_line_counts[page] = len(lines)
                 for line_number, line in enumerate(lines, 1):
+                    for name, date_path in _REGISTRATION_DATES.items():
+                        if line.startswith(date_path + ":"):
+                            value = line.split(":", 1)[1].strip()
+                            try:
+                                decoded = json.loads(value)
+                            except json.JSONDecodeError:
+                                decoded = value
+                            dates[name] = str(decoded)
+                            bounds = date_lines.setdefault(page, [line_number, line_number])
+                            bounds[0] = min(bounds[0], line_number)
+                            bounds[1] = max(bounds[1], line_number)
                     outcome = re.match(
-                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\])\."
-                        r"([^:]+):\s*(.*)$",
+                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\]|"
+                        r"protocolSection\.outcomesModule\.(primary|secondary|other)Outcomes\[\d+\])"
+                        r"\.([^:]+):\s*(.*)$",
                         line,
                     )
                     if outcome:
-                        path, field, value = outcome.groups()
+                        path, registered, field, value = outcome.groups()
+                        # A registered outcome's `measure` is its title; its list names its type.
+                        if registered and field == "measure":
+                            field = "title"
                         entry = outcomes.setdefault(
                             path,
                             {
@@ -454,6 +480,11 @@ def _registry_navigation(
                                 "ranges": {},
                                 "field_counts": {},
                                 "not_inlined_fields": set(),
+                                **(
+                                    {"type": f"REGISTERED {registered.upper()}"}
+                                    if registered
+                                    else {}
+                                ),
                             },
                         )
                         bounds = entry["ranges"].setdefault(page, [line_number, line_number])
@@ -537,6 +568,27 @@ def _registry_navigation(
                         "windows": windows,
                     },
                     "window_count": len(all_windows),
+                    "registration": (
+                        {
+                            "source_id": source_id,
+                            **dates,
+                            "recovery": {
+                                "operation": "read_pages",
+                                "trial_id": trial_id,
+                                "windows": tuple(
+                                    {
+                                        "source_id": source_id,
+                                        "page": page,
+                                        "start_line": bounds[0],
+                                        "end_line": bounds[1],
+                                    }
+                                    for page, bounds in sorted(date_lines.items())
+                                ),
+                            },
+                        }
+                        if dates
+                        else None
+                    ),
                 }
     return found
 
@@ -3930,6 +3982,11 @@ def get_domain_context(
         ),
         "registry_outcomes": [
             outcome for source in registry_navigation.values() for outcome in source["outcomes"]
+        ],
+        "registration": [
+            source["registration"]
+            for source in registry_navigation.values()
+            if source["registration"] is not None
         ],
         "coverage": _source_coverage(
             trial_id,

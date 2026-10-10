@@ -23,9 +23,10 @@ them with the methods and results of the report. Then compare what the methods
 section says was measured and analysed with what the results report, and
 compare across all reports of the trial.
 
-The registry record states the registered primary and secondary outcome
-measures with their time frames, and the dates the study was first submitted
-and started. ClinicalTrials.gov's API returns the current record, not earlier
+The Domain 5 context lists the registry record's registered outcomes (with
+time frames) in `registry_outcomes` and its dates (first submitted, first
+posted, start, primary completion, last update) in `registration`; each has a
+`recovery` window to read and cite. ClinicalTrials.gov's API returns the current record, not earlier
 versions: outcome wording first registered before enrolment and unchanged in
 the report supports prespecification of the measurement, but the current
 record alone cannot show what an earlier version said or when an analysis was

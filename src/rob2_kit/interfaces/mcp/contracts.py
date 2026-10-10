@@ -2113,6 +2113,7 @@ class DomainContextData(PublicModel):
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
     registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
+    registration: tuple[RegistryRegistration, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
         default=None,
@@ -2241,6 +2242,19 @@ class RegistryOutcomeNavigation(PublicModel):
         default=(),
         description="Captured fields omitted from the summary; recover their complete source text.",
     )
+    recovery: EvidenceRecovery
+
+
+class RegistryRegistration(PublicModel):
+    """Registry record dates, to place the registered plan relative to the trial."""
+
+    source_id: SourceHandle
+    first_submitted: str | None = None
+    first_posted: str | None = None
+    start: str | None = None
+    primary_completion: str | None = None
+    completion: str | None = None
+    last_update_posted: str | None = None
     recovery: EvidenceRecovery
 
 
