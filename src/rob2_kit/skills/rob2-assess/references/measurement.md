@@ -23,14 +23,14 @@ assignment. For a composite, identify which components drive the events.
 | Intervention-provider decision (hospitalization, discharge, stopping treatment, caesarean section) | The care provider making the decision | Usually yes, if aware |
 | Composite | Each component's assessor | Judge by the most influential components |
 
-## 4.1 Was the method of measuring the outcome inappropriate?
+## 4.1 (`sq:measurement:method-inappropriate`) Was the method of measuring the outcome inappropriate?
 
 For pre-specified outcomes this is usually **No / Probably no**. Answer **Yes**
 only if the method is unlikely to be sensitive to plausible effects, or the
 instrument has demonstrated poor validity. This question does not judge whether
 the outcome itself (for example a surrogate) was a sensible choice.
 
-## 4.2 Could measurement or ascertainment of the outcome have differed between groups?
+## 4.2 (`sq:measurement:differential`) Could measurement or ascertainment of the outcome have differed between groups?
 
 - **No / Probably no:** the same methods and thresholds at comparable times in
   both groups. This is usually the case for pre-specified outcomes.
@@ -42,7 +42,7 @@ the outcome itself (for example a surrogate) was a sensible choice.
 detection. Whether assessors knew the assignment is not a difference in method:
 it is assessed in 4.3-4.5.
 
-## 4.3 If N/PN/NI to 4.1 and 4.2: were outcome assessors aware of the intervention received?
+## 4.3 (`sq:measurement:assessor-aware`) If N/PN/NI to 4.1 and 4.2: were outcome assessors aware of the intervention received?
 
 Identify the assessor from the table above first. For participant-reported
 outcomes the participant is the assessor, so answer as for 2.1. Answer **No**
@@ -54,7 +54,7 @@ outcome assessor was blinded; read who was masked. A blinded adjudication
 committee makes assessors unaware for the events it classifies, but not for an
 earlier clinical decision by an aware care provider that the outcome records.
 
-## 4.4 If Y/PY/NI to 4.3: could assessment of the outcome have been influenced by knowledge of intervention received?
+## 4.4 (`sq:measurement:influence-possible`) If Y/PY/NI to 4.3: could assessment of the outcome have been influenced by knowledge of intervention received?
 
 - **No / Probably no:** observer-reported outcomes not involving judgement,
   such as all-cause mortality or an automated test, even when assessors knew
@@ -62,7 +62,7 @@ earlier clinical decision by an aware care provider that the outcome records.
 - **Yes / Probably yes:** participant-reported outcomes, observer-reported
   outcomes involving judgement, and intervention-provider decisions.
 
-## 4.5 If Y/PY/NI to 4.4: is it likely that assessment was influenced by knowledge of intervention received?
+## 4.5 (`sq:measurement:influence-likely`) If Y/PY/NI to 4.4: is it likely that assessment was influenced by knowledge of intervention received?
 
 This separates "could" (Some concerns) from "likely" (High). Influence is more
 likely when there are strong beliefs in either beneficial or harmful effects

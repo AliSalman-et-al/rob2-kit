@@ -39,7 +39,7 @@ designations that differ between reports, several adjusted analyses with only
 one reported, unusual categorization of continuous measures, different analysed
 samples across reports, or unusual composites.
 
-## 5.1 Were the data analysed in accordance with a pre-specified plan finalized before unblinded outcome data were available?
+## 5.1 (`sq:selection:prespecified-analysis`) Were the data analysed in accordance with a pre-specified plan finalized before unblinded outcome data were available?
 
 - **Yes / Probably yes:** a protocol, SAP or registry entry specifies this
   outcome measurement and analysis, and was dated before unblinded outcome data
@@ -60,7 +60,7 @@ samples across reports, or unusual composites.
 - **No information:** no pre-specified intentions for this Result are available
   in sufficient detail, or their timing cannot be placed relative to unblinding.
 
-## 5.2 Is the result likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (scales, definitions, time points)?
+## 5.2 (`sq:selection:multiple-measurements`) Is the result likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (scales, definitions, time points)?
 
 - **Yes / Probably yes:** clear evidence (usually from a protocol or SAP) that
   the outcome domain was measured in several eligible ways but only one or a
@@ -74,7 +74,7 @@ samples across reports, or unusual composites.
 - **No information:** intentions are unavailable or too vague, and the outcome
   domain could have been measured in more than one way.
 
-## 5.3 Is the result likely to have been selected, on the basis of the results, from multiple eligible analyses?
+## 5.3 (`sq:selection:multiple-analyses`) Is the result likely to have been selected, on the basis of the results, from multiple eligible analyses?
 
 Multiple analyses include adjusted versus unadjusted models; final values,
 change scores or ANCOVA; transformations; different composite definitions;

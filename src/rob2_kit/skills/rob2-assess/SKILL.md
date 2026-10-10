@@ -114,8 +114,9 @@ after approval or a restart without repeating the main-report pass.
 
 ### 4. Proposal Review
 
-Proposal Review is the only researcher gate. Call `request_proposal_approval`
-with `{}`. If the host cannot elicit approval, report the returned condition and
+Proposal Review is the only researcher gate. Show the researcher the Review:
+each Trial's selected Result, its relation to the request and any unknowns.
+Then call `request_proposal_approval` with `{}`. If the host cannot elicit approval, report the returned condition and
 tell the researcher to approve with `rob2 review`; then call `get_status`. If
 the researcher corrects a Result, treat it as direction for source review,
 validate and save a complete replacement, and present the new Review. After
@@ -139,7 +140,9 @@ reference below; read it before answering:
 For each Domain:
 
 1. Read the sections the reference lists, in every Source that has them.
-2. Answer every question on the active path, following the activation rules.
+2. Answer every question on the active path, following the activation rules,
+   with the `question_id` and an answer from the card's `options` (`yes`,
+   `probably_yes`, `probably_no`, `no`, `no_information` where allowed).
    Base each answer on passages you have read, apply the official guidance, and
    state the reasoning in `justification`. Record unresolved facts in
    `unknowns` and conflicting passages in `counterevidence`.
@@ -150,8 +153,11 @@ For each Domain:
    every repair and resubmit the complete set. Keep the literal meaning of your
    answer when repairing structure; change an answer only for scientific
    reasons.
-5. Check the proposed judgment. Adjudicate only with a stated, source-bound
-   reason.
+5. Check the proposed judgment. To depart from it, adjudicate the saved,
+   unchanged checkpoint: name it in `supersedes`, cite that answer Evidence and
+   explain the departure in the `adjudication` field. If an answer itself is
+   wrong, correct the answer instead (a new checkpoint); the algorithm then
+   proposes again.
 
 `calculate_arithmetic` checks bounded arithmetic (for example missing-data
 proportions); its output is scratch work, not Evidence.
@@ -176,8 +182,10 @@ Inspect the review's decisive answers, unknowns and counterevidence against
 what each cited passage establishes. Correct a Domain only where a claim is
 unsupported or contradicted (see Recover from interruptions for the revision
 basis). Large reviews return summaries; use `review_trial` with `domain_id` and
-`question_id` for detail. Then close with the exact review identity and current
-revision:
+`question_id` for detail. A detail too large for one response arrives as
+`mode:"fragment"` pages: follow `next_cursor`, join the `fragment` strings in
+order and parse the JSON once complete. Then close with the current revision,
+copying `data.review.identity` into `review_reference`:
 
 ```json
 {"trial_id":"trial-a","expected_revision":13,"review_reference":"sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}

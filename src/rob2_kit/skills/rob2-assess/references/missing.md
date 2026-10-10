@@ -22,10 +22,13 @@ outcome observed; analysed; imputed; excluded after randomization; and outcome
 events. Imputed outcomes count as missing. Participants who stopped treatment
 but were still followed up and measured are not missing. In time-to-event
 analyses, participants censored because they withdrew or were lost count as
-missing even though some follow-up is included. Participants excluded despite
+missing even though some follow-up is included. For a time-to-first-event
+outcome, a participant with a dated first event has an observed outcome even if
+later follow-up was lost; loss before any first event is missing. Do not add
+component-level and composite follow-up counts together. Participants excluded despite
 having outcome data belong to Domain 2 (2.6), not here.
 
-## 3.1 Were data for this outcome available for all, or nearly all, participants randomized?
+## 3.1 (`sq:missing:data-available`) Were data for this outcome available for all, or nearly all, participants randomized?
 
 "Nearly all" means the number missing is so small that their outcomes, whatever
 they were, could have made no important difference to the estimate.
@@ -38,7 +41,7 @@ they were, could have made no important difference to the estimate.
   of missing data. If only an estimate is reported, look for a CONSORT diagram
   or other sources; a probable answer is often possible.
 
-## 3.2 If N/PN/NI to 3.1: is there evidence that the result was not biased by missing outcome data?
+## 3.2 (`sq:missing:evidence-unbiased`) If N/PN/NI to 3.1: is there evidence that the result was not biased by missing outcome data?
 
 - **Yes / Probably yes:** analysis methods that correct for bias, or sensitivity
   analyses showing the result changes little across the plausible range of
@@ -48,7 +51,7 @@ they were, could have made no important difference to the estimate.
   multiple imputation based only on intervention group should not be assumed
   to correct bias. This question has no No information option.
 
-## 3.3 If N/PN to 3.2: could missingness in the outcome depend on its true value?
+## 3.3 (`sq:missing:true-value-dependent`) If N/PN to 3.2: could missingness in the outcome depend on its true value?
 
 - **Yes / Probably yes:** loss to follow-up or withdrawal could be related to
   participants' health status. This is usually the case.
@@ -56,7 +59,7 @@ they were, could have made no important difference to the estimate.
   unrelated to the outcome, such as a failed measuring device or interrupted
   routine data collection.
 
-## 3.4 If Y/PY/NI to 3.3: is it likely that missingness depended on its true value?
+## 3.4 (`sq:missing:likely-dependent`) If Y/PY/NI to 3.3: is it likely that missingness depended on its true value?
 
 This separates "could" (Some concerns) from "likely" (High). Reasons for Yes:
 

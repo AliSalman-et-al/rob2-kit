@@ -89,3 +89,15 @@ def test_unavailable_guidance_returns_exact_readable_packaged_paths() -> None:
     documents = str(error.value).split("Available documents: ", 1)[1].split(", ")
     assert set(documents) == {path.relative_to(_ROOT).as_posix() for path in _ROOT.rglob("*.md")}
     assert all(read_guidance(document)["document"] == document for document in documents)
+
+
+def test_guidance_names_only_real_signalling_questions() -> None:
+    from rob2_kit.packs.scientific import SCIENTIFIC_PACK
+
+    known = {question.id for question in SCIENTIFIC_PACK.questions}
+    named = {
+        identifier
+        for path in _ROOT.rglob("*.md")
+        for identifier in re.findall(r"sq:[a-z-]+:[a-z-]+", path.read_text(encoding="utf-8"))
+    }
+    assert named and named <= known, sorted(named - known)

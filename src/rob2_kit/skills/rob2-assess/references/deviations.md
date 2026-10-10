@@ -17,8 +17,8 @@ crossover, contamination or co-intervention, the CONSORT flow, and the
 statistical analysis section that defines the analysis population for this
 Result. Check the protocol or SAP for the planned analysis population.
 
-## 2.1 Were participants aware of their assigned intervention during the trial?
-## 2.2 Were carers and people delivering the interventions aware of participants' assigned intervention?
+## 2.1 (`sq:deviations:participants-aware`) Were participants aware of their assigned intervention during the trial?
+## 2.2 (`sq:deviations:personnel-aware`) Were carers and people delivering the interventions aware of participants' assigned intervention?
 
 - **No / Probably no:** blinded, for example by a placebo or sham with matching
   appearance, and nothing suggests the blinding failed.
@@ -28,7 +28,7 @@ Result. Check the protocol or SAP for the planned analysis population.
   allocation was not concealed, carers were probably aware.
 - "Double blind" alone does not say who was blinded; read who was masked.
 
-## 2.3 If Y/PY/NI to 2.1 or 2.2: were there deviations from the intended intervention that arose because of the trial context?
+## 2.3 (`sq:deviations:context-deviations`) If Y/PY/NI to 2.1 or 2.2: were there deviations from the intended intervention that arose because of the trial context?
 
 Trial context means effects of recruitment and engagement activities on
 participants, or trial personnel undermining the protocol in ways that would not
@@ -51,15 +51,15 @@ one group because of their beliefs).
 Deducing the assigned intervention does not by itself cause bias. Dropout is
 assessed in Domain 3, not here.
 
-## 2.4 If Y/PY to 2.3: were these deviations likely to have affected the outcome?
+## 2.4 (`sq:deviations:affected-outcome`) If Y/PY to 2.3: were these deviations likely to have affected the outcome?
 
 They affect the estimate only if they affect the outcome.
 
-## 2.5 If Y/PY/NI to 2.4: were these deviations balanced between groups?
+## 2.5 (`sq:deviations:balanced`) If Y/PY/NI to 2.4: were these deviations balanced between groups?
 
 Unbalanced deviations are more likely to bias the estimate.
 
-## 2.6 Was an appropriate analysis used to estimate the effect of assignment?
+## 2.6 (`sq:deviations:appropriate-analysis`) Was an appropriate analysis used to estimate the effect of assignment?
 
 Classify each randomized participant missing from this Result's analysis by the
 reason they are missing, and count each participant once:
@@ -76,7 +76,7 @@ reason they are missing, and count each participant once:
   participants after randomization even though their outcome could be measured.
 - **No information:** the report does not say who was analysed or how.
 
-## 2.7 If N/PN/NI to 2.6: was there potential for a substantial impact of the failure to analyse participants in their randomized groups?
+## 2.7 (`sq:deviations:substantial-impact`) If N/PN/NI to 2.6: was there potential for a substantial impact of the failure to analyse participants in their randomized groups?
 
 Consider the number analysed in the wrong group or excluded, relative to the
 number of outcome events and the size of the effect. There is no fixed

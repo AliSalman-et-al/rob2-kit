@@ -17,7 +17,7 @@ protocol rather than the main article. Then read the baseline characteristics
 table. Reports rarely use the word "concealment"; read the methods rather than
 relying on searches for that word.
 
-## 1.1 Was the allocation sequence random?
+## 1.1 (`sq:randomization:sequence`) Was the allocation sequence random?
 
 - **Yes:** a random component was used: computer-generated random numbers, a
   random number table, coin tossing, shuffled cards or envelopes, dice, drawing
@@ -32,7 +32,7 @@ relying on searches for that word.
 - **No information:** the only information is that the study was "randomized"
   and the circumstances give no reasonable basis for a probable answer.
 
-## 1.2 Was the allocation sequence concealed until participants were enrolled and assigned?
+## 1.2 (`sq:randomization:concealment`) Was the allocation sequence concealed until participants were enrolled and assigned?
 
 - **Yes:** allocation was remote or centrally administered by a unit
   independent of enrolment staff: a central or independent pharmacy, a
@@ -50,7 +50,7 @@ relying on searches for that word.
   assignments were made or protected and the circumstances support neither
   probable answer.
 
-## 1.3 Did baseline differences between groups suggest a problem with randomization?
+## 1.3 (`sq:randomization:baseline-imbalance`) Did baseline differences between groups suggest a problem with randomization?
 
 - **No:** no imbalances, or imbalances compatible with chance. A few
   "significant" differences at p < 0.05 are usually compatible with chance.
