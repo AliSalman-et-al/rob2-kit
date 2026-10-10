@@ -351,14 +351,14 @@ def test_selected_summary_does_not_defer_counterfacts_or_clip_oversized_saved_un
 def test_larger_review_window_delivers_fitting_full_science_without_an_overview(
     tmp_path: Path,
 ) -> None:
-    receipt = _review(justification="Qualified source-bound interpretation. " * 1_100)
+    receipt = _review(justification="Qualified source-bound interpretation. " * 800)
     answer = receipt["data"]["domain_findings"][0]["answers"][0]
     answer.update(
         unknowns=["The procedure's implementation is not reported."],
         counterevidence=[{"basis_index": 0, "implication": "The plan is not proof of conduct."}],
     )
     receipt = server._validate_response("review_trial", receipt)
-    assert 24_000 < server._review_transport_bytes(receipt) < 65_536
+    assert 24_000 < server._review_transport_bytes(receipt) < server._REVIEW_TRIAL_RESPONSE_BYTES
     actual = _project(receipt, server._root(tmp_path))
     assert actual == receipt
     assert "review_page" not in actual["data"]

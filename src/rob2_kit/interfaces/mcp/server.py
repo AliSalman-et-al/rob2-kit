@@ -374,7 +374,9 @@ _COMPANION_ADMISSION = ToolAnnotations(
 # projection; this is only a transport window.
 _READ_PAGES_RESPONSE_BYTES = 24_000
 _SEARCH_BATCH_RESPONSE_BYTES = 32_000
-_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 65_536
+# Claude Code replaces MCP results above about 50 KB with a short preview and a file
+# whose single JSON line its Read tool truncates, so default pages stay below that.
+_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 40_000
 _DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
 _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
@@ -388,7 +390,7 @@ _DOMAIN_CONTEXT_PAGE_SECTIONS = (
     "comparison_cards",
     "registry_outcomes",
 )
-_REVIEW_TRIAL_RESPONSE_BYTES = 65_536
+_REVIEW_TRIAL_RESPONSE_BYTES = 40_000
 # Keep the overview small: deferred details are recovered again in full.
 _REVIEW_TRIAL_SUMMARY_BYTES = 24_000
 _REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES = 256
