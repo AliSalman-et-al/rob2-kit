@@ -26,7 +26,10 @@ missing even though some follow-up is included. For a time-to-first-event
 outcome, a participant with a dated first event has an observed outcome even if
 later follow-up was lost; loss before any first event is missing. Do not add
 component-level and composite follow-up counts together. Participants excluded despite
-having outcome data belong to Domain 2 (2.6), not here.
+having outcome data belong to Domain 2 (2.6), not here. Missing outcome data are participants
+whose outcome is missing, not missing individual measurements: a few missed
+repeated tests matter only if they could change that participant's outcome
+(for example a per-participant worst grade over follow-up).
 
 ## 3.1 (`sq:missing:data-available`) Were data for this outcome available for all, or nearly all, participants randomized?
 
