@@ -127,7 +127,8 @@ messages after approval do not set signalling answers.
 For the active Trial, call `get_domain_context` (the Domain in
 `head.next_action`, or an explicit `domain_id`). Follow `data.context_page`
 cursors until `next_cursor` is null, and read any `reading_recovery` windows
-marked `required`. Then open the Domain reference:
+marked `required`. The context's `assessment_guidance` is the Domain's
+reference below; read it before answering:
 
 - [Domain 1: randomization](references/randomization.md)
 - [Domain 2: deviations from intended interventions](references/deviations.md)

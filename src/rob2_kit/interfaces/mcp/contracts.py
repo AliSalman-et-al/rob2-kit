@@ -2112,6 +2112,10 @@ class DomainContextData(PublicModel):
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
+    assessment_guidance: str | None = Field(
+        default=None,
+        description="This Domain's packaged reference: what to read and how to answer.",
+    )
     registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
     registration: tuple[RegistryRegistration, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()

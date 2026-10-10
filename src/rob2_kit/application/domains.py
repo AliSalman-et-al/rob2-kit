@@ -61,6 +61,7 @@ from .evidence import (
     main_report_reading_status,
     source_reading_status,
 )
+from .guidance import read_guidance
 from .missing_data import missing_data_context
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .source_handles import source_handle
@@ -3980,6 +3981,11 @@ def get_domain_context(
             ),
             candidate_questions=candidate_questions,
         ),
+        # The packaged Domain reference, delivered with every context so the
+        # host need not fetch it separately (Haiku often skipped it).
+        "assessment_guidance": read_guidance(f"references/{domain_id.split(':', 1)[1]}.md")[
+            "content"
+        ],
         "registry_outcomes": [
             outcome for source in registry_navigation.values() for outcome in source["outcomes"]
         ],

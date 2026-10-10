@@ -431,6 +431,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "delivery_history_recovery",
             "delivery_history",
             "questions",
+            "assessment_guidance",
             "evidence",
             "comparison_cards",
             "registry_outcomes",
