@@ -54,6 +54,10 @@ approved Result's outcome, time point, population and comparison throughout;
 facts about other outcomes, arms or periods apply only when you explain why
 they transfer.
 
+**Infer mechanisms from how the trial was done, not from its results.** A
+pattern in the results (an effect confined to one component, a surprising
+estimate) is not evidence of how outcomes were measured, missed or selected.
+
 **Judge material bias.** Risk of bias means risk of bias that could affect the
 reliability of this result. The algorithm proposes each Domain judgment from
 your answers. When a source-bound reason justifies a different judgment, use the
