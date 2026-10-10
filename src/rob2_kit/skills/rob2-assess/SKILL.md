@@ -139,7 +139,11 @@ reference below; read it before answering:
 
 For each Domain:
 
-1. Read the sections the reference lists, in every Source that has them.
+1. Read the sections the reference lists, in every Source that has them. The
+   context's `reading_leads` give, for each question, the pages across all
+   Sources whose wording best matches its official guidance, with a ready
+   `read` request; read them, especially supplements and protocols you have not
+   opened. Leads are navigation, not Evidence.
 2. Answer every question on the active path, following the activation rules,
    with the `question_id` and an answer from the card's `options` (`yes`,
    `probably_yes`, `probably_no`, `no`, `no_information` where allowed).

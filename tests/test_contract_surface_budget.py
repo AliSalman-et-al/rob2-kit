@@ -104,7 +104,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # After removing redundant descriptions: 688577 aggregate bytes (+7774 from
     # 680803, 1.14%). This sums 23 closed input/output schemas, not observed host
     # prompt tokens. Keep the new observations typed rather than hiding them.
-    assert total_bytes < 690_000
+    # The Domain reference, reading leads and registry registration dates add
+    # typed navigation (690795 measured).
+    assert total_bytes < 694_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations

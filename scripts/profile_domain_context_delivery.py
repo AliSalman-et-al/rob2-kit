@@ -16,6 +16,8 @@ from typing import Any
 _SECTIONS = (
     "primary_report",
     "questions",
+    "assessment_guidance",
+    "reading_leads",
     "evidence",
     "comparison_cards",
     "registry_outcomes",

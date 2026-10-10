@@ -2112,10 +2112,11 @@ class DomainContextData(PublicModel):
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
-    assessment_guidance: str | None = Field(
-        default=None,
-        description="This Domain's packaged reference: what to read and how to answer.",
+    assessment_guidance: tuple[str, ...] = Field(
+        default=(),
+        description="This Domain's packaged reference, one item per section.",
     )
+    reading_leads: tuple[ReadingLead, ...] = ()
     registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
     registration: tuple[RegistryRegistration, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()
@@ -2186,6 +2187,8 @@ class DomainContextPage(PublicModel):
         "complete",
         "primary_report",
         "questions",
+        "assessment_guidance",
+        "reading_leads",
         "official_guidance",
         "comparison_cards",
         "registry_outcomes",
@@ -2247,6 +2250,21 @@ class RegistryOutcomeNavigation(PublicModel):
         description="Captured fields omitted from the summary; recover their complete source text.",
     )
     recovery: EvidenceRecovery
+
+
+class ReadingLeadPage(PublicModel):
+    source_id: SourceHandle
+    source_role: str
+    label: str
+    page: PositiveInt
+    read: EvidenceRecovery
+
+
+class ReadingLead(PublicModel):
+    """Pages across all Sources whose wording best matches one question's official text."""
+
+    question_id: str
+    pages: tuple[ReadingLeadPage, ...] = ()
 
 
 class RegistryRegistration(PublicModel):

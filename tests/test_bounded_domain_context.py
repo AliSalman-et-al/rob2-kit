@@ -83,6 +83,8 @@ def _wire_context(
                         data = dict(pages[0].structured_content["data"])
                         for section in (
                             "questions",
+                            "assessment_guidance",
+                            "reading_leads",
                             "comparison_cards",
                             "registry_outcomes",
                             "evidence",
