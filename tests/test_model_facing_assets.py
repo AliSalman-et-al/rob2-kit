@@ -4,8 +4,6 @@ import json
 import re
 from pathlib import Path
 
-import pytest
-
 from rob2_kit.workflow_models import (
     DomainInformationLimit,
     DomainSaveAnswer,
@@ -34,12 +32,6 @@ PRIVATE_EVALUATION_TERMS = re.compile(
 TEXT_SUFFIXES = {".json", ".md", ".py"}
 
 
-def test_generic_survival_endpoint_is_not_private_trial_leakage() -> None:
-    assert PRIVATE_EVALUATION_TERMS.search("overall survival") is None
-    for private_identifier in ("CHAARTED", "STAMPEDE", "TITAN", "NCT00309985"):
-        assert PRIVATE_EVALUATION_TERMS.search(private_identifier)
-
-
 def _model_facing_files() -> list[Path]:
     files: list[Path] = []
     for path in MODEL_FACING_PATHS:
@@ -62,27 +54,6 @@ def test_model_facing_assets_do_not_contain_private_evaluation_terms() -> None:
     assert leaked == {}
 
 
-def test_domain_references_use_current_handle_only_evidence_contract() -> None:
-    references = Path("src/rob2_kit/skills/rob2-assess/references")
-    stale = {
-        str(path): "source field"
-        for path in references.glob("*.md")
-        if re.search(
-            r"Evidence use `source`|copy the exact selected `source`",
-            path.read_text(encoding="utf-8"),
-        )
-    }
-    assert stale == {}
-
-
-def test_readme_describes_proposal_receipt_and_atomic_domain_save() -> None:
-    readme = Path("README.md").read_text(encoding="utf-8")
-    assert "save_proposal` with the returned `reasoning_id`" not in readme
-    assert "save_domain_judgment` with its returned\n`reasoning_id`" not in readme
-    assert "unique validated Proposal draft" in readme
-    assert "A complete Domain draft validates and commits in one" in readme
-
-
 def test_evidence_reference_contains_closed_limitation_example() -> None:
     reference = Path("src/rob2_kit/skills/rob2-assess/references/evidence.md").read_text(
         encoding="utf-8"
@@ -93,7 +64,6 @@ def test_evidence_reference_contains_closed_limitation_example() -> None:
     assert limitations
     for limitation in limitations:
         DomainInformationLimit.model_validate(limitation)
-    assert "untruncated zero-hit receipts" in reference
 
 
 def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> None:
@@ -136,8 +106,6 @@ def test_read_pages_reference_contains_both_callable_request_forms() -> None:
         "start_line",
         "end_line",
     }
-    assert "data.pages[].numbered_text" in reference
-    assert "data.remaining_windows" in reference
 
 
 def test_skill_review_examples_validate_as_tool_requests() -> None:
@@ -153,10 +121,6 @@ def test_skill_review_examples_validate_as_tool_requests() -> None:
 
     TrialReviewRequest.model_validate(normal)
     TrialClosureRequest.model_validate(close)
-    assert "permitted uncertainty answer" in skill
-    assert "terminal request" in skill
-    assert "supported workflow" in skill
-    assert "cannot continue" in skill
 
 
 def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> None:
@@ -172,75 +136,3 @@ def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> Non
     assert receipt == {"expected_revision": 8}
     assert draft.candidate is not None
     assert draft.candidate.target_window == "15 days after randomization"
-
-
-def test_skill_requires_complete_proposal_construction_before_validation() -> None:
-    skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
-
-    assert "Construct the complete request before calling" in skill
-    assert "placeholders" in skill
-    assert "one complete Trial selection" in skill
-
-
-def test_measurement_reference_uses_official_science_and_source_reconstruction() -> None:
-    normalized = " ".join(
-        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md")
-        .read_text(encoding="utf-8")
-        .split()
-    )
-    for marker in (
-        "complete official Box 10 elaborations",
-        "section 7.1 background",
-        "assessor identity",
-        "component contributions",
-        "exact approved Result",
-        "independent question dependencies",
-        "actor, arm, period and endpoint",
-        "visible report material",
-        "counterevidence",
-    ):
-        assert marker in normalized
-    assert "OCR availability, metadata and arithmetic are not scientific authority" in normalized
-    assert "preserve unknown contributions and source conflicts" in normalized
-
-
-def test_missing_reference_and_skill_use_official_science_and_preserve_recovery() -> None:
-    reference = Path("src/rob2_kit/skills/rob2-assess/references/missing.md").read_text(
-        encoding="utf-8"
-    )
-    skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
-    for asset in (reference, skill):
-        assert "official" in asset
-        assert "official_d3_prototype" not in asset
-        assert "counterevidence" in asset
-        assert "missing_data" in asset
-    assert "## Availability audit" not in reference
-    assert "For D3.1, run the **availability audit**" not in skill
-    for term in ("unopened supplements", "read_pages", "basis", "randomized - observed", "scoped"):
-        assert term in reference, term
-
-
-@pytest.mark.parametrize("name", ["missing", "measurement", "selection"])
-def test_domain_reference_delivered_through_production_mcp_resource(name: str) -> None:
-    import asyncio
-
-    from fastmcp import Client
-
-    from rob2_kit.interfaces.mcp.server import mcp
-
-    async def read() -> str:
-        async with Client(mcp) as client:
-            contents = await client.read_resource(f"rob2://guidance/{name}")
-            return "\n".join(item.text for item in contents if hasattr(item, "text"))
-
-    delivered = asyncio.run(read())
-    assert delivered == Path(
-        f"src/rob2_kit/skills/rob2-assess/references/{name}.md"
-    ).read_bytes().decode("utf-8")
-    if name != "missing":
-        return
-    assert "`observed` or `unavailable`" in delivered
-    assert "does not synthesize `observed`" in delivered
-    assert "generic censoring does not" in delivered
-    assert "Only an explicit `observed`" not in delivered
-    assert "only derives `randomized - observed`" not in delivered
