@@ -38,6 +38,10 @@ the outcome itself (for example a surrogate) was a sensible choice.
   testing or visits (diagnostic detection), or an intervention involving extra
   contacts that create more opportunities to detect events.
 
+4.2 is about the measurement method, thresholds, timing and opportunities for
+detection. Whether assessors knew the assignment is not a difference in method:
+it is assessed in 4.3-4.5.
+
 ## 4.3 If N/PN/NI to 4.1 and 4.2: were outcome assessors aware of the intervention received?
 
 Identify the assessor from the table above first. For participant-reported

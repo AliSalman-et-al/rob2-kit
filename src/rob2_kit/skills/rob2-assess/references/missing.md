@@ -70,8 +70,15 @@ This separates "could" (Some concerns) from "likely" (High). Reasons for Yes:
    change their assigned intervention.
 
 Answer **No** if the analysis accounted for participant characteristics likely
-to explain the relationship between missingness and the outcome. Similar,
-small proportions missing for similar reasons support Probably no.
+to explain the relationship between missingness and the outcome.
+
+A mechanism that is merely plausible (health status could affect follow-up)
+is the "could" of 3.3. Reason 4 needs circumstances where dependence is
+widely understood to be likely, as in the schizophrenia example. When none of
+the five reasons applies, for example similar proportions missing in each arm
+with no reasons suggesting dependence, answer No or Probably no. How the
+trialists' primary analysis handled missing participants is not itself a reason
+for missingness.
 
 ## Algorithm
 

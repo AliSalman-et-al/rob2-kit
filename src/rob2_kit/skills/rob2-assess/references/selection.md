@@ -47,6 +47,12 @@ samples across reports, or unusual composites.
   Changes made before unblinding, or clearly unrelated to the results, do not
   raise concerns. Amendments to other parts of the plan do not affect this
   Result.
+- Compare the report with the plan versions in date order. If a version dated
+  before unblinded data were available already specified this measurement and
+  analysis, and the report follows it, a later version does not make 5.1 No.
+  Unblinded data seen only by an independent data monitoring committee, for
+  example at an interim analysis, are not available to the trial investigators
+  (section 8.3.1).
 - **No / Probably no:** the plan for this measurement or analysis changed after
   unblinded data were available, or the report departs from the plan without a
   result-independent reason.
