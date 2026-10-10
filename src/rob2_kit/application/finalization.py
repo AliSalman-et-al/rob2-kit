@@ -1978,12 +1978,9 @@ def _reported_result_has_coherent_anchor(
             for index, item in enumerate(reported["categories"])
         ]
 
-    ancillary = tuple(
-        (f"/reported/reported_statistics/{index}", value)
-        for index, value in enumerate(reported.get("reported_statistics", []))
-    )
+    # Null labels need no support; ancillary statistics are checked as ordinary leaves.
     quantitative_tuples = [
-        tuple((path, value) for path, value in items + ancillary if value is not None)
+        tuple((path, value) for path, value in items if value is not None)
         for items in quantitative_tuples
     ]
 

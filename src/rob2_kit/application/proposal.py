@@ -830,6 +830,19 @@ def _reported_quantitative_paths(
     ]
 
 
+def _anchor_tuples(reported: dict[str, Any]) -> list[tuple[tuple[str, Any], ...]]:
+    """Leaves one Evidence item must join to the endpoint name.
+
+    Null statistic and unit labels record that the source printed none, so they
+    need no support. Ancillary statistics are checked as ordinary leaves and
+    may come from a different passage.
+    """
+    return [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in _reported_quantitative_paths(reported)
+    ]
+
+
 def _coherent_anchor_indices(
     result: dict[str, Any],
     catalog: dict[str, dict[str, Any]],
@@ -840,16 +853,7 @@ def _coherent_anchor_indices(
     if not isinstance(reported, dict) or not isinstance(reported.get("form"), str):
         return []
     endpoint_name = reported["endpoint"]["name"]
-
-    quantitative_tuples = _reported_quantitative_paths(reported)
-    ancillary = tuple(
-        (f"/reported/reported_statistics/{index}", value)
-        for index, value in enumerate(reported.get("reported_statistics", []))
-    )
-    quantitative_tuples = [
-        tuple((path, value) for path, value in items + ancillary if value is not None)
-        for items in quantitative_tuples
-    ]
+    quantitative_tuples = _anchor_tuples(reported)
 
     def multi_span_anchor(item: dict[str, Any]) -> bool:
         """Check each cited fragment without treating them as one quotation."""
@@ -1296,7 +1300,7 @@ def _closest_evidence_gap(
             )
         if not isinstance(handle, str):
             continue
-        for quantitative in _reported_quantitative_paths(reported):
+        for quantitative in _anchor_tuples(reported):
             required = (("/reported/endpoint/name", endpoint_name), *quantitative)
             missing = [
                 str(value)
