@@ -10,6 +10,7 @@ from typing import Any
 
 from rob2_kit.interfaces.mcp.server import (
     _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES,
+    _DOMAIN_CONTEXT_PAGE_SECTIONS,
     _domain_context_transport_bytes,
     _paginate_domain_context_transport,
 )
@@ -52,14 +53,7 @@ def replay(events: Path, *, max_response_bytes: int | None = None) -> dict[str, 
     # Current transport supplies empty arrays absent from a historical envelope.
     # Remove only those defaults; retain every original field and its exact value.
     for name in set(recovered) - set(original["data"]):
-        assert name in (
-            "primary_report",
-            "questions",
-            "evidence",
-            "comparison_cards",
-            "registry_outcomes",
-            "delivery_history",
-        )
+        assert name in _DOMAIN_CONTEXT_PAGE_SECTIONS and name != "official_guidance"
         assert recovered[name] == []
         del recovered[name]
     assert recovered == original["data"], "scientific data changed during pagination"

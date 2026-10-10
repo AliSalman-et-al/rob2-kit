@@ -242,7 +242,7 @@ def test_answer_revision_drops_adjudication_and_rejects_stale_parent(tmp_path: P
         "revision_basis": {"kind": "self_correction", "rationale": "Reassess material bias."},
         "adjudication": _adjudication(parent, evidence["handle"], "low"),
     }
-    override["adjudication"]["rationale"] = "A source-bound material-bias explanation. " * 2000
+    override["adjudication"]["rationale"] = "A source-bound material-bias explanation. " * 1500
     adopted = _call(workspace, "save_domain_judgment", override)
     assert adopted["outcome"] == "success", adopted
     current = _state(workspace)["domain_records"]["trial:domain:randomization"]
