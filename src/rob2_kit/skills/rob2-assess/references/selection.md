@@ -43,8 +43,8 @@ samples across reports, or unusual composites.
 
 - **Yes / Probably yes:** a protocol, SAP or registry entry specifies this
   outcome measurement and analysis, and was dated before unblinded outcome data
-  were available (for example registered before enrolment finished, or an SAP
-  finalized before database lock in a blinded trial), and the report follows it.
+  were available (for example registered before enrolment began, or, in a
+  blinded trial, an SAP finalized before unblinding), and the report follows it.
   Changes made before unblinding, or clearly unrelated to the results, do not
   raise concerns. Amendments to other parts of the plan do not affect this
   Result.
