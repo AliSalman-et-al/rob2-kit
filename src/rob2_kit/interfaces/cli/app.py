@@ -35,6 +35,7 @@ def main(argv: list[str] | None = None) -> int:
   status           show the assessment state and the next step (default)
   review           show the pending Proposal Review and approve it by typing yes
   verify BUNDLE    verify a finalized .rob2.zip bundle
+  report BUNDLE    render a bundle's Assessment report (default: reports/ here)
   archive-sources  zip the captured source files (--output PATH)
   verify-sources   verify a source archive (pass it as BUNDLE)
   export-skill     copy the rob2-assess skill to --output DIR
@@ -56,6 +57,7 @@ current folder or ROB2_WORKSPACE.""",
             "review",
             "finalize",
             "verify",
+            "report",
             "archive-sources",
             "verify-sources",
             "export-skill",
@@ -68,7 +70,7 @@ current folder or ROB2_WORKSPACE.""",
     parser.add_argument(
         "bundle",
         nargs="?",
-        help="path to a finalized .rob2.zip bundle (required by verify)",
+        help="path to a finalized .rob2.zip bundle (required by verify and report)",
     )
     parser.add_argument(
         "--workspace",
@@ -81,7 +83,7 @@ current folder or ROB2_WORKSPACE.""",
     )
     parser.add_argument(
         "--output",
-        help="destination for archive-sources, export-skill, or a fresh companion workspace",
+        help="destination for archive-sources, export-skill, report or a companion workspace",
     )
     parser.add_argument("--reference", help="JSON CompanionReference for stage-companion")
     parser.add_argument(
@@ -163,6 +165,20 @@ current folder or ROB2_WORKSPACE.""",
             return 0
         print(f"verification failed: {args.bundle}", file=sys.stderr)
         return 1
+    if args.command == "report":
+        if args.bundle is None:
+            parser.error("report requires a finalized .rob2.zip bundle path")
+        from rob2_kit.application.report import report_directory, write_report
+
+        workspace = Path(args.workspace)
+        output = Path(args.output) if args.output else report_directory(workspace, args.bundle)
+        try:
+            index = write_report(args.bundle, output)
+        except ValueError as error:
+            print(f"no report: {error}", file=sys.stderr)
+            return 1
+        print(f"report: {index}")
+        return 0
     if args.command == "archive-sources":
         print(json.dumps(archive_sources(args.workspace, args.output), sort_keys=True))
         return 0

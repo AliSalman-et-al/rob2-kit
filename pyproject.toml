@@ -61,3 +61,4 @@ select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/rob2_kit/application/contracts.py" = ["E501"]
+"src/rob2_kit/application/report.py" = ["E501"]

@@ -214,7 +214,11 @@ An optional, separately requested source check is described in
 When `head.next_action.operation` is `finalize_batch`, call it with the current
 revision. Report results only after `head.phase` is `finalized`, using
 `data.assessment_summary`. Never substitute a prose assessment for the
-finalized artifact.
+finalized artifact. Give the researcher the Assessment report: `data.report.path`
+is its Batch page, which opens in any browser and links to one page per Trial
+with every answer, justification and quotation. If `data.report.path` is null,
+report `data.report.unavailable_reason`; the bundle is unaffected, and
+`rob2 report <bundle>` renders the report later.
 
 ## Recover from interruptions
 

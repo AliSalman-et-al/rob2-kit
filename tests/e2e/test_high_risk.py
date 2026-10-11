@@ -325,3 +325,11 @@ def test_open_label_trial_through_repairs_restart_and_adjudication(tmp_path: Pat
         check=False,
     )
     assert standalone.returncode != 0
+    # A styled page lends authority, so a tampered bundle gets no report.
+    refused = rob2(tmp_path, "report", str(tampered), "--output", str(tmp_path / "forged"))
+    assert refused.returncode != 0 and "verification failed" in refused.stderr
+    assert not (tmp_path / "forged").exists()
+    # The adjudicated Domain shows both the algorithm's proposal and the adopted judgment.
+    trial_page = tmp_path / finalized["data"]["report"]["path"]
+    page = (trial_page.parent / "trials" / "knee-arthroscopy.html").read_text(encoding="utf-8")
+    assert "Judgment adjudicated." in page and "No information" in page
