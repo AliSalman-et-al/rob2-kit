@@ -49,4 +49,5 @@ then has exactly four H2 sections, in this order: `Sub-features`,
 - [Proposal and researcher approval](./proposal-and-approval.md): `validate_proposal`, `save_proposal`, the reading gate and the approval routes.
 - [Domain assessment](./domain-assessment.md): domain context, saving answers, algorithm judgments, adjudication and resume.
 - [Close, finalize and verify](./finalize-and-verify.md): trial review, finalization, both verifiers, tampering and source archives.
+- [Assessment report](./assessment-report.md): the Batch and Trial pages rendered at finalize, `rob2 report`, and refusal of unverified bundles.
 - [Codex entrypoint and plugin install](./codex-and-plugins.md): `rob2 mcp-codex` images and the Claude Code and Codex plugins.

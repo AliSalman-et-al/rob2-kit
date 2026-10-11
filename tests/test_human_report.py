@@ -15,6 +15,7 @@ from support.rob2 import (
     _domain_draft,
     _finalize_assessment,
     _standalone_verify,
+    _v1_bundle,
 )
 from test_bundle_verifier import _rewrite_zip, _update_manifest_hash
 
@@ -66,7 +67,14 @@ def assessed_report(
     original_records = deepcopy(_state(workspace)["domain_records"])
     finalized = _finalize_assessment(workspace, revision)
     assert finalized["outcome"] == "success", finalized
-    artifact = workspace / finalized["data"]["artifact"]["path"]
+    # Bundles from rob2-kit 0.12.0 carry this report; they must keep verifying.
+    current = workspace / finalized["data"]["artifact"]["path"]
+    artifact = tmp_path / "v1.rob2.zip"
+    _v1_bundle(current, artifact)
+    page = (workspace / finalized["data"]["report"]["path"]).parent / "trials" / "trial.html"
+    rendered = page.read_text(encoding="utf-8")
+    assert "Reasons for unavailable outcome values are not established." in rendered
+    assert "Observed outcomes for noncompleters remain unknown." in rendered
     with zipfile.ZipFile(artifact) as archive:
         canonical = json.loads(archive.read("canonical.json"))
         claims = json.loads(archive.read("claims.json"))

@@ -12,6 +12,7 @@ Evidence goes to .verify-evidence/<UTC time>-<scenario>/ in the repository:
   transcript.jsonl  every tool call: {"tool", "arguments", "result"}
   outcome.json      the scenario's observed end state
   *.rob2.zip        the finalized bundle (assess)
+  report/           the rendered Assessment report (assess)
 The temporary workspace is deleted unless --keep-workspace copies it there too.
 """
 
@@ -51,6 +52,9 @@ def assess(workspace: Path, evidence: Path, agent: Agent) -> dict[str, Any]:
     finalized = agent.finalize()
     bundle = workspace / finalized["data"]["artifact"]["path"]
     shutil.copy2(bundle, evidence / bundle.name)
+    report = finalized["data"]["report"]
+    if report["path"]:
+        shutil.copytree((workspace / report["path"]).parent, evidence / "report")
     product = rob2(workspace, "verify", str(bundle))
     standalone = subprocess.run(
         [sys.executable, "scripts/verify_bundle.py", str(bundle)],
@@ -66,6 +70,7 @@ def assess(workspace: Path, evidence: Path, agent: Agent) -> dict[str, Any]:
         "rob2_verify": {"exit": product.returncode, "stdout": product.stdout.strip()},
         "standalone_verify": {"exit": standalone.returncode, "stdout": standalone.stdout.strip()},
         "status_phase": agent.ok("get_status")["head"]["phase"],
+        "report": finalized["data"]["report"],
     }
 
 

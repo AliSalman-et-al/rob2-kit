@@ -101,7 +101,6 @@ def test_standalone_verifier_rejects_targeted_claim_tampering(tmp_path: Path) ->
     with zipfile.ZipFile(artifact) as archive:
         original_manifest = archive.read("manifest.json")
         original_canonical = archive.read("canonical.json")
-        original_report = archive.read("report.html")
         original_verification = archive.read("verification.json")
 
     # A stale manifest hash is rejected before any application import.
@@ -157,16 +156,14 @@ def test_standalone_verifier_rejects_targeted_claim_tampering(tmp_path: Path) ->
     )
     assert _standalone_verify(snapshot_tamper).returncode == 1
 
-    changed_report = original_report.replace(b"Disposition: assessed", b"Disposition: failed")
-    assert changed_report != original_report
-    changed_manifest = _update_manifest_hash(original_manifest, "report.html", changed_report)
-    html_tamper = tmp_path / "html-tamper.zip"
-    _rewrite_zip(
-        artifact,
-        html_tamper,
-        {"report.html": changed_report, "manifest.json": changed_manifest},
-    )
-    assert _standalone_verify(html_tamper).returncode == 1
+    # A bundle without a report cannot gain one, even with a matching manifest row.
+    with zipfile.ZipFile(artifact) as archive:
+        files = {info.filename: archive.read(info) for info in archive.infolist()}
+    files["report.html"] = b"<html><body>Disposition: failed</body></html>"
+    html_injected = tmp_path / "html-injected.zip"
+    _rebuild_bundle(files, html_injected)
+    assert not verify_bundle(html_injected)
+    assert _standalone_verify(html_injected).returncode == 1
 
     verification = json.loads(original_verification)
     verification["manifest_identity"] = "sha256:" + "f" * 64
@@ -618,25 +615,8 @@ def test_historical_bundle_without_trial_closure_fields_stays_verifiable(
         + json.dumps(claims, sort_keys=True)
         + "</pre></body></html>"
     ).encode()
-    manifest = json.loads(files["manifest.json"])
-    manifest["identity"] = _identity({"schema": "rob2-kit.bundle.v0.3", "canonical": canonical})
-    verification = json.loads(files["verification.json"])
-    verification["manifest_identity"] = manifest["identity"]
-    files["verification.json"] = json.dumps(
-        verification, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode()
-    for row in manifest["files"]:
-        row["sha256"] = "sha256:" + hashlib.sha256(files[row["path"]]).hexdigest()
-    files["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode()
     historical = tmp_path / "legacy-without-trial-closures.rob2.zip"
-    with zipfile.ZipFile(historical, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        for name in sorted(files):
-            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = 0o644 << 16
-            archive.writestr(info, files[name])
+    _rebuild_bundle(files, historical)
 
     assert verify_bundle(historical)
     assert _standalone_verify(historical).returncode == 0
