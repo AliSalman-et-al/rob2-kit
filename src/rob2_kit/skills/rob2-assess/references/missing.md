@@ -86,6 +86,16 @@ with no reasons suggesting dependence, answer No or Probably no. How the
 trialists' primary analysis handled missing participants is not itself a reason
 for missingness.
 
+For reasons 2 and 3, section 6.1.4.2 asks whether the reasons relate to the
+true value of the outcome: lack of efficacy, recovery, worsening illness or
+adverse experiences of one intervention. The case most likely to bias is
+participants who became unwell leaving one group while those who recovered
+left the other. Reasons unrelated to the outcome (an operation cancelled for
+scheduling, moving away, a protocol violation, a failed device) do not suggest
+dependence even when they differ between groups. For reason 1, compare the
+counts with the numbers randomized: a difference of one or two participants is
+not by itself evidence that missingness depended on the outcome.
+
 ## Algorithm
 
 - **Low:** 3.1 Yes/Probably yes; or 3.2 Yes/Probably yes; or 3.3 No/Probably no.

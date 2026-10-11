@@ -45,14 +45,18 @@ it is assessed in 4.3-4.5.
 ## 4.3 (`sq:measurement:assessor-aware`) If N/PN/NI to 4.1 and 4.2: were outcome assessors aware of the intervention received?
 
 Identify the assessor from the table above first. For participant-reported
-outcomes the participant is the assessor, so answer as for 2.1. Answer **No**
-if the assessor was blinded. In a double-blind trial with a matching placebo,
-assessors are aware only if the sources report unblinding or there is a strong
-reason, such as distinctive effects known to be specific to one intervention
-that the assessor would observe; a theoretical possibility is not enough. "Double blind" alone does not say whether the
-outcome assessor was blinded; read who was masked. A blinded adjudication
-committee makes assessors unaware for the events it classifies, but not for an
-earlier clinical decision by an aware care provider that the outcome records.
+outcomes the participant is the assessor. Answer **No** if the assessor was
+blinded. The 2.1 and 2.2 rule that intervention-specific side effects make
+participants or carers aware belongs to Domain 2; the 4.3 elaboration asks
+only whether assessors were blinded, and deducing the intervention received
+does not in itself cause bias (section 5.1.3). In a trial with a matching placebo
+or sham, a blinded participant or assessor is therefore unaware unless the
+Sources report that their blinding was broken. "Double blind" alone does not
+say whether the outcome assessor was blinded; read who was masked. If nothing
+says who was masked, answer No information or assume awareness (RoB 2 FAQ). A
+blinded adjudication committee makes assessors unaware for the events it
+classifies, but not for an earlier clinical decision by an aware care provider
+that the outcome records.
 
 ## 4.4 (`sq:measurement:influence-possible`) If Y/PY/NI to 4.3: could assessment of the outcome have been influenced by knowledge of intervention received?
 
