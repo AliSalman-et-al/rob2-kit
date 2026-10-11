@@ -33,19 +33,17 @@ Thumbs.db
 *.swo
 .release-dist/
 
-# Keep evaluation inputs local except for the public catalog and explicitly
-# tracked benchmark source fixtures.
-eval/reference/*
-!eval/reference/catalog/
-!eval/reference/sources/
-!eval/reference/sources/**
-eval/reference/catalog/provisional-labels/
-eval/private/
-eval/runs/
+# Evaluation inputs, runs and traces stay local: trial reports are copyrighted
+# and traces quote them. Only the synthetic held-out manifest is tracked.
+eval/*
+!eval/synthetic-heldout.json
 
 # Local benchmark analysis, calibration, and rendering artifacts
 analysis/
+prototypes/
 tmp/
+*.pdf
+!tests/fixtures/**/*.pdf
 .Rhistory
 .RData
 .Rproj.user/
@@ -57,9 +55,20 @@ renv/staging/
 .env.*
 !.env.example
 
+# Assessment workspaces created while trying the tool locally, and the
+# evidence kept by the verify-rob2-kit skill
+/input/
+/.verify-evidence/
+
 # AI Agents
-.agents/
-.claude/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/verify-rob2-kit/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/verify-rob2-kit
 .claude-config/
 .codex/
 .rob2-kit/

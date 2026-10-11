@@ -353,7 +353,7 @@ def prepare_campaign(
         if (
             not isinstance(case_data, dict)
             or set(case_data) - _CASE_FIELDS
-            or case_data.get("schema") != "rob2-kit.rsi-case.v1"
+            or case_data.get("schema") != "rob2-kit.verification-case.v1"
             or not isinstance(case_data.get("sources"), list)
             or not case_data["sources"]
             or case_data.get("trial") != planned_case["trial_id"]
@@ -1190,7 +1190,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--runner",
         type=Path,
-        default=Path(__file__).with_name("run_rsi_case.py"),
+        default=Path(__file__).with_name("run_verification_case.py"),
         help=argparse.SUPPRESS,
     )
     parser.add_argument("--dry-run", action="store_true")

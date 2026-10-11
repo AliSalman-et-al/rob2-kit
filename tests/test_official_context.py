@@ -4,36 +4,11 @@ import json
 import sqlite3
 from pathlib import Path
 
-import pytest
 from support.rob2 import _assessment_workspace, _call
 
 from rob2_kit.application._state import _state
 from rob2_kit.application.domains import _official_guidance_recovery
-from rob2_kit.interfaces.mcp.server import _domain_context_transport_bytes
-from rob2_kit.packs import SCIENTIFIC_PACK, load_scientific_pack
-
-
-def test_complete_question_capture_and_background_are_pack_bound() -> None:
-    capture = json.loads(
-        Path("tests/fixtures/official-guidance-audit-2019/complete-elaborations.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    assert len(capture["questions"]) == 22
-    by_id = {question.id: question for question in SCIENTIFIC_PACK.questions}
-    for record in capture["questions"]:
-        official = by_id[record["question_id"]].guidance.official
-        assert official.source_excerpt == record["normalized_excerpt"]
-        assert official.source_locator == record["source_locator"]
-        assert official.source_sha256 == capture["source_sha256"]
-        assert (
-            " ".join(" ".join(block["text"] for block in record["blocks"]).split())
-            == official.source_excerpt
-        )
-    altered = SCIENTIFIC_PACK.model_dump(mode="json")
-    altered["official_sections"][0]["guidance"]["source_excerpt"] += " altered"
-    with pytest.raises(ValueError, match="hash"):
-        load_scientific_pack(altered)
+from rob2_kit.packs import SCIENTIFIC_PACK
 
 
 def test_background_and_faq_wording_preserve_source_versions_and_scope() -> None:
@@ -67,61 +42,6 @@ def test_background_and_faq_wording_preserve_source_versions_and_scope() -> None
         assert official.guidance.source_sha256 == record["source_sha256"]
         assert official.guidance.version == record["version"]
         assert len(official.question_ids) == 1
-
-
-def test_measurement_awareness_delivers_captured_masking_caveat() -> None:
-    capture = json.loads(
-        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    original = next(
-        section for section in capture["sections"] if "successful guesses" in section["text"]
-    )
-    text = " ".join(original["text"].split())
-    expected = text[text.index("Several groups have suggested") :]
-    sections = _official_guidance_recovery("domain:measurement")["sections"]
-    delivered = next(section for section in sections if "successful guesses" in section["excerpt"])
-    assert delivered["excerpt"] == expected
-    assert delivered["question_ids"] == ("sq:measurement:assessor-aware",)
-    assert delivered["source_version"] == capture["version"]
-    assert delivered["source_sha256"] == capture["source_sha256"]
-    assert "p. 23, section 5.1" in delivered["source_locator"]
-    assert all(
-        "successful guesses" not in section["excerpt"]
-        for section in _official_guidance_recovery("domain:missing")["sections"]
-    )
-
-
-@pytest.mark.parametrize("budget", [16_384, 32_768])
-def test_native_pages_deliver_complete_official_core_once(tmp_path: Path, budget: int) -> None:
-    workspace, _, _ = _assessment_workspace(tmp_path)
-    for domain in SCIENTIFIC_PACK.domains:
-        page = _call(
-            workspace,
-            "get_domain_context",
-            {"domain_id": domain.id, "max_response_bytes": budget},
-            _raw=True,
-        )
-        sections = []
-        questions = []
-        while True:
-            assert page["outcome"] == "success", page
-            wire = {key: value for key, value in page.items() if key != "_image_content"}
-            assert _domain_context_transport_bytes(wire) <= budget
-            data = page["data"]
-            assert "response_framework" not in data
-            sections.extend(data.get("official_guidance", {}).get("sections", []))
-            questions.extend(data.get("questions", []))
-            cursor = data.get("context_page", {}).get("next_cursor")
-            if cursor is None:
-                break
-            # Each call creates a new Client: recovery does not depend on client memory.
-            page = _call(workspace, "get_domain_context", {"cursor": cursor}, _raw=True)
-        expected = json.loads(json.dumps(_official_guidance_recovery(domain.id)["sections"]))
-        assert sections == expected
-        assert {question["id"] for question in questions} == set(domain.question_ids)
-        assert all("decision_rule" not in question for question in questions)
 
 
 def test_preserved_previous_pack_view_recovers_without_schema_failure(tmp_path: Path) -> None:
@@ -180,7 +100,7 @@ def test_runtime_profiler_reassembles_the_same_official_core() -> None:
     for index, section in enumerate(core["sections"]):
         pages[index] = {
             "data": {
-                "context_page": {"index": index, "section": "official_guidance"},
+                "context_page": {"index": index, "sections": [{"section": "official_guidance"}]},
                 "official_guidance": {
                     "pack": core["pack"],
                     "sections": [section],

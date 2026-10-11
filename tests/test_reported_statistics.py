@@ -16,6 +16,7 @@ from support.rob2 import (
     _read_required_main_reports,
     _result,
     _review,
+    _saved_result,
     _standalone_verify,
     _workspace,
 )
@@ -29,7 +30,6 @@ from rob2_kit.application.finalization import (
 )
 from rob2_kit.application.proposal import _coherent_anchor_indices, _source_bound_leaves
 from rob2_kit.packs import SCIENTIFIC_PACK
-from tests.test_result_scope_review import _allsop_result
 
 
 @pytest.mark.parametrize("comparative", [False, True])
@@ -92,37 +92,9 @@ def test_statistics_bind_and_recover_with_either_reported_form(
     assert canonical["proposal"]["payload"]["results"][0]["reported"] == stored["reported"]
 
 
-@pytest.mark.parametrize(
-    "source_statistic, claimed_statistic",
-    [("p = 0.68", "p = 0.12"), ("p = 0.689", "p = 0.68")],
-)
-def test_ancillary_statistic_requires_source_support_for_selected_result(
-    tmp_path: Path, source_statistic: str, claimed_statistic: str
-) -> None:
-    workspace = _workspace(tmp_path)
-    source = workspace / "input/trial/main.txt"
-    source.write_text(
-        source.read_text().rstrip() + "; " + source_statistic + ".\n", encoding="utf-8"
-    )
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["reported"]["reported_statistics"] = [claimed_statistic]
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert repair["outcome"] == "repair", repair
-    assert any(item["path"].startswith("/results/0/reported") for item in repair["repairs"])
-
-
-def test_absent_statistics_preserve_existing_canonical_record_shape(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    original = copy.deepcopy(result)
-    result["reported"]["reported_statistics"] = []
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert saved["outcome"] == "review_required", saved
-    stored = _state(workspace)["proposal"]["payload"]["results"][0]
-    assert "reported_statistics" not in stored["reported"]
-    assert stored["reported"]["group_values"] == original["reported"]["group_values"]
+@pytest.fixture(scope="module")
+def saved_result(tmp_path_factory: pytest.TempPathFactory) -> dict:
+    return _saved_result(tmp_path_factory.mktemp("assessed"))
 
 
 @pytest.mark.parametrize(
@@ -143,8 +115,8 @@ def test_absent_statistics_preserve_existing_canonical_record_shape(tmp_path: Pa
         ("not estimable", "not estimable", True),
     ],
 )
-def test_statistics_use_numeric_boundaries_in_binding_and_all_anchors(
-    source_statistic: str, claim: str, expected: bool
+def test_statistics_use_numeric_boundaries_and_do_not_gate_the_anchor(
+    saved_result: dict, source_statistic: str, claim: str, expected: bool
 ) -> None:
     standalone = runpy.run_path("scripts/verify_bundle.py")
     path = "/reported/reported_statistics/0"
@@ -153,7 +125,7 @@ def test_statistics_use_numeric_boundaries_in_binding_and_all_anchors(
         # An unrelated textual field keeps its historical matching behavior.
         assert matcher("Endpoint 20", "Endpoint 2", "/reported/endpoint/name")
 
-    result = _allsop_result()
+    result = copy.deepcopy(saved_result)
     result["reported"]["reported_statistics"] = [claim]
     evidence: list[dict[str, object]] = [{"kind": "narrative", "handle": "eh_statistic"}]
     result["evidence"] = evidence
@@ -165,9 +137,10 @@ def test_statistics_use_numeric_boundaries_in_binding_and_all_anchors(
         "trial_id": result["trial_id"],
         "quote": quote,
     }
-    assert bool(_coherent_anchor_indices(result, {"selection": selected})) is expected
+    # Statistics are ordinary leaves: the endpoint-and-tuple anchor holds either way.
+    assert _coherent_anchor_indices(result, {"selection": selected})
     for checker in (
         _reported_result_has_coherent_anchor,
         standalone["_reported_result_has_coherent_anchor"],
     ):
-        assert checker(result, evidence, {"eh_statistic": selected}) is expected
+        assert checker(result, evidence, {"eh_statistic": selected})

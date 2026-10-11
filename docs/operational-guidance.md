@@ -11,16 +11,16 @@ This fixes a general integration defect exposed by a tools-only invocation whose
 
 ## Host completion for scoped diagnostics
 
-Use the existing `scripts/run_rsi_case.py`/`workflow_completion.drive` integration
+Use the existing `scripts/run_verification_case.py`/`workflow_completion.drive` integration
 for host-owned completion. Same-session resumes require explicit
 `--completion-resumes N` and a shared `--timeout-seconds` budget; default is zero.
 A partial assessment additionally takes `--completion-scope FILE`, containing only
 `trial_id`, approved `result_identity`, and `domain_ids`. Both experimental routes
 must use the same prospective policy. Partial scope completion is not batch
-finalization or a scored full benchmark outcome. RSI handoff/runtime/isolation
-checks remain required; frozen bespoke diagnostic directories are not RSI ledgers.
+finalization or a scored full benchmark outcome. Verification handoff/runtime/isolation
+checks remain required; frozen bespoke diagnostic directories are not verification ledgers.
 
-Model final text cannot complete actionable canonical work. RSI records a
+Model final text cannot complete actionable canonical work. Verification records a
 receipt-based reading-delivery report, preserves every controller turn, and marks
 missing usage unknown. Required reading and Domain checkpoints are operational
 boundaries; their presence does not certify scientific correctness. See

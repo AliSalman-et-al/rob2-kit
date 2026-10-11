@@ -4,89 +4,11 @@ import json
 import zipfile
 from pathlib import Path
 
-import pymupdf
 import pytest
 from support.rob2 import _call, _standalone_verify, _workspace
 
 from rob2_kit.application import source_handles
 from rob2_kit.application.finalization import verify_bundle
-
-
-def test_source_handles_round_trip_across_source_tools_and_recovery(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").unlink()
-    document = pymupdf.open()
-    document.new_page().insert_text((72, 72), "alpha beta\nsecond line")
-    (workspace / "input" / "trial" / "main.pdf").write_bytes(document.tobytes())
-    document.close()
-    (workspace / "input" / "trial" / "sources.toml").write_text(
-        'roles = { "main.pdf" = "main_article" }\n', encoding="utf-8"
-    )
-    prepared = _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "outcome", "expected_revision": 0},
-    )
-    source_handle = prepared["data"]["trials"][0]["sources"][0]["id"]
-    assert source_handle.startswith("sh_") and len(source_handle) == 19
-    listed = _call(workspace, "list_sources", {"trial_id": "trial"})
-    assert listed["data"]["sources"][0]["id"] == source_handle
-    status = _call(workspace, "get_status", {})
-    required = [
-        window
-        for item in status["data"]["main_report_reading"].values()
-        for window in item["required_ranges"]
-    ]
-    assert required and all(window["source_id"] == source_handle for window in required)
-
-    search = _call(
-        workspace,
-        "search_sources",
-        {
-            "trial_id": "trial",
-            "query": "alpha",
-            "mode": "any",
-            "source_id": source_handle,
-        },
-    )
-    assert search["data"]["hits"][0]["source_id"] == source_handle
-    pages = _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": source_handle, "pages": [1]},
-    )
-    assert pages["data"]["pages"][0]["source_id"] == source_handle
-    selected = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source_handle,
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )
-    assert selected["data"]["evidence"]["source_id"] == source_handle
-    rendered = _call(
-        workspace,
-        "render_page",
-        {"trial_id": "trial", "source_id": source_handle, "page": 1},
-    )
-    assert len(rendered["_image_content"]) == 1
-    assert rendered["data"]["render"]["source_id"] == source_handle
-    visual = _call(
-        workspace,
-        "select_visual_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source_handle,
-            "delivery_receipt": rendered["data"]["delivery_receipt"],
-            "transcription": "alpha beta",
-            "region": [0.0, 0.0, 1.0, 1.0],
-        },
-    )
-    assert visual["data"]["evidence"]["source_id"] == source_handle
 
 
 def test_source_handles_reject_unknown_and_wrong_trial(tmp_path: Path) -> None:

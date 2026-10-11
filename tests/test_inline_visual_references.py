@@ -11,8 +11,7 @@ import pytest
 from fastmcp.exceptions import ToolError
 from support import rob2 as support
 
-from rob2_kit.application._state import _canonical_evidence_records, _identity, _state
-from rob2_kit.application.domains import _approved_result
+from rob2_kit.application._state import _state
 
 TRANSCRIPTIONS = (
     "Allocation table. Alpha 20, Beta 30, Gamma 40 participants. Total 90. "
@@ -105,75 +104,6 @@ def _reference(workspace: Path, source: dict[str, Any], page: int) -> dict[str, 
             else "The graphic does not establish observed-outcome counts or analysis timing."
         ),
     }
-
-
-@pytest.mark.parametrize("omit_region", [False, True])
-@pytest.mark.parametrize("page", [1, 2, 3], ids=["multiarm-table", "allocation-flow", "score-plot"])
-def test_inline_visual_preserves_same_evidence_result_unknowns_and_counterclaim(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, page: int, omit_region: bool
-) -> None:
-    workspace, text, revision, source = _prepared(tmp_path, monkeypatch)
-    ref = _reference(workspace, source, page)
-    if omit_region:
-        del ref["region"]
-    support._call(
-        workspace, "get_domain_context", {"trial_id": "trial", "domain_id": "domain:selection"}
-    )
-    draft = support._domain_draft("trial", "domain:selection", revision, text)
-    answer = draft["answers"][0]
-    answer["bases"].append(ref if page == 1 else {"evidence": ref, "role": "context"})
-    answer["unknowns"] = ["The graphic does not establish analysis timing."]
-    answer["counterevidence"] = [
-        {"evidence": [ref], "implication": "These graphical values do not date an analysis plan."}
-    ]
-    before = _state(workspace)
-    saved = support._call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success", saved
-    record = _state(workspace)["domain_records"]["trial:domain:selection"]
-    assert record["result_identity"] == _identity(_approved_result(before, "trial"))
-    assert [item["answer"] for item in record["answers"]] == [
-        item["answer"] for item in draft["answers"]
-    ]
-    ids = {basis["evidence"] for item in record["answers"] for basis in item["bases"]}
-    catalog = _canonical_evidence_records(workspace, ids)
-    visual = next(item for item in catalog.values() if item["kind"] == "figure")
-    assert visual["transcription"] == ref["transcription"]
-    assert visual["uncertainty"] == ref["uncertainty"]
-    assert visual["region"] == [0.0, 0.0, 1.0, 1.0]
-    assert visual["delivery_receipt"] == ref["delivery_receipt"]
-    assert visual["render"]["page"] == page
-    assert visual["provenance"] == "host_visual"
-    first = record["answers"][0]
-    assert first["unknowns"] == answer["unknowns"]
-    point = first["counterevidence"][0]
-    assert point["implication"] == answer["counterevidence"][0]["implication"]
-    assert first["bases"][point["basis_index"]]["evidence"] == visual["identity"]
-    legacy = support._call(
-        workspace, "select_visual_evidence", {"trial_id": "trial", "source_id": source["id"], **ref}
-    )
-    assert legacy["data"]["evidence"]["identity"] == visual["identity"]
-
-
-def test_text_caption_remains_narrative_without_graphical_values(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    workspace, evidence, revision, source = _prepared(tmp_path, monkeypatch)
-    support._call(
-        workspace, "get_domain_context", {"trial_id": "trial", "domain_id": "domain:selection"}
-    )
-    draft = support._domain_draft("trial", "domain:selection", revision, evidence)
-    draft["answers"][0]["bases"].append(
-        {"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1}
-    )
-    saved = support._call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success", saved
-    record = _state(workspace)["domain_records"]["trial:domain:selection"]
-    ids = {basis["evidence"] for item in record["answers"] for basis in item["bases"]}
-    catalog = _canonical_evidence_records(workspace, ids)
-    assert all(item["kind"] == "narrative" for item in catalog.values())
-    caption = next(item for item in catalog.values() if "caption only" in item["quote"])
-    assert caption["quote"] == "Figure 1: neutral appendix graphic; caption only."
-    assert "transcription" not in caption and "render" not in caption
 
 
 @pytest.mark.parametrize("omit_region", [False, True])

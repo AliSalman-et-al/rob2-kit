@@ -1,4 +1,19 @@
-# v0.11 public release contract
+# Release guide
+
+## Cut a release
+
+1. Set the new version in `pyproject.toml`, `.claude-plugin/plugin.json`,
+   `.codex-plugin/plugin.json`, the Codex server tag in `.codex-plugin/mcp.json`,
+   `CITATION.cff` and the wheel name in `.github/workflows/ci.yml`.
+   `tests/test_plugin_manifests.py` fails if the plugins and the package disagree.
+2. Run `./scripts/verify_release.ps1`.
+3. Merge to `main`, then tag the merge commit `vX.Y.Z` and push the tag. The
+   Codex plugin installs the server from that tag. Claude Code installs it from
+   the plugin copy itself.
+4. Check the manifests with `claude plugin validate .`.
+
+## Public contract
+
 
 `public-contract.json` is generated from the typed application models exposed by
 the production FastMCP adapter. It records the ordered tool catalog, annotation

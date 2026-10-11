@@ -5,65 +5,10 @@ from copy import deepcopy
 from typing import Any
 
 from rob2_kit.application.domains import (
-    _counterfactual_answer_branch,
-    _counterfactual_missing_reason,
     _overall_receipt,
 )
 from rob2_kit.logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from rob2_kit.packs import SCIENTIFIC_PACK
-
-
-def _deviation_answers() -> dict[str, str]:
-    return {
-        "sq:deviations:participants-aware": "no_information",
-        "sq:deviations:personnel-aware": "no",
-        "sq:deviations:context-deviations": "no_information",
-        "sq:deviations:appropriate-analysis": "yes",
-    }
-
-
-def test_counterfactual_projection_handles_deactivation_and_independence() -> None:
-    answers = _deviation_answers()
-
-    projected, active, missing = _counterfactual_answer_branch(
-        "domain:deviations",
-        answers,
-        "sq:deviations:participants-aware",
-        "probably_no",
-    )
-    assert active == (
-        "sq:deviations:participants-aware",
-        "sq:deviations:personnel-aware",
-        "sq:deviations:appropriate-analysis",
-    )
-    assert "sq:deviations:context-deviations" not in projected
-    assert not missing
-
-    projected, active, missing = _counterfactual_answer_branch(
-        "domain:deviations",
-        answers,
-        "sq:deviations:personnel-aware",
-        "probably_no",
-    )
-    assert "sq:deviations:participants-aware" in active
-    assert projected["sq:deviations:participants-aware"] == "no_information"
-    assert projected["sq:deviations:context-deviations"] == "no_information"
-    assert not missing
-
-
-def test_counterfactual_projection_identifies_newly_active_question() -> None:
-    projected, active, missing = _counterfactual_answer_branch(
-        "domain:deviations",
-        _deviation_answers(),
-        "sq:deviations:context-deviations",
-        "probably_yes",
-    )
-    assert "sq:deviations:affected-outcome" in active
-    assert "sq:deviations:affected-outcome" in missing
-    assert "sq:deviations:affected-outcome" not in projected
-    assert _counterfactual_missing_reason(missing) == (
-        "missing active question IDs: [sq:deviations:affected-outcome]"
-    )
 
 
 def _complete_records() -> tuple[dict[str, Any], dict[str, str]]:

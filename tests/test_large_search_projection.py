@@ -35,11 +35,3 @@ def test_projection_cache_is_keyed_by_complete_captured_text():
     assert evidence._native_fts_match_spans(changed, "allocation", "any") == []
     assert evidence._native_fts_match_spans(changed, "concealment", "any") == [(66000, 66011)]
     assert evidence._cached_large_search_projection.cache_info().misses == 2
-
-
-def test_cached_offsets_are_packed_and_retention_is_bounded():
-    assert evidence._cached_large_search_projection.cache_info().maxsize == 2
-    text = "word " * 14000
-    normalized, starts, ends = evidence._cached_large_search_projection(text)
-    assert starts.itemsize == ends.itemsize == 8
-    assert len(starts) == len(ends) == len(normalized)

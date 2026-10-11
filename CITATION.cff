@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use rob2-kit, please cite it as below."
+title: "rob2-kit: evidence-grounded Cochrane RoB 2 assessment with AI agents"
+type: software
+authors:
+  - family-names: Salman
+    given-names: Ali
+version: 0.12.0
+license: MIT
+repository-code: "https://github.com/AliSalman-et-al/rob2-kit"
+abstract: >-
+  rob2-kit is a model-free Model Context Protocol server and agent skill for
+  Cochrane Risk of Bias 2 (RoB 2) assessment of randomized trials. An AI agent
+  reads the trial reports and answers the signalling questions with cited
+  passages. The server validates each citation against the captured sources,
+  applies the official RoB 2 algorithms deterministically, keeps the researcher
+  as the approver of the assessed result, and exports a verifiable bundle.
+keywords:
+  - risk of bias
+  - RoB 2
+  - Cochrane
+  - systematic review
+  - randomized controlled trials
+  - large language models
+  - Model Context Protocol
+references:
+  - type: article
+    title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
+    authors:
+      - family-names: Sterne
+        given-names: Jonathan A. C.
+      - family-names: Savović
+        given-names: Jelena
+      - family-names: Page
+        given-names: Matthew J.
+      - name: "et al."
+    journal: BMJ
+    year: 2019
+    volume: 366
+    start: l4898
+    doi: 10.1136/bmj.l4898

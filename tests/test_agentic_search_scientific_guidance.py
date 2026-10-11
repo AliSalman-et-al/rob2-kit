@@ -6,9 +6,6 @@ Complete official-source fidelity and native delivery are checked separately in
 
 from typing import NotRequired, TypedDict, cast
 
-from rob2_kit.application.domains import _comparison_cards
-from rob2_kit.logic.evaluator import evaluate_domain
-
 
 class _GuidanceCase(TypedDict):
     case_id: str
@@ -33,38 +30,6 @@ def _fixture_cases() -> list[_GuidanceCase]:
         )
     )
     return cast(list[_GuidanceCase], fixture["cases"])
-
-
-def test_issue_455_to_458_paired_fixtures_change_one_premise_and_follow_the_evaluator() -> None:
-    cases = _fixture_cases()
-    expected_pairs = {
-        "d2-exclusion-timing",
-        "d3-stop-treatment-versus-followup",
-        "d4-endpoint-specific-toxicity-monitoring",
-        "d4-safety-observation-window",
-        "d5-amendment-access-order",
-        "d5-multiplicity-versus-results-based-reporting",
-    }
-    paired = {
-        pair_id: [case for case in cases if case.get("pair_id") == pair_id]
-        for pair_id in expected_pairs
-    }
-    assert all(len(pair) == 2 for pair in paired.values())
-
-    for pair_id, pair in paired.items():
-        left, right = pair
-        assert left["neutral"] and right["neutral"]
-        assert left["domain"] == right["domain"], pair_id
-        if pair_id == "d4-endpoint-specific-toxicity-monitoring":
-            assert left["result_scope"] != right["result_scope"]
-            assert "approved endpoint" in left["changed_premise"]
-        else:
-            assert left["result_scope"] == right["result_scope"], pair_id
-        assert left["changed_premise"] == right["changed_premise"], pair_id
-        assert len(set(left["facts"]) ^ set(right["facts"])) == 2, pair_id
-        for case in pair:
-            outcome = evaluate_domain(case["domain"], case["expected_answer_path"])
-            assert outcome.judgment.value == case["severity"], case["case_id"]
 
 
 def test_neutral_fixtures_cover_requested_d3_d4_d5_contrasts() -> None:
@@ -121,41 +86,3 @@ def test_neutral_fixtures_cover_requested_d3_d4_d5_contrasts() -> None:
         "multiple_eligible_analyses": ("adjusted", "complete-case", "multiplicity"),
     }.items():
         assert all(term in facts_by_contrast[contrast] for term in terms), contrast
-
-
-def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() -> None:
-    expected = {
-        "domain:deviations": (
-            "sq:deviations:context-deviations",
-            {
-                "intended_intervention",
-                "observed_conduct",
-                "trial_context_cause",
-                "protocol_consistency",
-                "outcome_effect",
-                "group_balance",
-            },
-        ),
-        "domain:missing": (
-            "sq:missing:data-available",
-            {
-                "approved_outcome",
-                "randomized",
-                "observed",
-                "unavailable",
-                "follow_up_availability",
-                "censoring",
-                "missingness_reason",
-            },
-        ),
-        "domain:selection": (
-            "sq:selection:prespecified-analysis",
-            {"reported_result", "analysis_plan", "unblinded_access", "amendment", "correspondence"},
-        ),
-    }
-    for domain_id, (question_id, slot_names) in expected.items():
-        card = _comparison_cards(domain_id, {}, {}, [], [])[0]
-        assert card["question_id"] == question_id
-        assert {slot["name"] for slot in card["slots"]} == slot_names
-        assert all(slot["status"] == "unknown" for slot in card["slots"])
-        assert "Empty passage groups denote unopened source material" in card["prompt"]

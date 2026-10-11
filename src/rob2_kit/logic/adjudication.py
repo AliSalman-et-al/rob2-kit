@@ -27,6 +27,8 @@ def adjudication_context_header_bytes(context: dict[str, Any], record: dict[str,
         not in {
             "primary_report",
             "questions",
+            "assessment_guidance",
+            "reading_leads",
             "official_guidance",
             "evidence",
             "comparison_cards",

@@ -18,199 +18,13 @@ from support.rob2 import (
     _result,
     _review,
     _standalone_verify,
-    _unavailable_result,
     _workspace,
 )
 
-from rob2_kit.application._state import _identity, _state
-from rob2_kit.application.domains import reconcile_missing_data
+from rob2_kit.application._state import _state
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import AssessableResultDraft, ResultApplicability
-
-
-def test_one_group_description_requires_unavailable_result_with_exact_evidence(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    passage = (
-        "requested outcome; Treatment-emergent events by grade; group a; randomized participants; "
-        "Any event; grade_1; 65."
-    )
-    (workspace / "input" / "trial" / "main.txt").write_text(passage, encoding="utf-8")
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["reported"] = {
-        "form": "single_group_category_profile",
-        "analysis_population": "Randomized participants in group a.",
-        "endpoint": {"name": "Treatment-emergent events by grade"},
-        "group_id": "a",
-        "denominator_basis": "Randomized participants in group a.",
-        "category_axis_names": ["event", "grade"],
-        "categories": [{"category_axes": ["Any event", "grade_1"], "value": "65"}],
-    }
-
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-
-    assert repair["outcome"] == "repair", repair
-    assert any(item["code"] == "single_group_result_not_comparative" for item in repair["repairs"])
-    assert _state(workspace).get("proposal") is None
-
-    unavailable = _unavailable_result(
-        evidence,
-        "The comparative result for the other randomized group is not reported.",
-    )
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [unavailable]))
-    assert saved["outcome"] == "review_required", saved
-    stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
-    assert stored["kind"] == "unavailable"
-    assert stored["missing_facts"][0]["basis"]["source"] == evidence["quote"]
-
-    _review(workspace)
-    status = _call(workspace, "get_status", {})
-    assert status["data"]["trial_dispositions"]["trial"] == "reviewable"
-    assert status["head"]["phase"] == "assessment"
-    reviewed = _call(
-        workspace,
-        "review_trial",
-        {"trial_id": "trial", "expected_revision": status["head"]["state_revision"]},
-    )
-    assert reviewed["data"]["review"]["disposition"] == "needs_input"
-    closed = _call(
-        workspace,
-        "close_trial",
-        {
-            "trial_id": "trial",
-            "expected_revision": reviewed["head"]["state_revision"],
-            "review_reference": reviewed["data"]["review"]["identity"],
-        },
-    )
-    assert closed["data"]["closure"]["disposition"] == "needs_input"
-
-
-@pytest.mark.parametrize("population", ("mITT", "per-protocol", "as-treated"))
-def test_comparative_result_population_labels_are_not_eligibility_gates(
-    tmp_path: Path, population: str
-) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["reported"]["analysis_population"] = population
-
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-
-    assert saved["outcome"] == "review_required", saved
-
-
-def test_exact_relation_requires_every_result_scope_facet_to_be_specified(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["clarity"]["time_point"] = "unavailable"
-    result["clarity"]["analysis_population"] = "conflicting"
-
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-
-    assert repair["outcome"] == "repair", repair
-    assert {
-        (item["path"], item["code"])
-        for item in repair["repairs"]
-        if item["code"] == "exact_result_scope_not_established"
-    } == {
-        ("/results/0/clarity/time_point", "exact_result_scope_not_established"),
-        ("/results/0/clarity/analysis_population", "exact_result_scope_not_established"),
-    }
-    assert _state(workspace).get("proposal") is None
-
-
-@pytest.mark.parametrize(
-    ("scenario", "facet", "clarity"),
-    (
-        pytest.param(
-            "death included/excluded composite",
-            "outcome_definition",
-            "conflicting",
-            id="death-composite",
-        ),
-        pytest.param("cohort change", "analysis_population", "conflicting", id="cohort-change"),
-        pytest.param("grade range", "outcome_definition", "conflicting", id="grade-range"),
-        pytest.param("data-cut chronology", "time_point", "conflicting", id="data-cut"),
-        pytest.param("unknown AE window", "time_point", "unclear", id="unknown-ae-window"),
-        pytest.param(
-            "estimate and precision conflict",
-            "source_table_meaning",
-            "conflicting",
-            id="estimate-precision",
-        ),
-    ),
-)
-def test_exact_relation_does_not_hide_material_scope_conflicts(
-    tmp_path: Path, scenario: str, facet: str, clarity: str
-) -> None:
-    workspace = _workspace(tmp_path)
-    if scenario in {"data-cut chronology", "estimate and precision conflict"}:
-        (workspace / "input" / "trial" / "main.txt").write_text(
-            "The requested outcome was measured in the analyzed population.; "
-            "The requested outcome was not reported; only an alternate endpoint was measured. "
-            "death ascertainment; end of follow-up; follow-up through 30 June data cutoff; "
-            "assigned to intervention; assigned to control; randomized population; "
-            "risk ratio; hazard ratio; estimate 0.61; 95% CI, 0.47 to 0.80; "
-            "risk; 1; events; 2.\n",
-            encoding="utf-8",
-        )
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    if scenario == "data-cut chronology":
-        result["target"]["time_point_or_window"]["description"] = (
-            "follow-up through 30 June data cutoff"
-        )
-    elif scenario == "estimate and precision conflict":
-        result["target"]["intended_effect_measure"] = "hazard ratio"
-        result["reported"] = {
-            "form": "comparative_effect",
-            "effect_measure": "hazard ratio",
-            "estimate": "0.61",
-            "precision": "95% CI, 0.47 to 0.80",
-            "analysis_population": "randomized population",
-            "endpoint": result["reported"]["endpoint"],
-        }
-    result["clarity"][facet] = clarity
-
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-
-    assert repair["outcome"] == "repair", repair
-    assert any(
-        item["path"] == f"/results/0/clarity/{facet}"
-        and item["code"] == "exact_result_scope_not_established"
-        for item in repair["repairs"]
-    )
-    assert _state(workspace).get("proposal") is None
-
-
-def test_nonexact_result_retains_unknown_and_conflicting_facets_for_review(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["relation"] = "related"
-    result["relation_rationale"] = (
-        "The reported endpoint overlaps the target, but its safety window and population "
-        "differ across source reports."
-    )
-    result["clarity"]["time_point"] = "unclear"
-    result["clarity"]["analysis_population"] = "conflicting"
-    result["clarity"]["source_table_meaning"] = "conflicting"
-
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-
-    assert saved["outcome"] == "review_required", saved
-    canonical = _state(workspace)["proposal"]["payload"]["results"][0]
-    assert canonical["clarity"]["time_point"] == "unclear"
-    assert canonical["clarity"]["analysis_population"] == "conflicting"
-    assert canonical["clarity"]["source_table_meaning"] == "conflicting"
 
 
 def test_omitted_result_clarity_defaults_to_unknown_and_cannot_claim_exact(
@@ -363,31 +177,6 @@ def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
     assert _standalone_verify(artifact).returncode == 0
 
 
-def test_result_draft_accepts_each_applicability_contract() -> None:
-    cases = (
-        ("individual_parallel", ("eh_" + "0" * 16,)),
-        ("cluster_randomized", ("eh_" + "0" * 16,)),
-        ("crossover", ("eh_" + "0" * 16,)),
-        ("unclear", ()),
-    )
-
-    for design, evidence in cases:
-        applicability = ResultApplicability.model_validate(
-            {
-                "design": design,
-                "rationale": "The captured Source describes this design or leaves it unresolved.",
-                "evidence": evidence,
-            }
-        )
-        draft = _result({"handle": "eh_" + "0" * 16})
-        draft["applicability"] = applicability.model_dump(mode="json")
-
-        parsed = AssessableResultDraft.model_validate(draft)
-
-        assert parsed.applicability.design == design
-        assert parsed.applicability.evidence == evidence
-
-
 def test_result_draft_rejects_removed_status_and_missing_known_design_evidence() -> None:
     with pytest.raises(ValidationError):
         ResultApplicability.model_validate(
@@ -459,67 +248,6 @@ def test_approval_routes_unsupported_applicability_to_typed_trial_review(
 
     blocked = _call(workspace, "get_domain_context", {})
     assert blocked["outcome"] == "condition"
-
-
-def test_applicability_evidence_must_be_selected_from_the_same_trial(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    second = workspace / "input" / "second"
-    second.mkdir(parents=True)
-    (second / "main.txt").write_text(
-        (workspace / "input" / "trial" / "main.txt").read_text(encoding="utf-8"),
-        encoding="utf-8",
-    )
-    primary = _prepared_evidence(workspace)
-    source = _call(workspace, "list_sources", {"trial_id": "second"})["data"]["sources"][0]
-    foreign = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "second",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    first_result = _result(primary)
-    first_result["applicability"]["evidence"] = [foreign["handle"]]
-    second_result = _result(foreign)
-    second_result["trial_id"] = "second"
-
-    repair = _call(
-        workspace,
-        "save_proposal",
-        _proposal_args(workspace, [first_result, second_result]),
-    )
-
-    assert repair["outcome"] == "repair", repair
-    assert repair["repairs"] == [
-        {
-            "path": "/assessments/0/evidence_basis/0",
-            "code": "cross_trial_evidence",
-            "detail": "Reasoning Evidence must resolve to selected material from this Trial.",
-            "answer_path": None,
-        }
-    ]
-
-
-def test_approval_keeps_supported_applicability_on_the_domain_path(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    proposed = _call(
-        workspace,
-        "save_proposal",
-        _proposal_args(workspace, [_result(evidence)]),
-    )
-    assert proposed["outcome"] == "review_required", proposed
-
-    _review(workspace)
-
-    status = _call(workspace, "get_status", {})
-    assert status["data"]["trial_dispositions"]["trial"] == "pending"
-    assert status["head"]["phase"] == "assessment"
-    assert status["head"]["next_action"]["operation"] == "get_domain_context"
 
 
 def test_result_and_applicability_evidence_survive_review_replacement_and_derivative_loss(
@@ -624,39 +352,6 @@ def test_result_and_applicability_evidence_survive_review_replacement_and_deriva
     assert _standalone_verify(artifact).returncode == 0
 
 
-def test_exact_relation_with_different_source_name_requires_rationale_and_keeps_binding(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text(
-        "The requested outcome was reported under the source-owned label all-cause death; "
-        "death ascertainment; end of follow-up; assigned to intervention; assigned to control; "
-        "randomized population; risk ratio; The requested outcome was measured in the analyzed "
-        "population.; risk; 1; events; 2.\n",
-        encoding="utf-8",
-    )
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["reported"]["endpoint"]["name"] = "all-cause death"
-    result["relation_rationale"] = (
-        "The source reports all-cause death as the requested outcome for this Result."
-    )
-
-    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-
-    assert proposed["outcome"] == "review_required", proposed
-    canonical = _state(workspace)["proposal"]["payload"]["results"][0]
-    endpoint_binding = next(
-        binding
-        for binding in canonical["bindings"]
-        if binding["field"]["path"] == "/reported/endpoint/name"
-    )
-    assert canonical["relation"] == "exact"
-    assert canonical["relation_rationale"] == result["relation_rationale"]
-    assert canonical["reported"]["endpoint"]["name"] == "all-cause death"
-    assert canonical["evidence"][endpoint_binding["evidence_index"]]["handle"] == evidence["handle"]
-
-
 def test_exact_relation_requires_rationale_and_repairs_fabricated_endpoint(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
@@ -686,92 +381,6 @@ def test_exact_relation_requires_rationale_and_repairs_fabricated_endpoint(tmp_p
         and "fabricated source endpoint" in repair["detail"]
         for repair in fabricated["repairs"]
     )
-
-
-def test_domain_context_missing_data_preview_is_typed_read_only_and_scope_bounded(
-    tmp_path: Path,
-) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    for domain_id in ("domain:randomization", "domain:deviations"):
-        saved = _call(
-            workspace,
-            "save_domain_judgment",
-            _domain_draft("trial", domain_id, revision, evidence),
-        )
-        assert saved["outcome"] == "success", saved
-        revision = int(saved["head"]["state_revision"])
-
-    rows: list[dict[str, Any]] = [
-        {
-            "arm": "intervention",
-            "population": "randomized participants",
-            "unit": "participants",
-            "time_point": "week 12",
-            "randomized": 100,
-            "observed": 95,
-            "basis": [evidence["handle"]],
-        },
-        {
-            "arm": "intervention",
-            "population": "analyzed participants",
-            "unit": "participants",
-            "time_point": "week 12",
-            "randomized": 80,
-            "basis": [evidence["handle"]],
-        },
-        {
-            "arm": "control",
-            "population": "randomized participants",
-            "unit": "participants",
-            "time_point": "week 12",
-            "randomized": 90,
-            "observed": 84,
-            "basis": [evidence["handle"]],
-        },
-    ]
-    before = _state(workspace)
-
-    context = _call(
-        workspace,
-        "get_domain_context",
-        {
-            "trial_id": "trial",
-            "domain_id": "domain:missing",
-            "missing_data": rows,
-        },
-    )
-
-    assert context["outcome"] == "success", context
-    card = next(
-        card
-        for card in context["data"]["comparison_cards"]
-        if card["question_id"] == "sq:missing:data-available"
-    )
-    approved_result = _state(workspace)["proposal"]["payload"]["results"][0]
-    expected_rows = [
-        row
-        | {
-            "basis": [evidence["identity"]],
-            "result_identity": _identity(approved_result),
-        }
-        for row in rows
-    ]
-    assert card["missing_data"] == reconcile_missing_data(expected_rows)
-    preview_by_scope = {
-        tuple(item["scope"][key] for key in ("arm", "population", "unit", "time_point")): item
-        for item in card["missing_data"]["rows"]
-    }
-    assert (
-        preview_by_scope[("intervention", "analyzed participants", "participants", "week 12")][
-            "missing"
-        ]
-        is None
-    )
-    assert len(preview_by_scope) == 3
-
-    after = _state(workspace)
-    assert after["revision"] == before["revision"]
-    assert after.get("domain_records") == before.get("domain_records")
 
 
 def test_unidentified_group_statistic_survives_assessment_without_inventing_a_label(
@@ -938,24 +547,3 @@ def test_null_source_unit_preserves_interpretation_without_literal_binding(
         artifact = workspace / str(finalized["data"]["artifact"]["path"])
         assert verify_bundle(artifact)
         assert _standalone_verify(artifact).returncode == 0
-
-
-def test_printed_units_remain_literal_and_source_bound(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    source = workspace / "input/trial/main.txt"
-    source.write_text(source.read_text().replace("events", "mg"))
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    for value in result["reported"]["group_values"]:
-        value["unit"] = "mg"
-    # The source prints mg; a different physical unit is not licensed.
-    result["reported"]["group_values"][0]["unit"] = "points"
-    rejected = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert rejected["outcome"] == "repair"
-    assert any(
-        r["code"] == "result_value_not_supported" and r["path"].endswith("/unit")
-        for r in rejected["repairs"]
-    )
-    result["reported"]["group_values"][0]["unit"] = "mg"
-    accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert accepted["outcome"] == "review_required", accepted

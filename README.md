@@ -1,215 +1,220 @@
 # rob2-kit
 
-`rob2-kit` is a model-free FastMCP server for evidence-grounded Cochrane Risk
-of Bias 2 assessments. Codex, Claude Code, or another MCP host supplies the
-model loop. The server captures trial sources, validates evidence selections
-against them, applies deterministic RoB 2 logic, records assessment history,
-and exports verifiable bundles.
+rob2-kit helps an AI coding agent carry out a Cochrane
+[Risk of Bias 2 (RoB 2)](https://www.riskofbias.info/welcome/rob-2-0-tool)
+assessment of randomized trials. Every answer has to be grounded in passages
+it cites from your trial reports.
 
-The v0.11 public contract keeps each Trial's Result choice and reasoning in one
-selection; it replaces separate Result/MissingResult/assessment input collections.
-Each Domain still submits in one atomic call. Existing
-v0.9 workspaces keep their saved assessments. Use the current skill and tool
-contract to resume them. Historical bundles still verify under their recorded
-semantics. See the [proposal selection decision](docs/adr/0037-single-trial-proposal-selection.md)
-and [atomic Domain decision](docs/adr/0036-atomic-domain-submission.md).
+It has two parts that work together:
 
-## Use rob2-kit
+- **A model-free MCP server.** It captures your trial sources and checks every
+  cited passage against them. It applies the official RoB 2 algorithms
+  deterministically and records the full assessment history. When you finish,
+  it exports a bundle you can verify.
+- **The `rob2-assess` skill.** It guides the agent through the official RoB 2
+  guidance one signalling question at a time.
 
-### Requirements
+The agent reads the reports and answers the signalling questions. The server
+then computes the domain and overall judgments. You approve which result is
+assessed before any domain work begins.
 
-- Python 3.11 or later
-- [uv](https://docs.astral.sh/uv/) for installation, development, and wheel builds
-- An MCP host with local stdio support
-- One directory of authorized source documents for each trial
+> rob2-kit supports systematic reviewers; it does not replace them. Check every
+> judgment before you use it in a review.
 
-### Install
+## Install
 
-Install the command from a source checkout:
+The plugins start the server with [uv](https://docs.astral.sh/uv/getting-started/installation/).
+uv is a single executable, and it downloads Python 3.11 or later if your machine
+doesn't have it. Claude Code and Codex do not ship a Python of their own. If you
+cannot install uv but have Python 3.11 or later, follow
+[Other MCP hosts](#other-mcp-hosts) instead; that route works in Claude Code and
+Codex too.
 
-```powershell
-uv tool install --force .
-rob2 --help
-```
-
-If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
-try `rob2 --help` again. The package includes the `rob2` command, a typed native MCP
-server, and the portable `rob2-assess` skill.
-
-To install a wheel instead, use its path:
-
-```powershell
-uv tool install --force dist/rob2_kit-0.12.0-py3-none-any.whl
-```
-
-### Prepare a workspace
-
-Create one immediate subdirectory under `input` for each trial:
+### Claude Code
 
 ```text
-my-assessment/
-└── input/
-    ├── TRIAL-A/
-    │   ├── main-article.pdf
-    │   ├── registry.json
-    │   ├── supplement.pdf
-    │   └── sources.toml        # optional
-    └── TRIAL-B/
-        └── main-article.pdf
+/plugin marketplace add AliSalman-et-al/rob2-kit
+/plugin install rob2-kit@rob2-kit
 ```
 
-The supported source formats are PDF, DOCX, TXT, Markdown, CSV, and JSON.
-Image-only PDFs can be inspected with `render_page`. Legacy `.doc` files are
-unsupported. Trial directory names become trial labels, so keep them
-meaningful.
+### Codex
 
-Filenames suggest source roles for navigation; they do not identify the main
-report. Declare a known main report as `main_article` in `sources.toml`. If you
-do not declare one, the assessor checks file contents and leaves the identity
-unresolved if it cannot identify the report.
+```bash
+codex plugin marketplace add AliSalman-et-al/rob2-kit
+```
+
+```bash
+codex plugin add rob2-kit@rob2-kit
+```
+
+Both plugins install the `rob2-assess` skill and the `rob2` MCP server. The
+server starts with `uvx`. On first use, uv downloads its dependencies, which
+can take a minute. If the host reports that the server failed to start,
+reconnect it once the download finishes (`/mcp` in Claude Code).
+
+### Other MCP hosts
+
+Install the command-line tool with uv:
+
+```bash
+uv tool install git+https://github.com/AliSalman-et-al/rob2-kit
+```
+
+or with Python 3.11 or later and pip, preferably inside a virtual environment:
+
+```bash
+python -m pip install git+https://github.com/AliSalman-et-al/rob2-kit
+```
+
+Register `rob2 mcp` as a local stdio server, then export the skill into the
+host's skill directory:
+
+```bash
+rob2 export-skill --output .agents/skills/rob2-assess
+```
+
+The [user guide](docs/user-guide.md#other-mcp-hosts) has the details.
+
+## Assess trials
+
+1. Create an assessment folder with one subfolder per trial under `input/`:
+
+   ```text
+   my-review/
+   └── input/
+       ├── TRIAL-A/
+       │   ├── main-article.pdf
+       │   ├── supplement.pdf
+       │   └── sources.toml      # optional: roles and NCT number
+       └── TRIAL-B/
+           └── main-article.pdf
+   ```
+
+2. Start Claude Code or Codex **in that folder**, then ask for an assessment:
+
+   ```text
+   /rob2-kit:rob2-assess Assess risk of bias for all-cause mortality at 12 months in TRIAL-A and TRIAL-B.
+   ```
+
+   In Codex, mention `$rob2-assess` or simply ask for a RoB 2 assessment.
+
+3. Review the proposed result for each trial and approve it when your host
+   asks. If your host cannot prompt you, approve it from a terminal opened in the assessment folder:
+
+   ```bash
+   uvx --from git+https://github.com/AliSalman-et-al/rob2-kit rob2 review
+   ```
+
+4. The agent assesses the five domains. When it finalizes, a verifiable
+   `.rob2.zip` bundle is written to `.rob2-kit/finalized/`.
+
+Supported source formats are PDF, DOCX, TXT, Markdown, CSV and JSON. The
+[user guide](docs/user-guide.md) covers the approval step, verification,
+archiving and troubleshooting.
+
+## `sources.toml`
+
+Each trial folder may contain a `sources.toml`. Every key is optional.
 
 ```toml
-nct = "<NCT-ID>"
+# The trial's registration. If you leave this out, rob2-kit looks for the
+# trial's own NCT number in the main report.
+nct = "NCT01234567"
 
+# Files in the trial folder that should not be captured. Give either a bare
+# path or a path with a reason (duplicate, irrelevant, unreadable, restricted
+# or other) and a rationale.
+omissions = [
+  "cover-letter.pdf",
+  { path = "old-version.pdf", reason = "duplicate", rationale = "Superseded by article.pdf" },
+]
+
+# Source roles, by path relative to the trial folder. Roles: main_article,
+# registry, supplement, sap, protocol, other.
 [roles]
 "article.pdf" = "main_article"
 "appendix.pdf" = "supplement"
 "analysis-plan.pdf" = "sap"
+
+[registry]
+# Also download the protocol and analysis-plan documents posted on
+# ClinicalTrials.gov.
+acquire_documents = true
 ```
 
-Valid roles are `main_article`, `registry`, `supplement`, `sap`, `protocol`,
-and `other`. When `sources.toml` contains an NCT identifier, `prepare_batch`
-requests that record from the public ClinicalTrials.gov API. Use this only when
-the lookup is authorized. Other source capture is local.
+TOML requires top-level keys (`nct`, `omissions`) to come before any `[table]`.
 
-### Connect your host
+- **Main report.** Declare it as `main_article`. If you don't, the agent
+  identifies it from file contents and leaves the role unresolved rather than
+  guessing. File names are only navigation hints.
+- **Registry lookup.** rob2-kit fetches the trial's ClinicalTrials.gov record
+  when it knows the trial's NCT number. To turn the lookup off for a trial, add
+  an empty `[registry]` table and no `nct`.
+- **Offline registry record.** To use a saved ClinicalTrials.gov API record
+  instead of fetching it, name the file and record where it came from:
 
-Set `ROB2_WORKSPACE` to the directory that contains `input`.
+  ```toml
+  [registry]
+  nct = "NCT01234567"
+  replay = "registry.json"
+  captured_at = "2026-01-15T10:00:00Z"
+  sha256 = "<sha256 of registry.json>"
+  provenance = "ClinicalTrials.gov API v2, downloaded by the review team"
+  ```
 
-For Codex, add this to `~/.codex/config.toml` or a trusted project's
-`.codex/config.toml`:
+Declare the registration once, either at the top level or under `[registry]`.
+Unknown keys are rejected, so a typo fails loudly instead of being ignored.
 
-```toml
-[mcp_servers.rob2]
-command = "rob2"
-args = ["mcp-codex"]
-env = { ROB2_WORKSPACE = "C:/path/to/my-assessment" }
+## Scope
+
+The packaged guidance covers individually randomized parallel-group trials and
+the effect of assignment to intervention (intention-to-treat). Cluster-randomized
+and crossover trials are recorded as unsupported designs and are not assessed.
+The effect of adhering to intervention needs a Domain 2 variant that this
+package does not include.
+
+## Data handling
+
+Trial sources stay on your machine. The only network request rob2-kit makes
+on its own is the ClinicalTrials.gov lookup for a trial's registration (see
+[`sources.toml`](#sourcestoml) to turn it off). Finalized bundles contain the
+assessment, the cited passages and integrity hashes. They never contain the
+source files, prompts, credentials or absolute paths. Your host's model
+provider sees whatever the agent reads, under that provider's terms.
+
+## RoB 2 guidance
+
+The packaged signalling questions, algorithms and guidance text reproduce the
+official RoB 2 tool for individually randomized parallel-group trials (version
+of 22 August 2019). They are used with permission and keep their version and
+source location for provenance. Cite the tool as:
+
+> Sterne JAC, Savović J, Page MJ, et al. RoB 2: a revised tool for assessing
+> risk of bias in randomised trials. *BMJ* 2019;366:l4898.
+> doi:10.1136/bmj.l4898
+
+## Cite rob2-kit
+
+If you use rob2-kit, cite it using [`CITATION.cff`](CITATION.cff). GitHub's
+"Cite this repository" button gives the same citation.
+
+## License
+
+rob2-kit is released under the [MIT License](LICENSE). The packaged RoB 2
+guidance text is reproduced with permission and is not covered by that license.
+
+## Development
+
+```bash
+uv sync --locked
 ```
 
-The supported Codex entrypoint is `rob2 mcp-codex`. It preserves image-bearing
-`render_page` receipts and full schema as text beside the original PNG. Codex CLI
-0.159.0 otherwise prefers structured content and omits that image from model
-input. A native `gpt-6-luna`/medium smoke verified actual image delivery and
-provenance on that version; clinical comprehension and accuracy are unproven.
-Text-only calls and the standard `rob2 mcp` entrypoint are unchanged.
-
-To opt out, use `args = ["mcp"]`. After a host upgrade, verify delivery by checking
-that the native session `render_page` tool output contains an `input_image` and
-that its decoded PNG hash matches the receipt, then check observations against
-private source facts. A returned MCP image alone does not prove model delivery.
-No host-version detection or global configuration mutation is performed.
-
-For Claude Code, run this from the assessment workspace:
-
-```powershell
-claude mcp add --transport stdio --scope project rob2 -e ROB2_WORKSPACE=C:/path/to/my-assessment -- rob2 mcp
+```bash
+uv run pytest
 ```
 
-Export the packaged skill to the host's project skill directory:
-
-```powershell
-# Codex
-rob2 export-skill --output .agents/skills/rob2-assess
-
-# Claude Code
-rob2 export-skill --output .claude/skills/rob2-assess
-```
-
-The export includes the skill's reference files. Restart the host if it does
-not discover the skill in the current session. Confirm that the `rob2` MCP
-server is connected before you start an assessment.
-
-### Run an assessment
-
-Invoke the skill with the outcome shared by the selected trials:
-
-```text
-/rob2-assess Assess risk of bias for the primary outcome across TRIAL-A and TRIAL-B.
-```
-
-The packaged assessment supports individually randomized parallel trials and the
-effect of assignment. An explicit adherence-effect request needs the corresponding
-official Domain 2 variant, which this pack does not include. A per-protocol
-reported estimate alone does not change the requested effect of interest.
-
-The host prepares the batch, searches the captured sources, and proposes one
-Result for each trial. Review and approve the Result mapping before assessment.
-After approval, the host assesses the five RoB 2 domains. The server computes
-the overall label, and the host closes each trial before finalizing the batch.
-
-The proposal is the only researcher approval gate. If the MCP host does not
-support elicitation, approve the exact proposal through the CLI:
-
-```powershell
-rob2 review --workspace C:/path/to/my-assessment
-```
-
-The packaged [`rob2-assess` skill](src/rob2_kit/skills/rob2-assess/SKILL.md)
-contains the full assessment and recovery workflow.
-
-### Verify and archive results
-
-Finalization writes a deterministic `.rob2.zip` bundle under
-`.rob2-kit/finalized/`. Each bundle contains canonical JSON, static HTML,
-selected evidence records, and integrity hashes. It excludes source files,
-credentials, prompts, traces, and absolute paths.
-
-Check a workspace or verify a bundle with these commands:
-
-```powershell
-rob2 status --workspace C:/path/to/my-assessment
-rob2 verify C:/path/to/finalized-bundle.rob2.zip
-```
-
-To archive the source bytes separately, run:
-
-```powershell
-rob2 archive-sources --workspace C:/path/to/my-assessment
-rob2 verify-sources C:/path/to/archive.sources.zip
-```
-
-## Develop
-
-### Public contract
-
-The server exposes the strictly typed MCP tool catalog and the live
-`rob2://current-batch` resource. The generated [public contract](docs/release/public-contract.json)
-records the tool catalog, schemas, annotations, resource families, and portable
-skill pointers. See the [release guide](docs/release/README.md) for contract and
-wheel verification.
-
-The server resolves the unique validated Proposal draft for the current revision
-and scope before saving it. A complete Domain draft validates and commits in one
-revision-checked operation.
-
-### Run the project checks
-
-```powershell
-uv sync --frozen
-./scripts/verify_release.ps1
-```
-
-The verification script runs Ruff, ty, pytest with four workers, public
-contract checks, wheel construction, and independent verification of the wheel.
-Use `uv run pytest -n 0` when debugging a test that needs serial output.
-
-### Evaluation
-
-The [26-case RCT benchmark report](eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/trial-benchmark-report.md)
-compares assessments with provisional catalog labels. Its scores are agreement
-measures, not independently adjudicated estimates of scientific accuracy.
-
-The [qualification ledger](docs/evaluation/issue-464-qualification.md) keeps
-qualification on hold. See the [evaluation guide](docs/evaluation/README.md)
-and the [recursive assessment improvement guide](docs/evaluation/rsi.md) for
-the evaluation process.
+[`tests/e2e`](tests/e2e) drives the real `rob2 mcp` server over stdio the way a
+host does. The [release guide](docs/release/README.md) covers the public tool
+contract, wheel verification and release steps. Design decisions are recorded
+in [`docs/adr`](docs/adr), and the [evaluation guide](docs/evaluation/README.md)
+covers verification runs.

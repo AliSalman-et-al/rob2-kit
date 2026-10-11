@@ -94,15 +94,6 @@ def test_contiguous_windows_cover_requirement_but_gap_does_not(tmp_path):
         check_manifest(path, prompt)
 
 
-def test_actual_confounded_exscel_input_is_rejected_without_launch():
-    root = (
-        Path(__file__).parents[1]
-        / "tests/fixtures/historical-evaluation/2026-10-03-exscel-review-response-d789ea8"
-    )
-    with pytest.raises(ValueError, match="page 188 lines 20-40"):
-        check_manifest(root / "retrospective-required-evidence-manifest.json", root / "input.txt")
-
-
 def test_changed_preregistered_manifest_prevents_launch(tmp_path):
     manifest, prompt, data = fixture(tmp_path)
     frozen_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()

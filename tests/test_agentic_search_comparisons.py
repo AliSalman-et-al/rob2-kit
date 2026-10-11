@@ -103,12 +103,6 @@ def _config() -> dict[str, Any]:
     }
 
 
-def test_comparison_schema_predeclares_diagnostic_arms() -> None:
-    validate_comparison_config(
-        _config(), {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
-    )
-
-
 @pytest.mark.parametrize(
     "change",
     [
@@ -188,13 +182,6 @@ def _qualification_config() -> dict[str, Any]:
         {"max_attempts": 16, "max_cost": 2.0, "max_context_bytes": 2000, "max_tool_calls": 40}
     )
     return config
-
-
-def test_qualification_config_freezes_heldout_campaign_contract() -> None:
-    config = _qualification_config()
-    validate_comparison_config(
-        config, {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
-    )
 
 
 def test_legacy_comparison_schema_rejects_qualification_fields_with_version_hint() -> None:

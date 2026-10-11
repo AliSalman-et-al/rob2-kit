@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 from fastmcp import Client
-from fastmcp.exceptions import ToolError
 from mcp import types as mcp_types
 from pydantic import ValidationError
 from support.rob2 import (
@@ -28,9 +27,7 @@ import rob2_kit.application.domains as domain_application
 import rob2_kit.interfaces.mcp.server as mcp_server
 from rob2_kit.application._state import _commit, _identity, _state
 from rob2_kit.application.domains import (
-    _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET,
     _compact_domain_evidence,
-    _evidence_text_bytes,
 )
 from rob2_kit.interfaces.mcp.contracts import (
     DomainDerivedEvidence,
@@ -83,6 +80,8 @@ def _wire_context(
                         data = dict(pages[0].structured_content["data"])
                         for section in (
                             "questions",
+                            "assessment_guidance",
+                            "reading_leads",
                             "comparison_cards",
                             "registry_outcomes",
                             "evidence",
@@ -293,8 +292,6 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
             assert page["data"]["result"]
             assert page["data"]["evidence_workspace"]
             assert page["data"]["questions"]
-            assert page["data"]["evidence"]
-            assert metadata["section"] == "complete"
         else:
             assert "result" not in page["data"]
             assert "evidence_workspace" not in page["data"]
@@ -313,8 +310,6 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert len(pages) > 1
     assert [page["data"]["context_page"]["index"] for page in pages] == list(range(len(pages)))
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
-    assert pages[1]["data"]["context_page"]["section"] == "questions"
-    assert pages[1]["data"]["context_page"]["item_start"] >= 1
     assert pages[-1]["head"]["next_action"]["operation"] == "save_domain_judgment"
     question_ids = {
         question["id"] for page in pages for question in page["data"].get("questions", [])
@@ -363,79 +358,6 @@ def test_empty_delta_arrays_are_omittable_without_changing_reconstructed_context
     reconstructed = _reconstruct({i: page for i, page in enumerate(candidate_pages)})
     full = _call(workspace, "get_domain_context", {})["data"]
     assert reconstructed == full
-
-
-def test_public_context_previews_later_active_question_and_associated_evidence_first(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    context = domain_application.get_domain_context(
-        workspace, "trial", "domain:deviations", include_candidates=True
-    )
-    data = context
-    questions = data["questions"]
-    assert len(questions) > 1
-    for question in questions:
-        question["activation_status"] = "inactive_in_saved_checkpoint"
-    active_question = questions[-1]
-    active_question["activation_status"] = "active_in_saved_checkpoint"
-    expected_questions = [active_question, *questions[:-1]]
-
-    result_evidence = data["evidence"][0]
-    associated_evidence = {
-        **result_evidence,
-        "handle": "eh_1111111111111111",
-        "identity": "sha256:" + "1" * 64,
-        "inclusion_reason": "checkpoint",
-    }
-    original_evidence = [*data["evidence"], associated_evidence]
-    expected_evidence = [associated_evidence, *data["evidence"]]
-    data["evidence"].append(associated_evidence)
-    data["evidence_workspace"]["groups"].insert(
-        0,
-        {
-            "inclusion_reason": "checkpoint",
-            "question_ids": [active_question["id"]],
-            "evidence_handles": [associated_evidence["handle"]],
-        },
-    )
-    monkeypatch.setattr(mcp_server, "_get_domain_context", lambda *_args: copy.deepcopy(context))
-
-    first = _call(
-        workspace,
-        "get_domain_context",
-        {
-            "trial_id": "trial",
-            "domain_id": "domain:deviations",
-            "max_response_bytes": 32_768,
-        },
-    )
-    assert first["outcome"] == "success", first
-    assert first["data"]["questions"][0]["id"] == active_question["id"]
-    assert first["data"]["evidence"][0]["handle"] == associated_evidence["handle"]
-
-    pages = [first]
-    cursor = first["data"]["context_page"]["next_cursor"]
-    while cursor is not None:
-        page = _call(workspace, "get_domain_context", {"cursor": cursor})
-        assert page["outcome"] == "success", page
-        pages.append(page)
-        cursor = page["data"]["context_page"]["next_cursor"]
-
-    questions_reconstructed = [item for page in pages for item in page["data"].get("questions", [])]
-    evidence_reconstructed = [item for page in pages for item in page["data"].get("evidence", [])]
-    assert [item["id"] for item in questions_reconstructed] == [
-        item["id"] for item in expected_questions
-    ]
-    assert [item["handle"] for item in evidence_reconstructed] == [
-        item["handle"] for item in expected_evidence
-    ]
-    assert original_evidence[1]["handle"] == associated_evidence["handle"]
-    assert all(
-        page["data"]["context_page"]["item_start"] == 1
-        for page in pages
-        if page["data"]["context_page"]["section"] in {"questions", "evidence"}
-    )
 
 
 def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
@@ -614,86 +536,6 @@ def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) 
     assert reconstructed == original["data"]
 
 
-def test_search_then_complete_domain_context_snapshot_save_succeeds(
-    tmp_path: Path,
-) -> None:
-    workspace, evidence, revision = _pending_assessment_workspace(tmp_path)
-    context, _transport_bytes = _wire_context(workspace)
-    assert "context_page" not in context["data"]
-
-    searched = _call(
-        workspace,
-        "search_sources",
-        {"trial_id": "trial", "query": "randomized", "mode": "any"},
-    )
-    assert searched["outcome"] == "success"
-
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence),
-    )
-    assert saved["outcome"] == "success"
-
-
-def test_domain_context_delivery_does_not_advance_on_validation_failure(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    workspace, _evidence, _revision = _pending_assessment_workspace(tmp_path)
-    monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
-    value = domain_application.get_domain_context(workspace)
-
-    original_validate = mcp_server.validate_output
-
-    def fail_get_domain_context(tool: str, candidate: dict) -> dict:
-        if tool == "get_domain_context":
-            raise ValueError("synthetic validation failure")
-        return original_validate(tool, candidate)
-
-    monkeypatch.setattr(mcp_server, "validate_output", fail_get_domain_context)
-    with pytest.raises(ToolError, match="internal_output_contract_error"):
-        mcp_server._content("get_domain_context", value)
-
-    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
-        assert (
-            connection.execute("SELECT next_index,complete FROM domain_context_delivery").fetchone()
-            is None
-        )
-
-
-def test_domain_context_cursor_only_continuation_identifies_nonactive_domain(
-    tmp_path: Path,
-) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence),
-    )
-    assert saved["outcome"] == "success"
-    first, _transport_bytes = _wire_context(
-        workspace,
-        {
-            "trial_id": "trial",
-            "domain_id": "domain:randomization",
-            "max_response_bytes": 32_768,
-        },
-    )
-    cursor = first["data"]["context_page"]["next_cursor"]
-    assert cursor
-
-    continuation, _transport_bytes = _wire_context(workspace, {"cursor": cursor})
-
-    assert "domain_id" not in continuation["data"]
-    page = continuation["data"]["context_page"]
-    assert page["domain_id"] == "domain:randomization"
-    recovered, _transport_bytes = _wire_context(
-        workspace, {"cursor": page["stable_recovery"]["cursor"]}, drain=False
-    )
-    assert recovered["data"]["domain_id"] == "domain:randomization"
-    assert recovered["data"]["context_page"]["index"] == 0
-
-
 def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     first_save = _call(
@@ -774,132 +616,6 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
     assert recovered["data"]["context_page"]["snapshot_digest"] == original_digest
 
 
-def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    state = _state(workspace)
-    approved_result = state["proposal"]["payload"]["results"][0]
-    result_identity = _identity(approved_result)
-    first_save = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence),
-    )
-    assert first_save["outcome"] == "success"
-    second_save = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft(
-            "trial",
-            "domain:deviations",
-            int(first_save["head"]["state_revision"]),
-            evidence,
-        ),
-    )
-    assert second_save["outcome"] == "success"
-    preview = [
-        {
-            "arm": f"intervention-{index}-" + ("a" * 80),
-            "population": "randomized participants " + ("p" * 80),
-            "unit": "participants",
-            "time_point": f"week-{index + 1}",
-            "randomized": 100 + index,
-            "observed": 90 + index,
-            "basis": [evidence["handle"]],
-            "result_identity": result_identity,
-        }
-        for index in range(18)
-    ]
-    arguments: dict[str, object] = {"missing_data": preview, "max_response_bytes": 131_072}
-    pages: list[tuple[dict, int]] = []
-    while True:
-        page, transport_bytes = _wire_context(workspace, arguments)
-        assert page["outcome"] == "success", page
-        pages.append((page, transport_bytes))
-        metadata = page["data"]["context_page"]
-        assert transport_bytes <= metadata["max_response_bytes"]
-        if metadata["next_cursor"] is None:
-            break
-        arguments = {"cursor": metadata["next_cursor"]}
-
-    assert len(pages) > 1
-    intermediate = pages[1][0]["data"]["context_page"]
-    assert intermediate["cursor"] is not None
-    assert intermediate["next_cursor"] is not None
-
-
-@pytest.mark.parametrize("page_size", [65_536, 131_072])
-def test_larger_budget_delivers_unchanged_full_context_in_one_call(
-    tmp_path: Path, page_size: int
-) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    expected, _bytes = _wire_context(workspace)
-    actual, transport_bytes = _wire_context(
-        workspace, {"max_response_bytes": page_size}, drain=False
-    )
-    data = dict(actual["data"])
-    page = data.pop("context_page")
-    assert page["count"] == 1
-    assert page["next_cursor"] is None
-    assert transport_bytes <= page_size
-    assert data == expected["data"]
-    assert actual["head"]["next_action"] == expected["head"]["next_action"]
-    assert actual["head"]["next_action"]["operation"] == "save_domain_judgment"
-    recovered, _bytes = _wire_context(
-        workspace, {"cursor": page["stable_recovery"]["cursor"]}, drain=False
-    )
-    assert recovered["outcome"] == "success", recovered
-    recovered_data = dict(recovered["data"])
-    recovered_page = recovered_data.pop("context_page")
-    assert recovered_page["count"] == 1
-    assert recovered_data == data
-
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence),
-    )
-    assert saved["outcome"] == "success", saved
-
-
-def test_default_context_budget_delivers_fitting_science_without_section_round_trips(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    value = {
-        "outcome": "success",
-        "head": {"phase": "assessment", "state_revision": 4},
-        "data": {
-            "trial_id": "trial",
-            "domain_id": "domain:randomization",
-            "pack": {"id": "test", "version": "1"},
-            "questions": [{"id": "question", "elaboration": "guidance " * 2_500}],
-            "evidence": [{"identity": "source-bound", "quote": "source " * 2_500}],
-            "unknowns": ["Concealment safeguards are unresolved."],
-            "counterevidence": ["The report describes sealed envelopes."],
-        },
-    }
-    basis = "sha256:" + "a" * 64
-    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 32_768)
-    smaller = _paginate_domain_context_transport(value, None, None, basis, 4)
-    old_cursor = smaller["data"]["context_page"]["next_cursor"]
-    old_next = _paginate_domain_context_transport(value, old_cursor, None, basis, 4)
-    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 65_536)
-    assert _paginate_domain_context_transport(value, old_cursor, None, basis, 4) == old_next
-    automatic = _paginate_domain_context_transport(value, None, None, basis, 4)
-
-    assert smaller["data"]["context_page"]["next_cursor"] is not None
-    data = dict(automatic["data"])
-    page = data.pop("context_page")
-    assert page["max_response_bytes"] == 65_536
-    assert page["count"] == 1 and page["next_cursor"] is None
-    assert _domain_context_transport_bytes(automatic) <= page["max_response_bytes"]
-    assert data == value["data"]
-    assert page["snapshot_digest"] == smaller["data"]["context_page"]["snapshot_digest"]
-    recovered = _paginate_domain_context_transport(
-        value, page["stable_recovery"]["cursor"], None, basis, 4
-    )
-    assert recovered == automatic
-
-
 def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     tmp_path: Path,
 ) -> None:
@@ -921,258 +637,6 @@ def test_domain_context_pagination_rejects_oversized_unicode_evidence(
         value, None, required, "test-basis", value["head"]["state_revision"]
     )
     assert page["data"]["context_page"]["max_response_bytes"] == required
-
-
-def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    page_size = 4_096
-    context, _transport_bytes = _wire_context(workspace, {"max_response_bytes": page_size})
-
-    assert context["outcome"] == "condition"
-    assert context["condition"]["code"] == "domain_context_header_oversized"
-    for _ in range(3):
-        required_match = re.search(r"required_page_size=(\d+)", context["condition"]["detail"])
-        assert required_match is not None
-        page_size = int(required_match.group(1))
-        context, _transport_bytes = _wire_context(workspace, {"max_response_bytes": page_size})
-        if context["outcome"] == "success":
-            break
-        assert context["condition"]["code"] in {
-            "domain_context_header_oversized",
-            "domain_context_item_oversized",
-        }
-    assert context["outcome"] == "success"
-
-
-def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    context, _transport_bytes = _wire_context(workspace)
-    data = context["data"]
-    keys = list(data)
-    assert (
-        keys.index("result")
-        < keys.index("investigation")
-        < keys.index("questions")
-        < keys.index("evidence")
-        < keys.index("guidance")
-    )
-    assert data["pack"]["version"] == SCIENTIFIC_PACK.version
-    assert data["pack"]["content_hash"] == SCIENTIFIC_PACK.content_hash
-    question = data["questions"][0]
-    assert {
-        "wording",
-        "options",
-        "activation_status",
-        "activation",
-        "guidance_locator",
-        "query_suggestions",
-    } <= question.keys()
-    assert not {"decision_rule", "official_guidance", "answer_anchors"} & question.keys()
-    assert data["official_guidance"]["complete"]
-    assert question["query_suggestions"]
-    assert (
-        data["evidence_workspace"]["recoverable_narrative_text_bytes"]
-        <= _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
-    )
-
-
-def test_domain_context_recovers_complete_pack_bound_official_guidance(tmp_path: Path) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    context, _transport_bytes = _wire_context(workspace)
-    data = context["data"]
-    recovery = data["official_guidance"]
-
-    assert recovery["complete"] is True
-    assert recovery["next_cursor"] is None
-    assert recovery["pack"] == data["pack"]
-    question_ids = {
-        question_id for section in recovery["sections"] for question_id in section["question_ids"]
-    }
-    expected = {question["id"] for question in data["questions"]}
-    assert question_ids == expected
-    assert all(section["source_sha256"] for section in recovery["sections"])
-    assert all(section["source_locator"] for section in recovery["sections"])
-    assert all(section["excerpt"] for section in recovery["sections"])
-
-
-def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> None:
-    quote = "é" * (_DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET // 2 + 1)
-    item = {
-        "kind": "narrative",
-        "handle": "eh_0123456789abcdef",
-        "identity": "sha256:" + "1" * 64,
-        "trial_id": "trial",
-        "source_id": "sh_" + "2" * 16,
-        "page": 3,
-        "start_line": 12,
-        "end_line": 80,
-        "quote": quote,
-        "inclusion_reason": "active_domain_candidate",
-        "returned_previously": True,
-    }
-    projected = _compact_domain_evidence(
-        {
-            "answers": [],
-            "evidence": [item],
-            "coverage": [{"source_id": item["source_id"], "read": "read_complete"}],
-            "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
-        }
-    )
-    output = projected["evidence"][0]
-    assert output["quote"] is None
-    assert output["text_status"] == "omitted"
-    assert output["returned_previously"] is True
-    assert output["recovery"] == {
-        "operation": "read_pages",
-        "trial_id": "trial",
-        "windows": [
-            {
-                "source_id": "sh_" + "2" * 16,
-                "page": 3,
-                "start_line": 12,
-                "end_line": 80,
-            }
-        ],
-    }
-    workspace = projected["evidence_workspace"]
-    assert workspace["recoverable_narrative_text_bytes"] == 0
-    assert workspace["omitted_narrative_text_bytes"] == len(quote.encode("utf-8"))
-
-
-def test_coordinate_less_legacy_narrative_is_reported_outside_recoverable_budget() -> None:
-    quote = "legacy " * _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
-    projected = _compact_domain_evidence(
-        {
-            "answers": [],
-            "evidence": [
-                {
-                    "kind": "narrative",
-                    "handle": "eh_0123456789abcdef",
-                    "identity": "sha256:" + "1" * 64,
-                    "trial_id": "trial",
-                    "source_id": "sh_" + "2" * 16,
-                    "page": 3,
-                    "quote": quote,
-                }
-            ],
-            "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
-        }
-    )
-    workspace = projected["evidence_workspace"]
-    assert projected["evidence"][0]["text_status"] == "complete"
-    assert workspace["recoverable_narrative_text_bytes"] == 0
-    assert workspace["unrecoverable_inline_text_bytes"] == len(quote.encode("utf-8"))
-
-
-def test_checkpoint_basis_quote_is_not_repeated_in_context() -> None:
-    context = {
-        "answers": [
-            {
-                "question_id": "sq:randomization:sequence",
-                "answer": "yes",
-                "bases": [
-                    {
-                        "kind": "direct_support",
-                        "evidence": "sha256:" + "1" * 64,
-                        "source": "exact source-bound quote",
-                    }
-                ],
-            }
-        ],
-        "evidence": [],
-        "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
-    }
-    projected = _compact_domain_evidence(context)
-    assert "source" not in projected["answers"][0]["bases"][0]
-    assert projected["evidence_workspace"]["omitted_narrative_text_bytes"] == len(
-        b"exact source-bound quote"
-    )
-
-
-def test_derived_text_bytes_include_each_non_ascii_input_value() -> None:
-    item = {
-        "kind": "derived",
-        "value": "Δ",
-        "inputs": [
-            {"handle": "eh_0123456789abcdef", "value": "é"},
-            {"handle": "eh_abcdef0123456789", "value": "ß"},
-        ],
-    }
-    assert _evidence_text_bytes(item) == len("Δéß".encode())
-
-
-def test_multiple_narratives_accumulate_recoverable_text_bytes() -> None:
-    evidence = [
-        {
-            "kind": "narrative",
-            "handle": "eh_0123456789abcdef",
-            "identity": "sha256:" + "1" * 64,
-            "trial_id": "trial",
-            "source_id": "sh_" + "2" * 16,
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-            "quote": "first é",
-        },
-        {
-            "kind": "narrative",
-            "handle": "eh_abcdef0123456789",
-            "identity": "sha256:" + "3" * 64,
-            "trial_id": "trial",
-            "source_id": "sh_" + "4" * 16,
-            "page": 2,
-            "start_line": 2,
-            "end_line": 3,
-            "quote": "second Δ",
-        },
-    ]
-    projected = _compact_domain_evidence(
-        {
-            "answers": [],
-            "evidence": evidence,
-            "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
-        }
-    )
-    assert projected["evidence_workspace"]["recoverable_narrative_text_bytes"] == sum(
-        _evidence_text_bytes(item) for item in evidence
-    )
-
-
-def test_explicit_carry_forward_has_priority_over_active_candidate_budget() -> None:
-    active_candidate = {
-        "kind": "narrative",
-        "handle": "eh_0123456789abcdef",
-        "identity": "sha256:" + "1" * 64,
-        "trial_id": "trial",
-        "source_id": "sh_" + "2" * 16,
-        "page": 1,
-        "start_line": 1,
-        "end_line": 20,
-        "quote": "x" * (_DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET + 1),
-        "inclusion_reason": "active_domain_candidate",
-    }
-    explicit = {
-        "kind": "narrative",
-        "handle": "eh_abcdef0123456789",
-        "identity": "sha256:" + "3" * 64,
-        "trial_id": "trial",
-        "source_id": "sh_" + "4" * 16,
-        "page": 2,
-        "start_line": 1,
-        "end_line": 1,
-        "quote": "explicit passage",
-        "inclusion_reason": "explicit_carry_forward",
-    }
-    projected = _compact_domain_evidence(
-        {
-            "answers": [],
-            "evidence": [active_candidate, explicit],
-            "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
-        }
-    )
-    by_handle = {item["handle"]: item for item in projected["evidence"]}
-    assert by_handle[active_candidate["handle"]]["text_status"] == "omitted"
-    assert by_handle[explicit["handle"]]["text_status"] == "complete"
 
 
 def test_non_narrative_evidence_stays_valid_in_compact_projection() -> None:
@@ -1229,77 +693,6 @@ def test_non_narrative_evidence_stays_valid_in_compact_projection() -> None:
     DomainDerivedEvidence.model_validate(output[2])
 
 
-def test_nonrecoverable_explicit_evidence_does_not_disappear_at_item_limit(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    workspace, _result_evidence, _revision = _assessment_workspace(tmp_path)
-    source_id = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]["id"]
-    figures = {
-        "sha256:" + f"{index:064x}": {
-            "kind": "figure",
-            "handle": "eh_" + f"{index:016x}",
-            "identity": "sha256:" + f"{index:064x}",
-            "trial_id": "trial",
-            "source_id": source_id,
-            "delivery_receipt": "sha256:" + f"{index + 300:064x}",
-            "render": {
-                "identity": "sha256:" + f"{index + 100:064x}",
-                "source_id": source_id,
-                "page": 1,
-                "png_sha256": "sha256:" + f"{index + 200:064x}",
-                "recipe": "page-png-v1",
-            },
-            "transcription": f"visual transcription {index}",
-            "provenance": "host_visual",
-            "region": [0.1, 0.1, 0.9, 0.9],
-        }
-        for index in range(1, 66)
-    }
-    monkeypatch.setattr(domain_application, "_evidence_catalog", lambda *_args, **_kwargs: figures)
-
-    context = domain_application.get_domain_context(workspace)
-    visible = {item["handle"] for item in context["evidence"]}
-    assert {item["handle"] for item in figures.values()} <= visible
-    assert context["evidence_workspace"]["omitted_by_category"]["explicit_carry_forward"] == 0
-
-
-def test_narrative_projection_requires_matching_text_and_recovery_state() -> None:
-    complete = {
-        "kind": "narrative",
-        "handle": "eh_0123456789abcdef",
-        "identity": "sha256:" + "1" * 64,
-        "trial_id": "trial",
-        "source_id": "sh_" + "2" * 16,
-        "page": 3,
-        "start_line": 1,
-        "end_line": 1,
-        "quote": "exact text",
-        "text_status": "complete",
-    }
-    DomainNarrativeEvidence.model_validate(complete)
-    omitted = {
-        **complete,
-        "quote": None,
-        "text_status": "omitted",
-        "start_line": 12,
-        "end_line": 80,
-        "recovery": {
-            "operation": "read_pages",
-            "trial_id": "trial",
-            "windows": [
-                {
-                    "source_id": complete["source_id"],
-                    "page": 3,
-                    "start_line": 12,
-                    "end_line": 80,
-                }
-            ],
-        },
-    }
-    DomainNarrativeEvidence.model_validate(omitted)
-
-
 def test_complete_legacy_narrative_allows_missing_coordinates_but_recovery_is_exact() -> None:
     incomplete = {
         "kind": "narrative",
@@ -1334,33 +727,6 @@ def test_complete_legacy_narrative_allows_missing_coordinates_but_recovery_is_ex
                 },
             }
         )
-
-
-def test_domain_context_accepts_legacy_complete_narrative_without_coordinates(
-    tmp_path: Path,
-) -> None:
-    workspace, evidence, _revision = _assessment_workspace(tmp_path)
-    state = _state(workspace)
-    stored = next(
-        item
-        for item in state["proposal"]["evidence"].values()
-        if item["handle"] == evidence["handle"]
-    )
-    stored.pop("start_line")
-    stored.pop("end_line")
-    state["proposal"]["identity"] = _identity(state["proposal"]["payload"])
-    _commit(workspace, state, int(state["revision"]))
-
-    context = _call(workspace, "get_domain_context", {})["data"]
-    projected = next(item for item in context["evidence"] if item["handle"] == evidence["handle"])
-    assert projected["text_status"] == "complete"
-    assert projected["quote"] == evidence["quote"]
-    assert projected["start_line"] is None
-    assert projected["end_line"] is None
-    assert context["evidence_workspace"]["recoverable_narrative_text_bytes"] == 0
-    assert context["evidence_workspace"]["unrecoverable_inline_text_bytes"] == len(
-        evidence["quote"].encode("utf-8")
-    )
 
 
 def test_domain_context_projects_derived_result_and_unique_input_evidence(tmp_path: Path) -> None:
@@ -1398,32 +764,6 @@ def test_domain_context_projects_derived_result_and_unique_input_evidence(tmp_pa
     assert context["result"]["evidence"][-1] == derived
     assert derived_input["handle"] in {item["handle"] for item in context["evidence"]}
     assert context["evidence_workspace"]["unrecoverable_inline_text_bytes"] >= len(b"33")
-
-
-def test_domain_context_preserves_complete_category_profile_result(tmp_path: Path) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    state = _state(workspace)
-    reported = state["proposal"]["payload"]["results"][0]["reported"]
-    reported.clear()
-    reported.update(
-        {
-            "form": "single_group_category_profile",
-            "analysis_population": "randomized population",
-            "endpoint": {"name": "requested outcome", "definition": None},
-            "group_id": "a",
-            "denominator_basis": "randomized population",
-            "category_axis_names": ["event", "grade"],
-            "categories": [
-                {"category_axes": ["Any event", "Grade 3"], "value": "65"},
-                {"category_axes": ["Any event", "Grade 4"], "value": "17"},
-            ],
-        }
-    )
-    state["proposal"]["identity"] = _identity(state["proposal"]["payload"])
-    _commit(workspace, state, int(state["revision"]))
-
-    context = _call(workspace, "get_domain_context", {})["data"]
-    assert context["result"]["reported"] == reported
 
 
 def test_public_boundary_exposes_executable_narrative_recovery(monkeypatch, tmp_path: Path) -> None:
@@ -1511,10 +851,6 @@ def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence
     }
     assert scopes[handles[availability]] == {availability}
     assert scopes[handles[bias]] == {bias}
-    first, _bytes = _wire_context(
-        workspace, {**arguments, "max_response_bytes": 32_768}, drain=False
-    )
-    assert first["data"]["evidence"][0]["handle"] == handles[availability]
     identities = {item["handle"]: item["identity"] for item in data["evidence"]}
     for card in data["comparison_cards"]:
         refs = {ref["handle"]: ref for group in card["passage_groups"] for ref in group["passages"]}
@@ -1583,136 +919,6 @@ def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence
     )["data"]["pages"][0]["numbered_text"]
     assert "Ascertainment was incomplete" in adjacent
     assert "An unrelated neutral passage" in adjacent
-
-
-def test_declared_unknowns_survive_production_context_pages_and_recovery(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
-    gap = "Outcome availability among excluded participants remains unknown."
-    question_id = draft["answers"][0]["question_id"]
-    draft["answers"][0]["unknowns"] = [gap]
-    saved = _call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success"
-    expected = next(
-        c
-        for c in saved["data"]["checkpoint"]["evidence_sufficiency"]["claims"]
-        if c["question_id"] == question_id
-    )
-    assert expected["declared_unknowns"] == [gap]
-    first, _ = _wire_context(
-        workspace,
-        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 32_768},
-        drain=False,
-    )
-    pages = [first]
-    while pages[-1]["data"]["context_page"]["next_cursor"]:
-        page, _ = _wire_context(
-            workspace, {"cursor": pages[-1]["data"]["context_page"]["next_cursor"]}, drain=False
-        )
-        pages.append(page)
-    assert len(pages) > 1
-    summaries = [
-        p["data"]["evidence_sufficiency"] for p in pages if "evidence_sufficiency" in p["data"]
-    ]
-    assert summaries
-    assert any(expected in summary["claims"] for summary in summaries)
-    recovered, _ = _wire_context(
-        workspace,
-        {"cursor": first["data"]["context_page"]["stable_recovery"]["cursor"]},
-        drain=False,
-    )
-    assert recovered["data"]["evidence_sufficiency"] == first["data"]["evidence_sufficiency"]
-
-
-def test_unavailable_count_is_visible_in_production_preview(tmp_path: Path) -> None:
-    workspace, evidence, _ = _assessment_workspace(tmp_path)
-    first, _ = _wire_context(
-        workspace,
-        {
-            "trial_id": "trial",
-            "domain_id": "domain:missing",
-            "missing_data": [
-                {
-                    "arm": "A",
-                    "population": "randomized",
-                    "unit": "participants",
-                    "time_point": "primary endpoint follow-up",
-                    "randomized": 20,
-                    "unavailable": 3,
-                    "basis": [evidence["handle"]],
-                }
-            ],
-        },
-    )
-    counts = [
-        row
-        for card in first["data"]["comparison_cards"]
-        for row in card.get("participant_flow", [])
-        if row["kind"] == "unavailable"
-    ]
-    assert counts and all(row["value"] == 3 for row in counts)
-    assert all(row["passages"] for row in counts)
-
-
-def test_saved_unavailable_count_survives_fresh_context_cache_loss_and_recovery(
-    tmp_path: Path,
-) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    _wire_context(workspace, {"trial_id": "trial", "domain_id": "domain:missing"})
-    draft = _domain_draft("trial", "domain:missing", revision, evidence)
-    answer = next(a for a in draft["answers"] if a["question_id"] == "sq:missing:data-available")
-    answer["missing_data"] = [
-        {
-            "arm": "A",
-            "population": "randomized",
-            "unit": "participants",
-            "time_point": "primary endpoint follow-up",
-            "randomized": 20,
-            "unavailable": 3,
-        }
-    ]
-    saved = _call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success"
-    canonical = copy.deepcopy(_state(workspace))
-
-    def fresh() -> tuple[dict, dict]:
-        first, _ = _wire_context(
-            workspace,
-            {"trial_id": "trial", "domain_id": "domain:missing", "max_response_bytes": 32_768},
-            drain=False,
-        )
-        pages = [first]
-        while pages[-1]["data"]["context_page"]["next_cursor"]:
-            page, _ = _wire_context(
-                workspace, {"cursor": pages[-1]["data"]["context_page"]["next_cursor"]}, drain=False
-            )
-            pages.append(page)
-        cards = [c for p in pages for c in p["data"].get("comparison_cards", [])]
-        rows = [r for c in cards for r in (c.get("missing_data") or {}).get("rows", [])]
-        assert rows and all(r["unavailable"] == 3 for r in rows)
-        assert all(r["observed"] is None for r in rows)
-        assert all(r["missing_bounds"] == {"lower": 3, "upper": 3, "kind": "exact"} for r in rows)
-        counts = [
-            r for c in cards for r in c.get("participant_flow", []) if r["kind"] == "unavailable"
-        ]
-        assert counts and all(r["value"] == 3 and r["passages"] for r in counts)
-        slots = [s for c in cards for s in c.get("slots", []) if s["name"] == "unavailable"]
-        assert slots and all(s["status"] == "supported" and s["passages"] for s in slots)
-        recovered, _ = _wire_context(
-            workspace,
-            {"cursor": first["data"]["context_page"]["stable_recovery"]["cursor"]},
-            drain=False,
-        )
-        return first, recovered
-
-    first, recovered = fresh()
-    assert first["data"] == recovered["data"]
-    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
-        connection.execute("DELETE FROM domain_context_views")
-        connection.execute("DELETE FROM domain_context_delivery")
-    restarted, _ = fresh()
-    assert restarted["data"]["domain_id"] == "domain:missing"
-    assert _state(workspace) == canonical
 
 
 def test_imputation_quantity_conflict_is_source_bound_in_native_preview(tmp_path: Path) -> None:

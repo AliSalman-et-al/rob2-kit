@@ -16,6 +16,8 @@ from typing import Any
 _SECTIONS = (
     "primary_report",
     "questions",
+    "assessment_guidance",
+    "reading_leads",
     "evidence",
     "comparison_cards",
     "registry_outcomes",
@@ -105,13 +107,12 @@ def _reconstruct(pages: dict[int, dict[str, Any]]) -> dict[str, Any] | None:
         if not isinstance(data, dict):
             return None
         page = data.get("context_page")
-        section = page.get("section") if isinstance(page, dict) else None
-        if section not in _SECTIONS:
-            continue
-        reconstructed[section] = [
-            *reconstructed.get(section, []),
-            *data.get(section, []),
-        ]
+        segments = page.get("sections", []) if isinstance(page, dict) else []
+        for section in {segment.get("section") for segment in segments} & set(_SECTIONS):
+            reconstructed[section] = [
+                *reconstructed.get(section, []),
+                *data.get(section, []),
+            ]
     cores = [
         pages[index]["data"]["official_guidance"]
         for index in sorted(pages)

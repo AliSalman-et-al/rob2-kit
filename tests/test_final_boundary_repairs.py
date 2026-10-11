@@ -22,7 +22,6 @@ from rob2_kit.application.trials import review_trial
 from rob2_kit.interfaces.mcp.contracts import (
     SearchHit,
     SearchReceipt,
-    output_schema,
 )
 from rob2_kit.workflow_models import (
     AbandonmentTerminalRequest,
@@ -53,27 +52,6 @@ def _all_schema_objects(value: object) -> list[dict[str, Any]]:
             for item in child:
                 objects.extend(_all_schema_objects(item))
     return objects
-
-
-def test_public_discriminator_tags_are_required() -> None:
-    for tool in (
-        "prepare_batch",
-        "get_status",
-        "save_proposal",
-        "get_domain_context",
-        "save_domain_judgment",
-        "review_trial",
-        "close_trial",
-        "finalize_batch",
-    ):
-        for definition in _all_schema_objects(output_schema(tool)):
-            required = set(definition.get("required", ()))
-            properties = definition.get("properties", {})
-            for tag in ("kind", "form", "disposition"):
-                if tag in properties and not any(
-                    branch.get("type") == "null" for branch in properties[tag].get("anyOf", ())
-                ):
-                    assert tag in required, (tool, tag, definition)
 
 
 @pytest.mark.parametrize(

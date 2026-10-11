@@ -173,17 +173,6 @@ def test_shared_wall_budget_and_host_abort_are_real_boundaries(tmp_path: Path) -
     assert result["boundary"] == "aborted" and len(result["turns"]) == 1
 
 
-def test_actual_exscel_failed_item_status_is_counted_without_error_field() -> None:
-    artifact = (
-        Path(__file__).parents[1]
-        / "tests/fixtures/historical-evaluation/2026-10-03-exscel-full-bd92ec8/events.jsonl"
-    )
-    facts = trace_facts(artifact)
-    assert facts["calls"] == 6
-    assert len([x for x in facts["failures"] if x]) == 1
-    assert facts["usage"]["input_tokens"] == 334932
-
-
 def test_novel_queries_and_timestamps_are_not_durable_progress(tmp_path: Path) -> None:
     count = 0
 
@@ -206,16 +195,30 @@ def test_novel_queries_and_timestamps_are_not_durable_progress(tmp_path: Path) -
     assert len(result["turns"]) == 2 and not any(t["progress"] for t in result["turns"])
 
 
-def test_finalization_receipt_lookup_matches_authoritative_revision() -> None:
+def test_finalization_receipt_lookup_matches_authoritative_revision(tmp_path: Path) -> None:
     from scripts.workflow_completion import finalized_artifact
 
-    trace_path = (
-        Path(__file__).parents[1]
-        / "tests/fixtures/historical-evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl"
-    )
+    def finalize(revision: int, outcome: str = "success") -> dict:
+        receipt = {
+            "outcome": outcome,
+            "head": {"phase": "finalized", "state_revision": revision},
+            "data": {"artifact": {"path": f"finalized/{revision}.rob2.zip"}},
+        }
+        item = {
+            "type": "mcp_tool_call",
+            "server": "rob2",
+            "tool": "finalize_batch",
+            "status": "completed",
+            "result": {"structured_content": receipt},
+        }
+        return {"type": "item.completed", "item": item}
+
+    trace_path = tmp_path / "turn.jsonl"
+    rows = [finalize(11), finalize(12), finalize(13, "repair")]
+    trace_path.write_text("".join(json.dumps(row) + chr(10) for row in rows))
     status = {"phase": "finalized", "state_revision": 12}
     artifact = finalized_artifact(status, [trace_path])
-    assert artifact and artifact["path"].endswith(".rob2.zip")
+    assert artifact == {"path": "finalized/12.rob2.zip"}
     assert finalized_artifact({**status, "state_revision": 13}, [trace_path]) is None
     assert finalized_artifact({**status, "phase": "assessment"}, [trace_path]) is None
 

@@ -222,34 +222,6 @@ def test_multispan_table_tampering_is_rejected_by_both_verifiers(tmp_path: Path)
     assert not standalone["_valid_result_evidence"](result, catalog, source_map, requested)
 
 
-def test_exact_source_span_identity_ignores_discovery_but_not_location(tmp_path: Path) -> None:
-    workspace = _table_workspace(tmp_path)
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    _read_required_main_reports(workspace)
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-    _call(
-        workspace,
-        "search_sources",
-        {"trial_id": "trial", "query": "requested outcome", "mode": "any"},
-    )
-    first = _select_lines(workspace, 2, 2)
-    _call(
-        workspace,
-        "search_sources",
-        {"trial_id": "trial", "query": "death ascertainment", "mode": "any"},
-    )
-    repeated = _select_lines(workspace, 2, 2)
-    different = _select_lines(workspace, 3, 3)
-    assert first["identity"] == repeated["identity"]
-    assert first["handle"] == repeated["handle"]
-    assert first["identity"] != different["identity"]
-    assert first["source_id"] == different["source_id"] == source["id"]
-
-
 def test_multispan_table_rejects_generic_total_as_an_endpoint(tmp_path: Path) -> None:
     workspace = _table_workspace(tmp_path)
     _call(

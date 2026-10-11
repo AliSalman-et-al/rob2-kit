@@ -143,7 +143,7 @@ def _campaign_inputs(
         case_path.write_text(
             json.dumps(
                 {
-                    "schema": "rob2-kit.rsi-case.v1",
+                    "schema": "rob2-kit.verification-case.v1",
                     "trial": "ARASENS",
                     "requested_outcome": "Progression-Free Survival",
                     "approved_scope": "Frozen primary PFS Result scope.",
@@ -191,7 +191,7 @@ if phase == 1:
     case = json.loads(case_path.read_text())
     sys.path.insert(0, str(Path.cwd() / 'scripts'))
     prepare_workspace = runpy.run_path(
-        str(Path.cwd() / 'scripts' / 'prepare_rsi_workspace.py')
+        str(Path.cwd() / 'scripts' / 'prepare_verification_workspace.py')
     )['prepare_workspace']
     run_inputs = prepare_workspace(case_path, workspace)
     (run_dir / 'run-inputs.json').write_text(json.dumps(run_inputs))
@@ -710,13 +710,13 @@ def test_campaign_rejects_unbound_planned_result_or_sources(tmp_path: Path, iden
     assert not campaign_dir.exists()
 
 
-def test_case_materializes_through_production_rsi_workspace_preparer(
+def test_case_materializes_through_production_verification_workspace_preparer(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _config, _interventions, _inputs, _runner, input_root = _campaign_inputs(tmp_path)
     case_path = input_root / "case-0.json"
     monkeypatch.syspath_prepend(str(_SCRIPTS))
-    prepare_workspace = runpy.run_path(str(_SCRIPTS / "prepare_rsi_workspace.py"))[
+    prepare_workspace = runpy.run_path(str(_SCRIPTS / "prepare_verification_workspace.py"))[
         "prepare_workspace"
     ]
 

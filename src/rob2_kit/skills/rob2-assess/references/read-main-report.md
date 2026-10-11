@@ -1,135 +1,54 @@
 # Read the main report
 
-Orient to each Trial's main report at two checkpoints:
+The server requires a bounded, in-order reading pass of each Trial's main report
+twice: before you choose its Result, and again when the approved Trial becomes
+active, before its first Domain answer. Each pass covers up to 65,536 bytes of
+source text. A current working checkpoint saved after the first pass can stand
+in for the second pass after approval or a restart.
 
-1. Before choosing its Result and submitting the Proposal.
-2. After approval, when that Trial becomes active, before answering its first
-   Domain. Recover the approved Result first. If a current Result-bound and
-   source-bound working checkpoint is available, use it for orientation and
-   read only unfinished required ranges or exact passages needed for an answer.
-   If notes are absent or stale, complete the bounded post-approval pass.
+## Do the pass
 
-For any required pass, use the same full captured Source and source-order
-prefix. Copy the returned `source_id` exactly and use it with the same
-`trial_id`. The text-only limit is 65,536 UTF-8 bytes of source text per report
-per pass, stopping at whole-line boundaries. Read all required text when the
-Source fits; do not repeat completed orientation solely because approval or a
-restart occurred.
-Proposal Review remains the only researcher gate.
+1. Call `get_status` and read `data.main_report_reading[trial_id]`. Use
+   `list_sources` to see Source roles; a declared `main_article` is the report.
+   If no report is identified, inspect the Sources and intake conditions and
+   record the limitation.
+2. While the status is `required`, call `read_pages` with the Trial's
+   `trial_id` and `windows` set to the returned `required_ranges`.
+3. If `data.remaining_windows` is not empty, call `read_pages` again with
+   `windows` set to that list. Repeat until it is empty, then check `get_status`
+   for further ranges.
+4. Stop when the status is `complete` or `budget_limited`. `budget_limited`
+   means the report was longer than the pass; read the rest where it matters.
 
-## Read consecutive windows
+`get_domain_context` returns the same requirement as `reading_recovery`; read
+its windows when its status is `required`.
 
-1. Call `get_status` and check `data.main_report_reading` for the Trial. Use
-   `list_sources` to inspect declared and inferred Source roles. A unique
-   declared `main_article` identifies the report. When identity is unresolved,
-   inspect likely Sources and their contents, then record the identified
-   `main_report_source_id` with source-located observations in the existing
-   working checkpoint. A protocol or other fallback can orient the search but
-   cannot complete the main-report pass merely by being read. If no report can
-   be identified, keep the limitation explicit and inspect Intake conditions.
-2. While the Trial's reading status is `required`, call `read_pages` with its
-   `trial_id` and `windows` set to the returned `required_ranges`. The server
-   computes this bounded batch of prefix windows; do not tally UTF-8 bytes or
-   model tokens yourself.
-3. If `read_pages` returns nonempty `data.remaining_windows`, call it again
-   with the same `trial_id` and `windows` set to that list. Omit `source_id`,
-   `pages`, and top-level `start_line`. Repeat until no windows remain, then
-   call `get_status` for further required ranges. A partial page remains
-   unfinished until its required lines have been returned.
-4. Stop the mandatory pass when `get_status` reports `complete` or
-   `budget_limited`. At the ceiling, preserve the partial-coverage status and
-   unread-range navigation, then continue the workflow.
+## Request shapes
 
-Preserve exact page and line coordinates for unfinished ranges after an
-interruption.
-
-The `read_pages` arguments have this shape; replace the example identifiers
-and range with the returned recovery values:
-
-For a single-source read, use `source_id` and `pages` together. The top-level
-`start_line` applies to every page, and `read_pages` has no top-level
-`end_line`:
+One Source and its pages (`start_line` applies to every page; there is no
+top-level `end_line`; at most 10 pages per call):
 
 ```json
 {"trial_id": "fictional_trial", "source_id": "sh_0123456789abcdef", "pages": [2], "start_line": 10}
 ```
 
-For independent windows, put the Source handle and both line bounds in every
-window:
+Independent windows, each with its own Source and line bounds:
 
 ```json
 {"trial_id": "fictional_trial", "windows": [{"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 10, "end_line": 20}]}
 ```
 
-For an independent read using `source_id` and `pages`, split page lists longer
-than 10 into separate calls. Do not combine `source_id`, `pages`, or
-top-level `start_line` with `windows`. Read text from
-`data.pages[].numbered_text`. If `data.remaining_windows` is nonempty, send
-that exact list as the next `windows` value and repeat until it is empty.
+Do not combine `source_id`, `pages` or top-level `start_line` with `windows`.
+Read the text from `data.pages[].numbered_text` and continue with
+`data.remaining_windows` until it is empty.
 
-`read_pages` packs windows into a bounded serialized UTF-8 response and
-preserves physical-line coordinates. A physical line larger than the transport
-budget is returned as lossless character fragments with `next_start_char` until
-the line is complete. Fragments are not Evidence and do not receive a
-`passage_ref`; continue the returned window before citing the passage. The
-transport budget does not change the source-byte ceiling for either pass.
+## What to take from the pass
 
-Inspect each returned window. `budget_limited` does not mean the full report was
-read. Recorded delivery does not establish comprehension.
-If a page has no readable text or is image-only, preserve that limitation.
-`read_pages` supplies text; status and Source-list calls remain available during
-the pass. Mandatory reading does not render images. Outside those passes, choose
-`render_page` for a specific unresolved premise or poor extraction when visual
-inspection is needed.
-For facts taken from an image, follow
-[Use visual Evidence](evidence.md#use-visual-evidence-for-visual-meaning).
-
-If either required pass is interrupted before its required prefix is covered, recover the
-remaining required ranges before the next scientific save. A current working
-checkpoint can replace repeating a completed post-approval orientation after a
-restart, but does not replace exact passage recovery when a passage is needed.
-When no main article was captured or identified, inspect the available Sources
-and any Intake conditions. Preserve unresolved report identity as a limitation
-rather than a completed reading. Do not infer the identity or scientific
-completeness from a filename or fallback priority.
-If a repair reports incomplete reading, call `get_status` and read the Trial's
-`required_ranges` before resubmitting. Selecting a search hit or an abstract
-does not satisfy the required prefix.
-
-`get_domain_context` also returns `reading_recovery`. When its status is
-`required`, read its issued windows before answering. When it is
-`budget_limited`, its windows navigate omitted text for targeted discovery;
-they do not extend the mandatory pass.
-
-Status may omit selected Evidence quotations to keep progress checks compact.
-Recover an unfamiliar omitted passage with its `recovery.trial_id` and
-`recovery.windows` before using it. An Evidence handle does not establish that
-its text remains available in the current context.
-
-## Keep the factual orientation
-
-Identify the design, randomized groups, population and flow, ascertainment,
-reported Results, and pointers to a protocol or SAP. Keep the orientation brief:
-record useful Source terms beside their page/line references and unresolved
-facts. Use these notes to guide targeted searches and recover exact passages.
-Answers still need inspected Evidence. Retain useful passages through the
-existing Evidence-selection operations.
-
-After the first read, choose the Result. After the second, use the approved
-Result to assess the Domains.
-Inspect omitted methods, flow, tables, or other relevant passages when they could
-resolve a needed premise. Include relevant supplements and plans in that discovery.
-The reading ceiling limits the mandatory pass, not later targeted reads or
-contradiction checks. A completed pass does not settle every Domain question.
-
-## Recover after a later restart
-
-Call `get_status`, then recover the approved Result, current checkpoint, and
-Evidence with `get_domain_context`. Earlier coverage records prove earlier
-delivery only. Recover exact passages needed for the current question when
-their content is missing or uncertain in the current context.
-
-Base recovery on the available context, not elapsed time or an assumed cache
-lifetime. Cached-token accounting does not establish that missing passages are
-available. Resume an unfinished read checkpoint, but do not start a complete
-report reread for every later Domain.
+Note, with page and line references: the design and unit of randomization; the
+randomized groups; how allocation was generated and concealed; who was blinded;
+the participant flow and analysed numbers; how and by whom outcomes were
+measured; the statistical analysis and its population; the reported results;
+and references to a protocol, SAP, supplement or registry entry. Use these notes
+to decide what else to read. The pass is orientation, not the whole reading:
+supplements, protocols, the registry record and the report's later pages still
+need reading wherever a Domain question depends on them.

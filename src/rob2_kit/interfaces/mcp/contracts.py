@@ -99,6 +99,15 @@ class GetDomainContextAction(PublicModel):
     max_response_bytes: StrictInt | None = Field(default=None, ge=4096, le=131_072)
 
 
+class ReadMainReportAction(PublicModel):
+    """Main-report text a new session must read before its first Domain save."""
+
+    operation: Literal["read_pages"]
+    authority: Literal["host"]
+    trial_id: TrialId
+    windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
+
+
 class SaveDomainJudgmentAction(PublicModel):
     operation: Literal["save_domain_judgment"]
     authority: Literal["host"]
@@ -153,6 +162,7 @@ NextAction = Annotated[
     | SaveProposalAction
     | ValidateProposalAction
     | GetDomainContextAction
+    | ReadMainReportAction
     | SaveDomainJudgmentAction
     | ReviewTrialAction
     | CloseTrialAction
@@ -2112,7 +2122,13 @@ class DomainContextData(PublicModel):
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
+    assessment_guidance: tuple[str, ...] = Field(
+        default=(),
+        description="This Domain's packaged reference, one item per section.",
+    )
+    reading_leads: tuple[ReadingLead, ...] = ()
     registry_outcomes: tuple[RegistryOutcomeNavigation, ...] = ()
+    registration: tuple[RegistryRegistration, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
         default=None,
@@ -2152,6 +2168,22 @@ class DomainContextStableRecovery(PublicModel):
     )
 
 
+class DomainContextPageSegment(PublicModel):
+    section: Literal[
+        "delivery_history",
+        "primary_report",
+        "questions",
+        "assessment_guidance",
+        "reading_leads",
+        "official_guidance",
+        "comparison_cards",
+        "registry_outcomes",
+        "evidence",
+    ]
+    item_start: NonNegativeInt
+    item_count: NonNegativeInt
+
+
 class DomainContextPage(PublicModel):
     view_version: Literal["rob2-kit.domain-context.v1"] = "rob2-kit.domain-context.v1"
     snapshot_digest: str = Field(
@@ -2176,18 +2208,10 @@ class DomainContextPage(PublicModel):
             "not an assessment completion status."
         )
     )
-    section: Literal[
-        "delivery_history",
-        "complete",
-        "primary_report",
-        "questions",
-        "official_guidance",
-        "comparison_cards",
-        "registry_outcomes",
-        "evidence",
-    ]
-    item_start: NonNegativeInt = 0
-    item_count: NonNegativeInt = 0
+    sections: tuple[DomainContextPageSegment, ...] = Field(
+        default=(),
+        description="Section items on this page, in delivery order; concatenate across pages.",
+    )
     max_response_bytes: StrictInt = Field(
         ge=4096,
         le=131_072,
@@ -2241,6 +2265,34 @@ class RegistryOutcomeNavigation(PublicModel):
         default=(),
         description="Captured fields omitted from the summary; recover their complete source text.",
     )
+    recovery: EvidenceRecovery
+
+
+class ReadingLeadPage(PublicModel):
+    source_id: SourceHandle
+    source_role: str
+    label: str
+    page: PositiveInt
+    read: EvidenceRecovery
+
+
+class ReadingLead(PublicModel):
+    """Pages across all Sources whose wording best matches one question's official text."""
+
+    question_id: str
+    pages: tuple[ReadingLeadPage, ...] = ()
+
+
+class RegistryRegistration(PublicModel):
+    """Registry record dates, to place the registered plan relative to the trial."""
+
+    source_id: SourceHandle
+    first_submitted: str | None = None
+    first_posted: str | None = None
+    start: str | None = None
+    primary_completion: str | None = None
+    completion: str | None = None
+    last_update_posted: str | None = None
     recovery: EvidenceRecovery
 
 
@@ -3240,6 +3292,7 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "review_reference",
                         "caller_inputs",
                         "supersedes",
+                        "windows",
                     )
                     if key in continuation
                 }

@@ -19,7 +19,7 @@ from fastmcp import Client
 from rob2_kit.application._state import _identity
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.application.finalization import verify_bundle
-from rob2_kit.interfaces.mcp.server import mcp
+from rob2_kit.interfaces.mcp.server import _DOMAIN_CONTEXT_PAGE_SECTIONS, mcp
 from rob2_kit.logic.evaluator import active_questions
 from rob2_kit.packs import SCIENTIFIC_PACK
 
@@ -256,12 +256,9 @@ def _call(
                 if len(pages) > 1 and all(isinstance(page.get("data"), dict) for page in pages):
                     merged = dict(pages[0])
                     data = dict(pages[0]["data"])
-                    for section in (
-                        "questions",
-                        "comparison_cards",
-                        "registry_outcomes",
-                        "evidence",
-                    ):
+                    for section in _DOMAIN_CONTEXT_PAGE_SECTIONS:
+                        if section in {"official_guidance", "primary_report", "delivery_history"}:
+                            continue
                         data[section] = [
                             item for page in pages for item in page["data"].get(section, [])
                         ]
@@ -715,6 +712,12 @@ def _assessed_artifact(workspace: Path, requested_outcome: str = "requested outc
         revision = int(saved["head"]["state_revision"])
     finalized = _finalize_assessment(workspace, revision)
     return workspace / str(finalized["data"]["artifact"]["path"])
+
+
+def _saved_result(tmp_path: Path) -> dict[str, Any]:
+    """The canonical Result of a synthetic assessed bundle."""
+    with zipfile.ZipFile(_assessed_artifact(_workspace(tmp_path))) as archive:
+        return json.loads(archive.read("canonical.json"))["proposal"]["payload"]["results"][0]
 
 
 def _assessed_artifact_with_domain_evidence(workspace: Path) -> Path:

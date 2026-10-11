@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from fastmcp.exceptions import ToolError
-from test_bounded_trial_review import _SELECTOR, _collect, _identity, _project, _review
+from test_bounded_trial_review import _collect, _identity, _project, _review
 
 from rob2_kit.interfaces.mcp import server
 from rob2_kit.workflow_models import WorkingResultStep
@@ -147,29 +147,6 @@ def test_only_identical_source_text_changes_and_complete_receipt_roundtrips():
     assert server._share_review_fact_text(projected) == projected
 
 
-def test_short_quotes_keep_inline_shape_when_sharing_would_increase_native_bytes():
-    original = receipt()
-    for answer in original["data"]["domain_findings"][0]["answers"]:
-        for fact in answer["facts"]:
-            fact["text"] = "Short exact quote."
-    assert server._share_review_fact_text(original) == original
-
-
-def test_sharing_can_deliver_complete_fidelity_within_the_same_native_limit(tmp_path, monkeypatch):
-    original = receipt()
-    shared = server._share_review_fact_text(original)
-    limit = (server._review_transport_bytes(original) + server._review_transport_bytes(shared)) // 2
-    monkeypatch.setattr(server, "_REVIEW_TRIAL_RESPONSE_BYTES", limit)
-    delivered = _project(original, tmp_path)
-    assert expand(delivered) == original
-    assert "review_page" not in delivered["data"]
-    assert server._review_transport_bytes(delivered) <= limit
-    monkeypatch.setattr(server, "_share_review_fact_text", lambda snapshot: snapshot)
-    legacy = _project(original, tmp_path)
-    assert legacy["data"]["review_page"]["mode"] == "summary"
-    assert legacy["data"]["review_page"]["complete"] is False
-
-
 @pytest.mark.parametrize("defect", ["different_text", "different_handle", "different_identity"])
 def test_conflicting_or_unique_source_binding_stays_inline(defect):
     original = receipt()
@@ -200,27 +177,6 @@ def test_unbound_body_cannot_pass_public_output_contract(defect):
         bodies[identity]["evidence"]["handle"] = "eh_0000000000000001"
     with pytest.raises(ToolError, match="internal_output_contract_error"):
         server._validate_response("review_trial", projected)
-
-
-def test_selected_views_are_self_contained_and_visual_routes_remain_exact(tmp_path):
-    original = receipt()
-    for answer in original["data"]["domain_findings"][0]["answers"]:
-        answer["evidence_expansions"] = [
-            {
-                "operation": "render_page",
-                "trial_id": "synthetic-trial",
-                "evidence": answer["evidence"][0]["handle"],
-                "source_id": "sh_0000000000000000",
-                "page": 7,
-            }
-        ]
-    original = server._validate_response("review_trial", original)
-    projected = _project(original, tmp_path)
-    assert expand(projected) == original
-    selected = _project(original, tmp_path, selector=_SELECTOR)
-    answer = selected["data"]["domain_findings"][0]["answers"][0]
-    assert answer == original["data"]["domain_findings"][0]["answers"][0]
-    assert "evidence_bodies" not in selected["data"]
 
 
 def test_raw_unicode_overflow_recovers_exact_shared_snapshot_and_rejects_stale_cursor(

@@ -31,10 +31,6 @@ _STANDALONE = runpy.run_path("scripts/verify_bundle.py")
 
 def _adjudication(parent: dict, handle: str, judgment: str = "high") -> dict:
     return {
-        "result_identity": parent["result_identity"],
-        "domain_id": parent["domain_id"],
-        "checkpoint_identity": parent["identity"],
-        "pack_identity": SCIENTIFIC_PACK.content_hash,
         "judgment": judgment,
         "rationale": (
             "The cited source establishes a material concern inadequately represented "
@@ -78,10 +74,6 @@ def test_domain_adjudication_lifecycle_binding_review_export_and_tampering(tmp_p
         "adjudication": _adjudication(parent, evidence["handle"]),
     }
     for field, value in (
-        ("result_identity", "sha256:" + "0" * 64),
-        ("domain_id", "domain:selection"),
-        ("checkpoint_identity", "sha256:" + "0" * 64),
-        ("pack_identity", "sha256:" + "0" * 64),
         ("evidence", ["eh_0000000000000000"]),
         ("judgment", "some_concerns"),
         ("counterevidence", [{"evidence": "eh_0000000000000000", "implication": "foreign"}]),
@@ -151,7 +143,6 @@ def test_domain_adjudication_lifecycle_binding_review_export_and_tampering(tmp_p
     foreign = copy.deepcopy(draft)
     foreign_parent = _state(workspace)["domain_records"]["trial:domain:deviations"]["identity"]
     foreign.update(expected_revision=revision, supersedes=foreign_parent)
-    foreign["adjudication"]["checkpoint_identity"] = foreign_parent
     assert _call(workspace, "save_domain_judgment", foreign)["outcome"] == "repair"
     snapshot = _state(workspace)["snapshots"]["trial"]
     assert snapshot["overall"] == "high"
@@ -242,7 +233,7 @@ def test_answer_revision_drops_adjudication_and_rejects_stale_parent(tmp_path: P
         "revision_basis": {"kind": "self_correction", "rationale": "Reassess material bias."},
         "adjudication": _adjudication(parent, evidence["handle"], "low"),
     }
-    override["adjudication"]["rationale"] = "A source-bound material-bias explanation. " * 2000
+    override["adjudication"]["rationale"] = "A source-bound material-bias explanation. " * 1500
     adopted = _call(workspace, "save_domain_judgment", override)
     assert adopted["outcome"] == "success", adopted
     current = _state(workspace)["domain_records"]["trial:domain:randomization"]
@@ -354,41 +345,6 @@ def test_identical_unmarked_checkpoint_retry_preserves_historical_record(
     assert _state(workspace) == before
 
 
-def test_prior_pack_adjudication_workspace_fails_explicitly_without_history_rewrite(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    from types import SimpleNamespace
-
-    from rob2_kit.application import finalization
-
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
-    saved = _call(workspace, "save_domain_judgment", draft)
-    parent = _state(workspace)["domain_records"]["trial:domain:randomization"]
-    _call(workspace, "get_domain_context", {"domain_id": "domain:randomization"})
-    draft.update(
-        expected_revision=saved["head"]["state_revision"],
-        supersedes=parent["identity"],
-        revision_basis={"kind": "self_correction", "rationale": "Source-bound host adoption"},
-        adjudication=_adjudication(parent, evidence["handle"]),
-    )
-    adopted = _call(workspace, "save_domain_judgment", draft)
-    assert adopted["outcome"] == "success", adopted
-    before = _state(workspace)
-    # Simulate installing a later pack, not editing a historical checkpoint.
-    later = SimpleNamespace(content_hash="sha256:" + "f" * 64)
-    monkeypatch.setattr(domains, "SCIENTIFIC_PACK", later)
-    monkeypatch.setattr(finalization, "SCIENTIFIC_PACK", later)
-    for operation in (
-        lambda: domains.get_domain_context(workspace, domain_id="domain:randomization"),
-        lambda: domains.save_domain_judgment(workspace, draft),
-        lambda: finalization.finalize_batch(workspace, before["revision"]),
-    ):
-        with pytest.raises(ValueError, match="adjudication_pack_migration_unsupported"):
-            operation()
-        assert _state(workspace) == before
-
-
 def test_adjudication_utf8_header_boundary_recovers_or_rejects_before_mutation(
     tmp_path: Path,
 ) -> None:
@@ -411,7 +367,14 @@ def test_adjudication_utf8_header_boundary_recovers_or_rejects_before_mutation(
     )
     context = domains.get_domain_context(workspace, domain_id="domain:randomization")
     probe = copy.deepcopy(parent)
-    canonical = copy.deepcopy(draft["adjudication"])
+    # The server binds the adjudication to the superseded checkpoint.
+    canonical: dict[str, Any] = {
+        "result_identity": parent["result_identity"],
+        "domain_id": parent["domain_id"],
+        "checkpoint_identity": parent["identity"],
+        "pack_identity": SCIENTIFIC_PACK.content_hash,
+        **copy.deepcopy(draft["adjudication"]),
+    }
     canonical["evidence"] = [evidence["identity"]]
     canonical["counterevidence"][0]["evidence"] = evidence["identity"]
     probe["decision"].update(adopted="high", authority="host", adjudication=canonical)

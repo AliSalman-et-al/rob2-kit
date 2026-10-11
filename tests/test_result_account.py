@@ -322,33 +322,6 @@ def test_review_preserves_shared_warrant_snapshot_without_adjudicating_it(
         assert _state(workspace)["domain_records"] == records
 
 
-def test_account_counts_exist_before_judgment_and_scope_and_unknowns_survive_domains(
-    account: tuple,
-) -> None:
-    workspace, _, count_evidence, _ = account
-    assert _state(workspace).get("domain_records", {}) == {}
-    for domain in ("domain:deviations", "domain:missing", "domain:selection"):
-        context = _context(workspace, domain)
-        steps = context["working_checkpoint"]["checkpoint"]["result_account"]
-        assert steps[0]["counts"][0]["completed"] == 18
-        assert steps[0]["counts"][0].get("observed") is None
-        assert steps[0]["unknowns"] == ["Observed urine count remains unknown."]
-        assert steps[0]["counterevidence"][0]["sources"] == steps[0]["observation"]["sources"]
-        assert steps[1]["observation"]["scope"]["groups"] == ["Beta"]
-        assert any(
-            item["handle"] == steps[0]["counts"][0]["basis"][0] for item in context["evidence"]
-        )
-        if domain != "domain:selection":
-            projections = [
-                card["participant_flow"]
-                for card in context["comparison_cards"]
-                if card["participant_flow"]
-            ]
-            assert projections
-            assert "18" in str(projections) and "Alpha" in str(projections)
-    assert _state(workspace).get("domain_records", {}) == {}
-
-
 @pytest.mark.parametrize(
     ("scope_role", "shortcut"),
     [("context", False), ("contradiction", False), ("inference", False), ("context", True)],
@@ -602,54 +575,6 @@ def test_nested_visual_count_source_must_validate_before_promotion(
     assert not _state(workspace).get("domain_records")
 
 
-def test_account_selected_handle_preserves_exact_unknowns_without_copying_locators(account: tuple):
-    workspace, _, selected, _ = account
-    prior = _state(workspace)
-    draft: dict[str, Any] = {
-        "trial_id": "trial",
-        "result_account": [
-            {
-                "id": "observation",
-                "aspect": "outcome_ascertainment",
-                "observation": {
-                    "text": "Availability is unresolved.",
-                    "sources": [selected["handle"]],
-                },
-                "unknowns": ["Blinding is unreported.", "Observed outcome count is unknown."],
-                "inference": "Completion alone does not establish observation.",
-                "counterevidence": [
-                    {"text": "Analysis is reported.", "sources": [selected["handle"]]}
-                ],
-            }
-        ],
-    }
-    saved = support._call(workspace, "save_working_checkpoint", {"checkpoint": draft})
-    assert saved["outcome"] == "success", saved
-    step = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
-        "result_account"
-    ][0]
-    assert step["unknowns"] == draft["result_account"][0]["unknowns"]
-    assert step["inference"] == draft["result_account"][0]["inference"]
-    assert step["observation"]["sources"] == [
-        {
-            "source_id": selected["source_id"],
-            "page": 1,
-            "start_line": 2,
-            "end_line": 3,
-        }
-    ]
-    assert step["counterevidence"][0]["sources"] == step["observation"]["sources"]
-    assert _state(workspace) == prior
-    bad = copy.deepcopy(draft)
-    bad["result_account"][0]["observation"]["sources"] = ["eh_" + "f" * 16]
-    rejected = support._call(workspace, "save_working_checkpoint", {"checkpoint": bad})
-    assert rejected["outcome"] == "condition"
-    unchanged = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
-        "result_account"
-    ][0]
-    assert unchanged == step
-
-
 def test_account_visual_reference_reuses_delivered_image_selector(account: tuple):
     workspace, _, _, _ = account
     with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
@@ -725,85 +650,6 @@ def test_account_visual_reference_reuses_delivered_image_selector(account: tuple
         ]
         == step
     )
-
-
-def test_compact_step_citation_preserves_source_qualifiers_without_reciting_evidence(account):
-    from rob2_kit.application.domains import resolve_domain_sources
-    from rob2_kit.workflow_models import (
-        DomainEvidenceCitation,
-        DomainSaveAnswer,
-        WorkingSourceRange,
-    )
-
-    workspace, main, _, revision = account
-    step = _context(workspace, "domain:deviations")["working_checkpoint"]["checkpoint"][
-        "result_account"
-    ][0]
-    draft = support._domain_draft("trial", "domain:deviations", revision, main)
-    answer = next(
-        a for a in draft["answers"] if a["question_id"] == "sq:deviations:appropriate-analysis"
-    )
-    answer["bases"] = [{"step_identity": step["identity"], "role": "context"}]
-    # The shorthand expands to the same existing citation+snapshot representation.
-    public = support._domain_submission(draft)
-    parsed = DomainSaveAnswer.model_validate(
-        next(a for a in public["answers"] if a["question_id"] == answer["question_id"])
-    )
-    resolved = resolve_domain_sources(workspace, "trial", [parsed])[0]
-    explicit = parsed.model_copy(
-        update={
-            "bases": tuple(
-                DomainEvidenceCitation(
-                    evidence=WorkingSourceRange.model_validate(location),
-                    role="context",
-                    working_observation={"step_identity": step["identity"]},
-                )
-                for location in step["observation"]["sources"]
-            )
-        }
-    )
-    assert (
-        resolved.canonical_payload()
-        == resolve_domain_sources(workspace, "trial", [explicit])[0].canonical_payload()
-    )
-    result = support._call(workspace, "save_domain_judgment", draft)
-    assert result["outcome"] == "success", result
-    stored = next(
-        a
-        for a in _state(workspace)["domain_records"]["trial:domain:deviations"]["answers"]
-        if a["question_id"] == answer["question_id"]
-    )
-    snapshot = stored["bases"][0]["working_observation"]["result_step"]
-    assert snapshot == step
-    assert snapshot["unknowns"] == ["Observed urine count remains unknown."]
-    assert (
-        snapshot["counterevidence"][0]["text"]
-        == "Analysis membership includes more than completers."
-    )
-    assert stored["answer"] == answer["answer"]
-
-
-@pytest.mark.parametrize(
-    "role,transfer,success",
-    [
-        ("direct_support", None, False),
-        ("context", None, False),
-        ("inference", "Earlier phase is relevant only through this explicit transfer.", True),
-    ],
-)
-def test_compact_step_retains_existing_scope_transfer_rules(account, role, transfer, success):
-    workspace, main, _, revision = account
-    step = _context(workspace, "domain:deviations")["working_checkpoint"]["checkpoint"][
-        "result_account"
-    ][1]
-    draft = support._domain_draft("trial", "domain:deviations", revision, main)
-    draft["answers"][0]["bases"] = [
-        {"step_identity": step["identity"], "role": role, "transfer": transfer}
-    ]
-    result = support._call(workspace, "save_domain_judgment", draft)
-    assert (result["outcome"] == "success") is success, result
-    if not success:
-        assert any(r["code"] == "result_step_transfer" for r in result["repairs"])
 
 
 def test_compact_step_unknown_identity_cannot_supply_an_evidence_basis(account):

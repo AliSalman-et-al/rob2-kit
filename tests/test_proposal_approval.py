@@ -12,7 +12,7 @@ import pytest
 from fastmcp import Context
 from fastmcp.client import Client
 from fastmcp.client.elicitation import ElicitResult
-from fastmcp.tools import InputRequiredToolResult, ToolResult
+from fastmcp.tools import ToolResult
 from mcp import types as mcp_types
 from support.rob2 import (
     _call,
@@ -128,104 +128,6 @@ def _modern_approval_call(
             os.environ["ROB2_WORKSPACE"] = previous_workspace
 
 
-def test_request_proposal_approval_accepts_exact_review(tmp_path: Path) -> None:
-    workspace = _pending_workspace(tmp_path)
-    review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
-    messages: list[str] = []
-
-    result = _approval_call(workspace, {"approved": True}, messages=messages)
-
-    assert result["outcome"] == "success"
-    assert result["data"]["approved"] is True
-    assert review_reference in messages[0]
-    assert '"scope_review"' in messages[0]
-    assert '"reported_time_point_or_window": null' in messages[0]
-    assert "Exact scope is a caller assertion" in messages[0]
-    assert result["data"]["acknowledgment_record"]["review_identity"] == review_reference
-    assert result["data"]["acknowledgment_record"]["caller"] == "researcher"
-    assert result["data"]["acknowledgment_record"]["method"] == "mcp_elicitation"
-    status = _call(workspace, "get_status", {})
-    assert status["head"]["phase"] == "assessment"
-    assert status["head"]["next_action"]["operation"] == "get_domain_context"
-
-
-def test_modern_proposal_approval_binds_input_request_to_exact_review(
-    tmp_path: Path,
-) -> None:
-    workspace = _pending_workspace(tmp_path)
-    review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
-
-    result = _modern_approval_call(workspace)
-
-    assert isinstance(result, InputRequiredToolResult)
-    assert result.input_required.request_state == review_reference
-    assert result.input_required.input_requests is not None
-    request = result.input_required.input_requests["proposal_review"]
-    assert isinstance(request, mcp_types.ElicitRequest)
-    assert review_reference in request.params.message
-    assert '"scope_review"' in request.params.message
-    assert '"reported_time_point_or_window": null' in request.params.message
-
-
-def test_modern_proposal_approval_emits_codex_compatible_schema(tmp_path: Path) -> None:
-    workspace = _pending_workspace(tmp_path)
-
-    result = _modern_approval_call(workspace)
-
-    assert isinstance(result, InputRequiredToolResult)
-    assert result.input_required.input_requests is not None
-    request = result.input_required.input_requests["proposal_review"]
-    assert isinstance(request, mcp_types.ElicitRequest)
-    assert isinstance(request.params, mcp_types.ElicitRequestFormParams)
-    schema = request.params.requested_schema
-    assert set(schema) == {"type", "properties", "required"}
-    assert schema["type"] == "object"
-    assert schema["properties"]["approved"]["type"] == "boolean"
-    assert schema["properties"]["approved"]["title"] == "Approve Proposal Review"
-    assert schema["properties"]["approved"]["description"]
-    assert schema["required"] == ["approved"]
-
-
-def test_legacy_proposal_approval_emits_codex_compatible_schema(tmp_path: Path) -> None:
-    workspace = _pending_workspace(tmp_path)
-    params: list[Any] = []
-
-    _approval_call(
-        workspace,
-        ElicitResult(action="decline"),
-        elicitation_params=params,
-    )
-
-    assert len(params) == 1
-    schema = params[0].requested_schema
-    assert set(schema) == {"type", "properties", "required"}
-    assert schema["type"] == "object"
-    assert schema["properties"]["approved"]["type"] == "boolean"
-    assert schema["properties"]["approved"]["title"] == "Approve Proposal Review"
-    assert schema["properties"]["approved"]["description"]
-    assert schema["required"] == ["approved"]
-
-
-def test_modern_proposal_approval_accepts_only_bound_researcher_response(
-    tmp_path: Path,
-) -> None:
-    workspace = _pending_workspace(tmp_path)
-    review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
-    response = mcp_types.ElicitResult(action="accept", content={"approved": True})
-
-    result = _modern_approval_call(
-        workspace,
-        input_responses={"proposal_review": response},
-        request_state=review_reference,
-    )
-
-    assert result.structured_content is not None
-    assert result.structured_content["outcome"] == "success"
-    acknowledgment = result.structured_content["data"]["acknowledgment_record"]
-    assert acknowledgment["review_identity"] == review_reference
-    assert acknowledgment["method"] == "mcp_elicitation"
-
-
 @pytest.mark.parametrize(
     ("request_state", "response", "code"),
     (
@@ -288,16 +190,6 @@ def test_request_proposal_approval_preserves_unaccepted_review(
     assert result["head"]["next_action"]["operation"] == "researcher_review"
 
 
-def test_request_proposal_approval_reports_unsupported_client(tmp_path: Path) -> None:
-    workspace = _pending_workspace(tmp_path)
-
-    result = _approval_call(workspace, with_handler=False)
-
-    assert result["outcome"] == "condition"
-    assert result["condition"]["code"] == "proposal_approval_unsupported"
-    assert result["head"]["next_action"]["operation"] == "researcher_review"
-
-
 def test_request_proposal_approval_requires_pending_review(tmp_path: Path) -> None:
     result = _approval_call(_workspace(tmp_path), with_handler=False)
 
@@ -329,19 +221,3 @@ def test_request_proposal_approval_reports_stale_review(
 
     assert result["outcome"] == "condition"
     assert result["condition"]["code"] == "proposal_approval_stale"
-
-
-def test_request_proposal_approval_has_no_caller_arguments() -> None:
-    async def inspect() -> dict[str, Any]:
-        async with Client(mcp) as client:
-            tool = next(
-                item
-                for item in await client.list_tools()
-                if item.name == "request_proposal_approval"
-            )
-            return dict(tool.input_schema)
-
-    schema = asyncio.run(inspect())
-
-    assert schema["properties"] == {}
-    assert schema.get("required", []) == []

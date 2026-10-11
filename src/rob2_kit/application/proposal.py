@@ -830,6 +830,19 @@ def _reported_quantitative_paths(
     ]
 
 
+def _anchor_tuples(reported: dict[str, Any]) -> list[tuple[tuple[str, Any], ...]]:
+    """Leaves one Evidence item must join to the endpoint name.
+
+    Null statistic and unit labels record that the source printed none, so they
+    need no support. Ancillary statistics are checked as ordinary leaves and
+    may come from a different passage.
+    """
+    return [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in _reported_quantitative_paths(reported)
+    ]
+
+
 def _coherent_anchor_indices(
     result: dict[str, Any],
     catalog: dict[str, dict[str, Any]],
@@ -840,16 +853,7 @@ def _coherent_anchor_indices(
     if not isinstance(reported, dict) or not isinstance(reported.get("form"), str):
         return []
     endpoint_name = reported["endpoint"]["name"]
-
-    quantitative_tuples = _reported_quantitative_paths(reported)
-    ancillary = tuple(
-        (f"/reported/reported_statistics/{index}", value)
-        for index, value in enumerate(reported.get("reported_statistics", []))
-    )
-    quantitative_tuples = [
-        tuple((path, value) for path, value in items + ancillary if value is not None)
-        for items in quantitative_tuples
-    ]
+    quantitative_tuples = _anchor_tuples(reported)
 
     def multi_span_anchor(item: dict[str, Any]) -> bool:
         """Check each cited fragment without treating them as one quotation."""
@@ -1296,7 +1300,7 @@ def _closest_evidence_gap(
             )
         if not isinstance(handle, str):
             continue
-        for quantitative in _reported_quantitative_paths(reported):
+        for quantitative in _anchor_tuples(reported):
             required = (("/reported/endpoint/name", endpoint_name), *quantitative)
             missing = [
                 str(value)
@@ -1313,6 +1317,47 @@ def _closest_evidence_gap(
     if best is None or not best[3]:
         return None
     return best[2], best[3]
+
+
+def _reading_gate_repair(root: Path, state: dict[str, Any]) -> dict[str, Any] | None:
+    """Refuse a Proposal submitted before the required main-report text pass."""
+    prior_proposal = state.get("proposal")
+    pending_review = (
+        isinstance(state.get("review"), dict)
+        and state["review"].get("purpose") == "proposal"
+        and isinstance(prior_proposal, dict)
+    )
+    revising_approved = (
+        not pending_review
+        and state.get("phase") in {"assessment", "ready_to_finalize"}
+        and isinstance(prior_proposal, dict)
+        and isinstance(state.get("proposal_acknowledgment"), dict)
+    )
+    batch = state.get("batch")
+    read_gaps = main_report_read_gaps(
+        root,
+        batch.get("trials", []) if isinstance(batch, dict) else [],
+        phase="proposal",
+    )
+    # The approved Result and a current source-bound checkpoint already provide
+    # the post-approval orientation needed to revise that proposal.  Requiring
+    # the proposal-phase pass again here creates a duplicate reread gate.  Keep
+    # the gate for missing/stale notes, and for initial proposal submission.
+    current_working_context = revising_approved and all(
+        working_checkpoint_status(root, state, trial_id).get("status") == "current"
+        for trial_id in {gap["trial_id"] for gap in read_gaps}
+    )
+    if not read_gaps or current_working_context:
+        return None
+    return {
+        "path": "/results",
+        "code": "main_report_reading_required",
+        "detail": (
+            "Finish the required bounded text pass before submitting the Proposal. Follow "
+            "head.next_action (read_pages windows), then resubmit the complete Trial "
+            "selections to validate_proposal. Save only after validation succeeds."
+        ),
+    }
 
 
 def save_proposal(
@@ -1353,36 +1398,9 @@ def save_proposal(
     )
     revision_in_progress = isinstance(revision_base, dict)
     merging_proposal = pending_review or revising_approved or revision_in_progress
-    read_gaps = main_report_read_gaps(
-        root,
-        batch.get("trials", []) if isinstance(batch, dict) else [],
-        phase="proposal",
-    )
-    # The approved Result and a current source-bound checkpoint already provide
-    # the post-approval orientation needed to revise that proposal.  Requiring
-    # the proposal-phase pass again here creates a duplicate reread gate.  Keep
-    # the gate for missing/stale notes, and for initial proposal submission.
-    current_working_context = revising_approved and all(
-        working_checkpoint_status(root, state, trial_id).get("status") == "current"
-        for trial_id in {gap["trial_id"] for gap in read_gaps}
-    )
-    if read_gaps and not current_working_context:
-        return _result(
-            "repair",
-            state,
-            repairs=[
-                {
-                    "path": "/results",
-                    "code": "main_report_reading_required",
-                    "detail": (
-                        "Finish the required bounded text pass before submitting the Proposal. "
-                        "Call get_status, read data.main_report_reading[trial_id].required_ranges "
-                        "with read_pages, then resubmit the complete Trial selections "
-                        "to validate_proposal. Save only after validation succeeds."
-                    ),
-                }
-            ],
-        )
+    gate = _reading_gate_repair(root, state)
+    if gate is not None:
+        return _result("repair", state, repairs=[gate])
     shape_defects = _proposal_shape_repairs(draft, requested_outcomes)
     canonical_results, draft_defects, used = _canonical_results(
         draft, catalog, requested_outcomes, batch
@@ -1750,8 +1768,9 @@ def validate_proposal(
                         ),
                     }
                 )
-    if repairs:
-        return _result("repair", state, repairs=repairs)
+    gate = _reading_gate_repair(root, state)
+    if repairs or gate is not None:
+        return _result("repair", state, repairs=[*([gate] if gate else []), *repairs])
 
     proposal_draft = ProposalDraft(
         results=parsed.results,

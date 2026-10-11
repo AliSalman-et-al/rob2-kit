@@ -486,6 +486,14 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
+An **Assessment report** is the reviewer-facing view of one verified Finalized
+artifact bundle: a Batch page summarizing every Trial's approved Result and
+Domain and Overall judgments, linked to one Trial page per Trial with each
+signalling question's answer, the assessor's justification and the quoted
+Evidence. It is rendered from the bundle, never edited, and carries no integrity
+of its own: the bundle is the record and the report is a presentation of it.
+Answers and justifications in it are the assessor's statements, not rob2-kit's.
+
 New static reports project the approved Result, saved Domain answers and warrants,
 unresolved premises, proposed/adopted judgments, and local selected-Evidence links
 from Canonical records. Algorithm routes describe derivations, not empirical

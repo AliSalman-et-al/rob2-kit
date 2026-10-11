@@ -29,7 +29,23 @@ def main(argv: list[str] | None = None) -> int:
     pymupdf.no_recommend_layout()
     parser = argparse.ArgumentParser(
         prog="rob2",
-        description="RoB 2 workflow and finalized-bundle tools.",
+        description="Researcher commands for rob2-kit RoB 2 assessments.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""commands:
+  status           show the assessment state and the next step (default)
+  review           show the pending Proposal Review and approve it by typing yes
+  verify BUNDLE    verify a finalized .rob2.zip bundle
+  archive-sources  zip the captured source files (--output PATH)
+  verify-sources   verify a source archive (pass it as BUNDLE)
+  export-skill     copy the rob2-assess skill to --output DIR
+  finalize         finalize a batch whose trials are all closed
+  discard          reset the active assessment; finalized bundles are kept
+  stage-companion  stage a companion source into a fresh workspace
+  mcp              run the MCP server over stdio
+  mcp-codex        run the MCP server for Codex (page images as content)
+
+The workspace is the folder that contains input/<trial>/; it defaults to the
+current folder or ROB2_WORKSPACE.""",
     )
     parser.add_argument(
         "command",
@@ -54,7 +70,11 @@ def main(argv: list[str] | None = None) -> int:
         nargs="?",
         help="path to a finalized .rob2.zip bundle (required by verify)",
     )
-    parser.add_argument("--workspace", default=os.environ.get("ROB2_WORKSPACE", "."))
+    parser.add_argument(
+        "--workspace",
+        default=os.environ.get("ROB2_WORKSPACE", "."),
+        help="assessment folder (default: ROB2_WORKSPACE or the current folder)",
+    )
     parser.add_argument(
         "--review-reference",
         help="require the currently displayed Proposal Review to have this exact identity",

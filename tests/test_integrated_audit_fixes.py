@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
-import sys
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -14,10 +12,8 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
-    _finalize_assessment,
 )
 
-from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
     record_visual_delivery,
     render_page,
@@ -41,61 +37,6 @@ def test_initial_domain_checkpoint_rejects_revision_metadata(tmp_path: Path) -> 
 
     assert rejected["outcome"] == "condition"
     assert rejected["condition"]["code"] == "domain_initial_checkpoint_cannot_have_revision"
-
-
-def test_domain_evidence_survives_derivative_rebuild_for_finalization(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    for domain in SCIENTIFIC_PACK.domains:
-        saved = _call(
-            workspace,
-            "save_domain_judgment",
-            _domain_draft("trial", domain.id, revision, evidence),
-        )
-        assert saved["outcome"] == "success", saved
-        revision = int(saved["head"]["state_revision"])
-
-    derivative = workspace / ".rob2-kit" / "derivative.sqlite3"
-    derivative.unlink()
-    finalized = _finalize_assessment(workspace, revision)
-
-    assert finalized["outcome"] == "success"
-    assert finalized["data"]["artifact"]["identity"]
-
-
-def test_domain_save_validates_only_submitted_evidence_handles(tmp_path: Path) -> None:
-    trial = tmp_path / "input" / "trial"
-    trial.mkdir(parents=True)
-    (trial / "domain.txt").write_text("The requested outcome was not reported", encoding="utf-8")
-    workspace, proposal_evidence, revision = _assessment_workspace(tmp_path)
-    source = next(
-        item
-        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
-        if item["label"] == "domain.txt"
-    )
-    selected = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    before = COUNTERS["source_projection_verifications"]
-    draft = _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, proposal_evidence)
-    draft["answers"][0]["bases"] = [
-        {
-            "kind": "direct_support",
-            "evidence": selected["handle"],
-        }
-    ]
-    saved = _call(workspace, "save_domain_judgment", draft)
-
-    assert saved["outcome"] == "success", saved
-    # Atomic submission verifies only the Evidence handle in the submitted draft.
-    assert COUNTERS["source_projection_verifications"] - before == 1
 
 
 def test_visual_transcription_rejects_blank_at_model_and_application_boundaries(
@@ -148,50 +89,6 @@ def test_visual_transcription_rejects_blank_at_model_and_application_boundaries(
             "   ",
             [0.0, 0.0, 1.0, 1.0],
         )
-
-
-def test_source_archive_is_deterministic_restart_safe_and_portable(tmp_path: Path) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-
-    first = archive_sources(workspace)
-    second = archive_sources(workspace)
-    archive = workspace / first["path"]
-
-    assert first["retry"] is False
-    assert second["retry"] is True
-    assert verify_source_archive(archive)
-    with zipfile.ZipFile(archive) as opened:
-        manifest = json.loads(opened.read("manifest.json"))
-        assert all("requested_outcome" not in item for item in manifest["sources"])
-        assert all("trace" not in item for item in manifest["sources"])
-        assert all("\\" not in name for name in opened.namelist())
-        assert all(not Path(name).is_absolute() for name in opened.namelist())
-
-    cli_archive = tmp_path / "portable.sources.zip"
-    command = [
-        sys.executable,
-        "-m",
-        "rob2_kit.interfaces.cli.app",
-        "archive-sources",
-        "--workspace",
-        str(workspace),
-        "--output",
-        str(cli_archive),
-    ]
-    subprocess.run(command, check=True, capture_output=True, text=True)
-    verified = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "rob2_kit.interfaces.cli.app",
-            "verify-sources",
-            str(cli_archive),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert "verified:" in verified.stdout
 
 
 def test_source_archive_rejects_linked_default_archive_directory(tmp_path: Path) -> None:

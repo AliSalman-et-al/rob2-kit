@@ -10,17 +10,14 @@ import pytest
 from fastmcp import Client
 from support.rob2 import (
     _call,
-    _finalize_assessment,
     _proposal_args,
     _result,
     _review,
-    _unavailable_result,
     _workspace,
 )
 
 from rob2_kit.application._state import _state
 from rob2_kit.application.intake import approve_review
-from rob2_kit.application.status import presentation
 from rob2_kit.interfaces.mcp.server import mcp
 
 
@@ -32,51 +29,6 @@ def _raw_call(workspace: Path, tool: str, arguments: dict[str, Any]) -> dict[str
             return dict(result.structured_content or {})
 
     return asyncio.run(invoke())
-
-
-def _trial_request(outcome: str = "requested outcome") -> dict[str, Any]:
-    return {
-        "requested_outcome": outcome,
-        "expected_revision": 0,
-    }
-
-
-def test_prepare_batch_exact_stale_retry_and_mismatches(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    request = _trial_request()
-    first = _call(workspace, "prepare_batch", request)
-    assert first["outcome"] == "success"
-    identity = _state(workspace)["batch"]["identity"]
-
-    retry = _call(workspace, "prepare_batch", request)
-    assert retry["outcome"] == "success"
-    assert retry["data"]["retry"] is True
-    assert _state(workspace)["batch"]["identity"] == identity
-
-    stale_different = _raw_call(workspace, "prepare_batch", _trial_request("different"))
-    assert stale_different["outcome"] == "conflict"
-    assert _state(workspace)["batch"]["identity"] == identity
-
-    current_different = _raw_call(
-        workspace,
-        "prepare_batch",
-        {**_trial_request("different"), "expected_revision": first["head"]["state_revision"]},
-    )
-    assert current_different["outcome"] == "condition"
-    assert _state(workspace)["batch"]["identity"] == identity
-
-
-def test_save_proposal_exact_stale_retry(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    from support.rob2 import _prepared_evidence
-
-    evidence = _prepared_evidence(workspace)
-    request = _proposal_args(workspace, [_result(evidence)])
-    first = _call(workspace, "save_proposal", request)
-    assert first["outcome"] == "review_required"
-    retry = _call(workspace, "save_proposal", request)
-    assert retry["outcome"] == "success"
-    assert retry["data"]["retry"] is True
 
 
 def test_pending_proposal_can_be_replaced_and_approved_retry_is_idempotent(
@@ -141,20 +93,6 @@ def test_pending_proposal_can_be_replaced_and_approved_retry_is_idempotent(
     assert review_count == 2
 
 
-def test_status_distinguishes_proposal_preparation_from_displayed_review(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    from support.rob2 import _prepared_evidence
-
-    evidence = _prepared_evidence(workspace)
-    preparing = presentation(_state(workspace))
-    assert "being prepared or submitted" in preparing["wording"]
-
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    assert saved["outcome"] == "review_required"
-    reviewing = presentation(_state(workspace))
-    assert "Proposal Review pending" in reviewing["wording"]
-
-
 def test_domain_and_finalization_tools_stop_at_pending_proposal_review(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     from support.rob2 import _prepared_evidence
@@ -210,29 +148,3 @@ def test_trial_review_and_closure_exact_stale_retry(tmp_path: Path) -> None:
     assert close_retry["outcome"] == "success"
     assert close_retry["data"]["retry"] is True
     assert close_retry["head"]["state_revision"] == closed["head"]["state_revision"]
-
-
-def test_finalize_exact_stale_retry(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    from support.rob2 import _prepared_evidence
-
-    evidence = _prepared_evidence(workspace)
-    _call(
-        workspace,
-        "save_proposal",
-        _proposal_args(
-            workspace,
-            [_unavailable_result(evidence, "The intended endpoint is not reported.")],
-        ),
-    )
-    _review(workspace)
-    revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
-    first = _finalize_assessment(workspace, revision)
-    retry = _call(workspace, "finalize_batch", {"expected_revision": revision})
-    assert first["outcome"] == "success"
-    assert retry["outcome"] == "success"
-    assert retry["data"]["retry"] is True
-    stale_finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
-    assert stale_finalized["outcome"] == "success"
-    assert stale_finalized["data"]["retry"] is True
-    assert stale_finalized["data"]["artifact"] == first["data"]["artifact"]

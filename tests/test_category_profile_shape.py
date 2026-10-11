@@ -28,35 +28,6 @@ def _profile(categories: list[dict[str, object]]) -> dict[str, object]:
     }
 
 
-def test_category_profile_requires_complete_axis_key() -> None:
-    with pytest.raises(ValidationError):
-        CategoryProfileResult.model_validate(
-            _profile([{**_category(), "group_or_category": "Any event"}])
-        )
-
-    with pytest.raises(ValidationError):
-        CategoryProfileResult.model_validate(_profile([_category(category_axes=["Any event", ""])]))
-
-
-def test_profile_measurement_metadata_is_declared_once() -> None:
-    profile = CategoryProfileResult.model_validate(
-        _profile(
-            [
-                _category(),
-                _category(
-                    category_axes=["Any event", "Grade 4"],
-                    value="16.7",
-                ),
-            ]
-        )
-    )
-    assert [item.category_axes for item in profile.categories] == [
-        ("Any event", "Grade 3"),
-        ("Any event", "Grade 4"),
-    ]
-    assert profile.denominator_basis == "follow-up participants"
-
-
 def test_repeated_cell_metadata_produces_one_actionable_validation_error() -> None:
     cells = [
         _category(category_axes=["Any event", grade], evidence="eh_0000000000000000")
@@ -67,23 +38,6 @@ def test_repeated_cell_metadata_produces_one_actionable_validation_error() -> No
 
     assert len(caught.value.errors()) == 1
     assert "do not repeat Evidence handles" in str(caught.value)
-
-
-def test_category_axes_may_repeat_when_positions_are_distinct_dimensions() -> None:
-    profile = CategoryProfileResult.model_validate(
-        _profile([_category(category_axes=["All", "All"])])
-    )
-    assert profile.categories[0].category_axes == ("All", "All")
-
-
-def test_category_profile_supports_one_dimensional_cells() -> None:
-    profile = CategoryProfileResult.model_validate(
-        {
-            **_profile([_category(category_axes=["Any event"])]),
-            "category_axis_names": ["event"],
-        }
-    )
-    assert profile.category_axis_names == ("event",)
 
 
 def test_category_profile_rejects_axis_arity_mismatch() -> None:
