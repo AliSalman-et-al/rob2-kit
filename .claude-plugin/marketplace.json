@@ -1,0 +1,15 @@
+{
+  "name": "rob2-kit",
+  "owner": { "name": "Ali Salman", "url": "https://github.com/AliSalman-et-al" },
+  "metadata": {
+    "description": "Cochrane RoB 2 risk-of-bias assessment for Claude Code and Codex."
+  },
+  "plugins": [
+    {
+      "name": "rob2-kit",
+      "source": "./",
+      "description": "Evidence-grounded Cochrane RoB 2 risk-of-bias assessment of randomized trials.",
+      "category": "research"
+    }
+  ]
+}

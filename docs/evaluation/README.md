@@ -86,13 +86,9 @@ run workspace and join it only after the uncoached runs are complete. The
 analyzer reports evidence for qualification; it does not invent a pass/fail
 threshold or make a scientific-accuracy claim.
 
-The public reference catalog under `eval/reference/catalog` contains trial
-source-directory mappings and separate counts for completed baselines and
-provisionally labelled cases. These are different denominators: some completed
-baseline sets have fewer cases than the matching labelled reference set, while
-other labelled sets are smaller. Score only cases with a reference label;
-report baseline completion against its own denominator. Source documents and
-provisional label rows remain local and are excluded from version control.
+Score only cases with a reference label, and report completion against its own
+denominator. Source documents and reference labels stay local and out of version
+control.
 
 The provider-independent scorer is rerunnable without paid model calls:
 
@@ -146,9 +142,8 @@ reliability study; retry an individual attempt only for a documented external
 interruption before product or host behavior.
 
 The verification case preparer accepts a source path relative to the case manifest when
-the path resolves to a file under the same evaluation root. This supports a
-manifest in `eval/runs` or `eval/reference/qualification-cases` reusing the
-retained corpus in `eval/reference/sources`. It still copies only the files
+the path resolves to a file under the same evaluation root. This lets
+several case manifests share one local source corpus. It still copies only the files
 listed by the manifest into a new workspace and rejects paths outside that
 evaluation root.
 

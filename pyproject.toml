@@ -1,9 +1,16 @@
 [project]
 name = "rob2-kit"
 version = "0.12.0"
-description = "Model-free MCP boundary for RoB 2 assessment"
+description = "Evidence-grounded Cochrane RoB 2 risk-of-bias assessment for AI agents: an MCP server and skill"
 readme = "README.md"
 requires-python = ">=3.11"
+authors = [{ name = "Ali Salman" }]
+keywords = ["risk of bias", "rob2", "cochrane", "systematic review", "mcp", "agent skills"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Programming Language :: Python :: 3",
+]
 dependencies = [
     "fastmcp==4.0.3",
     "httpx==0.28.1",
@@ -12,6 +19,11 @@ dependencies = [
     "pymupdf==1.28.2",
     "rapidfuzz>=3.0,<4.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/AliSalman-et-al/rob2-kit"
+Documentation = "https://github.com/AliSalman-et-al/rob2-kit/blob/main/docs/user-guide.md"
+Issues = "https://github.com/AliSalman-et-al/rob2-kit/issues"
 
 [project.scripts]
 rob2 = "rob2_kit.interfaces.cli.app:main"

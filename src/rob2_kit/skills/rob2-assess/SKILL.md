@@ -118,7 +118,10 @@ after approval or a restart without repeating the main-report pass.
 Proposal Review is the only researcher gate. Show the researcher the Review:
 each Trial's selected Result, its relation to the request and any unknowns.
 Then call `request_proposal_approval` with `{}`. If the host cannot elicit approval, report the returned condition and
-tell the researcher to approve with `rob2 review`; then call `get_status`. If
+tell the researcher to approve in a terminal opened in the assessment folder
+with `rob2 review` (without the CLI installed:
+`uvx --from git+https://github.com/AliSalman-et-al/rob2-kit rob2 review`); then
+call `get_status`. If
 the researcher corrects a Result, treat it as direction for source review,
 validate and save a complete replacement, and present the new Review. After
 approval, continue to the end without asking for confirmation; researcher
