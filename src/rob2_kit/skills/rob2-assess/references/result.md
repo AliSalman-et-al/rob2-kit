@@ -53,6 +53,10 @@ interval), or `group_values` for every target group (`group_id`, `statistic`,
 `value`, `unit`; use null for an unprinted statistic or unit). An arm's mean is
 a group value, not a comparative estimate; do not subtract arms to invent one.
 Put other comparison statistics such as p-values in `reported_statistics`.
+Each reported string must appear in a cited passage: copy it, for example
+`p = 0.025` rather than `p = 0.025 (Mann-Whitney U test, Table 2)`, and `mean`
+rather than `mean (SD) at follow-up`; a unit the passage does not print is null.
+Put locations, scales and explanations in `scope_rationale`.
 
 `relation` states how the report relates to the target:
 
