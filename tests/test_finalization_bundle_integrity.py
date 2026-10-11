@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
 import os
 import runpy
@@ -22,11 +21,13 @@ from support.rob2 import (
     _assessed_artifact,
     _assessment_workspace,
     _call,
+    _canonical_bytes,
     _domain_draft,
     _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
+    _rebuild_bundle,
     _result,
     _review,
     _standalone_verify,
@@ -67,27 +68,8 @@ def _rewrite_rehashed(
             + json.dumps(json.loads(files["claims.json"]), sort_keys=True)
             + "</pre></body></html>"
         ).encode()
-    files["canonical.json"] = json.dumps(
-        canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode()
-    manifest = json.loads(files["manifest.json"])
-    manifest["identity"] = _identity({"schema": "rob2-kit.bundle.v0.3", "canonical": canonical})
-    verification = json.loads(files["verification.json"])
-    verification["manifest_identity"] = manifest["identity"]
-    files["verification.json"] = json.dumps(
-        verification, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode()
-    for row in manifest["files"]:
-        row["sha256"] = "sha256:" + hashlib.sha256(files[row["path"]]).hexdigest()
-    files["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode()
-    with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        for name in sorted(files):
-            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = 0o644 << 16
-            archive.writestr(info, files[name])
+    files["canonical.json"] = _canonical_bytes(canonical)
+    _rebuild_bundle(files, target)
 
 
 def _artifact(workspace: Path) -> Path:

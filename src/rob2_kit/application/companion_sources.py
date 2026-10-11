@@ -14,7 +14,6 @@ from typing import Any, Literal
 from urllib.parse import quote, unquote, urlsplit
 
 import httpx
-import pymupdf
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..models import canonical_json_bytes
@@ -400,6 +399,8 @@ class CompanionReference(BaseModel):
 
 
 def _acquire(reference: CompanionReference) -> tuple[bytes | None, dict]:
+    import pymupdf
+
     report: dict = {
         "reference": reference.model_dump(),
         "captured_at": datetime.now(UTC).isoformat(),

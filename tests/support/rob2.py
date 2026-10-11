@@ -18,7 +18,7 @@ from fastmcp import Client
 
 from rob2_kit.application._state import _identity
 from rob2_kit.application.evidence import _search_receipt
-from rob2_kit.application.finalization import verify_bundle
+from rob2_kit.application.finalization import _human_report, verify_bundle
 from rob2_kit.interfaces.mcp.server import _DOMAIN_CONTEXT_PAGE_SECTIONS, mcp
 from rob2_kit.logic.evaluator import active_questions
 from rob2_kit.packs import SCIENTIFIC_PACK
@@ -887,6 +887,44 @@ def _rehashed_full_tamper(source: Path, target: Path, mutate: Any) -> None:
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o644 << 16
             archive.writestr(info, files[name])
+
+
+def _canonical_bytes(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+
+
+def _rebuild_bundle(files: dict[str, bytes], target: Path) -> None:
+    """Write a bundle whose identity, verification input and manifest match its files."""
+    canonical = json.loads(files["canonical.json"])
+    identity = _identity({"schema": "rob2-kit.bundle.v0.3", "canonical": canonical})
+    verification = json.loads(files["verification.json"])
+    verification["manifest_identity"] = identity
+    files = {**files, "verification.json": _canonical_bytes(verification)}
+    manifest = json.loads(files["manifest.json"])
+    manifest["identity"] = identity
+    manifest["files"] = [
+        {"path": path, "sha256": "sha256:" + hashlib.sha256(data).hexdigest()}
+        for path, data in sorted(files.items())
+        if path != "manifest.json"
+    ]
+    files["manifest.json"] = _canonical_bytes(manifest)
+    with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name in sorted(files):
+            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            archive.writestr(info, files[name])
+
+
+def _v1_bundle(source: Path, target: Path) -> None:
+    """The same record as rob2-kit 0.12.0 bundled it, with its report inside."""
+    with zipfile.ZipFile(source) as archive:
+        files = {info.filename: archive.read(info) for info in archive.infolist()}
+    canonical = json.loads(files["canonical.json"])
+    canonical["report_format"] = "rob2-kit.human-report.v1"
+    files["canonical.json"] = _canonical_bytes(canonical)
+    files["report.html"] = _human_report(canonical, json.loads(files["claims.json"])).encode()
+    _rebuild_bundle(files, target)
 
 
 __all__ = [

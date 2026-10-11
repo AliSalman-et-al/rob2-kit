@@ -8,7 +8,6 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 
 import httpx
-import pymupdf
 
 from .public_documents import MAX_DOCUMENT_BYTES, fetch_bounded
 
@@ -26,6 +25,8 @@ def _object(value: object) -> dict[str, Any]:
 
 def acquire_documents(nct: str, record: bytes) -> tuple[list[RegistryDocument], dict[str, Any]]:
     """Acquire official linked PDFs; metadata never establishes scientific timing."""
+    import pymupdf
+
     captured_at = datetime.now(UTC).isoformat()
     report: dict[str, Any] = {
         "registry_id": nct,

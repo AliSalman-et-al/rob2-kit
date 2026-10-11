@@ -6366,7 +6366,6 @@ def verify(path: Path) -> tuple[bool, str]:
                 domains,
             ):
                 return False, "Trial review or closure is invalid"
-            report = archive.read("report.html").decode("utf-8")
             claims = json.loads(archive.read("claims.json"))
             if not isinstance(claims, dict) or claims != _claims(canonical):
                 return False, "claims do not match dispositions"
@@ -6376,15 +6375,20 @@ def verify(path: Path) -> tuple[bool, str]:
                 + "</pre></body></html>"
             )
             report_format = canonical.get("report_format")
-            if "report_format" in canonical and report_format != "rob2-kit.human-report.v1":
-                return False, "unsupported report format"
-            expected_report = (
-                _human_report(canonical, claims)
-                if report_format == "rob2-kit.human-report.v1"
-                else legacy_report
-            )
-            if report != expected_report:
-                return False, "report does not match canonical assessment"
+            if report_format == "none":
+                # Newer bundles carry no presentation; the report is rendered beside them.
+                if "report.html" in names:
+                    return False, "unexpected report in a bundle without one"
+            else:
+                if "report_format" in canonical and report_format != "rob2-kit.human-report.v1":
+                    return False, "unsupported report format"
+                expected_report = (
+                    _human_report(canonical, claims)
+                    if report_format == "rob2-kit.human-report.v1"
+                    else legacy_report
+                )
+                if archive.read("report.html").decode("utf-8") != expected_report:
+                    return False, "report does not match canonical assessment"
             verification = json.loads(archive.read("verification.json"))
             if (
                 not isinstance(verification, dict)

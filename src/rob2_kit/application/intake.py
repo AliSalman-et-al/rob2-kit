@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-import pymupdf
 
 from ..models import canonical_json_bytes
 from ..workflow_models import (
@@ -522,6 +521,8 @@ def prepare_batch(
     expected_revision: ExpectedRevision,
     acquire_registry_documents: bool | None = None,
 ) -> dict[str, Any]:
+    import pymupdf
+
     if acquire_registry_documents is not None and not isinstance(acquire_registry_documents, bool):
         raise ValueError("acquire_registry_documents must be boolean or omitted")
     normalized_trials: list[dict[str, Any]] = []

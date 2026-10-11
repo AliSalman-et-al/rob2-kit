@@ -105,8 +105,13 @@ The [user guide](docs/user-guide.md#other-mcp-hosts) has the details.
    uvx --from git+https://github.com/AliSalman-et-al/rob2-kit rob2 review
    ```
 
-4. The agent assesses the five domains. When it finalizes, a verifiable
-   `.rob2.zip` bundle is written to `.rob2-kit/finalized/`.
+4. The agent assesses the five domains. When it finalizes, two things are
+   written:
+   - a verifiable `.rob2.zip` bundle in `.rob2-kit/finalized/`, which is the record;
+   - an **Assessment report** in `reports/<date>-<id>/`. Open its `index.html` in
+     any browser. That Batch page shows each trial's assessed result and its
+     D1–D5 and overall judgments. Each trial links to a page with every
+     signalling question, the answer, the justification and the quoted passages.
 
 Supported source formats are PDF, DOCX, TXT, Markdown, CSV and JSON. The
 [user guide](docs/user-guide.md) covers the approval step, verification,

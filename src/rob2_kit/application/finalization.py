@@ -3945,7 +3945,9 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
             visual_files[path] = png
     canonical_proposal = {**proposal, "evidence": evidence}
     canonical = {
-        "report_format": "rob2-kit.human-report.v1",
+        # The reviewer-facing Assessment report is rendered beside the bundle;
+        # the bundle itself is the record and carries no presentation.
+        "report_format": "none",
         "batch": state.get("batch"),
         "proposal": canonical_proposal,
         "proposal_review": proposal_review,
@@ -4026,7 +4028,6 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     files: dict[str, bytes] = {
         "canonical.json": canonical_json_bytes(canonical),
         "claims.json": canonical_json_bytes(claims),
-        "report.html": _human_report(canonical, claims).encode(),
     }
     files.update(visual_files)
     files.update(
@@ -4121,6 +4122,23 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
 
 
 def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -> dict[str, Any]:
+    """Finalize the Batch, then render its Assessment report beside the bundle."""
+    result = _finalize(workspace, expected_revision)
+    return {**result, "report": assessment_report(_root(workspace), result["artifact"]["path"])}
+
+
+def assessment_report(root: Path, artifact_path: str) -> dict[str, Any]:
+    from rob2_kit.application.report import report_directory, write_report
+
+    bundle = root / artifact_path
+    try:
+        index = write_report(bundle, report_directory(root, bundle))
+    except Exception as error:  # the bundle is the record; a report failure must not cost it
+        return {"path": None, "unavailable_reason": str(error)}
+    return {"path": index.relative_to(root).as_posix(), "unavailable_reason": None}
+
+
+def _finalize(workspace: str | Path, expected_revision: ExpectedRevision) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
@@ -5528,7 +5546,6 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
             )
             if manifest.get("identity") != expected_identity:
                 return fail()
-            report = archive.read("report.html").decode("utf-8")
             claims = json.loads(archive.read("claims.json"))
             if has_trial_reviews:
                 public = presentation(
@@ -5571,15 +5588,22 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                 + "</pre></body></html>"
             )
             report_format = canonical_value.get("report_format")
-            if "report_format" in canonical_value and report_format != "rob2-kit.human-report.v1":
-                return fail()
-            expected_report = (
-                _human_report(canonical_value, claims)
-                if report_format == "rob2-kit.human-report.v1"
-                else legacy_report
-            )
-            if report != expected_report:
-                return fail()
+            if report_format == "none":
+                if "report.html" in names:
+                    return fail()
+            else:
+                if (
+                    "report_format" in canonical_value
+                    and report_format != "rob2-kit.human-report.v1"
+                ):
+                    return fail()
+                expected_report = (
+                    _human_report(canonical_value, claims)
+                    if report_format == "rob2-kit.human-report.v1"
+                    else legacy_report
+                )
+                if archive.read("report.html").decode("utf-8") != expected_report:
+                    return fail()
             proposal = canonical_value.get("proposal") or {}
             proposal_review = canonical_value.get("proposal_review")
             proposal_acknowledgment = canonical_value.get("proposal_acknowledgment")

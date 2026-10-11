@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import html
 import json
 import runpy
 import zipfile
@@ -85,11 +86,13 @@ def test_statistics_bind_and_recover_with_either_reported_form(
     assert _standalone_verify(artifact).returncode == 0
     with zipfile.ZipFile(artifact) as archive:
         canonical = json.loads(archive.read("canonical.json"))
-        assert b"reported_statistics" in archive.read("report.html")
     assert canonical["scientific_pack"]["result_semantics_version"] == (
         "rob2-kit.result-semantics.v0.11"
     )
     assert canonical["proposal"]["payload"]["results"][0]["reported"] == stored["reported"]
+    page = (workspace / finalized["data"]["report"]["path"]).parent / "trials" / "trial.html"
+    rendered = page.read_text(encoding="utf-8")
+    assert all(html.escape(item) in rendered for item in stored["reported"]["reported_statistics"])
 
 
 @pytest.fixture(scope="module")

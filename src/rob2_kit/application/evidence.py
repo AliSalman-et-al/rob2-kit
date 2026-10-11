@@ -16,7 +16,6 @@ from pathlib import Path
 from threading import RLock
 from typing import Any, Literal, cast
 
-import pymupdf
 from rapidfuzz.distance import OSA
 
 from ..models import canonical_json_bytes
@@ -193,6 +192,7 @@ def _source_navigation(
     limit: int,
 ) -> dict[str, Any]:
     """Return bounded PDF metadata and literal navigation, without reading coverage."""
+    import pymupdf
 
     bookmarks: list[dict[str, Any]] = []
     unmapped_bookmarks = 0
@@ -4560,6 +4560,8 @@ def _render_page_png(
     root: Path, trial_id: str, source_id: str, page: int, *, count: bool = True
 ) -> bytes:
     """Render one canonical captured PDF page using the fixed recipe."""
+    import pymupdf
+
     path = internal_path(root, "sources", trial_id, f"{source_id}.bin")
     data = path.read_bytes()
     document = pymupdf.open(stream=data, filetype="pdf")

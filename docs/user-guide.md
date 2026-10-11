@@ -18,7 +18,7 @@ plugin first, see the [README](../README.md#install).
    sources. The server applies the official algorithm to produce the domain
    judgment, then combines the domains into the overall judgment.
 5. **Close and finalize.** The agent reviews and closes each trial, then
-   finalizes the batch into a verifiable bundle.
+   finalizes the batch into a verifiable bundle and renders its Assessment report.
 
 The agent can stop at any point and resume later. All state is kept in
 `.rob2-kit/` inside the assessment folder.
@@ -99,9 +99,8 @@ rob2 status
 rob2 verify .rob2-kit/finalized/<bundle>.rob2.zip
 ```
 
-Each bundle is a zip file. It contains the canonical assessment
-(`canonical.json`), a static `report.html` that you can read in any browser after
-unzipping, the selected evidence records and integrity hashes. `rob2 verify` checks every
+Each bundle is a zip file holding the canonical assessment (`canonical.json`),
+the selected evidence records and integrity hashes. `rob2 verify` checks every
 hash, the scientific-pack descriptor and the RoB 2 algorithm outputs. The
 dependency-free [`scripts/verify_bundle.py`](../scripts/verify_bundle.py)
 performs the same checks without installing rob2-kit:
@@ -120,6 +119,35 @@ rob2 archive-sources --output sources.zip
 ```bash
 rob2 verify-sources sources.zip
 ```
+
+## Read the Assessment report
+
+Finalizing writes the report to `reports/<date>-<bundle id>/` in the assessment
+folder. Open `index.html` in any browser. No internet connection is needed, and
+the files can be shared or attached as they are.
+
+- **The Batch page** has one row per trial. Each row shows the assessed result,
+  the five domain judgments and the overall judgment in the robvis colours
+  (✓ low, ! some concerns, ✗ high). Trials that were not assessed are listed
+  with the reason.
+- **Each trial page** shows the approved result, then each domain. For every
+  signalling question it gives the answer, the assessor's justification and the
+  quoted passages, each with its file, page and lines. It also shows any
+  counterevidence, unknowns and searches that found nothing. Questions marked
+  *Decisive* determined the domain judgment. Where the assessor adjudicated a
+  judgment different from the algorithm's, both judgments and the reason are
+  shown.
+
+The report is a view of the bundle, not a record: verify the bundle with
+`rob2 verify`. To render a report again, for example on another machine, run:
+
+```bash
+rob2 report path/to/bundle.rob2.zip --output my-report
+```
+
+`rob2 report` refuses a bundle that fails verification. In current Chrome and
+Edge, printing a page or saving it as PDF expands every collapsed quotation. In
+other browsers, open the quotations before printing.
 
 ## Other MCP hosts
 

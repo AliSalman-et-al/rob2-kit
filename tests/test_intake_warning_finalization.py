@@ -52,11 +52,6 @@ def test_intake_warning_is_reconstructed_and_cannot_be_removed(
         " Inspect intake conditions"
     )[0]
     files["claims.json"] = json.dumps(claims, sort_keys=True, separators=(",", ":")).encode()
-    files["report.html"] = (
-        "<html><body><h1>Batch finalized</h1><pre>"
-        + json.dumps(claims, sort_keys=True)
-        + "</pre></body></html>"
-    ).encode()
     manifest = json.loads(files["manifest.json"])
     for entry in manifest["files"]:
         entry["sha256"] = "sha256:" + hashlib.sha256(files[entry["path"]]).hexdigest()

@@ -159,6 +159,13 @@ def test_batch_with_unavailable_result_navigation_notes_and_archive(tmp_path: Pa
     # An unavailable Result needs a person to choose another outcome or supply sources.
     assert finalized["data"]["trial_dispositions"] == {SPARSE: "needs_input", PREVENT: "assessed"}
     assert finalized["data"]["assessment_summary"][PREVENT]["overall"] == "low"
+    # The Batch page accounts for every Trial, including the one that was not assessed.
+    index = tmp_path / finalized["data"]["report"]["path"]
+    batch_page = index.read_text(encoding="utf-8")
+    assert "Not assessed: needs information" in batch_page
+    assert (index.parent / "trials" / f"{SPARSE}.html").is_file()
+    prevent_page = (index.parent / "trials" / f"{PREVENT}.html").read_text(encoding="utf-8")
+    assert "data:image/png;base64," in prevent_page  # the cited figure is embedded
 
     archive = tmp_path / "sources.zip"
     assert rob2(tmp_path, "archive-sources", "--output", str(archive)).returncode == 0

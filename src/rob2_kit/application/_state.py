@@ -17,8 +17,6 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
 
-import pymupdf
-
 from ..models import canonical_json_bytes, sha256
 from ..workflow_models import SourceRole
 from .contracts import COUNTERS, WorkflowConflict
@@ -82,10 +80,6 @@ _SEARCH_PUNCTUATION_EQUIVALENTS = str.maketrans(
         "\u201f": '"',
     }
 )
-
-_PDF_TEXT_FLAGS = (
-    pymupdf.TEXTFLAGS_TEXT | pymupdf.TEXT_DEHYPHENATE
-) & ~pymupdf.TEXT_PRESERVE_LIGATURES
 
 
 def _normalize_projected_text(value: str) -> str:
@@ -1048,11 +1042,14 @@ def _pages(
 ) -> tuple[str, ...]:
     COUNTERS["extraction_calls"] += 1
     if data.startswith(b"%PDF-"):
+        import pymupdf
+
+        flags = (
+            pymupdf.TEXTFLAGS_TEXT | pymupdf.TEXT_DEHYPHENATE
+        ) & ~pymupdf.TEXT_PRESERVE_LIGATURES
         document = pymupdf.open(stream=data, filetype="pdf")
         try:
-            pages = [
-                document[number].get_text(flags=_PDF_TEXT_FLAGS) for number in range(len(document))
-            ]
+            pages = [document[number].get_text(flags=flags) for number in range(len(document))]
             for number in range(len(document)):
                 if skip_table_pages is not None and number + 1 in skip_table_pages:
                     continue

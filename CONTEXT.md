@@ -481,10 +481,11 @@ inferred from an unsuccessful tool call. Non-assessed Trials have no Domain
 judgment.
 
 A **Finalized artifact bundle** is a deterministic `.rob2.zip` containing
-Canonical JSON, static HTML, selected Evidence records, claims, content hashes,
-and independent-verifier input. It excludes Source files, credentials, prompts,
-host traces, and absolute paths. The product verifier and standalone verifier
-replay the same scientific and integrity invariants independently.
+Canonical JSON, selected Evidence records, claims, content hashes, and
+independent-verifier input. It excludes Source files, credentials, prompts,
+host traces, absolute paths and, since `report_format: "none"`, any HTML. The
+product verifier and standalone verifier replay the same scientific and
+integrity invariants independently.
 
 An **Assessment report** is the reviewer-facing view of one verified Finalized
 artifact bundle: a Batch page summarizing every Trial's approved Result and
@@ -494,17 +495,12 @@ Evidence. It is rendered from the bundle, never edited, and carries no integrity
 of its own: the bundle is the record and the report is a presentation of it.
 Answers and justifications in it are the assessor's statements, not rob2-kit's.
 
-New static reports project the approved Result, saved Domain answers and warrants,
-unresolved premises, proposed/adopted judgments, and local selected-Evidence links
-from Canonical records. Algorithm routes describe derivations, not empirical
-findings; an included No information answer remains explicitly unresolved without
-asserting that it determined the judgment. New exports bind
-`report_format: rob2-kit.human-report.v1` into the Canonical bundle identity. Both
-verifiers require that format's exact report; unmarked historical bundles retain
-their aggregate-only HTML. Result, Domain and Evidence identities are unchanged;
-the format marker changes the bundle identity. Existing valid artifacts are not
-rewritten. Replacing the report or stripping its marker cannot retain that bundle
-identity. Hashes do not authenticate provenance against wholesale re-identification.
+Historical bundles carry their own HTML, which both verifiers still require
+exactly: `report_format: rob2-kit.human-report.v1` bundles hold a projection of
+Canonical records, and unmarked bundles an aggregate-only page. The format marker
+is part of the bundle identity, so replacing a report or stripping its marker
+cannot retain that identity. Hashes do not authenticate provenance against
+wholesale re-identification.
 
 Result semantics v0.9 allow an explicitly null group statistic when its meaning
 is not identified in the Source. Values, units, and endpoint identifiers remain

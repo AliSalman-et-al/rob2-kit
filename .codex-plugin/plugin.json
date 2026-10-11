@@ -1,6 +1,6 @@
 {
   "name": "rob2-kit",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Evidence-grounded Cochrane RoB 2 risk-of-bias assessment of randomized trials: a model-free MCP server and the rob2-assess skill.",
   "author": { "name": "Ali Salman", "url": "https://github.com/AliSalman-et-al" },
   "homepage": "https://github.com/AliSalman-et-al/rob2-kit",

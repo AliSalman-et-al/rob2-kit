@@ -3147,8 +3147,20 @@ class AssessmentSummary(PublicModel):
         return self
 
 
+class AssessmentReportReceipt(PublicModel):
+    path: str | None = Field(
+        description="Workspace-relative path of the Assessment report's Batch page "
+        "(index.html); give it to the researcher. Null when rendering failed."
+    )
+    unavailable_reason: str | None = Field(
+        description="Why no report was written; the finalized bundle is unaffected and "
+        "`rob2 report BUNDLE` can render it later."
+    )
+
+
 class FinalizeData(PublicModel):
     artifact: Artifact
+    report: AssessmentReportReceipt
     trial_dispositions: dict[
         TrialId,
         Literal["pending", "reviewable", "assessed", "needs_input", "unsupported_design", "failed"],
@@ -3468,7 +3480,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     if tool == "finalize_batch":
         return {
             key: value[key]
-            for key in ("artifact", "trial_dispositions", "assessment_summary", "retry")
+            for key in ("artifact", "report", "trial_dispositions", "assessment_summary", "retry")
             if key in value
         }
     if tool == "review_trial":
