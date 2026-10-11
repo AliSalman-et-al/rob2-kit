@@ -54,8 +54,9 @@ samples across reports, or unusual composites.
   Unblinded data seen only by an independent data monitoring committee, for
   example at an interim analysis, are not available to the trial investigators
   (section 8.3.1).
-- **Probably yes** also applies when a source dated before enrolment (usually
-  the registry) fixes this outcome measurement and time point, and the report
+- **Probably yes** also applies when a source dated before unblinded outcome
+  data were available (usually a registry entry before enrolment, or early in
+  blinded follow-up) fixes this outcome measurement and time point, and the report
   analyses it in the way its own methods describe, with no sign of alternative
   analyses (section 1.1.1: a judgement from the circumstances of the trial). A
   registry that names the measurement but not the analysis, or an SAP filed
