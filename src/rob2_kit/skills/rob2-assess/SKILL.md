@@ -101,8 +101,9 @@ competing definitions or missing context need them.
 ### 3. Validate and save the Proposal
 
 Cite passages you have read, as described in
-[Read sources and cite Evidence](references/evidence.md). Construct the complete
-request before calling: one complete Trial selection per captured Trial in
+[Read sources and cite Evidence](references/evidence.md). Tool arguments are
+JSON: inside a string, write a quoted source's double quotation marks as `\"`
+or as single quotes. Construct the complete request before calling: one complete Trial selection per captured Trial in
 `validate_proposal`, no placeholders. Fix every repair the server returns and
 resubmit the complete selection. Then call `save_proposal` with the
 `expected_revision` that validation returned. While Proposal Review is pending,
@@ -128,8 +129,8 @@ messages after approval do not set signalling answers.
 For the active Trial, call `get_domain_context` (the Domain in
 `head.next_action`, or an explicit `domain_id`). Follow `data.context_page`
 cursors until `next_cursor` is null, and read any `reading_recovery` windows
-marked `required`. The context's `assessment_guidance` is the Domain's
-reference below; read it before answering:
+marked `required`. The context's `assessment_guidance` already contains the
+Domain's reference below, so it needs no separate fetch:
 
 - [Domain 1: randomization](references/randomization.md)
 - [Domain 2: deviations from intended interventions](references/deviations.md)
@@ -148,7 +149,8 @@ For each Domain:
    with the `question_id` and an answer from the card's `options` (`yes`,
    `probably_yes`, `probably_no`, `no`, `no_information` where allowed).
    Base each answer on passages you have read, apply the official guidance, and
-   state the reasoning in `justification`. Record unresolved facts in
+   state the reasoning in `justification`, quoting the report briefly where you
+   can (section 1.1.1). Record unresolved facts in
    `unknowns` and conflicting passages in `counterevidence`.
 3. Before saving, check each answer against the approved Result and the
    official guidance for that question.

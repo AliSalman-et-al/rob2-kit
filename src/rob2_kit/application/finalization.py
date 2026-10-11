@@ -95,6 +95,7 @@ _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
     {
         SCIENTIFIC_PACK.content_hash,
+        "sha256:5517ffe68111a6c7fadead95852073cf161ccd7b5ac186be7301c7eda464bf35",
         "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
     }
 )
@@ -3246,6 +3247,17 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         expected,
         {**expected, "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION},
         {**expected, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
+    ):
+        return True
+    # Before the official "Using this domain" pages joined the pack.
+    pre_domain_use = {
+        **expected,
+        "content_hash": "sha256:5517ffe68111a6c7fadead95852073cf161ccd7b5ac186be7301c7eda464bf35",
+    }
+    if value in (
+        pre_domain_use,
+        {**pre_domain_use, "result_semantics_version": _NULL_UNIT_RESULT_SEMANTICS_VERSION},
+        {**pre_domain_use, "result_semantics_version": _NULL_STATISTIC_RESULT_SEMANTICS_VERSION},
     ):
         return True
     pre_d4_faq = {

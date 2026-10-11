@@ -27,7 +27,9 @@ assignment. For a composite, identify which components drive the events.
 
 For pre-specified outcomes this is usually **No / Probably no**. Answer **Yes**
 only if the method is unlikely to be sensitive to plausible effects, or the
-instrument has demonstrated poor validity. This question does not judge whether
+instrument has demonstrated poor validity. Section 7.3 notes this can happen
+for some adverse effects, when no system defined the adverse outcome or
+identified its occurrence. This question does not judge whether
 the outcome itself (for example a surrogate) was a sensible choice.
 
 ## 4.2 (`sq:measurement:differential`) Could measurement or ascertainment of the outcome have differed between groups?
@@ -49,7 +51,11 @@ outcomes the participant is the assessor. Answer **No** if the assessor was
 blinded. The 2.1 and 2.2 rule that intervention-specific side effects make
 participants or carers aware belongs to Domain 2; the 4.3 elaboration asks
 only whether assessors were blinded, and deducing the intervention received
-does not in itself cause bias (section 5.1.3). In a trial with a matching placebo
+does not in itself cause bias (section 5.1.3). When an outcome is collected
+through an interaction (an interviewer asking the questions, a data collector
+helping with a questionnaire), the assessor is aware if either the participant
+or the data collector is unblinded, unless there is convincing evidence to the
+contrary (section 7.3). In a trial with a matching placebo
 or sham, a blinded participant or assessor is therefore unaware unless the
 Sources report that their blinding was broken. "Double blind" alone does not
 say whether the outcome assessor was blinded; read who was masked. If nothing
@@ -72,9 +78,15 @@ This separates "could" (Some concerns) from "likely" (High). Influence is more
 likely when there are strong beliefs in either beneficial or harmful effects
 of the intervention, for example participant-reported symptoms in trials of
 homeopathy, or recovery of function assessed by the physiotherapist who
-delivered the intervention. Awareness alone does not make influence likely; a severe or
+delivered the intervention. Section 7.3 lists what makes influence more or less
+likely, through both interests and expectations: the comparator (higher with no
+treatment or usual care than with another active intervention); the assessor's
+involvement in care (lower for an independent researcher than for the clinician
+who delivered the intervention); who records a participant-reported outcome;
+and timing (less likely long after a short intervention, especially with many
+interim treatments). Awareness alone does not make influence likely; a severe or
 unexpected harm recorded long after starting the intervention is unlikely to
-be influenced.
+be influenced (section 7.1).
 
 ## Algorithm
 

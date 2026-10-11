@@ -76,6 +76,12 @@ reason they are missing, and count each participant once:
   participants after randomization even though their outcome could be measured.
 - **No information:** the report does not say who was analysed or how.
 
+In RoB 2, "modified ITT" means excluding participants with missing outcome
+data. Trials also use the term for an analysis of participants who received at
+least one dose; that is an exclusion based on the intervention received, not on
+missing data (section 5.3.1). Exclusions for toxicity or lack of efficacy are
+also inappropriate.
+
 ## 2.7 (`sq:deviations:substantial-impact`) If N/PN/NI to 2.6: was there potential for a substantial impact of the failure to analyse participants in their randomized groups?
 
 Consider the number analysed in the wrong group or excluded, relative to the

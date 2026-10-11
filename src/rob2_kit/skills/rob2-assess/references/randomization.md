@@ -29,8 +29,12 @@ relying on searches for that word.
   make a random sequence reasonable to assume, for example a large trial run by
   an experienced clinical trials unit and reported in a journal with strict
   word limits.
+- **Probably no:** contemporary trials by the same team clearly used
+  non-random sequences.
 - **No information:** the only information is that the study was "randomized"
-  and the circumstances give no reasonable basis for a probable answer.
+  and the circumstances give no reasonable basis for a probable answer; or
+  blocked allocation is described without saying that the order within blocks
+  was random (section 4.3.1.1).
 
 ## 1.2 (`sq:randomization:concealment`) Was the allocation sequence concealed until participants were enrolled and assigned?
 
@@ -65,13 +69,16 @@ study drug is such a delivery mechanism.
 - **Yes:** group sizes differ substantially from the intended ratio; there are
   substantially more significant baseline differences than chance would give;
   a key prognostic factor or baseline outcome measure is imbalanced in a way
-  very unlikely to be chance and large enough to bias the result; or baseline
-  characteristics are too similar to be compatible with chance.
+  very unlikely to be chance (section 4.3.3.2 gives P < 0.001 as an example)
+  and large enough to bias the result; or baseline characteristics are too
+  similar to be compatible with chance.
 - **No information:** no useful baseline data (for example an abstract only, or
   baseline data only for the analysed participants).
 
 Answer 1.3 independently: adequate methods in 1.1 and 1.2 stay adequate even
 when baseline imbalance is present, and imbalance does not change 1.1 or 1.2.
+An analysis adjusted for baseline imbalance at best reduces bias from a flawed
+randomization; it does not remove it.
 
 ## Algorithm
 

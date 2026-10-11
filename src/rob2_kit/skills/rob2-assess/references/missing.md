@@ -34,7 +34,10 @@ repeated tests matter only if they could change that participant's outcome
 ## 3.1 (`sq:missing:data-available`) Were data for this outcome available for all, or nearly all, participants randomized?
 
 "Nearly all" means the number missing is so small that their outcomes, whatever
-they were, could have made no important difference to the estimate.
+they were, could have made no important difference to the estimate. There is no
+sensible threshold (section 6.1.3.2): the impact depends on the proportion
+missing, the type of outcome and, for dichotomous outcomes, the risk of the
+event.
 
 - Continuous outcomes: data from 95% of participants will often be sufficient.
 - Dichotomous outcomes: compare missing participants with events. If observed

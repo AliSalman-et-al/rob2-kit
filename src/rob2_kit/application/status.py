@@ -7,6 +7,7 @@ from .contracts import COUNTERS
 from .evidence import (
     _evidence_catalog,
     _source_navigation_action,
+    main_report_read_gaps,
     main_report_reading_status,
     source_reading_status,
 )
@@ -275,7 +276,7 @@ def get_status(workspace: str | Path, *, include_evidence_text: bool = False) ->
         state,
         trial_dispositions=dispositions,
         terminal_counts=public["counts"],
-        continuation=_continuation(state),
+        continuation=_reading_first_continuation(root, state),
         working_checkpoint=working_checkpoint_status(root, state, active_trial),
         investigation=investigation_projection(
             root,
@@ -311,7 +312,7 @@ def get_status_head(workspace: str | Path) -> dict[str, Any]:
     return _result(
         "success",
         state,
-        continuation=_continuation(state),
+        continuation=_reading_first_continuation(root, state),
         authoritative_wording=presentation(state)["wording"],
     )
 
@@ -349,6 +350,30 @@ def _current_trial_review(state: dict[str, Any]) -> dict[str, Any] | None:
     reviews = state.get("trial_reviews")
     review = reviews.get(trial_id) if trial_id is not None and isinstance(reviews, dict) else None
     return review if isinstance(review, dict) and _review_record_is_current(state, review) else None
+
+
+def _reading_first_continuation(root: Path, state: dict[str, Any]) -> dict[str, Any] | None:
+    """Name unread main-report windows before a Proposal submission would be refused."""
+    continuation = _continuation(state)
+    if not continuation or continuation.get("operation") != "validate_proposal":
+        return continuation
+    batch = state.get("batch")
+    gaps = main_report_read_gaps(
+        root, batch.get("trials", []) if isinstance(batch, dict) else [], phase="proposal"
+    )
+    if not gaps:
+        return continuation
+    trial_id = gaps[0]["trial_id"]
+    return {
+        "operation": "read_pages",
+        "authority": "host",
+        "trial_id": trial_id,
+        "windows": [
+            {key: gap[key] for key in ("source_id", "page", "start_line", "end_line")}
+            for gap in gaps
+            if gap["trial_id"] == trial_id
+        ][:20],
+    }
 
 
 def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:

@@ -9,6 +9,7 @@ from support import rob2 as support
 from rob2_kit.application._state import _canonical_evidence_records, _state
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.packs.scientific import SCIENTIFIC_PACK
+from rob2_kit.workflow_models import DomainCounterpoint
 
 FACTS = [
     "Participants and providers knew assignments. Changes were ordinary clinical care, "
@@ -425,3 +426,10 @@ def test_inline_copied_quotes_reuse_reviewed_selector_and_preserve_canonical_sta
     assert first["bases"][0]["kind"] == "context"
     assert first["counterevidence"][0]["basis_index"] == 0
     assert record["answers"][1]["bases"][0]["evidence"] == ranged["identity"]
+
+
+def test_counterevidence_accepts_one_reference_like_a_basis() -> None:
+    single = DomainCounterpoint.model_validate(
+        {"evidence": "eh_0123456789abcdef", "implication": "It limits the answer."}
+    )
+    assert single.evidence == ("eh_0123456789abcdef",)

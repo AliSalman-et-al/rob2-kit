@@ -180,7 +180,7 @@ def test_runtime_profiler_reassembles_the_same_official_core() -> None:
     for index, section in enumerate(core["sections"]):
         pages[index] = {
             "data": {
-                "context_page": {"index": index, "section": "official_guidance"},
+                "context_page": {"index": index, "sections": [{"section": "official_guidance"}]},
                 "official_guidance": {
                     "pack": core["pack"],
                     "sections": [section],

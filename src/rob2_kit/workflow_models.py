@@ -2584,12 +2584,18 @@ class DomainCounterpoint(StrictModel):
 
     evidence: tuple[DomainSourceReference, ...] = Field(
         min_length=1,
-        description="Selected handles, exact text ranges, copied delivered quotes "
-        "or visual references.",
+        description="One or more selected handles, exact text ranges, copied delivered "
+        "quotes or visual references.",
     )
     implication: NonBlankText = Field(
         description="How the cited passages together limit or challenge the answer."
     )
+
+    @field_validator("evidence", mode="before")
+    @classmethod
+    def single_reference_is_a_list(cls, value: Any) -> Any:
+        # A basis cites one reference; accept the same form here.
+        return value if isinstance(value, list | tuple) else [value]
 
     @model_validator(mode="after")
     def evidence_is_distinct(self) -> DomainCounterpoint:

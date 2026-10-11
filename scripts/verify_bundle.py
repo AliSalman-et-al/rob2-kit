@@ -173,6 +173,7 @@ _CONDITIONAL_AGGREGATION_CONTRACT = "rob2-kit.overall.cochrane-conditional.v1"
 _UNIFORM_ANSWER_BASIS_PACKS = frozenset(
     {
         _SCIENTIFIC_PACK["content_hash"],
+        "sha256:bea71e3fffc8624fa5c1ed66043a21e22828970398501c9d455cb1faf664f891",
         "sha256:5517ffe68111a6c7fadead95852073cf161ccd7b5ac186be7301c7eda464bf35",
         "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
     }
@@ -208,9 +209,14 @@ _NULL_UNIT_SCIENTIFIC_PACK = {
     **_D4_FAQ_CONDITIONAL_PACK,
     "result_semantics_version": "rob2-kit.result-semantics.v0.10",
 }
-_REPORTED_STATISTICS_SCIENTIFIC_PACK = {
+_PRE_DOMAIN_USE_SCIENTIFIC_PACK = {
     **_NULL_UNIT_SCIENTIFIC_PACK,
     "result_semantics_version": "rob2-kit.result-semantics.v0.11",
+}
+# The official "Using this domain" pages joined the pack.
+_REPORTED_STATISTICS_SCIENTIFIC_PACK = {
+    **_PRE_DOMAIN_USE_SCIENTIFIC_PACK,
+    "content_hash": "sha256:bea71e3fffc8624fa5c1ed66043a21e22828970398501c9d455cb1faf664f891",
 }
 _PRE_MASKING_SCIENTIFIC_PACK = {
     **_SCIENTIFIC_PACK,
@@ -5172,6 +5178,7 @@ def verify(path: Path) -> tuple[bool, str]:
                 _SCIENTIFIC_PACK,
                 _NULL_UNIT_SCIENTIFIC_PACK,
                 _REPORTED_STATISTICS_SCIENTIFIC_PACK,
+                _PRE_DOMAIN_USE_SCIENTIFIC_PACK,
                 _D4_FAQ_CONDITIONAL_PACK,
                 _PRE_D4_FAQ_NULL_UNIT_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,

@@ -69,8 +69,8 @@ Put locations, scales and explanations in `scope_rationale`.
 - `component`: one constituent of a requested composite;
 - `related`: overlapping constructs without one of those relations.
 
-Explain the correspondence in `scope_rationale` and the population in
-`population_rationale` (separate baseline eligibility from exclusions and
+Beside `candidate` (not inside it), explain the correspondence in
+`scope_rationale` and the population in `population_rationale` (separate baseline eligibility from exclusions and
 missing observations). Unknown scope facts go in `unknowns`; conflicting
 passages in `counterevidence`.
 
