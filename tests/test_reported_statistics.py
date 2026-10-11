@@ -143,7 +143,7 @@ def test_absent_statistics_preserve_existing_canonical_record_shape(tmp_path: Pa
         ("not estimable", "not estimable", True),
     ],
 )
-def test_statistics_use_numeric_boundaries_in_binding_and_all_anchors(
+def test_statistics_use_numeric_boundaries_and_do_not_gate_the_anchor(
     source_statistic: str, claim: str, expected: bool
 ) -> None:
     standalone = runpy.run_path("scripts/verify_bundle.py")
@@ -165,9 +165,10 @@ def test_statistics_use_numeric_boundaries_in_binding_and_all_anchors(
         "trial_id": result["trial_id"],
         "quote": quote,
     }
-    assert bool(_coherent_anchor_indices(result, {"selection": selected})) is expected
+    # Statistics are ordinary leaves: the endpoint-and-tuple anchor holds either way.
+    assert _coherent_anchor_indices(result, {"selection": selected})
     for checker in (
         _reported_result_has_coherent_anchor,
         standalone["_reported_result_has_coherent_anchor"],
     ):
-        assert checker(result, evidence, {"eh_statistic": selected}) is expected
+        assert checker(result, evidence, {"eh_statistic": selected})

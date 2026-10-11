@@ -1,141 +1,121 @@
-# Assess missing outcome data
+# Domain 3: bias due to missing outcome data
 
-Use this reference for Domain 3. The approved Result fixes the outcome and time
-point; the returned question cards fix answer direction and activation.
+Source: RoB 2 full guidance, section 6 and Box 8, plus the Cochrane RoB 2 FAQ
+for 3.1 and 3.2. The complete official text is returned by `get_domain_context`.
 
-Every active answer is accompanied by a concise justification, an `unknowns`
-array (use `[]` when none are identified), and a `counterevidence` array. A
-counterpoint names returned Evidence handles in its `evidence` array, for example:
+Missing outcome data bias the result only if whether an outcome is missing
+depends on its true value. The questions move from "how much is missing" (3.1)
+to "is there evidence the result is robust" (3.2) to "could" (3.3) and "is it
+likely" (3.4) that missingness depended on the outcome.
 
-```json
-"counterevidence": [{"evidence": ["eh_0123456789abcdef"], "implication": "This passage limits the strength of the selected answer."}]
-```
+## Read first
 
-Inactive branch answers may be omitted or retained without fabricated reasoning;
-the server commits only the dependency-closed active path.
+Read the CONSORT flow diagram, the participant flow text, the results table for
+this Result (its denominators per arm), the statistical analysis section on
+missing data and imputation, and any sensitivity analyses. Supplements and
+registry results often carry the flow and per-arm counts.
 
-## Scientific authority and source recovery
+## Count the right participants
 
-Use the complete official question elaborations, shared response semantics and
-permitted options delivered by `get_domain_context`, with the exact approved
-Result and activation path. The official source version,
-hash and full-source URL accompany the text, including the distinction between
-available outcomes excluded from analysis and measurements not obtained.
+For this Result's time point, keep these distinct per arm: randomized;
+outcome observed; analysed; imputed; excluded after randomization; and outcome
+events. Imputed outcomes count as missing. Participants who stopped treatment
+but were still followed up and measured are not missing. In time-to-event
+analyses, participants censored because they withdrew or were lost count as
+missing even though some follow-up is included. For a time-to-first-event
+outcome, a participant with a dated first event has an observed outcome even if
+later follow-up was lost; loss before any first event is missing. Do not add
+component-level and composite follow-up counts together. Participants excluded despite
+having outcome data belong to Domain 2 (2.6), not here. Missing outcome data are participants
+whose outcome is missing, not missing individual measurements: a few missed
+repeated tests matter only if they could change that participant's outcome
+(for example a per-participant worst grade over follow-up).
 
-Full sources: [RoB2 guidance, 22 August 2019](https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2)
-and [Cochrane FAQs, Domain 3](https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2).
-The FAQ's unknown-extent and method-list questions supplement the official
-elaborations. This reference introduces no additional answer thresholds,
-certainty requirements, method whitelist or mandatory sensitivity procedure.
+## 3.1 (`sq:missing:data-available`) Were data for this outcome available for all, or nearly all, participants randomized?
 
-Use `read_pages` to inspect returned source windows; retain source/page/line
-coordinates and scoped retrieval limits in the draft.
+"Nearly all" means the number missing is so small that their outcomes, whatever
+they were, could have made no important difference to the estimate.
 
-When the availability premise remains unresolved, use the active comparison
-card's full Source inventory to inspect unopened supplements or combined
-protocol documents. Search for concrete study wording such as the outcome
-status, withdrawal or loss-to-follow-up labels, and the reported time point;
-`missing outcome data` alone may not occur in the report. Widen the Source
-scope or continue a cached cursor only as needed, and stop when inspected
-evidence supports a reasonable availability judgment or the remaining
-uncertainty is bounded. Outcome-specific observed/expected follow-up time can
-inform a probable judgment without becoming a participant-observation fraction;
-vital status alone does not ascertain nonfatal components. If the captured
-Sources and bounded page windows support no reasonable inference, document
-that limit instead of treating an empty Source group or a no-hit search as
-evidence of missing outcomes.
+- Continuous outcomes: data from 95% of participants will often be sufficient.
+- Dichotomous outcomes: compare missing participants with events. If observed
+  events greatly outnumber participants with missing data, the bias is
+  necessarily small.
+- **No information:** only if the reports give no information about the extent
+  of missing data. If only an estimate is reported, look for a CONSORT diagram
+  or other sources; a probable answer is often possible.
 
-For a time-to-first-event composite, reconcile the report's definition of incomplete
-follow-up with component-specific missing status. A dated, adjudicated qualifying
-first event can establish that participant's primary event observation even if later
-vital status is unknown. Later follow-up may still matter for a mortality or recurrent-
-event Result. Do not add overlapping component-status and composite-follow-up
-counts or transfer them to another endpoint. Retain the definition and overlap
-uncertainty before supplying observed counts; this distinction supplies no automatic
-answer or risk label.
+## 3.2 (`sq:missing:evidence-unbiased`) If N/PN/NI to 3.1: is there evidence that the result was not biased by missing outcome data?
 
-## Reconcile availability
+- **Yes / Probably yes:** analysis methods that correct for bias, or sensitivity
+  analyses showing the result changes little across the plausible range of
+  outcomes the missing participants could have had. Look for the assumptions
+  the trialists made about missing participants ("we assumed that ...").
+- **No / Probably no:** no such evidence. Last observation carried forward and
+  multiple imputation based only on intervention group should not be assumed
+  to correct bias. This question has no No information option.
 
-Keep these quantities distinct for each arm and time point:
+## 3.3 (`sq:missing:true-value-dependent`) If N/PN to 3.2: could missingness in the outcome depend on its true value?
 
-- randomized participants;
-- participants reported to complete study or follow-up (`completed`);
-- participants with the outcome observed (`observed`);
-- the reported total with unavailable outcome data (`unavailable`), when its scope is established;
-- participants included in the reported analysis;
-- participants whose outcomes were imputed;
-- post-randomization exclusions; and
-- outcome events, which are a numerator rather than an observed-participant count.
+- **Yes / Probably yes:** loss to follow-up or withdrawal could be related to
+  participants' health status. This is usually the case.
+- **No / Probably no:** all missing data occurred for documented reasons
+  unrelated to the outcome, such as a failed measuring device or interrupted
+  routine data collection.
 
-An analyzed count is not necessarily an observed count. Imputed outcomes count
-as missing outcome data for RoB 2. Treatment discontinuation is not missing
-outcome data when follow-up and outcome ascertainment continued.
+## 3.4 (`sq:missing:likely-dependent`) If Y/PY/NI to 3.3: is it likely that missingness depended on its true value?
 
-When completion and endpoint availability are both reported, record them as
-separate source-bound quantities before applying the official questions. The
-existing preview accepts `completed` alongside `observed`, `analyzed` and
-`imputed`; it does not turn completion into observed outcomes or infer overlap
-between those groups. Preserve the row's outcome-status and censoring semantics
-and inspect the cited passages when their relationship is unresolved.
+This separates "could" (Some concerns) from "likely" (High). Reasons for Yes:
 
-Questions 2.3, 2.6, and 3.1 may include compact `missing_data` rows. Give each
-row a comparable arm, population, unit, and time point. Use a row-level `basis`
-only to narrow or add to the answer's Evidence. The server calculates
-differences and fractions only after scopes match and preserves conflicting
-reports without choosing the scientific answer. For D2.3 and D2.6, these rows
-describe deviations or analysis populations; they do not become observed
-outcomes. Explicit `observed` or `unavailable` outcome quantities participate in
-missing-count arithmetic; generic censoring does not.
+1. the proportions missing differ between groups (for time-to-event outcomes,
+   different censoring rates);
+2. reported reasons for missingness suggest dependence on the outcome;
+3. reported reasons differ between groups;
+4. the trial's circumstances make dependence likely (for example, continuing
+   symptoms driving dropout);
+5. in time-to-event analyses, follow-up is censored when participants stop or
+   change their assigned intervention.
 
-Registry Source groups provide recovery windows for reported outcome measures
-and participant flow, including labelled population descriptions, group IDs,
-denominator units and counts. Read those qualifiers together. A results analysis
-denominator is not a count of observed outcomes, and participant-flow completion
-is not necessarily outcome ascertainment for the approved Result.
+Answer **No** if the analysis accounted for participant characteristics likely
+to explain the relationship between missingness and the outcome.
 
-When participant-count comparisons support the 3.1 answer, retain the
-source-supported `missing_data` rows in `save_domain_judgment`. Give each row its
-named scope and keep the reported analysis population distinct from the approved
-randomized target. Leave `observed` unknown when only analyzed or event counts
-are established. Rate-only evidence and explicit ascertainment statements do
-not require invented counts or denominators.
+A mechanism that is merely plausible (health status could affect follow-up)
+is the "could" of 3.3. Reason 4 needs circumstances where dependence is
+widely understood to be likely, as in the schizophrenia example. When none of
+the five reasons applies, for example similar proportions missing in each arm
+with no reasons suggesting dependence, answer No or Probably no. How the
+trialists' primary analysis handled missing participants is not itself a reason
+for missingness.
 
-Use `get_domain_context` with those rows when a preview would resolve an arithmetic
-or scope question. Every preview row needs a nonempty `basis` containing
-current-Trial Evidence references: no answer exists to supply inherited Evidence.
-Inspect `comparison_cards[].missing_data` for differences, fractions, and
-conflicting reports. The preview changes no checkpoint or State revision and is
-not an additional mandatory call. Retain the chosen rows with the answer; omit
-row `basis` there only to reuse answer Evidence that supports those counts.
+For reasons 2 and 3, section 6.1.4.2 asks whether the reasons relate to the
+true value of the outcome: lack of efficacy, recovery, worsening illness or
+adverse experiences of one intervention. The case most likely to bias is
+participants who became unwell leaving one group while those who recovered
+left the other. Reasons unrelated to the outcome (an operation cancelled for
+scheduling, moving away, a protocol violation, a failed device) do not suggest
+dependence even when they differ between groups. For reason 1, compare the
+counts with the numbers randomized: a difference of one or two participants is
+not by itself evidence that missingness depended on the outcome.
 
-Check each input against its source passage before using the arithmetic. The
-helper derives `randomized - observed`, or uses a supplied total `unavailable`
-count with a compatible randomized denominator. It does not extract counts or
-sum grouped departures. Supplying `unavailable` does not synthesize `observed`;
-keep unknown observed counts unknown.
-Skip the preview when an explicit ascertainment statement resolves availability
-without arithmetic.
+## Algorithm
 
-When a row includes typed `semantics`, treat it as scope metadata, not as a
-shortcut to a signalling answer. `event_count` is an event numerator and never
-means that every participant's outcome was observed. `analyzed`, `safety`, and
-`per_protocol` roles are denominators or populations, not availability. Keep
-administrative censoring, loss to follow-up, treatment change, imputation, and
-post-randomization exclusions as distinct facts. The server preserves these
-fields and derives exact missingness only from explicit availability quantities.
-For a source-defined time-to-first-event outcome, `unavailable` may retain a
-reported total with incomplete endpoint follow-up despite unknown event times.
-First check that definition: follow-up after an observed first event, known
-competing death and complete administrative censoring are distinct from loss
-before first-event ascertainment. Keep unknown overlap unknown and do not add
-component-status counts automatically. The arithmetic does not decide whether
-censoring is informative or choose a signalling answer.
+- **Low:** 3.1 Yes/Probably yes; or 3.2 Yes/Probably yes; or 3.3 No/Probably no.
+- **High:** 3.4 Yes/Probably yes/No information.
+- **Some concerns:** otherwise (3.4 No/Probably no).
 
-## Draft and submit
+## Participant-count rows
 
-Resolve the active question path from the official options and activation
-predicates. Explain the source-grounded reasoning, unresolved information and
-counterevidence for each active answer. Inspect relevant unopened Sources
-before describing report absence, or state a bounded stopping rationale.
-Use the official guidance to judge the evidence; the arithmetic preview and
-source-reading receipts do not choose an answer or risk label.
+Questions 2.3, 2.6 and 3.1 may carry compact `missing_data` rows in
+`save_domain_judgment`. Each row names an arm, population, unit and time point,
+with source-supported `randomized`, `completed`, `observed`, `unavailable`,
+`analyzed`, `imputed`, `excluded` or `event_count` counts. Leave `observed` unset when only analysed or
+event counts are reported. The server computes `randomized - observed` (or uses
+a supplied `unavailable` total) only when scopes match, and reports
+differences, fractions and conflicts; it never chooses the answer. A row-level
+`basis` adds Evidence for that row; omit it to reuse the answer's Evidence.
+
+To preview the arithmetic before saving, pass the rows to `get_domain_context`
+(each row then needs a current-Trial Evidence `basis`) and read
+`comparison_cards[].missing_data`. The preview changes no state and is optional.
+
+Use [Build a Domain answer](evidence.md#build-a-domain-answer) for the
+submission shape.

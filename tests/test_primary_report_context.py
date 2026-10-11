@@ -87,8 +87,12 @@ def test_prior_domain_does_not_hide_unread_main_report(tmp_path: Path) -> None:
     blocked = _call(w, "save_domain_judgment", draft)
     assert blocked["outcome"] == "repair", blocked
     assert blocked["repairs"][0]["code"] == "post_approval_main_report_reading_required"
-    _call(w, "get_domain_context", {"domain_id": "domain:deviations"})
+    context = _call(w, "get_domain_context", {"domain_id": "domain:deviations"})
+    assert context["head"]["next_action"]["operation"] == "read_pages"
+    assert context["head"]["next_action"]["windows"]
     _read_required_main_reports(w)
+    context = _call(w, "get_domain_context", {"domain_id": "domain:deviations"})
+    assert context["head"]["next_action"]["operation"] == "save_domain_judgment"
     accepted = _call(w, "save_domain_judgment", draft)
     assert accepted["outcome"] == "success", accepted
 

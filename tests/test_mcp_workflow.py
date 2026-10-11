@@ -79,13 +79,9 @@ def test_cli_exports_packaged_skill(tmp_path: Path) -> None:
     destination = tmp_path / ".claude" / "skills" / "rob2-assess"
 
     assert cli_main(["export-skill", "--output", str(destination)]) == 0
-    assert (destination / "SKILL.md").is_file()
-    assert (destination / "references" / "randomization.md").is_file()
-    installed = (destination / "SKILL.md").read_text()
-    assert "what each selected source actually establishes" in installed
-    assert "a correct claim\nwith the wrong citation, and a defensible inference" in installed
-    assert "A planned analysis is not a performed result." in installed
-    assert "does not require another model call or reassessing the whole Domain" in installed
+    packaged = Path("src/rob2_kit/skills/rob2-assess")
+    for source in packaged.rglob("*.md"):
+        assert (destination / source.relative_to(packaged)).read_bytes() == source.read_bytes()
 
 
 def test_domain_questions_preserve_typed_official_navigation(tmp_path: Path) -> None:

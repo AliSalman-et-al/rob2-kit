@@ -2,6 +2,7 @@
 
 import asyncio
 import hashlib
+import re
 from pathlib import Path
 
 import pytest
@@ -55,6 +56,27 @@ def test_native_tools_deliver_transitive_packaged_guidance_without_state_mutatio
     assert _state(workspace) == before
 
 
+def test_guidance_links_resolve_to_packaged_headings() -> None:
+    def slug(heading: str) -> str:
+        return re.sub(r"[^a-z0-9 -]", "", heading.strip().lower()).replace(" ", "-")
+
+    documents = {path: path.read_text(encoding="utf-8") for path in _ROOT.rglob("*.md")}
+    headings = {
+        path: {slug(match) for match in re.findall(r"^#+ (.+)$", text, re.MULTILINE)}
+        for path, text in documents.items()
+    }
+    broken = []
+    for path, text in documents.items():
+        for target in re.findall(r"\]\(([^)\s]+)\)", text):
+            if target.startswith("http"):
+                continue
+            name, _, anchor = target.partition("#")
+            linked = (path.parent / name).resolve() if name else path
+            if linked not in headings or (anchor and anchor not in headings[linked]):
+                broken.append(f"{path.name}: {target}")
+    assert broken == []
+
+
 @pytest.mark.parametrize("document", ["../AGENTS.md", "/etc/passwd", "references/absent.md"])
 def test_guidance_cannot_read_arbitrary_local_files(document: str) -> None:
     with pytest.raises(ValueError):
@@ -67,3 +89,15 @@ def test_unavailable_guidance_returns_exact_readable_packaged_paths() -> None:
     documents = str(error.value).split("Available documents: ", 1)[1].split(", ")
     assert set(documents) == {path.relative_to(_ROOT).as_posix() for path in _ROOT.rglob("*.md")}
     assert all(read_guidance(document)["document"] == document for document in documents)
+
+
+def test_guidance_names_only_real_signalling_questions() -> None:
+    from rob2_kit.packs.scientific import SCIENTIFIC_PACK
+
+    known = {question.id for question in SCIENTIFIC_PACK.questions}
+    named = {
+        identifier
+        for path in _ROOT.rglob("*.md")
+        for identifier in re.findall(r"sq:[a-z-]+:[a-z-]+", path.read_text(encoding="utf-8"))
+    }
+    assert named and named <= known, sorted(named - known)

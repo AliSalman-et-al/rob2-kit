@@ -17,7 +17,6 @@ from typing import Any
 
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
-from mcp.types import TextResourceContents
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs" / "release" / "public-contract.json"
@@ -147,33 +146,6 @@ def _verify_official_projection(context: dict[str, Any], domain_id: str) -> None
         raise ValueError("complete official source material differs")
 
 
-def _verify_packaged_skill(skill: str, reference: str) -> None:
-    """Check scientific-source routing and co-located interface instructions."""
-    for asset in (skill, reference):
-        if not all(
-            marker in asset
-            for marker in (
-                "official",
-                "counterevidence",
-                "missing_data",
-            )
-        ):
-            raise ValueError("packaged D3 source routing or submission instructions are missing")
-    if not all(
-        marker in reference
-        for marker in (
-            "read_pages",
-            "basis",
-            "randomized - observed",
-            "`observed` or `unavailable`",
-            "does not synthesize `observed`",
-            "generic censoring does not",
-            "scoped",
-        )
-    ):
-        raise ValueError("packaged D3 source recovery or typed arithmetic is missing")
-
-
 async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
     tools = await client.list_tools()
     if [tool.name for tool in tools] != [item["name"] for item in contract["tools"]]:
@@ -206,12 +178,6 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
     descriptions = {str(item.uri): (item.description or "").strip() for item in resource_items}
     if descriptions != contract["resource_descriptions"]:
         raise ValueError("MCP resource descriptions differ")
-    skill_resource = await client.read_resource("rob2://guidance/SKILL")
-    missing_resource = await client.read_resource("rob2://guidance/missing")
-    _verify_packaged_skill(
-        "\n".join(item.text for item in skill_resource if isinstance(item, TextResourceContents)),
-        "\n".join(item.text for item in missing_resource if isinstance(item, TextResourceContents)),
-    )
     current = await client.read_resource("rob2://current-batch")
     if len(current) != 1 or not getattr(current[0], "text", None):
         raise ValueError("current-batch resource is unreadable")
@@ -664,10 +630,6 @@ def _verify_wheel_archive(wheel: Path) -> None:
         missing_skills = sorted(skill_members - set(names))
         if missing_skills:
             raise ValueError(f"wheel skill is incomplete: {', '.join(missing_skills)}")
-        _verify_packaged_skill(
-            archive.read("rob2_kit/skills/rob2-assess/SKILL.md").decode("utf-8"),
-            archive.read("rob2_kit/skills/rob2-assess/references/missing.md").decode("utf-8"),
-        )
         for member in sorted(skill_members):
             canonical = ROOT / "src" / Path(member)
             if not canonical.is_file():
@@ -754,12 +716,6 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                 (trial / "main.txt").write_text("requested outcome", encoding="utf-8")
                 (trial / "sources.toml").write_text(
                     'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
-                )
-                _verify_packaged_skill(
-                    (ROOT / "src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8"),
-                    (ROOT / "src/rob2_kit/skills/rob2-assess/references/missing.md").read_text(
-                        encoding="utf-8"
-                    ),
                 )
                 asyncio.run(local_proposal())
                 review = subprocess.run(

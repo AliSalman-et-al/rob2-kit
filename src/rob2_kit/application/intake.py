@@ -306,6 +306,27 @@ def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
     return None if not declarations else str(declarations[0][1])
 
 
+def _document_registry_identifier(pages: list[str]) -> str | None:
+    """Return the main report's own NCT, or None when the report is ambiguous.
+
+    Reports also cite other trials' identifiers. The trial's own registration is
+    the one most often stated on the first page or beside registration wording;
+    a tie (for example a programme with several registrations) captures nothing.
+    """
+    counts: dict[str, int] = {}
+    for number, text in enumerate(pages, 1):
+        for match in re.finditer(r"\bNCT\s?(\d{8})\b", text):
+            context = text[max(0, match.start() - 250) : match.end() + 50].casefold()
+            if number == 1 or re.search(
+                r"regist|clinicaltrials\.gov|identifier|trial number", context
+            ):
+                identifier = "NCT" + match.group(1)
+                counts[identifier] = counts.get(identifier, 0) + 1
+    top = max(counts.values(), default=0)
+    leaders = [identifier for identifier, count in counts.items() if count == top]
+    return leaders[0] if len(leaders) == 1 else None
+
+
 def _manifest_registry_replay(config: dict[str, Any]) -> dict[str, str] | None:
     """Return validated retained-registry metadata, if this dossier replays it."""
 
@@ -626,6 +647,7 @@ def prepare_batch(
             if hashlib.sha256(replay_data).hexdigest() != registry_replay["sha256"]:
                 raise ValueError("replayed registry bytes do not match sources.toml sha256")
         records: list[dict[str, Any]] = []
+        main_report_pages: list[str] = []
         seen_ordinary_paths: set[str] = set()
         for path in sorted(directory.rglob("*"), key=lambda item: item.as_posix().casefold()):
             if (
@@ -735,6 +757,8 @@ def prepare_batch(
                 ),
             }
             records.append(record)
+            if role == "main_article":
+                main_report_pages.extend(pages)
             conditions.extend(
                 {
                     "code": "optional_table_extraction_failed",
@@ -805,6 +829,9 @@ def prepare_batch(
                         "sha256": None,
                     }
                 )
+        registry_declared = nct is not None or "registry" in config
+        if not registry_declared:
+            nct = _document_registry_identifier(main_report_pages)
         registry_capture = _registry_record(
             nct,
             replay_data,
@@ -940,7 +967,7 @@ def prepare_batch(
                     )
         # A plain dossier has no registry claim to review.  A manifest that
         # declares an authoritative NCT or registry outcome does.
-        if (nct is not None or "registry" in config) and registry_record.get("kind") != "matched":
+        if registry_declared and registry_record.get("kind") != "matched":
             conditions.append(
                 {
                     "code": "registry_review",

@@ -32,6 +32,7 @@ from ..workflow_models import (
 from ._state import (
     _MAX_PROJECTED_LINE_LENGTH,
     _canonical_evidence_records,
+    _canonical_search_text,
     _commit_records,
     _db,
     _ensure,
@@ -50,6 +51,7 @@ from .evidence import (
     _associated_search_ranks,
     _evidence_catalog,
     _evidence_for_handles,
+    _leased_search_corpus,
     _search_continuation,
     _search_evidence_identities,
     _search_receipt,
@@ -61,6 +63,7 @@ from .evidence import (
     main_report_reading_status,
     source_reading_status,
 )
+from .guidance import read_guidance
 from .missing_data import missing_data_context
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .source_handles import source_handle
@@ -395,6 +398,29 @@ def _main_report_recovery(
     }
 
 
+def _post_approval_reading(
+    root: Path, state: dict[str, Any], trial_id: str, existing_domain: bool
+) -> dict[str, Any] | None:
+    """Main-report windows a session must read before its first save of a new Domain.
+
+    A current working checkpoint carries the reading notes across sessions instead.
+    """
+    if state.get("phase") != "assessment" or existing_domain:
+        return None
+    if working_checkpoint_status(root, state, trial_id).get("status") == "current":
+        return None
+    return _main_report_recovery(root, state, trial_id)
+
+
+# Registered plan fields that date the registration relative to the trial (Box 11, 5.1).
+_REGISTRATION_DATES = {
+    "first_submitted": "protocolSection.statusModule.studyFirstSubmitDate",
+    "first_posted": "protocolSection.statusModule.studyFirstPostDateStruct.date",
+    "start": "protocolSection.statusModule.startDateStruct.date",
+    "primary_completion": "protocolSection.statusModule.primaryCompletionDateStruct.date",
+    "completion": "protocolSection.statusModule.completionDateStruct.date",
+    "last_update_posted": "protocolSection.statusModule.lastUpdatePostDateStruct.date",
+}
 _REGISTRY_FIELD_PATHS = {
     "studyFirstPostDateStruct": "protocolSection.statusModule.studyFirstPostDateStruct",
     "lastUpdatePostDateStruct": "protocolSection.statusModule.lastUpdatePostDateStruct",
@@ -408,6 +434,85 @@ _REGISTRY_FIELD_PATHS = {
     "moreInfoModule": "resultsSection.moreInfoModule",
     "versionHolder": "derivedSection.miscInfoModule.versionHolder",
 }
+
+
+# Generic RoB 2 vocabulary that appears on almost every report page.
+_LEAD_STOPWORDS = frozenset(
+    "about above after again against answer answered because before being below between "
+    "could their there these those which while would should other where whether within "
+    "without trial trials review authors question questions example examples domain result "
+    "results guidance probably information intervention interventions assessment assessed "
+    "participants participant outcome outcomes report reported reports likely might".split()
+)
+_LEADS_PER_QUESTION = 4
+
+
+def _reading_leads(
+    root: Path, trial_id: str, domain_id: str, sources: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Point each question at the pages across all Sources that best match its official text.
+
+    Pages are ranked by BM25 over the distinctive words of the question and its
+    official elaboration, using the same verified corpus as search_sources, so
+    supplements and protocols surface without the model guessing their wording.
+    Leads are navigation, not Evidence.
+    """
+    requested = {(trial_id, item["id"]) for item in sources if isinstance(item.get("id"), str)}
+    verified = _verified_source_projections(root, requested)
+    corpus = [verified[key][0] for key in sorted(verified)]
+    if not corpus:
+        return []
+    pages = {source["id"]: verified[(trial_id, source["id"])][1] for source in corpus}
+    by_id = {source["id"]: source for source in corpus}
+    leads = []
+    with _leased_search_corpus(root, corpus, pages) as connection:
+        for question in SCIENTIFIC_PACK.questions:
+            if question.domain_id != domain_id:
+                continue
+            text = question.wording + " " + question.guidance.official.source_excerpt
+            terms = sorted(
+                {
+                    word
+                    for word in _canonical_search_text(text).split()
+                    if len(word) >= 5 and word.isalpha() and word not in _LEAD_STOPWORDS
+                }
+            )
+            if not terms:
+                continue
+            rows = connection.execute(
+                "SELECT source_id, page FROM pages_fts WHERE pages_fts MATCH ? "
+                "ORDER BY rank, source_id, page LIMIT ?",
+                (" OR ".join(f'"{term}"' for term in terms), _LEADS_PER_QUESTION),
+            ).fetchall()
+            leads.append(
+                {
+                    "question_id": question.id,
+                    "pages": [
+                        {
+                            "source_id": source_handle(source_id),
+                            "source_role": by_id[source_id]["role"],
+                            "label": by_id[source_id]["label"],
+                            "page": int(page),
+                            "read": {
+                                "operation": "read_pages",
+                                "trial_id": trial_id,
+                                "windows": [
+                                    {
+                                        "source_id": source_handle(source_id),
+                                        "page": int(page),
+                                        "start_line": 1,
+                                        "end_line": max(
+                                            1, len(pages[source_id][int(page) - 1].splitlines())
+                                        ),
+                                    }
+                                ],
+                            },
+                        }
+                        for source_id, page in rows
+                    ],
+                }
+            )
+    return leads
 
 
 def _registry_navigation(
@@ -434,19 +539,36 @@ def _registry_navigation(
             paths: set[str] = set()
             ranges: dict[tuple[str, int], list[int]] = {}
             outcomes: dict[str, dict[str, Any]] = {}
+            dates: dict[str, str] = {}
+            date_lines: dict[int, list[int]] = {}
             page_line_counts: dict[int, int] = {}
             for row in rows:
                 page = int(row["page"])
                 lines = str(row["text"]).splitlines()
                 page_line_counts[page] = len(lines)
                 for line_number, line in enumerate(lines, 1):
+                    for name, date_path in _REGISTRATION_DATES.items():
+                        if line.startswith(date_path + ":"):
+                            value = line.split(":", 1)[1].strip()
+                            try:
+                                decoded = json.loads(value)
+                            except json.JSONDecodeError:
+                                decoded = value
+                            dates[name] = str(decoded)
+                            bounds = date_lines.setdefault(page, [line_number, line_number])
+                            bounds[0] = min(bounds[0], line_number)
+                            bounds[1] = max(bounds[1], line_number)
                     outcome = re.match(
-                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\])\."
-                        r"([^:]+):\s*(.*)$",
+                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\]|"
+                        r"protocolSection\.outcomesModule\.(primary|secondary|other)Outcomes\[\d+\])"
+                        r"\.([^:]+):\s*(.*)$",
                         line,
                     )
                     if outcome:
-                        path, field, value = outcome.groups()
+                        path, registered, field, value = outcome.groups()
+                        # A registered outcome's `measure` is its title; its list names its type.
+                        if registered and field == "measure":
+                            field = "title"
                         entry = outcomes.setdefault(
                             path,
                             {
@@ -454,6 +576,11 @@ def _registry_navigation(
                                 "ranges": {},
                                 "field_counts": {},
                                 "not_inlined_fields": set(),
+                                **(
+                                    {"type": f"REGISTERED {registered.upper()}"}
+                                    if registered
+                                    else {}
+                                ),
                             },
                         )
                         bounds = entry["ranges"].setdefault(page, [line_number, line_number])
@@ -537,6 +664,27 @@ def _registry_navigation(
                         "windows": windows,
                     },
                     "window_count": len(all_windows),
+                    "registration": (
+                        {
+                            "source_id": source_id,
+                            **dates,
+                            "recovery": {
+                                "operation": "read_pages",
+                                "trial_id": trial_id,
+                                "windows": tuple(
+                                    {
+                                        "source_id": source_id,
+                                        "page": page,
+                                        "start_line": bounds[0],
+                                        "end_line": bounds[1],
+                                    }
+                                    for page, bounds in sorted(date_lines.items())
+                                ),
+                            },
+                        }
+                        if dates
+                        else None
+                    ),
                 }
     return found
 
@@ -2154,29 +2302,22 @@ def save_domain_judgment(
         )
     if disposition not in {"pending", "reviewable", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
-    if state.get("phase") == "assessment" and not existing_domain:
-        notes = working_checkpoint_status(root, state, parsed.trial_id)
-        recovery = (
-            None
-            if notes.get("status") == "current"
-            else _main_report_recovery(root, state, parsed.trial_id)
+    if _post_approval_reading(root, state, parsed.trial_id, existing_domain) is not None:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                {
+                    "path": "/answers",
+                    "code": "post_approval_main_report_reading_required",
+                    "detail": (
+                        "Finish the post-approval bounded text pass before saving this Trial's "
+                        "Domain. Call get_domain_context to receive the typed "
+                        "reading_recovery windows, use them with read_pages, then retry."
+                    ),
+                }
+            ],
         )
-        if recovery is not None:
-            return _result(
-                "repair",
-                state,
-                repairs=[
-                    {
-                        "path": "/answers",
-                        "code": "post_approval_main_report_reading_required",
-                        "detail": (
-                            "Finish the post-approval bounded text pass before saving this Trial's "
-                            "Domain. Call get_domain_context to receive the typed "
-                            "reading_recovery windows, use them with read_pages, then retry."
-                        ),
-                    }
-                ],
-            )
     if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
     approved_result_identity = _identity(_approved_result(state, parsed.trial_id))
@@ -3816,6 +3957,14 @@ def get_domain_context(
         "expected_revision": int(state.get("revision", 0)),
         "caller_inputs": ["answers"],
     }
+    required_reading = _post_approval_reading(root, state, trial_id, bool(existing))
+    if required_reading is not None:
+        continuation = {
+            "operation": "read_pages",
+            "authority": "host",
+            "trial_id": trial_id,
+            "windows": required_reading["windows"],
+        }
     # A correction continuation names the exact active checkpoint to replace.
     # The model therefore never has to infer a parent from the historical
     # digest list, and a stale or unrelated checkpoint cannot be selected by
@@ -3928,8 +4077,21 @@ def get_domain_context(
             ),
             candidate_questions=candidate_questions,
         ),
+        # The packaged Domain reference, delivered with every context so the
+        # host need not fetch it separately (Haiku often skipped it).
+        # One item per markdown section so the reference pages like other sections.
+        "assessment_guidance": re.split(
+            r"(?m)^(?=## )",
+            read_guidance(f"references/{domain_id.split(':', 1)[1]}.md")["content"],
+        ),
+        "reading_leads": _reading_leads(root, trial_id, domain_id, trial_sources),
         "registry_outcomes": [
             outcome for source in registry_navigation.values() for outcome in source["outcomes"]
+        ],
+        "registration": [
+            source["registration"]
+            for source in registry_navigation.values()
+            if source["registration"] is not None
         ],
         "coverage": _source_coverage(
             trial_id,

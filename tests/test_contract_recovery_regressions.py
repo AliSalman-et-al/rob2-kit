@@ -504,9 +504,20 @@ def test_registry_recovery_delivers_current_plan_and_analysis_qualifiers_in_d3_a
         )
         assert "resultsSection.outcomeMeasuresModule" in group["registry_field_paths"]
         assert "protocolSection.outcomesModule" in group["registry_field_paths"]
-        assert group["registry_outcome_count"] == outcome_count
-        assert len(context["data"]["registry_outcomes"]) == outcome_count
-        outcome = context["data"]["registry_outcomes"][0]
+        # Results-section measures plus the one registered primary outcome.
+        assert group["registry_outcome_count"] == outcome_count + 1
+        assert len(context["data"]["registry_outcomes"]) == outcome_count + 1
+        registered = next(
+            item
+            for item in context["data"]["registry_outcomes"]
+            if item["type"] == "REGISTERED PRIMARY"
+        )
+        assert (registered["title"], registered["timeFrame"]) == ("requested outcome", "day 30")
+        outcome = next(
+            item
+            for item in context["data"]["registry_outcomes"]
+            if item["path"] == "resultsSection.outcomeMeasuresModule.outcomeMeasures[0]"
+        )
         assert outcome["title"] == "Change in score"
         assert outcome["timeFrame"] == "Week 28"
         assert outcome["type"] == "PRIMARY"
