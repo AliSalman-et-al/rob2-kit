@@ -474,9 +474,17 @@ class _View:
             cited = "".join(
                 self._evidence(identity) for identity in adjudication.get("evidence", [])
             )
+            count = len(adjudication.get("evidence", []))
             head += (
                 '<div class="adjudication"><p><strong>Judgment adjudicated.</strong> '
-                f"{_e(adjudication.get('rationale', ''))}</p>{cited}</div>"
+                f"{_e(adjudication.get('rationale', ''))}</p>"
+                + (
+                    f'<details class="quotes adjudication-quotes"><summary>{count} supporting '
+                    f"{'item' if count == 1 else 'items'}</summary>{cited}</details>"
+                    if cited
+                    else ""
+                )
+                + "</div>"
             )
         answers = "".join(
             self._answer(
@@ -700,7 +708,7 @@ q{font-family:var(--serif);color:var(--muted)}
 .domain-nav .dot{width:1.4rem;height:1.4rem;font-size:.8rem}
 .domain{scroll-margin-top:4rem}.domain-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:.9rem;margin-bottom:.4rem}
 .adjudication{background:var(--quote);border-radius:.5rem;padding:.8rem 1rem;margin:.9rem 0}
-.adjudication p{margin:.3rem 0}
+.adjudication p{margin:.3rem 0}.adjudication details.adjudication-quotes{margin-left:0}
 .questions{list-style:none;margin:0;padding:0}
 .question{padding:1rem 0;border-bottom:1px solid var(--line)}.question:last-child{border-bottom:0}
 .q-head{display:grid;grid-template-columns:2.6rem 1fr auto auto;gap:.75rem;align-items:baseline}
