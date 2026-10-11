@@ -398,6 +398,20 @@ def _main_report_recovery(
     }
 
 
+def _post_approval_reading(
+    root: Path, state: dict[str, Any], trial_id: str, existing_domain: bool
+) -> dict[str, Any] | None:
+    """Main-report windows a session must read before its first save of a new Domain.
+
+    A current working checkpoint carries the reading notes across sessions instead.
+    """
+    if state.get("phase") != "assessment" or existing_domain:
+        return None
+    if working_checkpoint_status(root, state, trial_id).get("status") == "current":
+        return None
+    return _main_report_recovery(root, state, trial_id)
+
+
 # Registered plan fields that date the registration relative to the trial (Box 11, 5.1).
 _REGISTRATION_DATES = {
     "first_submitted": "protocolSection.statusModule.studyFirstSubmitDate",
@@ -2288,29 +2302,22 @@ def save_domain_judgment(
         )
     if disposition not in {"pending", "reviewable", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
-    if state.get("phase") == "assessment" and not existing_domain:
-        notes = working_checkpoint_status(root, state, parsed.trial_id)
-        recovery = (
-            None
-            if notes.get("status") == "current"
-            else _main_report_recovery(root, state, parsed.trial_id)
+    if _post_approval_reading(root, state, parsed.trial_id, existing_domain) is not None:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                {
+                    "path": "/answers",
+                    "code": "post_approval_main_report_reading_required",
+                    "detail": (
+                        "Finish the post-approval bounded text pass before saving this Trial's "
+                        "Domain. Call get_domain_context to receive the typed "
+                        "reading_recovery windows, use them with read_pages, then retry."
+                    ),
+                }
+            ],
         )
-        if recovery is not None:
-            return _result(
-                "repair",
-                state,
-                repairs=[
-                    {
-                        "path": "/answers",
-                        "code": "post_approval_main_report_reading_required",
-                        "detail": (
-                            "Finish the post-approval bounded text pass before saving this Trial's "
-                            "Domain. Call get_domain_context to receive the typed "
-                            "reading_recovery windows, use them with read_pages, then retry."
-                        ),
-                    }
-                ],
-            )
     if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
     approved_result_identity = _identity(_approved_result(state, parsed.trial_id))
@@ -3950,6 +3957,14 @@ def get_domain_context(
         "expected_revision": int(state.get("revision", 0)),
         "caller_inputs": ["answers"],
     }
+    required_reading = _post_approval_reading(root, state, trial_id, bool(existing))
+    if required_reading is not None:
+        continuation = {
+            "operation": "read_pages",
+            "authority": "host",
+            "trial_id": trial_id,
+            "windows": required_reading["windows"],
+        }
     # A correction continuation names the exact active checkpoint to replace.
     # The model therefore never has to infer a parent from the historical
     # digest list, and a stale or unrelated checkpoint cannot be selected by

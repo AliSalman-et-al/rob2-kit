@@ -99,6 +99,15 @@ class GetDomainContextAction(PublicModel):
     max_response_bytes: StrictInt | None = Field(default=None, ge=4096, le=131_072)
 
 
+class ReadMainReportAction(PublicModel):
+    """Main-report text a new session must read before its first Domain save."""
+
+    operation: Literal["read_pages"]
+    authority: Literal["host"]
+    trial_id: TrialId
+    windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
+
+
 class SaveDomainJudgmentAction(PublicModel):
     operation: Literal["save_domain_judgment"]
     authority: Literal["host"]
@@ -153,6 +162,7 @@ NextAction = Annotated[
     | SaveProposalAction
     | ValidateProposalAction
     | GetDomainContextAction
+    | ReadMainReportAction
     | SaveDomainJudgmentAction
     | ReviewTrialAction
     | CloseTrialAction
@@ -3282,6 +3292,7 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "review_reference",
                         "caller_inputs",
                         "supersedes",
+                        "windows",
                     )
                     if key in continuation
                 }
