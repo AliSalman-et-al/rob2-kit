@@ -2158,6 +2158,22 @@ class DomainContextStableRecovery(PublicModel):
     )
 
 
+class DomainContextPageSegment(PublicModel):
+    section: Literal[
+        "delivery_history",
+        "primary_report",
+        "questions",
+        "assessment_guidance",
+        "reading_leads",
+        "official_guidance",
+        "comparison_cards",
+        "registry_outcomes",
+        "evidence",
+    ]
+    item_start: NonNegativeInt
+    item_count: NonNegativeInt
+
+
 class DomainContextPage(PublicModel):
     view_version: Literal["rob2-kit.domain-context.v1"] = "rob2-kit.domain-context.v1"
     snapshot_digest: str = Field(
@@ -2182,20 +2198,10 @@ class DomainContextPage(PublicModel):
             "not an assessment completion status."
         )
     )
-    section: Literal[
-        "delivery_history",
-        "complete",
-        "primary_report",
-        "questions",
-        "assessment_guidance",
-        "reading_leads",
-        "official_guidance",
-        "comparison_cards",
-        "registry_outcomes",
-        "evidence",
-    ]
-    item_start: NonNegativeInt = 0
-    item_count: NonNegativeInt = 0
+    sections: tuple[DomainContextPageSegment, ...] = Field(
+        default=(),
+        description="Section items on this page, in delivery order; concatenate across pages.",
+    )
     max_response_bytes: StrictInt = Field(
         ge=4096,
         le=131_072,

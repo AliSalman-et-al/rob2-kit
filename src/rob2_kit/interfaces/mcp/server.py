@@ -1422,29 +1422,27 @@ def _compact_read_pages_response(value: dict[str, Any]) -> None:
 
 def _domain_context_page_data(
     data: dict[str, Any],
-    section: str,
-    items: list[dict[str, Any]],
+    segments: list[tuple[str, int, list[dict[str, Any]]]],
     page: dict[str, Any],
     official_pack: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    # Page zero keeps every section key; later pages carry only their segments.
     result = dict(data)
+    header = bool(data)
+    items_by_section = {section: items for section, _start, items in segments}
     for name in _DOMAIN_CONTEXT_PAGE_SECTIONS:
-        if section == "complete":
-            continue
         if name == "official_guidance":
-            if name == section:
+            if name in items_by_section:
                 result[name] = {
                     "pack": official_pack,
-                    "sections": items,
+                    "sections": items_by_section[name],
                     "complete": False,
                     "next_cursor": page.get("next_cursor"),
                 }
             else:
                 result.pop(name, None)
-        elif name == section:
-            result[name] = items
-        elif result:
-            result[name] = []
+        elif name in items_by_section or header:
+            result[name] = items_by_section.get(name, [])
     result["context_page"] = page
     return result
 
@@ -1541,96 +1539,32 @@ def _paginate_domain_context_transport(
         cursor_payload["view_id"] = view_id
     cursor_placeholder = _domain_context_cursor(cursor_payload)
 
-    def header_probe_for(template: dict[str, Any]) -> dict[str, Any]:
-        return _domain_context_page_data(
-            _domain_context_page_template(template, 0),
-            "complete",
-            [],
-            {
-                "trial_id": trial_id,
-                "domain_id": domain_id,
-                "state_revision": state_revision,
-                "index": 0,
-                "count": 1,
-                "section": "complete",
-                "item_start": 0,
-                "item_count": 0,
-                "max_response_bytes": page_size,
-                "cursor": cursor_placeholder,
-                "next_cursor": cursor_placeholder,
-            },
-        )
+    def page_metadata(segments: list[tuple[str, int, list[dict[str, Any]]]]) -> dict[str, Any]:
+        return {
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "state_revision": state_revision,
+            "index": 0,
+            "count": 1,
+            "sections": [
+                {"section": section, "item_start": start, "item_count": len(items)}
+                for section, start, items in segments
+            ],
+            "max_response_bytes": page_size,
+            "cursor": cursor_placeholder,
+            "next_cursor": cursor_placeholder,
+        }
 
-    questions = full_sections["questions"]
-    active_question = next(
-        (
-            item
-            for item in questions
-            if item.get("activation_status") in {"always_active", "active_in_saved_checkpoint"}
-        ),
-        questions[0] if questions else None,
-    )
-    evidence_by_handle = {
-        item.get("handle"): item
-        for item in full_sections["evidence"]
-        if isinstance(item.get("handle"), str)
-    }
-    active_question_id = active_question.get("id") if isinstance(active_question, dict) else None
-    associated_handles = [
-        handle
-        for group in (
-            data.get("evidence_workspace", {}).get("groups", [])
-            if isinstance(data.get("evidence_workspace"), dict)
-            else []
+    def page_bytes(index: int, segments: list[tuple[str, int, list[dict[str, Any]]]]) -> int:
+        probe = _domain_context_page_data(
+            _domain_context_page_template(data_template, index),
+            segments,
+            page_metadata(segments),
+            data.get("pack"),
         )
-        if isinstance(group, dict) and active_question_id in group.get("question_ids", [])
-        for handle in group.get("evidence_handles", [])
-        if isinstance(handle, str)
-    ]
-    relevant_evidence = next(
-        (
-            evidence_by_handle[handle]
-            for handle in associated_handles
-            if handle in evidence_by_handle
-        ),
-        next(
-            (
-                item
-                for item in full_sections["evidence"]
-                if item.get("inclusion_reason") == "result"
-            ),
-            full_sections["evidence"][0] if full_sections["evidence"] else None,
-        ),
-    )
-    preview_options = (
-        [(None, None)]
-        if full_sections["primary_report"]
-        else [
-            (active_question, relevant_evidence),
-            (active_question, None),
-            (None, relevant_evidence),
-            (None, None),
-        ]
-    )
-    preview_question = None
-    preview_evidence = None
-    header_probe: dict[str, Any] | None = None
-    for question_preview, evidence_preview in preview_options:
-        candidate = dict(data_template)
-        if question_preview is not None:
-            candidate["questions"] = [question_preview]
-        if evidence_preview is not None:
-            candidate["evidence"] = [evidence_preview]
-        probe = header_probe_for(candidate)
-        probe_bytes = _domain_context_transport_bytes({**value, "data": probe})
-        if probe_bytes <= working_budget or (question_preview is None and evidence_preview is None):
-            preview_question = question_preview
-            preview_evidence = evidence_preview
-            data_template = candidate
-            header_probe = probe
-            break
-    assert header_probe is not None
-    header_bytes = _domain_context_transport_bytes({**value, "data": header_probe})
+        return _domain_context_transport_bytes({**value, "data": probe})
+
+    header_bytes = page_bytes(0, [])
     if header_bytes > working_budget:
         required_page_size = (
             header_bytes + _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES + _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES
@@ -1645,89 +1579,52 @@ def _paginate_domain_context_transport(
             "domain_context_header_oversized: "
             f"required_page_size={required_page_size};retry with a larger max_response_bytes"
         )
-    # Put one active question and the first selected Evidence on page zero when
-    # they fit; their remaining sections continue at the exact next item.
-    page_sections: list[tuple[str, list[dict[str, Any]], int]] = []
+
+    def with_item(
+        segments: list[tuple[str, int, list[dict[str, Any]]]],
+        section: str,
+        position: int,
+        item: dict[str, Any],
+    ) -> list[tuple[str, int, list[dict[str, Any]]]]:
+        if segments and segments[-1][0] == section:
+            last_section, start, items = segments[-1]
+            return [*segments[:-1], (last_section, start, [*items, item])]
+        return [*segments, (section, position, [item])]
+
+    # Fill each page with whole items in section order, so one page can carry
+    # the end of one section and the start of the next.
+    records: list[list[tuple[str, int, list[dict[str, Any]]]]] = [[]]
     for section, items in full_sections.items():
-        if not items:
-            continue
-        initial_offset = (
-            1
-            if (section == "questions" and preview_question is not None)
-            or (section == "evidence" and preview_evidence is not None)
-            else 0
-        )
-        remaining = items[initial_offset:]
-        if remaining:
-            page_sections.append((section, remaining, initial_offset))
-    # Keep the existing partition of 32 KiB and smaller cursors. Larger budgets,
-    # including the automatic budget, need no section round trips when all fits.
-    if (
-        page_size > 32_768
-        and _domain_context_transport_bytes({**value, "data": header_probe_for(data)})
-        <= working_budget
-    ):
-        data_template = dict(data)
-        page_sections = []
-    records: list[tuple[str, int, list[dict[str, Any]]]] = [("complete", 0, [])]
-    for section, section_items, initial_offset in page_sections:
-        start = 0
-        while start < len(section_items) or (not section_items and start == 0):
-            if not section_items:
-                records.append((section, 0, []))
-                break
-            end = start + 1
-            while end <= len(section_items):
-                candidate = section_items[start:end]
-                probe = _domain_context_page_data(
-                    _domain_context_page_template(data_template, len(records)),
-                    section,
-                    candidate,
-                    {
-                        "trial_id": trial_id,
-                        "domain_id": domain_id,
-                        "state_revision": state_revision,
-                        "index": 0,
-                        "count": 1,
-                        "section": section,
-                        "item_start": initial_offset + start,
-                        "item_count": len(candidate),
-                        "max_response_bytes": page_size,
-                        "cursor": cursor_placeholder,
-                        "next_cursor": cursor_placeholder,
-                    },
-                    data.get("pack"),
+        for position, item in enumerate(items):
+            candidate = with_item(records[-1], section, position, item)
+            if page_bytes(len(records) - 1, candidate) <= working_budget:
+                records[-1] = candidate
+                continue
+            fresh = with_item([], section, position, item)
+            fresh_bytes = page_bytes(len(records), fresh)
+            if fresh_bytes > working_budget:
+                required = (
+                    fresh_bytes
+                    + _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES
+                    + _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES
                 )
-                probe_value = {**value, "data": probe}
-                if _domain_context_transport_bytes(probe_value) <= working_budget:
-                    end += 1
-                    continue
-                if end == start + 1:
-                    required = (
-                        _domain_context_transport_bytes(probe_value)
-                        + _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES
-                        + _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES
-                    )
-                    if required > _DOMAIN_CONTEXT_MAX_PAGE_BYTES:
-                        raise ValueError(
-                            "domain_context_item_unrecoverable: "
-                            f"section={section};item_start={start};required_page_size="
-                            f"{required};maximum_page_size={_DOMAIN_CONTEXT_MAX_PAGE_BYTES}"
-                        )
+                if required > _DOMAIN_CONTEXT_MAX_PAGE_BYTES:
                     raise ValueError(
-                        "domain_context_item_oversized: "
-                        f"section={section};item_start={start};required_page_size={required}"
+                        "domain_context_item_unrecoverable: "
+                        f"section={section};item_start={position};required_page_size="
+                        f"{required};maximum_page_size={_DOMAIN_CONTEXT_MAX_PAGE_BYTES}"
                     )
-                break
-            chosen_end = max(start + 1, end - 1)
-            records.append((section, initial_offset + start, section_items[start:chosen_end]))
-            start = chosen_end
+                raise ValueError(
+                    "domain_context_item_oversized: "
+                    f"section={section};item_start={position};required_page_size={required}"
+                )
+            records.append(fresh)
 
     if page_index >= len(records):
         raise ValueError("domain_context_cursor_invalid: page is outside this context")
 
     page_count = len(records)
-    section, item_start, items = records[page_index]
+    segments = records[page_index]
     current_cursor = (
         _domain_context_cursor(
             {
@@ -1763,9 +1660,7 @@ def _paginate_domain_context_transport(
         "index": page_index,
         "count": page_count,
         "delivery_status": "incomplete" if next_cursor is not None else "complete",
-        "section": section,
-        "item_start": item_start,
-        "item_count": len(items),
+        "sections": page_metadata(segments)["sections"],
         "max_response_bytes": page_size,
         "cursor": current_cursor,
         "next_cursor": next_cursor,
@@ -1776,12 +1671,15 @@ def _paginate_domain_context_transport(
     }
     paged = {
         **value,
-        "data": _domain_context_page_data(
-            _domain_context_page_template(data_template, page_index),
-            section,
-            items,
-            page,
-            data.get("pack"),
+        "data": (
+            {**data, "context_page": page}
+            if page_count == 1
+            else _domain_context_page_data(
+                _domain_context_page_template(data_template, page_index),
+                segments,
+                page,
+                data.get("pack"),
+            )
         ),
     }
     if next_cursor is not None:
