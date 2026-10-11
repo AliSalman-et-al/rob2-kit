@@ -7,26 +7,6 @@ from .adjudication import (
     validate_sidecar,
     write_sidecar,
 )
-from .cohort import (
-    COHORT_REVISION,
-    AgreementSampleEntry,
-    CohortCell,
-    CohortClassification,
-    CohortLabel,
-    CohortManifest,
-    ModelAccess,
-    PublishedTotals,
-    ReviewerProvenance,
-    content_hash,
-    read_cohort,
-    select_agreement_sample,
-    summarize,
-    validate_cohort,
-    write_cohort,
-)
-from .cohort import DOMAINS as COHORT_DOMAINS
-from .cohort import OUTCOMES as COHORT_OUTCOMES
-from .cohort import SCHEMA as COHORT_SCHEMA
 from .coverage import CoverageRecord, PremiseCoverage, RecoveryAction, RecoveryWindow
 from .harness import (
     COMPARISON_RUN_SCHEMA,
@@ -85,24 +65,6 @@ __all__ = [
     "read_sidecar",
     "validate_sidecar",
     "write_sidecar",
-    "COHORT_REVISION",
-    "COHORT_DOMAINS",
-    "COHORT_OUTCOMES",
-    "COHORT_SCHEMA",
-    "AgreementSampleEntry",
-    "CohortCell",
-    "CohortClassification",
-    "CohortLabel",
-    "CohortManifest",
-    "ModelAccess",
-    "PublishedTotals",
-    "ReviewerProvenance",
-    "content_hash",
-    "read_cohort",
-    "select_agreement_sample",
-    "summarize",
-    "validate_cohort",
-    "write_cohort",
     "CoverageRecord",
     "PremiseCoverage",
     "RecoveryAction",
