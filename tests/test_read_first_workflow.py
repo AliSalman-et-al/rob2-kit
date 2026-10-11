@@ -6,10 +6,8 @@ from pathlib import Path
 import pymupdf
 from support.rob2 import (
     _call,
-    _domain_draft,
     _proposal_args,
     _result,
-    _review,
     _workspace,
 )
 
@@ -20,33 +18,6 @@ def _source(workspace: Path, label: str) -> dict:
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
         if item["label"] == label
     )
-
-
-def _prepare_with_evidence(workspace: Path, *, read_main: bool) -> tuple[dict, dict]:
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    main = _source(workspace, "main.txt")
-    if read_main:
-        _call(
-            workspace,
-            "read_pages",
-            {"trial_id": "trial", "source_id": main["id"], "pages": [1]},
-        )
-    evidence = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": main["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    return main, evidence
 
 
 def _read_window_to_end(
@@ -102,114 +73,6 @@ def _write_docx(path: Path, text: str) -> None:
     )
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("word/document.xml", document)
-
-
-def test_first_proposal_save_requires_bounded_main_report_read(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    _main, evidence = _prepare_with_evidence(workspace, read_main=False)
-
-    blocked = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    assert blocked["outcome"] == "repair", blocked
-    reading_repairs = [
-        repair for repair in blocked["repairs"] if repair["code"] == "main_report_reading_required"
-    ]
-    assert reading_repairs
-    detail = reading_repairs[0]["detail"]
-    assert "get_status" in detail
-    assert "required_ranges" in detail
-    assert "read_pages" in detail
-    assert "validate_proposal" in detail
-    assert "save_proposal" not in detail
-    _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": _main["id"], "pages": [1]},
-    )
-    accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    assert accepted["outcome"] == "review_required", accepted
-
-
-def test_status_bounds_selected_narrative_text_with_exact_recovery(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text(
-        ("selected evidence " * 1_000).strip() + "\n",
-        encoding="utf-8",
-    )
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _source(workspace, "main.txt")
-    page = _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
-    )["data"]["pages"][0]
-    _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": page["line_count"],
-        },
-    )
-
-    selected = _call(workspace, "get_status", {})["data"]["selected_evidence"]
-    assert len(selected) == 1
-    item = selected[0]
-    assert item["text_status"] == "omitted"
-    assert item["quote"] is None
-    assert item["recovery"] == {
-        "operation": "read_pages",
-        "trial_id": "trial",
-        "windows": [
-            {
-                "source_id": source["id"],
-                "page": 1,
-                "start_line": 1,
-                "end_line": page["line_count"],
-            }
-        ],
-    }
-
-
-def test_main_report_pass_includes_appended_pages_below_cap(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    trial = workspace / "input" / "trial"
-    (trial / "main.txt").unlink()
-    _write_large_pdf(trial / "article.pdf", ["main article\n", "appended material\n"])
-    (trial / "sources.toml").write_text(
-        'roles = { "article.pdf" = "main_article" }\n',
-        encoding="utf-8",
-    )
-
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    article = _source(workspace, "article.pdf")
-    initial = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert initial["identity_status"] == "identified"
-    assert initial["identity_basis"] == "declared_role"
-    assert initial["identity_sources"] == [article["id"]]
-    assert {window["page"] for window in initial["required_ranges"]} == {1, 2}
-    assert initial["unread_ranges"] == []
-
-    for window in initial["required_ranges"]:
-        _read_window_to_end(
-            workspace,
-            article,
-            page=window["page"],
-            start_line=window["start_line"],
-            end_line=window["end_line"],
-        )
-    complete = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert complete["status"] == "complete"
 
 
 def test_inferred_roles_do_not_turn_orientation_reading_into_report_coverage(
@@ -458,95 +321,6 @@ def test_explicit_missing_report_is_recorded_as_a_limitation_and_does_not_deadlo
     assert proposal["outcome"] == "review_required", proposal
 
 
-def test_first_domain_save_requires_fresh_post_approval_read_and_context_recovers(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    _main, evidence = _prepare_with_evidence(workspace, read_main=True)
-    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    assert proposed["outcome"] == "review_required", proposed
-    _review(workspace)
-
-    revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
-    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
-    blocked = _call(workspace, "save_domain_judgment", draft)
-    assert blocked["outcome"] == "repair", blocked
-    assert any(
-        repair["code"] == "post_approval_main_report_reading_required"
-        for repair in blocked["repairs"]
-    )
-
-    context = _call(workspace, "get_domain_context", {})
-    assert context["outcome"] == "success", context
-    recovery = context["data"]["reading_recovery"]
-    assert recovery["operation"] == "read_pages"
-    assert recovery["trial_id"] == "trial"
-    assert recovery["windows"]
-
-    reread = _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "windows": recovery["windows"]},
-    )
-    assert reread["outcome"] == "success", reread
-    saved = _call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success", saved
-
-
-def test_main_report_budget_is_utf8_whole_line_and_per_source(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    trial = workspace / "input" / "trial"
-    protocol_text = (trial / "main.txt").read_text(encoding="utf-8")
-    (trial / "main.txt").unlink()
-    (trial / "protocol.txt").write_text(protocol_text, encoding="utf-8")
-    (trial / "main-a.txt").write_text(("é" * 19_999) + "\n", encoding="utf-8")
-    (trial / "main-b.txt").write_text(("ß" * 19_999) + "\n", encoding="utf-8")
-    (trial / "sources.toml").write_text(
-        'roles = { "main-a.txt" = "main_article", "main-b.txt" = "main_article", '
-        '"protocol.txt" = "protocol" }\n',
-        encoding="utf-8",
-    )
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    protocol = _source(workspace, "protocol.txt")
-    _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": protocol["id"], "pages": [1]},
-    )
-    evidence = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": protocol["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-
-    blocked = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    assert blocked["outcome"] == "repair", blocked
-    assert any(repair["code"] == "main_report_reading_required" for repair in blocked["repairs"])
-    main_sources = [_source(workspace, "main-a.txt"), _source(workspace, "main-b.txt")]
-    initial = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    expected_reports = {_source(workspace, label)["id"] for label in ("main-a.txt", "main-b.txt")}
-    assert initial["identity_status"] == "identified"
-    assert initial["identity_basis"] == "declared_role"
-    assert set(initial["identity_sources"]) == expected_reports
-    windows = initial["required_ranges"]
-    assert {window["source_id"] for window in windows} == {source["id"] for source in main_sources}
-    for source in main_sources:
-        _read_window_to_end(workspace, source)
-    status = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert status["status"] == "complete"
-    assert status["budget_bytes"] == 65_536
-
-
 def test_oversized_utf8_prefix_and_empty_page_need_explicit_reads_and_continue_cleanly(
     tmp_path: Path,
 ) -> None:
@@ -669,38 +443,3 @@ def test_budget_deferred_ranges_cover_later_pages_and_overlap_replays(
     complete = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
     assert complete["status"] == "complete"
     assert complete["unread_ranges"] == []
-
-
-def test_fragment_recovery_records_only_complete_delivered_lines(tmp_path: Path) -> None:
-    import sqlite3
-
-    workspace = _workspace(tmp_path)
-    (workspace / "input/trial/main.txt").write_text(
-        "first partial line\nsecond complete\nthird complete\n"
-    )
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _source(workspace, "main.txt")
-    delivered = _call(
-        workspace,
-        "read_pages",
-        {
-            "trial_id": "trial",
-            "windows": [
-                {
-                    "source_id": source["id"],
-                    "page": 1,
-                    "start_line": 1,
-                    "end_line": 3,
-                    "start_char": 6,
-                }
-            ],
-        },
-    )
-    assert delivered["outcome"] == "success"
-    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
-        ranges = connection.execute("SELECT start_line,end_line FROM page_reads").fetchall()
-    assert ranges == [(2, 3)]

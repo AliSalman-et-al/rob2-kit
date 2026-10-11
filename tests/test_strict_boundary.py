@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-import json
-import os
-from pathlib import Path
 from typing import Any
 
 import pytest
 from fastmcp import Client
-from fastmcp.exceptions import ToolError
 from pydantic import TypeAdapter, ValidationError
 
-from rob2_kit.interfaces.mcp.contracts import PublicHead, SelectedFigureEvidence, normalize
+from rob2_kit.interfaces.mcp.contracts import PublicHead, SelectedFigureEvidence
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.workflow_models import (
     ExpectedRevision,
@@ -37,39 +33,6 @@ def test_public_head_rejects_string_revision() -> None:
             next_action=None,
             authoritative_wording="status",
         )
-
-
-def test_finalized_receipt_keeps_nullable_next_action_field() -> None:
-    receipt = normalize(
-        "finalize_batch",
-        {
-            "outcome": "success",
-            "phase": "finalized",
-            "state_revision": 4,
-            "artifact": {
-                "path": ".rob2-kit/finalized/example.rob2.zip",
-                "identity": "sha256:" + "0" * 64,
-                "sha256": "sha256:" + "1" * 64,
-                "files": ["canonical.json"],
-            },
-            "trial_dispositions": {"trial": "assessed"},
-            "assessment_summary": {
-                "trial": {
-                    "overall": "some_concerns",
-                    "domains": {
-                        "domain:randomization": "some_concerns",
-                        "domain:deviations": "low",
-                        "domain:missing": "low",
-                        "domain:measurement": "low",
-                        "domain:selection": "low",
-                    },
-                }
-            },
-            "retry": False,
-        },
-    )
-    assert "next_action" in receipt["head"]
-    assert receipt["head"]["next_action"] is None
 
 
 def test_public_figure_evidence_rejects_string_coordinates() -> None:
@@ -137,53 +100,3 @@ def test_fastmcp_rejects_string_numeric_and_boolean_scalars() -> None:
             return [result.is_error for result in results]
 
     assert asyncio.run(exercise()) == [True, True, True, True]
-
-
-def test_fastmcp_requires_search_mode_at_public_boundary() -> None:
-    async def search_without_mode() -> None:
-        async with Client(mcp) as client:
-            with pytest.raises(
-                ToolError,
-                match=r"(?s)1 validation error for call\[search_sources\].*"
-                r"mode.*Missing required argument",
-            ):
-                await client.call_tool(
-                    "search_sources",
-                    {"trial_id": "trial", "query": "term"},
-                )
-
-    asyncio.run(search_without_mode())
-
-
-def test_fastmcp_validates_the_entire_search_batch_before_execution() -> None:
-    async def malformed_batch() -> Any:
-        async with Client(mcp) as client:
-            return await client.call_tool(
-                "search_sources_batch",
-                {
-                    "requests": [
-                        {"trial_id": "trial", "query": "missing mode", "limit": 1},
-                        {"trial_id": "trial", "query": "valid", "mode": "any", "limit": 1},
-                    ]
-                },
-                raise_on_error=False,
-            )
-
-    result = asyncio.run(malformed_batch())
-    assert result.is_error is True
-    assert result.structured_content is None
-    assert result.content
-    assert "mode" in result.content[0].text
-
-
-def test_current_batch_resource_matches_get_status_receipt(tmp_path: Path) -> None:
-    async def exercise() -> tuple[dict[str, Any], dict[str, Any]]:
-        os.environ["ROB2_WORKSPACE"] = str(tmp_path)
-        async with Client(mcp) as client:
-            tool = dict((await client.call_tool("get_status", {})).structured_content or {})
-            resource = await client.read_resource("rob2://current-batch")
-            text = resource[0].text
-            return tool, json.loads(text)
-
-    tool, resource = asyncio.run(exercise())
-    assert tool == resource

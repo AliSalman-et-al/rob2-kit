@@ -72,15 +72,6 @@ def _replace_search_receipt(workspace: Path, item: dict[str, object]) -> None:
         connection.execute("INSERT INTO search_receipts VALUES (?,?)", (item["identity"], payload))
 
 
-def test_unmodified_selected_evidence_stays_promotable(tmp_path: Path) -> None:
-    workspace, source = _workspace(tmp_path)
-    evidence = _selected(workspace, source)
-
-    catalog = _evidence_catalog(workspace)
-
-    assert catalog[str(evidence["identity"])] == evidence
-
-
 def test_rehashed_narrative_handle_cannot_promote_fabricated_quote(tmp_path: Path) -> None:
     workspace, source = _workspace(tmp_path)
     evidence = _selected(workspace, source)

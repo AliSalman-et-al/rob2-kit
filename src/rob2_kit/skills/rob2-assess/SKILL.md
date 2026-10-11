@@ -159,11 +159,11 @@ For each Domain:
    every repair and resubmit the complete set. Keep the literal meaning of your
    answer when repairing structure; change an answer only for scientific
    reasons.
-5. Check the proposed judgment. To depart from it, adjudicate the saved,
-   unchanged checkpoint: name it in `supersedes`, cite that answer Evidence and
-   explain the departure in the `adjudication` field. If an answer itself is
-   wrong, correct the answer instead (a new checkpoint); the algorithm then
-   proposes again.
+5. Check the proposed judgment. To depart from it, call `save_domain_judgment`
+   again with the same answers, `supersedes` set to the saved checkpoint's
+   `identity`, and `adjudication: {"judgment", "rationale", "evidence"}` citing
+   Evidence those answers already cite. If an answer itself is wrong, correct the answer
+   instead (a new checkpoint); the algorithm then proposes again.
 
 `calculate_arithmetic` checks bounded arithmetic (for example missing-data
 proportions); its output is scratch work, not Evidence.

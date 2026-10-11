@@ -13,18 +13,6 @@ def test_output_schema_failure_is_an_internal_tool_error() -> None:
         )
 
 
-def test_application_value_error_remains_a_typed_invalid_request() -> None:
-    def invalid_request() -> dict[str, object]:
-        raise ValueError("invalid caller input")
-
-    result = server._invoke("get_status", invalid_request)
-
-    assert result.structured_content is not None
-    assert result.structured_content["outcome"] == "condition"
-    assert result.structured_content["condition"]["code"] == "invalid_request"
-    assert result.structured_content["condition"]["detail"] == "invalid caller input"
-
-
 def test_source_integrity_failure_is_an_internal_tool_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

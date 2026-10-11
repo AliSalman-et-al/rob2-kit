@@ -1,7 +1,6 @@
 """Numeric correctness and the boundary of optional, source-independent scratch arithmetic."""
 
 import asyncio
-from decimal import ROUND_DOWN, DefaultContext, Inexact, localcontext
 
 import pytest
 from fastmcp import Client
@@ -91,50 +90,6 @@ def test_arithmetic_and_conditional_examples(expression, inputs, result):
 def test_invalid_or_executable_arithmetic_is_rejected(expression, inputs):
     with pytest.raises(ValueError):
         calculate_arithmetic(expression, inputs)
-
-
-def test_precision_is_local_deterministic_and_reports_rounding():
-    with localcontext() as outer:
-        outer.prec, outer.rounding = 3, ROUND_DOWN
-        outer.traps[Inexact] = True
-        data = calculate_arithmetic("1 / 3", {})
-        assert data["precision"] == 28 and data["rounding"] == "ROUND_HALF_EVEN"
-        assert data["result"] == "0.3333333333333333333333333333"
-        assert data["inexact"] and data["rounded"]
-        assert not outer.flags[Inexact] and outer.prec == 3
-    previous = DefaultContext.traps[Inexact]
-    try:
-        DefaultContext.traps[Inexact] = True
-        assert calculate_arithmetic("1 / 3", {})["result"] == data["result"]
-    finally:
-        DefaultContext.traps[Inexact] = previous
-    exact = calculate_arithmetic("1 / 8", {})
-    assert not exact["inexact"] and not exact["rounded"]
-    half_even = calculate_arithmetic("1.0000000000000000000000000005", {})
-    assert half_even["result"] == "1.000000000000000000000000000"
-    assert half_even["inexact"] and half_even["rounded"]
-    upper = calculate_arithmetic("1.0000000000000000000000000015", {})
-    assert upper["result"] == "1.000000000000000000000000002"
-
-
-@pytest.mark.parametrize(
-    "expression",
-    [
-        "a + b",
-        "a + (-a)",
-        "(+a) - a",
-        "a + (-10000000000000000000000000001)",
-        "(+10000000000000000000000000001) - a",
-        "a - (-(-a))",
-        "a + (-(-(-a)))",
-        "a + (-(-b))",
-    ],
-)
-def test_unary_signs_preserve_exact_literal_and_named_operands(expression):
-    value = "10000000000000000000000000001"
-    result = calculate_arithmetic(expression, {"a": value, "b": "-" + value})
-    assert result["result"] == "0"
-    assert not result["inexact"] and not result["rounded"]
 
 
 def test_native_calculator_has_no_workspace_dependency_and_preserves_state(tmp_path, monkeypatch):

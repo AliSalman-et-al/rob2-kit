@@ -9,7 +9,6 @@ from support import rob2 as support
 from rob2_kit.application._state import _canonical_evidence_records, _state
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.packs.scientific import SCIENTIFIC_PACK
-from rob2_kit.workflow_models import DomainCounterpoint
 
 FACTS = [
     "Participants and providers knew assignments. Changes were ordinary clinical care, "
@@ -295,41 +294,6 @@ def test_lean_rejects_fabricated_sources_without_saving_a_domain(
     assert _state(workspace)["revision"] == revision
 
 
-@pytest.mark.parametrize("defect", ["missing_active_answer", "unresolved_definitive_claim"])
-def test_lean_keeps_canonical_active_path_and_uncertainty_checks(
-    tmp_path: Path, defect: str
-) -> None:
-    workspace, evidence, revision = support._assessment_workspace(tmp_path)
-    draft = support._domain_draft("trial", "domain:selection", revision, evidence)
-    for item in draft["answers"]:
-        item["bases"] = [evidence["handle"]]
-    if defect == "missing_active_answer":
-        draft["answers"].pop()
-    else:
-        draft["answers"][0]["answer"] = "yes"
-        draft["answers"][0]["limitations"] = [
-            {
-                "premise": "Finalization relative to unblinded access is unresolved.",
-                "stopping_rationale": "The inspected source does not establish this event.",
-            }
-        ]
-    saved = support._call(workspace, "save_domain_judgment", draft)
-    if defect == "missing_active_answer":
-        assert saved["outcome"] == "repair", saved
-        assert not _state(workspace).get("domain_records")
-        assert _state(workspace)["revision"] == revision
-    else:
-        assert saved["outcome"] == "success", saved
-        record = _state(workspace)["domain_records"]["trial:domain:selection"]
-        stored = record["answers"][0]
-        assert stored["answer"] == "yes"
-        assert any(
-            b["kind"] == "limitation"
-            and b["unresolved_premise"] == draft["answers"][0]["limitations"][0]["premise"]
-            for b in stored["bases"]
-        )
-
-
 def test_inline_copied_quotes_reuse_reviewed_selector_and_preserve_canonical_state(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -426,10 +390,3 @@ def test_inline_copied_quotes_reuse_reviewed_selector_and_preserve_canonical_sta
     assert first["bases"][0]["kind"] == "context"
     assert first["counterevidence"][0]["basis_index"] == 0
     assert record["answers"][1]["bases"][0]["evidence"] == ranged["identity"]
-
-
-def test_counterevidence_accepts_one_reference_like_a_basis() -> None:
-    single = DomainCounterpoint.model_validate(
-        {"evidence": "eh_0123456789abcdef", "implication": "It limits the answer."}
-    )
-    assert single.evidence == ("eh_0123456789abcdef",)

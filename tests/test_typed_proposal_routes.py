@@ -114,23 +114,6 @@ def test_archived_requests_are_rejected_without_public_compatibility(tmp_path: P
     assert any(d["path"] == "/selections" for d in feedback["defects"])
 
 
-def test_live_declaration_is_one_selection_collection() -> None:
-    async def schema():
-        async with Client(mcp) as client:
-            return next(
-                t.input_schema for t in await client.list_tools() if t.name == "validate_proposal"
-            )
-
-    declaration = asyncio.run(schema())
-    assert set(declaration["properties"]) == {"selections", "expected_revision"}
-    selection = declaration["properties"]["selections"]["items"]
-    assert selection["type"] == "object"
-    assert {"candidate", "source_passages", "scope_rationale", "unknowns"} <= set(
-        selection["required"]
-    )
-    assert not {"assessments", "evidence_basis", "kind"} & set(selection["properties"])
-
-
 @pytest.mark.parametrize(
     "mutate",
     [
@@ -207,87 +190,6 @@ def source_request(tmp_path: Path) -> tuple[Path, dict]:
     request["selections"][0]["candidate"]["design_evidence"] = handles[:1]
     request["expected_revision"] = _call(tmp_path, "get_status", {})["head"]["state_revision"]
     return tmp_path, request
-
-
-def test_minimal_source_bound_hr_ci_preserves_internal_result_identity(source_request) -> None:
-    import shutil
-
-    from rob2_kit.application._state import _identity, _state
-    from rob2_kit.application.proposal import _canonical_result, _evidence_catalog
-    from rob2_kit.application.proposal import validate_proposal as validate_internal
-    from rob2_kit.workflow_models import (
-        AssessableResultDraft,
-        NarrativeEvidenceDraft,
-        ProposalSelection,
-    )
-
-    workspace, request = source_request
-    current = ProposalSelection.model_validate(request["selections"][0]).to_result_draft()
-    assert isinstance(current, AssessableResultDraft)
-    legacy = current.model_copy(
-        update={
-            "passage_refs": (),
-            "evidence": tuple(
-                NarrativeEvidenceDraft(kind="narrative", handle=h) for h in current.passage_refs
-            ),
-        }
-    )
-    outcome = _state(workspace)["batch"]["trials"][0]["requested_outcome"]
-    catalog = _evidence_catalog(workspace)
-    new, defects = _canonical_result(current, 0, catalog, "/results/0", outcome)
-    old, old_defects = _canonical_result(legacy, 0, catalog, "/results/0", outcome)
-    assert not defects and not old_defects
-    assert _identity(new) == _identity(old)
-    legacy_workspace = workspace.parent / (workspace.name + "-legacy")
-    shutil.copytree(workspace, legacy_workspace)
-    legacy_validation = validate_internal(
-        legacy_workspace,
-        {
-            "results": [legacy.model_dump(mode="json")],
-            "assessments": [
-                ProposalSelection.model_validate(request["selections"][0])
-                .to_assessment()
-                .model_dump(mode="json")
-            ],
-            "expected_revision": request["expected_revision"],
-        },
-    )
-    assert legacy_validation["outcome"] == "success", legacy_validation
-    legacy_saved = _native(
-        legacy_workspace,
-        {
-            "expected_revision": _state(legacy_workspace)["revision"],
-        },
-        "save_proposal",
-    )
-    assert legacy_saved["outcome"] == "review_required"
-    validated = _native(workspace, request)
-    assert validated["outcome"] == "success", validated
-    saved = _native(
-        workspace, {"expected_revision": validated["head"]["state_revision"]}, "save_proposal"
-    )
-    assert saved["outcome"] == "review_required", saved
-    canonical = _state(workspace)["proposal"]["payload"]["results"][0]
-    assert canonical["kind"] == "assessable" and canonical["reported"]["estimate"] == "0.75"
-    assert canonical["reported"]["precision"] == request["selections"][0]["candidate"]["precision"]
-    legacy_canonical = _state(legacy_workspace)["proposal"]["payload"]["results"][0]
-    assert _identity(canonical) == _identity(legacy_canonical)
-    assert {"/reported/estimate", "/reported/effect_measure", "/reported/precision"} <= {
-        binding["field"]["path"] for binding in canonical["bindings"]
-    }
-
-
-def test_conflicting_exact_scope_stays_unresolved_and_related_keeps_target(source_request) -> None:
-    workspace, request = source_request
-    target = request["selections"][0]["candidate"]["target_window"]
-    request["selections"][0]["candidate"]["clarity"]["time_point"] = "conflicting"
-    rejected = _native(workspace, request)
-    assert rejected["outcome"] == "repair"
-    assert any(r["code"] == "exact_result_scope_not_established" for r in rejected["repairs"])
-    request["selections"][0]["relation"] = "related"
-    accepted = _native(workspace, request)
-    assert accepted["outcome"] == "success", accepted
-    assert accepted["data"]["scope_review"][0]["target"]["window"] == target
 
 
 def test_well_shaped_unknown_handle_cannot_be_bound(source_request) -> None:

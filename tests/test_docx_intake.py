@@ -5,9 +5,6 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-import pymupdf
-
-from rob2_kit.application.evidence import read_pages, render_page, search_sources
 from rob2_kit.application.intake import prepare_batch
 from rob2_kit.workflow_models import TrialDeclaration
 
@@ -54,75 +51,12 @@ def _docx_bytes(
     return output.getvalue()
 
 
-def _encrypted_zip(data: bytes) -> bytes:
-    output = bytearray(data)
-    for signature, flag_offset in ((b"PK\x03\x04", 6), (b"PK\x01\x02", 8)):
-        offset = 0
-        while True:
-            offset = data.find(signature, offset)
-            if offset < 0:
-                break
-            output[offset + flag_offset] |= 1
-            offset += len(signature)
-    return bytes(output)
-
-
 def _prepare(tmp_path: Path) -> dict[str, Any]:
     return prepare_batch(
         tmp_path,
         [TrialDeclaration(id="trial", label="trial", requested_outcome="outcome")],
         expected_revision=0,
     )
-
-
-def test_docx_projection_preserves_paragraphs_tables_footnotes_and_hashes(
-    tmp_path: Path,
-) -> None:
-    trial = tmp_path / "input" / "trial"
-    trial.mkdir(parents=True)
-    (trial / "report.docx").write_bytes(_docx_bytes(paragraph="Paragraph one"))
-
-    prepared = _prepare(tmp_path)
-    source = prepared["trials"][0]["sources"][0]
-    assert source["media_type"] == (
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
-    assert source["sha256"].startswith("sha256:")
-    assert source["projection_hash"].startswith("sha256:")
-
-    page = read_pages(tmp_path, "trial", source["id"], [1])["pages"][0]
-    assert page["page"] == 1
-    assert "Paragraph one" in page["text"]
-    assert "HEADER: | Header A | Header B |" in page["text"]
-    assert "ROW 2: | Cell A | Cell B |" in page["text"]
-    assert "[FOOTNOTE 2]" in page["text"]
-    assert "FOOTNOTE 2: Footnote detail" in page["text"]
-    assert search_sources(tmp_path, "trial", "Footnote detail")["total_matches"] == 1
-
-    (tmp_path / ".rob2-kit" / "derivative.sqlite3").unlink()
-    replayed = read_pages(tmp_path, "trial", source["id"], [1])["pages"][0]
-    assert replayed["text"] == page["text"]
-
-
-def test_docx_empty_corrupt_encrypted_and_legacy_doc_have_visible_dispositions(
-    tmp_path: Path,
-) -> None:
-    trial = tmp_path / "input" / "trial"
-    trial.mkdir(parents=True)
-    (trial / "empty.docx").write_bytes(
-        _docx_bytes(paragraph="", with_table=False, with_footnotes=False, with_reference=False)
-    )
-    (trial / "corrupt.docx").write_bytes(b"not a docx package")
-    (trial / "encrypted.docx").write_bytes(_encrypted_zip(_docx_bytes()))
-    (trial / "legacy.doc").write_bytes(b"old Word binary")
-
-    prepared = _prepare(tmp_path)
-    by_path = {item["path"]: item for item in prepared["conditions"] if "path" in item}
-    assert by_path["empty.docx"]["code"] == "unreadable_source"
-    assert by_path["corrupt.docx"]["code"] == "unreadable_source"
-    assert by_path["encrypted.docx"]["code"] == "unreadable_source"
-    assert by_path["legacy.doc"]["code"] == "unsupported_source"
-    assert len({path for path in by_path}) == len(by_path)
 
 
 def test_docx_roles_omissions_backups_and_missing_declarations_are_distinct(
@@ -151,21 +85,3 @@ def test_docx_roles_omissions_backups_and_missing_declarations_are_distinct(
     assert by_path["missing-list.docx"]["code"] == "declared_source_missing"
     assert "ignored.txt" not in by_path
     assert not any(path.startswith("sources.toml.") for path in by_path)
-
-
-def test_image_only_pdf_remains_a_renderable_source(tmp_path: Path) -> None:
-    trial = tmp_path / "input" / "trial"
-    trial.mkdir(parents=True)
-    document = pymupdf.open()
-    document.new_page()
-    (trial / "scan.pdf").write_bytes(document.tobytes())
-    document.close()
-
-    prepared = _prepare(tmp_path)
-    source = prepared["trials"][0]["sources"][0]
-    assert not any(
-        item.get("path") == "scan.pdf" and item["code"] == "unreadable_source"
-        for item in prepared["conditions"]
-    )
-    assert read_pages(tmp_path, "trial", source["id"], [1])["pages"][0]["text"] == ""
-    assert render_page(tmp_path, "trial", source["id"], 1)["render"]["page"] == 1

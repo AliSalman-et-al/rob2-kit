@@ -4414,10 +4414,10 @@ def get_domain_context(
             le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
             description=(
                 "Maximum serialized response size in bytes. Omit for automatic pagination. "
-                "Default: 65536. Valid range: 4096–131072. Example: 65536. Set this only "
-                "when an oversized-page condition returns the required byte count."
+                f"Default: {_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES}. Valid range: 4096–131072. "
+                "Set this only when an oversized-page condition returns the required byte "
+                "count."
             ),
-            json_schema_extra={"examples": [65_536]},
         ),
     ] = None,
 ) -> ToolResult:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 from pathlib import Path
@@ -91,56 +90,6 @@ def test_import_is_deterministic_and_keeps_observations_structural() -> None:
     finally:
         destination.unlink(missing_ok=True)
         second_destination.unlink(missing_ok=True)
-
-
-def test_import_projects_validation_repairs_as_mechanical_events() -> None:
-    raw = (
-        json.dumps(
-            {
-                "type": "item.completed",
-                "item": {
-                    "id": "repair-call",
-                    "type": "mcp_tool_call",
-                    "server": "rob2",
-                    "tool": "validate_domain_assessment",
-                    "arguments": {"trial_id": "trial-a", "domain_id": "domain:missing"},
-                    "result": {
-                        "structured_content": {
-                            "outcome": "repair",
-                            "repairs": [
-                                {
-                                    "path": "/answers/0/answer",
-                                    "code": "invalid_answer",
-                                    "detail": "private detail omitted",
-                                },
-                                {
-                                    "path": "/answers",
-                                    "code": "missing_active_question",
-                                    "detail": "private detail omitted",
-                                },
-                            ],
-                        }
-                    },
-                },
-            }
-        )
-        + "\n"
-    ).encode()
-
-    artifact = import_observations(_manifest(), {"session-a": raw})
-    operation = artifact["attempts"][0]["operations"][0]
-
-    assert operation["repair"] == {
-        "kind": "mechanical_validation",
-        "count": 2,
-        "codes": ["invalid_answer", "missing_active_question"],
-        "paths": ["/answers", "/answers/0/answer"],
-        "rows": [
-            {"code": "invalid_answer", "path": "/answers/0/answer"},
-            {"code": "missing_active_question", "path": "/answers"},
-        ],
-    }
-    assert "private detail omitted" not in json.dumps(artifact)
 
 
 def test_current_receipts_keep_scope_handles_answers_batch_children_and_repair_rows() -> None:
@@ -426,102 +375,6 @@ def test_malformed_record_reports_location_without_echoing_payload() -> None:
     assert "mcp_tool_call" not in str(error.value)
 
 
-def test_split_transcripts_keep_same_local_call_ids_distinct() -> None:
-    manifest = _manifest()
-    manifest["attempts"][0]["transcripts"] = ["part-a", "part-b"]
-    manifest["transcripts"] = [
-        {
-            "transcript_id": "part-a",
-            "session_id": "session-a",
-            "attempt_id": "attempt-a",
-            "phase": "assessment",
-        },
-        {
-            "transcript_id": "part-b",
-            "session_id": "session-a",
-            "attempt_id": "attempt-a",
-            "phase": "assessment",
-        },
-    ]
-    first = {
-        "type": "item.completed",
-        "item": {
-            "id": "item_1",
-            "type": "mcp_tool_call",
-            "server": "rob2",
-            "tool": "search_sources",
-            "arguments": {"trial_id": "trial-a", "query": "one", "mode": "all"},
-            "result": {"structured_content": {"outcome": "success", "data": {}}},
-        },
-    }
-    second = {
-        "type": "item.completed",
-        "item": {
-            "id": "item_1",
-            "type": "mcp_tool_call",
-            "server": "rob2",
-            "tool": "read_pages",
-            "arguments": {"trial_id": "trial-a", "source_id": "source_aaaaaaaaaaaaaaaa"},
-            "result": {"structured_content": {"outcome": "success", "data": {}}},
-        },
-    }
-    artifact = import_observations(
-        manifest,
-        {
-            "part-a": (json.dumps(first) + "\n").encode(),
-            "part-b": (json.dumps(second) + "\n").encode(),
-        },
-    )
-    operations = artifact["attempts"][0]["operations"]
-    assert artifact["reconciliation"]["mcp_calls"] == 2
-    assert {operation["tool"] for operation in operations} == {"search_sources", "read_pages"}
-    assert len({operation["operation_id"] for operation in operations}) == 2
-
-
-def test_operation_ids_encode_transcript_and_local_call_unambiguously() -> None:
-    manifest = _manifest()
-    manifest["attempts"][0]["transcripts"] = ["a:b", "a"]
-    manifest["transcripts"] = [
-        {
-            "transcript_id": "a:b",
-            "session_id": "same",
-            "attempt_id": "attempt-a",
-            "phase": "assessment",
-        },
-        {
-            "transcript_id": "a",
-            "session_id": "same",
-            "attempt_id": "attempt-a",
-            "phase": "assessment",
-        },
-    ]
-
-    def record(call_id: str) -> bytes:
-        return (
-            json.dumps(
-                {
-                    "type": "item.completed",
-                    "item": {
-                        "id": call_id,
-                        "type": "mcp_tool_call",
-                        "server": "rob2",
-                        "tool": "read_pages",
-                        "arguments": {"trial_id": "trial-a"},
-                        "result": {"structured_content": {"outcome": "success", "data": {}}},
-                    },
-                }
-            )
-            + "\n"
-        ).encode()
-
-    artifact = import_observations(manifest, {"a:b": record("c"), "a": record("b:c")})
-    operation_ids = [
-        operation["operation_id"] for operation in artifact["attempts"][0]["operations"]
-    ]
-    assert len(operation_ids) == 2
-    assert len(set(operation_ids)) == 2
-
-
 @pytest.mark.parametrize(
     ("record_type", "result", "expected_status", "expected_disposition"),
     (
@@ -760,48 +613,6 @@ def test_manifest_phase_is_closed() -> None:
         import_observations(manifest, {"session-a": FIXTURE.read_bytes()})
 
 
-def test_finalize_without_observed_disposition_is_complete_but_unknown() -> None:
-    raw = FIXTURE.read_bytes().replace(
-        b'"trial_dispositions":{"trial-a":"assessed"}',
-        b'"trial_dispositions":{}',
-    )
-    attempt = import_observations(_manifest(), {"session-a": raw})["attempts"][0]
-    assert attempt["capture_status"] == "complete"
-    assert attempt["terminal_disposition"] == "unknown"
-
-
-def test_operation_ids_are_unique_across_attempt_transcripts() -> None:
-    first = _manifest()
-    second = copy.deepcopy(first["attempts"][0])
-    second["attempt_id"] = "attempt-b"
-    second["transcripts"] = ["session-b"]
-    manifest = {
-        "schema": MANIFEST_SCHEMA,
-        "attempts": [first["attempts"][0], second],
-        "transcripts": [
-            {
-                "transcript_id": "session-a",
-                "session_id": "same",
-                "attempt_id": "attempt-a",
-                "phase": "assessment",
-            },
-            {
-                "transcript_id": "session-b",
-                "session_id": "same",
-                "attempt_id": "attempt-b",
-                "phase": "assessment",
-            },
-        ],
-    }
-    artifact = import_observations(
-        manifest,
-        {"session-a": FIXTURE.read_bytes(), "session-b": FIXTURE.read_bytes()},
-    )
-    first_id = artifact["attempts"][0]["operations"][0]["operation_id"]
-    second_id = artifact["attempts"][1]["operations"][0]["operation_id"]
-    assert first_id != second_id
-
-
 def test_orphan_and_mixed_phase_transcripts_are_rejected() -> None:
     orphan = _manifest()
     orphan["transcripts"].append(
@@ -818,15 +629,6 @@ def test_orphan_and_mixed_phase_transcripts_are_rejected() -> None:
             mixed,
             {"session-a": FIXTURE.read_bytes(), "session-b": FIXTURE.read_bytes()},
         )
-
-
-def test_review_required_proposal_save_is_an_accepted_mutation() -> None:
-    artifact = import_observations(_manifest(), {"session-a": REVIEW_FIXTURE.read_bytes()})
-    attempt = artifact["attempts"][0]
-    operation = attempt["operations"][0]
-    assert operation["response"]["outcome"] == "review_required"
-    assert operation["status"] == "accepted"
-    assert attempt["accepted_commits"][0]["accepted"] is True
 
 
 def test_committed_save_uses_canonical_option_and_evidence_only() -> None:

@@ -2070,6 +2070,13 @@ class ProposedReportedResult(StrictModel):
         description="Complete paired source values when no comparative estimate is reported; "
         "optional alongside an estimate.",
     )
+
+    @field_validator("group_values", "reported_statistics", mode="before")
+    @classmethod
+    def null_list_is_empty(cls, value: Any) -> Any:
+        # An omitted optional list is often sent as null.
+        return () if value is None else value
+
     category_group_id: NonBlankText | None = Field(
         default=None,
         description="Descriptive profile group; one-arm descriptions cannot proceed to "
@@ -2799,35 +2806,37 @@ class CanonicalAdjudicationCounterevidence(AdjudicationCounterevidence):
 
 
 class DomainAdjudication(StrictModel):
-    """Explicit host judgment about one unchanged, saved Domain assessment."""
+    """A host's departure from the proposed judgment of the checkpoint named in supersedes.
 
-    result_identity: Identity = Field(description="Exact approved Result identity.")
-    domain_id: DomainId = Field(description="Domain of the unchanged saved assessment.")
-    checkpoint_identity: Identity = Field(
-        description="Exact unchanged checkpoint also named in supersedes."
-    )
-    pack_identity: Identity = Field(
-        description="Current scientific pack content identity from Domain context."
-    )
+    The server binds it to that checkpoint's Result, Domain and pack.
+    """
+
     judgment: Judgment = Field(
         description="Explicit adopted label differing from the deterministic proposal."
     )
     rationale: NonBlankText = Field(
         description="Why the default misrepresents material bias for this Result."
     )
+    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+        min_length=1, description="Supporting Evidence already cited by the checkpoint's answers."
+    )
     counterevidence: tuple[AdjudicationCounterevidence, ...] = Field(
-        description="Relevant source-linked counterpoints; use [] when none are identified."
+        default=(), description="Relevant source-linked counterpoints."
     )
     assessor: NonBlankText = Field(
-        description="Host assessor attribution; not researcher approval."
-    )
-    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
-        min_length=1, description="Supporting Evidence already bound by this checkpoint’s answers."
+        default="assessing model", description="Host assessor attribution; not researcher approval."
     )
 
 
-class CanonicalDomainAdjudication(DomainAdjudication):
+class CanonicalDomainAdjudication(StrictModel):
+    result_identity: Identity
+    domain_id: DomainId
+    checkpoint_identity: Identity
+    pack_identity: Identity
+    judgment: Judgment
+    rationale: NonBlankText
     counterevidence: tuple[CanonicalAdjudicationCounterevidence, ...]
+    assessor: NonBlankText
     evidence: tuple[Identity, ...] = Field(min_length=1)
 
 

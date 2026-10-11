@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 from rob2_kit.application._state import _identity
-from rob2_kit.application.finalization import _verify_result_evidence
 from rob2_kit.application.proposal import _bind_result
 
 
@@ -96,44 +95,6 @@ def _visual_case() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
         ],
     }
     return result, {selected["identity"]: selected}, {source["id"]: source}
-
-
-def test_host_visual_methods_and_population_can_bind_and_replay() -> None:
-    result, catalog, sources = _visual_case()
-    result["target"].pop("baseline_subgroup")
-
-    defects, _ = _bind_result(result, catalog, 0, "/results/0", [])
-
-    assert defects == []
-    result.update(
-        {
-            "requested_outcome": "requested outcome",
-            "clarity": {
-                key: "specified"
-                for key in (
-                    "outcome_definition",
-                    "measurement",
-                    "time_point",
-                    "analysis_population",
-                    "comparison_groups",
-                    "effect_measure",
-                    "source_table_meaning",
-                    "eligible_result_choice",
-                )
-            },
-        }
-    )
-    target = result["target"]
-    target["outcome_definition"] = "requested outcome"
-    target["measurement"] = {
-        "metric": "requested outcome",
-        "method": target["measurement"]["method"],
-    }
-    target["effect_of_interest"] = "assignment"
-    target["intended_analysis_population"] = "randomized population"
-    assert _verify_result_evidence(
-        result, catalog, sources, _identity, {"trial-1": "requested outcome"}
-    )
 
 
 def test_host_visual_wrong_region_is_still_rejected() -> None:

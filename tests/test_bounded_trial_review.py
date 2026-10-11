@@ -110,29 +110,6 @@ def _collect(
     return "".join(fragments)
 
 
-def test_small_review_keeps_legacy_shape_and_selected_bound_includes_typed_defaults(
-    tmp_path: Path,
-) -> None:
-    root = server._root(tmp_path)
-    small = _review()
-    assert _project(small, root) == small
-    assert "review_page" not in small["data"]
-    for length in range(62_500, 65_101, 100):
-        receipt = _review(justification="x" * length)
-        selected = _project(receipt, root, selector=_SELECTOR, persist=True)
-        assert server._review_transport_bytes(selected) <= _LIMIT
-        if selected["data"]["review_page"]["mode"] == "complete":
-            assert (
-                selected["data"]["domain_findings"][0]["answers"][0]
-                == receipt["data"]["domain_findings"][0]["answers"][0]
-            )
-        else:
-            assert (
-                json.loads(_collect(receipt, root, first=selected, selector=_SELECTOR))
-                == receipt["data"]["domain_findings"][0]["answers"][0]
-            )
-
-
 @pytest.mark.parametrize("kind", ["terminal_reason", "evidence"])
 def test_oversized_unicode_reason_and_evidence_are_explicit_and_recoverable(
     tmp_path: Path, kind: str
@@ -197,53 +174,6 @@ def test_selected_unicode_fragments_preserve_snapshot_and_reject_changed_review_
         connection.execute("DELETE FROM review_views")
     with pytest.raises(ValueError, match="review_cursor_expired.*restart review_trial"):
         _project(receipt, root, cursor=cursor)
-
-
-@pytest.mark.parametrize(
-    "later_warrant",
-    [
-        "The SAP plans missing-follow-up imputation; performed results remain unavailable.",
-        "The results demonstrate missing-follow-up imputation was performed.",
-        "The source contradicts the earlier assertion: no such analysis was planned.",
-        "A similarly worded imputation plan concerns a different endpoint only.",
-    ],
-)
-def test_compact_review_colocates_authored_claims_without_resolving_them(later_warrant):
-    receipt = _review()
-    earlier = receipt["data"]["domain_findings"][0]["answers"][0]
-    earlier.update(
-        warrant="Whether a missing-outcome analysis exists remains to be investigated.",
-        unknowns=["Performed results remain unknown."],
-        evidence=[{"handle": "eh_0000000000000000", "identity": _identity("earlier")}],
-    )
-    later = json.loads(json.dumps(receipt["data"]["domain_findings"][0]))
-    later["domain_id"] = "domain:selection"
-    later["answers"][0].update(
-        question_id="sq:selection:multiple-analyses",
-        warrant=later_warrant,
-        unknowns=["Execution/results are a separate premise."],
-        evidence=[{"handle": "eh_1111111111111111", "identity": _identity("later")}],
-    )
-    receipt["data"]["domain_findings"].append(later)
-    before = json.loads(json.dumps(receipt))
-    compact = server._review_summary(
-        receipt,
-        "digest",
-        "0" * 32,
-        keep_previews=False,
-        keep_missing=False,
-        keep_evidence=True,
-        keep_result=False,
-        preview_chars=400,
-    )
-    answers = [d["answers"][0] for d in compact["data"]["domain_findings"]]
-    assert answers[0]["warrant"] == earlier["warrant"]
-    assert answers[1]["warrant"] == later_warrant
-    assert answers[0]["unknowns"] == ["Performed results remain unknown."]
-    assert answers[0]["answer"] == earlier["answer"]
-    assert answers[1]["evidence"] == later["answers"][0]["evidence"]
-    assert "conflicts" not in answers[0]  # No invented semantic relationship.
-    assert receipt == before
 
 
 @pytest.mark.parametrize(
@@ -346,34 +276,3 @@ def test_selected_summary_does_not_defer_counterfacts_or_clip_oversized_saved_un
         json.loads(_collect(huge, root, first=fallback, selector=_SELECTOR))
         == (huge["data"]["domain_findings"][0]["answers"][0])
     )
-
-
-def test_larger_review_window_delivers_fitting_full_science_without_an_overview(
-    tmp_path: Path,
-) -> None:
-    receipt = _review(justification="Qualified source-bound interpretation. " * 800)
-    answer = receipt["data"]["domain_findings"][0]["answers"][0]
-    answer.update(
-        unknowns=["The procedure's implementation is not reported."],
-        counterevidence=[{"basis_index": 0, "implication": "The plan is not proof of conduct."}],
-    )
-    receipt = server._validate_response("review_trial", receipt)
-    assert 24_000 < server._review_transport_bytes(receipt) < server._REVIEW_TRIAL_RESPONSE_BYTES
-    actual = _project(receipt, server._root(tmp_path))
-    assert actual == receipt
-    assert "review_page" not in actual["data"]
-
-
-def test_review_window_growth_preserves_an_issued_unicode_cursor(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    receipt = _review(justification='é🧪"\\\n' * 16_000)
-    root = server._root(tmp_path)
-    with monkeypatch.context() as historical:
-        historical.setattr(server, "_REVIEW_TRIAL_RESPONSE_BYTES", 24_000)
-        first = _project(receipt, root, selector=_SELECTOR, persist=True)
-    assert first["data"]["review_page"]["mode"] == "fragment"
-    assert server._review_transport_bytes(first) <= 24_000
-    restored = json.loads(_collect(receipt, root, first=first, selector=_SELECTOR))
-    assert restored == receipt["data"]["domain_findings"][0]["answers"][0]

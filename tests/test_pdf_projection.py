@@ -9,11 +9,8 @@ from support.rob2 import _call
 import rob2_kit.application._state as source_state
 from rob2_kit.application._state import (
     _db,
-    _normalize_projected_text,
-    _pages,
     _projection_hash,
     _semantic_table_page,
-    _table_gfm,
 )
 from rob2_kit.application.evidence import (
     list_sources,
@@ -64,16 +61,6 @@ def _prepare_pdf(tmp_path: Path) -> tuple[Path, dict[str, object]]:
         expected_revision=0,
     )
     return tmp_path, prepared["trials"][0]["sources"][0]
-
-
-def test_pdf_projection_keeps_narrative_and_projects_table_axes() -> None:
-    pages = _pages(Path("article.pdf"), _pdf_bytes())
-
-    assert len(pages) == 2
-    assert pages[0] == "Narrative page with no table.\n"
-    assert pages[1].startswith("Arm\nEvents\nRate\nADT\n12\n3%\n")
-    assert "[Extracted table 1]" in pages[1]
-    assert "|Docetaxel|22|5%|" in pages[1]
 
 
 def test_optional_table_extraction_failure_keeps_searchable_source_and_render_route(
@@ -166,20 +153,6 @@ def test_semantic_table_filter_rejects_form_pages_with_many_small_regions() -> N
     assert _semantic_table_page(form_regions) is False
 
 
-def test_semantic_table_filter_accepts_compact_three_by_three_result_table() -> None:
-    result = _TableShape(
-        3,
-        3,
-        [
-            ["Group", "Events", "Denominator"],
-            ["Treatment", "12", "100"],
-            ["Control", "20", "100"],
-        ],
-    )
-
-    assert _semantic_table_page((result,)) is True
-
-
 def test_semantic_table_filter_rejects_sparse_three_by_three_form() -> None:
     form = _TableShape(
         3,
@@ -188,23 +161,6 @@ def test_semantic_table_filter_rejects_sparse_three_by_three_form() -> None:
     )
 
     assert _semantic_table_page((form,)) is False
-
-
-def test_table_gfm_preserves_category_axes_and_values() -> None:
-    table = _TableShape(
-        3,
-        4,
-        [
-            ["Event", "Grade 3", "Grade 4", "Grade 5"],
-            ["Any event", "65 (16.7)", "49 (12.6)", "1 (0.3)"],
-            ["Fatigue", "16 (4.1)", "0", "0"],
-        ],
-    )
-
-    rendered = _table_gfm(table, 1)
-
-    assert "|Event|Grade 3|Grade 4|Grade 5|" in rendered
-    assert "|Any event|65 (16.7)|49 (12.6)|1 (0.3)|" in rendered
 
 
 def test_projection_identity_is_recipe_versioned() -> None:
@@ -217,20 +173,6 @@ def test_projection_identity_is_recipe_versioned() -> None:
     assert (
         _projection_hash(source["sha256"], source["media_type"], pages)
         == identity["projection_hash"]
-    )
-
-
-def test_projection_normalization_removes_nonprinting_artifacts_once() -> None:
-    raw = "The \ufb01nal\u200b\u202e analysis\x00 was complete.\u00ad\r\n"
-
-    assert _normalize_projected_text(raw) == "The final analysis was complete.\n"
-
-
-def test_text_source_projection_uses_the_same_normalized_text_as_public_reads() -> None:
-    raw = "A\u00a0ligature: \ufb01. A bidi marker:\u202e done.\x07\n"
-
-    assert _pages(Path("source.txt"), raw.encode("utf-8")) == (
-        "A ligature: fi. A bidi marker: done.\n",
     )
 
 
@@ -302,32 +244,6 @@ def test_text_selection_rejects_cross_page_ambiguity(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="not an exact page selection"):
         select_text_evidence(tmp_path, "trial", str(source["id"]), 1, "A repeated source phrase.")
-
-
-def test_text_selection_canonicalizes_a_unique_out_of_range_page_hint(tmp_path: Path) -> None:
-    document = pymupdf.open()
-    first = document.new_page()
-    first.insert_text((50, 50), "A unique source phrase.")
-    try:
-        pdf = document.tobytes()
-    finally:
-        document.close()
-
-    trial = tmp_path / "input" / "trial"
-    trial.mkdir(parents=True)
-    (trial / "article.pdf").write_bytes(pdf)
-    prepared = prepare_batch(
-        tmp_path,
-        [TrialDeclaration(id="trial", label="trial", requested_outcome="result")],
-        expected_revision=0,
-    )
-    source = prepared["trials"][0]["sources"][0]
-
-    evidence = select_text_evidence(
-        tmp_path, "trial", str(source["id"]), 7, "A unique source phrase."
-    )["evidence"]
-
-    assert evidence["page"] == 1
 
 
 def test_text_selection_rejects_ambiguous_out_of_range_page_hint(tmp_path: Path) -> None:

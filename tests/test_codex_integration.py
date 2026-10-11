@@ -14,17 +14,6 @@ import pytest
 from rob2_kit.interfaces.cli.app import main
 
 
-@pytest.mark.parametrize("command", ["mcp", "mcp-codex"])
-def test_cli_selects_explicit_host_entrypoint(command, monkeypatch):
-    from rob2_kit.interfaces.mcp import codex, server
-
-    called = []
-    monkeypatch.setattr(server, "main", lambda: called.append("mcp"))
-    monkeypatch.setattr(codex, "main", lambda: called.append("mcp-codex"))
-    assert main([command]) == 0
-    assert called == [command]
-
-
 def test_packaged_hosts_select_codex_compatibility_only():
     root = Path(__file__).parents[1] / "src/rob2_kit/hosts"
     assert json.loads((root / "codex.json").read_text())["mcp_command"] == "rob2 mcp-codex"

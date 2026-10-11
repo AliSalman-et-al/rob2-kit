@@ -2852,7 +2852,7 @@ def save_domain_judgment(
             (
                 item
                 for item in state.get("domain_history_records", {}).get(key, [])
-                if item.get("identity") == supplied.checkpoint_identity
+                if item.get("identity") == parsed.supersedes
             ),
             None,
         )
@@ -2864,45 +2864,54 @@ def save_domain_judgment(
             catalog_by_handle.get(item.evidence) or catalog.get(item.evidence)
             for item in supplied.counterevidence
         ]
-        if (
-            not isinstance(parent, dict)
-            or supplied.result_identity != approved_result_identity
-            or supplied.domain_id != parsed.domain_id
-            or supplied.pack_identity != SCIENTIFIC_PACK.content_hash
-            or parent.get("result_identity") != approved_result_identity
+        problem = (
+            (
+                "adjudication_checkpoint_required",
+                "Name the saved checkpoint you are adjudicating in supersedes: the identity "
+                "returned when this Domain's answers were saved.",
+            )
+            if not isinstance(parent, dict)
+            else (
+                "adjudication_answers_changed",
+                "Adjudication keeps the saved answers unchanged and resubmits them exactly. "
+                "To change an answer, save the new answers first, then adjudicate that checkpoint.",
+            )
+            if parent.get("result_identity") != approved_result_identity
             or parent.get("answers") != canonical_answers
-            or parsed.supersedes != supplied.checkpoint_identity
-            or supplied.judgment == evaluation.judgment
-            or any(
+            else (
+                "adjudication_matches_proposal",
+                f"The algorithm already proposes '{evaluation.judgment.value}'; omit adjudication.",
+            )
+            if supplied.judgment == evaluation.judgment
+            else (
+                "adjudication_evidence_not_in_checkpoint",
+                "Cite Evidence handles that the saved answers already cite.",
+            )
+            if any(
                 not item
                 or item.get("trial_id") != parsed.trial_id
                 or item.get("identity") not in parent_evidence
                 for item in [*adjudication_evidence, *counterpoints]
             )
-        ):
-            return _result(
-                "repair",
-                state,
-                repairs=[
-                    _repair(
-                        "/adjudication",
-                        "domain_adjudication_basis_invalid",
-                        "Adjudicate an unchanged saved checkpoint for this exact Result "
-                        "and Domain, "
-                        "name it in supersedes, cite its answer Evidence, and explain a departure "
-                        "from the proposed judgment. Changed answers need a new checkpoint first.",
-                    )
-                ],
-            )
-        adjudication = supplied.model_dump(mode="json")
-        adjudication["evidence"] = list(
-            dict.fromkeys(item["identity"] for item in adjudication_evidence if item)
+            else None
         )
-        adjudication["counterevidence"] = [
-            {"evidence": item["identity"], "implication": point.implication}
-            for point, item in zip(supplied.counterevidence, counterpoints, strict=True)
-            if item
-        ]
+        if problem is not None:
+            return _result("repair", state, repairs=[_repair("/adjudication", *problem)])
+        adjudication = {
+            "result_identity": approved_result_identity,
+            "domain_id": parsed.domain_id,
+            "checkpoint_identity": parsed.supersedes,
+            "pack_identity": SCIENTIFIC_PACK.content_hash,
+            **supplied.model_dump(mode="json"),
+            "evidence": list(
+                dict.fromkeys(item["identity"] for item in adjudication_evidence if item)
+            ),
+            "counterevidence": [
+                {"evidence": item["identity"], "implication": point.implication}
+                for point, item in zip(supplied.counterevidence, counterpoints, strict=True)
+                if item
+            ],
+        }
     decision = {
         "contract": DOMAIN_JUDGMENT_CONTRACT,
         "proposed": evaluation.judgment.value,
@@ -2924,7 +2933,12 @@ def save_domain_judgment(
             ),
         )
     revision_basis = (
-        parsed.revision_basis.model_dump(mode="json") if parsed.revision_basis is not None else None
+        parsed.revision_basis.model_dump(mode="json")
+        if parsed.revision_basis is not None
+        # An adjudication of unchanged answers is its own reason for the new checkpoint.
+        else {"kind": "self_correction", "rationale": parsed.adjudication.rationale}
+        if parsed.adjudication is not None and existing_record is not None
+        else None
     )
     # Evidence handles are disposable navigation identities.  Canonicalize a
     # revision basis before constructing the candidate checkpoint identity so

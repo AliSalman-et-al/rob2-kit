@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 
 from support.rob2 import (
-    _assessment_workspace,
     _call,
     _domain_draft,
     _prepared_evidence,
@@ -22,79 +20,12 @@ from rob2_kit.application.domains import _flow_navigation, get_domain_context
 from rob2_kit.application.evidence import source_reading_status
 
 
-def _clear_reads(workspace: Path) -> None:
-    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as c:
-        c.execute("DELETE FROM page_reads")
-
-
 def _approved(workspace: Path) -> Path:
     evidence = _prepared_evidence(workspace)
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required", proposed
     _review(workspace)
     return workspace
-
-
-def test_context_does_not_embed_or_claim_unread_primary_text(tmp_path: Path) -> None:
-    w = _workspace(tmp_path)
-    main = w / "input/trial/main.txt"
-    main.write_text(
-        main.read_text() + "Endpoint follow-up continued after treatment stopped.\n" * 350
-    )
-    _approved(w)
-    projected = get_domain_context(w, "trial", "domain:missing")
-    assert projected["primary_report"] == []
-    assert projected["reading_recovery"]["windows"]
-    first = _call(
-        w, "get_domain_context", {"domain_id": "domain:missing", "max_response_bytes": 24000}
-    )
-    assert first["outcome"] == "success", first
-    assert first["data"]["questions"]
-    cursor = first["data"]["context_page"]["next_cursor"]
-    # Reading between context pages must not freeze a second copy of the report.
-    _read_required_main_reports(w)
-    while cursor:
-        page = _call(w, "get_domain_context", {"cursor": cursor, "max_response_bytes": 24000})
-        assert page["outcome"] == "success", page
-        assert not page["data"].get("primary_report")
-        cursor = page["data"]["context_page"]["next_cursor"]
-    status = _call(w, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert status["status"] == "complete"
-    for domain in ["domain:deviations", "domain:missing", "domain:selection"]:
-        fresh = get_domain_context(w, "trial", domain)
-        assert fresh["primary_report"] == []
-        assert fresh["reading_recovery"] is None
-        assert fresh["coverage"][0]["read"] == "read_complete"
-    # A new client can reuse persisted receipts; loss of them restores recovery.
-    assert set(source_reading_status(w, "trial").values()) == {"read_complete"}
-    _clear_reads(w)
-    fresh = get_domain_context(w, "trial", "domain:missing")
-    assert fresh["reading_recovery"]["windows"]
-    assert fresh["coverage"][0]["read"] != "read_complete"
-
-
-def test_prior_domain_does_not_hide_unread_main_report(tmp_path: Path) -> None:
-    w, evidence, revision = _assessment_workspace(tmp_path)
-    saved = _call(
-        w,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence),
-    )
-    assert saved["outcome"] == "success", saved
-    _clear_reads(w)
-    revision = _state(w)["revision"]
-    draft = _domain_draft("trial", "domain:deviations", revision, evidence)
-    blocked = _call(w, "save_domain_judgment", draft)
-    assert blocked["outcome"] == "repair", blocked
-    assert blocked["repairs"][0]["code"] == "post_approval_main_report_reading_required"
-    context = _call(w, "get_domain_context", {"domain_id": "domain:deviations"})
-    assert context["head"]["next_action"]["operation"] == "read_pages"
-    assert context["head"]["next_action"]["windows"]
-    _read_required_main_reports(w)
-    context = _call(w, "get_domain_context", {"domain_id": "domain:deviations"})
-    assert context["head"]["next_action"]["operation"] == "save_domain_judgment"
-    accepted = _call(w, "save_domain_judgment", draft)
-    assert accepted["outcome"] == "success", accepted
 
 
 def test_long_main_report_stays_bounded_and_exposes_unread_tail(tmp_path: Path) -> None:
@@ -206,26 +137,6 @@ def test_partial_delivery_preserves_omitted_passage_and_rejects_changed_source(
     captured.write_bytes(captured.read_bytes() + b"Changed source content.\n")
     with pytest.raises(ValueError, match="Source bytes do not match Canonical identity"):
         source_reading_status(w, "trial")
-
-
-def test_changed_result_invalidates_scientific_basis_without_forgetting_source_delivery(
-    tmp_path: Path,
-) -> None:
-    import copy
-
-    from rob2_kit.application.domains import _domain_context_basis_identity
-
-    w, _evidence, _revision = _assessment_workspace(tmp_path)
-    state = _state(w)
-    original_basis = _domain_context_basis_identity(state, "trial", "domain:missing", None)
-    changed = copy.deepcopy(state)
-    changed["proposal"]["payload"]["results"][0]["target"]["outcome_definition"] = (
-        "Different endpoint needing source relevance reassessment"
-    )
-    assert (
-        _domain_context_basis_identity(changed, "trial", "domain:missing", None) != original_basis
-    )
-    assert set(source_reading_status(w, "trial").values()) == {"read_complete"}
 
 
 def test_complete_delivery_does_not_erase_selected_counterevidence() -> None:

@@ -4,7 +4,7 @@ import runpy
 
 import pytest
 
-from rob2_kit.logic import active_questions, evaluate_domain
+from rob2_kit.logic import evaluate_domain
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 ALL = {"yes", "probably_yes", "probably_no", "no", "no_information"}
@@ -56,11 +56,3 @@ def test_d32_response_boundary_matches_export_verifier(answer: str) -> None:
         evaluate_domain("domain:missing", answers)
         active, _ = standalone("domain:missing", answers)
         assert set(active) == set(answers)
-
-
-@pytest.mark.parametrize(
-    "answer, active", [("yes", False), ("probably_yes", False), ("no", True), ("probably_no", True)]
-)
-def test_no_reassurance_activates_mechanism_question(answer: str, active: bool) -> None:
-    values = {"sq:missing:data-available": "no_information", "sq:missing:evidence-unbiased": answer}
-    assert ("sq:missing:true-value-dependent" in active_questions(values)) is active

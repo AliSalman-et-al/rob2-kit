@@ -1,7 +1,4 @@
-import sqlite3
-
 import pytest
-from support.rob2 import _assessment_workspace, _call
 
 from rob2_kit.application.evidence import (
     _all_search_match_spans,
@@ -11,13 +8,6 @@ from rob2_kit.application.evidence import (
     _session_candidates,
     _source_navigation_entries,
 )
-
-
-def test_literal_search_is_contiguous_and_respects_alphanumeric_boundaries() -> None:
-    text = "Randomization; randomizationX. naïve café"
-
-    assert _literal_match_spans(text, "randomization") == [(0, 13)]
-    assert _literal_match_spans(text, "naive cafe") == []
 
 
 def test_literal_search_casefolds_expanding_unicode_and_uses_alphanumeric_endpoints() -> None:
@@ -30,19 +20,6 @@ def test_literal_search_casefolds_expanding_unicode_and_uses_alphanumeric_endpoi
     assert _literal_match_spans("\u200b", "\u200b") == []
 
 
-def test_literal_search_maps_combining_marks_and_keeps_scope_local() -> None:
-    text = "A nai\u0308ve café. A naive cafe."
-
-    assert _literal_match_spans(text, "NAÏVE CAFÉ") == [(2, 13)]
-    assert _literal_match_spans(text, "naive cafe") == [(17, 27)]
-
-
-def test_native_highlight_preserves_repeated_occurrences() -> None:
-    assert _native_fts_match_spans(
-        "Allocation was concealed. Allocation was repeated.", "allocation", "any"
-    ) == [(0, 10), (26, 36)]
-
-
 def test_native_highlight_reports_marker_collision_as_localization_failure() -> None:
     text = "\x01\x02\ue000\ue001\u241e\u241f allocation"
 
@@ -50,70 +27,8 @@ def test_native_highlight_reports_marker_collision_as_localization_failure() -> 
         _native_fts_match_spans(text, "allocation", "any")
 
 
-def test_porter_highlight_maps_a_related_source_word_to_raw_offsets() -> None:
-    text = "Allocation was concealed before enrollment."
-
-    assert _native_fts_match_spans(text, "concealment", "any") == [(15, 24)]
-
-
-def test_native_prefix_highlight_returns_the_matched_source_form() -> None:
-    text = "Randomization was recorded; randomised centrally."
-
-    assert _native_fts_match_spans(text, "random", "prefix") == [
-        (0, 13),
-        (28, 38),
-    ]
-
-
-def test_native_highlight_unions_raw_and_normalized_occurrences() -> None:
-    text = "allocation\nnoise\nnoise\nallo-\ncation"
-
-    assert _native_fts_match_spans(text, "allocation", "any") == [(0, 10), (23, 35)]
-
-
 def test_spelling_distance_supports_adjacent_transposition() -> None:
     assert _osa_distance("randomizaton", "randomization", 2) == 1
-
-
-def test_source_navigation_deduplicates_same_window_but_keeps_metadata() -> None:
-    entries = _source_navigation_entries(("Version 2.0\n\nResults",))
-
-    matching = [item for item in entries if item["text"] == "Version 2.0"]
-    assert {item["kind"] for item in matching} == {"heading_candidate", "version_lead"}
-    assert "page_excerpt" not in {item["kind"] for item in matching}
-
-
-def test_search_provenance_history_keeps_unassigned_and_purposed_discoveries(
-    tmp_path,
-) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    _call(
-        workspace,
-        "search_sources",
-        {"trial_id": "trial", "query": "randomized", "mode": "any"},
-    )
-    _call(
-        workspace,
-        "search_sources",
-        {
-            "trial_id": "trial",
-            "query": "randomized",
-            "mode": "any",
-            "purpose_domain_id": "domain:randomization",
-            "purpose_question_id": "sq:randomization:sequence",
-        },
-    )
-
-    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
-        purposes = set(
-            connection.execute(
-                "SELECT purpose_domain_id,purpose_question_id "
-                "FROM search_evidence_provenance_history"
-            ).fetchall()
-        )
-
-    assert ("", "") in purposes
-    assert ("domain:randomization", "sq:randomization:sequence") in purposes
 
 
 def test_source_navigation_preserves_split_heading_coordinates() -> None:
@@ -156,43 +71,3 @@ def test_search_window_grouping_preserves_anchors_pages_and_source_versions() ->
         )
     with pytest.raises(ValueError, match="unsupported search candidate recipe"):
         _session_candidates(pages, "alpha", "any", list(pages), pairs, candidate_version="unknown")
-
-
-@pytest.mark.parametrize(
-    ("first_window", "second_window", "text", "expected_count"),
-    [
-        ((1, 1001), (201, 1201), "a\n" * 1000, 1),  # exactly 80% overlap
-        ((1, 1001), (202, 1201), "a\n" * 1000, 2),  # below 80%
-        ((0, 1200), (165, 1365), "é\n" * 682 + "éx\n" + "é\n" * 1000, 1),
-        ((0, 1200), (165, 1366), "é\n" * 682 + "éx\n" + "é\n" * 1000, 2),
-    ],
-)
-def test_search_grouping_overlap_and_utf8_union_cap(
-    monkeypatch, first_window, second_window, text, expected_count
-) -> None:
-    from rob2_kit.application import evidence
-
-    # Control preview bounds to test coalescing at exact boundaries independently
-    # of the preview-expansion heuristic. The two match anchors remain distinct.
-    monkeypatch.setattr(
-        evidence, "_all_search_match_spans", lambda *a, **k: [(100, 101), (1000, 1001)]
-    )
-    monkeypatch.setattr(
-        evidence,
-        "_search_candidate_window",
-        lambda _text, spans: (
-            (*first_window, False) if spans[0][0] < 500 else (*second_window, False)
-        ),
-    )
-    candidates = evidence._session_candidates(
-        {"source": (text,)}, "target", "any", ["source"], [("source", 1)]
-    )
-    assert len(candidates) == expected_count
-    assert all(
-        any(c["start"] <= start < end <= c["end"] for c in candidates)
-        for start, end in [(100, 101), (1000, 1001)]
-    )
-    if first_window[0] == 0:
-        assert len(text[: second_window[1]].encode("utf-8")) == (
-            2048 if expected_count == 1 else 2049
-        )

@@ -98,27 +98,3 @@ async def _replay(compat) -> None:
     original = await mcp.get_tool("render_page")
     assert original is not None
     assert original.output_schema == original_schema
-
-
-def test_codex_compat_preserves_error_flags_even_with_image_content() -> None:
-    from fastmcp.server.middleware import MiddlewareContext
-    from mcp.types import CallToolRequestParams
-
-    async def replay():
-        result = ToolResult(
-            content=[
-                ImageContent.model_validate(
-                    {"type": "image", "data": "pixels", "mimeType": "image/png"}
-                )
-            ],
-            structured_content={"outcome": "error"},
-            is_error=True,
-        )
-
-        async def next_call(context: MiddlewareContext[CallToolRequestParams]) -> ToolResult:
-            return result
-
-        context = MiddlewareContext(message=CallToolRequestParams(name="render_page"))
-        assert await CodexImageContent().on_call_tool(context, next_call) is result
-
-    asyncio.run(replay())

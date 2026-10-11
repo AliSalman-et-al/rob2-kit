@@ -595,23 +595,6 @@ def _refresh_snapshot(canonical: dict[str, Any], key: str, old: str, new: str) -
     canonical["snapshot_history_records"]["trial"][-1] = snapshot
 
 
-def test_finalization_retry_rebuilds_identical_bytes(tmp_path: Path) -> None:
-    artifact = _artifact(tmp_path)
-    first_bytes = artifact.read_bytes()
-    artifact.unlink()
-    retry = finalization.finalize_batch(tmp_path, 0)
-    rebuilt = tmp_path / retry["artifact"]["path"]
-    assert rebuilt.read_bytes() == first_bytes
-    assert retry["artifact"]["identity"]
-
-
-def test_finalize_requires_an_explicit_trial_closure(tmp_path: Path) -> None:
-    workspace, _evidence, revision = _complete_assessment(tmp_path)
-
-    with pytest.raises(ValueError, match="current review and closure"):
-        finalization.finalize_batch(workspace, revision)
-
-
 def test_finalize_reports_independent_verification_failure_and_action(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

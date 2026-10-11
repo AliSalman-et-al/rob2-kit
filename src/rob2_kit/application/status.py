@@ -353,26 +353,37 @@ def _current_trial_review(state: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _reading_first_continuation(root: Path, state: dict[str, Any]) -> dict[str, Any] | None:
-    """Name unread main-report windows before a Proposal submission would be refused."""
+    """Name unread main-report windows before a submission would be refused."""
     continuation = _continuation(state)
-    if not continuation or continuation.get("operation") != "validate_proposal":
+    if continuation is None:
+        return None
+    operation = continuation.get("operation")
+    if operation == "validate_proposal":
+        batch = state.get("batch")
+        gaps = main_report_read_gaps(
+            root, batch.get("trials", []) if isinstance(batch, dict) else [], phase="proposal"
+        )
+        trial_id = gaps[0]["trial_id"] if gaps else None
+        windows = [
+            {key: gap[key] for key in ("source_id", "page", "start_line", "end_line")}
+            for gap in gaps
+            if gap["trial_id"] == trial_id
+        ][:20]
+    elif operation == "get_domain_context":
+        from .domains import _post_approval_reading
+
+        trial_id = continuation["trial_id"]
+        reading = _post_approval_reading(root, state, trial_id, False)
+        windows = reading["windows"] if reading else []
+    else:
         return continuation
-    batch = state.get("batch")
-    gaps = main_report_read_gaps(
-        root, batch.get("trials", []) if isinstance(batch, dict) else [], phase="proposal"
-    )
-    if not gaps:
+    if not windows:
         return continuation
-    trial_id = gaps[0]["trial_id"]
     return {
         "operation": "read_pages",
         "authority": "host",
         "trial_id": trial_id,
-        "windows": [
-            {key: gap[key] for key in ("source_id", "page", "start_line", "end_line")}
-            for gap in gaps
-            if gap["trial_id"] == trial_id
-        ][:20],
+        "windows": windows,
     }
 
 

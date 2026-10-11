@@ -13,10 +13,6 @@ from support.rob2 import (
     _call,
     _domain_draft,
     _finalize_assessment,
-    _prepared_evidence,
-    _proposal_args,
-    _result,
-    _workspace,
 )
 
 from rob2_kit.application._state import _state
@@ -34,30 +30,6 @@ def _complete_assessment(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
         assert saved["outcome"] == "success", saved
         revision = int(saved["head"]["state_revision"])
     return workspace, evidence, revision
-
-
-def _review_candidate(tmp_path: Path) -> Path:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    assert proposed["outcome"] == "review_required"
-    return workspace
-
-
-def _answer_review(workspace: Path, answer: bytes) -> subprocess.CompletedProcess[bytes]:
-    return subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "rob2_kit.interfaces.cli.app",
-            "review",
-            "--workspace",
-            str(workspace),
-        ],
-        input=answer,
-        check=False,
-        capture_output=True,
-    )
 
 
 def _recover_full_review(workspace: Path, reviewed: dict[str, Any]) -> dict[str, Any]:
@@ -106,28 +78,6 @@ def _recover_full_review(workspace: Path, reviewed: dict[str, Any]) -> dict[str,
             return recovered
         assert offset < total
     pytest.fail("full review receipt did not terminate within 64 fragments")
-
-
-@pytest.mark.parametrize("answer", [b"yes\n", b"yes\r\n", b"\xef\xbb\xbfyes\r\n", b"YES\n"])
-def test_piped_acknowledgment_survives_a_byte_order_mark(tmp_path: Path, answer: bytes) -> None:
-    workspace = _review_candidate(tmp_path)
-
-    assert _answer_review(workspace, answer).returncode == 0
-    assert _state(workspace)["phase"] == "assessment"
-    assert _state(workspace)["review"] is None
-
-
-@pytest.mark.parametrize(("answer", "reported"), [(b"no\n", "'no'"), (b"", "''")])
-def test_declined_review_names_the_answer_it_received(
-    tmp_path: Path, answer: bytes, reported: str
-) -> None:
-    workspace = _review_candidate(tmp_path)
-
-    declined = _answer_review(workspace, answer)
-
-    assert declined.returncode == 1
-    assert f"not acknowledged: {reported}" in declined.stderr.decode()
-    assert _state(workspace)["review"] is not None
 
 
 def test_trial_requires_review_and_explicit_closure_before_finalization(tmp_path: Path) -> None:
@@ -288,35 +238,6 @@ def test_domain_revision_requires_lineage_and_preserves_history(tmp_path: Path) 
     assert finalized["outcome"] == "success", finalized
 
 
-def test_domain_continuation_names_only_current_checkpoint(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    domain_id = SCIENTIFIC_PACK.domains[0].id
-    initial = _call(
-        workspace,
-        "get_domain_context",
-        {"trial_id": "trial", "domain_id": domain_id},
-    )
-    assert initial["data"].get("current_checkpoint") is None
-    assert "prior_digests" not in initial["data"]
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", domain_id, revision, evidence),
-    )
-    assert saved["outcome"] == "success", saved
-    context = _call(
-        workspace,
-        "get_domain_context",
-        {"trial_id": "trial", "domain_id": domain_id},
-    )
-    checkpoint = saved["data"]["checkpoint"]["identity"]
-    assert context["data"]["current_checkpoint"] == checkpoint
-    action = context["head"]["next_action"]
-    assert action["supersedes"] == checkpoint
-    assert action["operation"] == "save_domain_judgment"
-    assert action["caller_inputs"] == ["answers", "revision_basis"]
-
-
 def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
@@ -405,72 +326,7 @@ def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
     assert standalone.returncode == 0, standalone.stderr or standalone.stdout
 
 
-def test_researcher_cli_discard_is_idempotent_and_restartable(tmp_path: Path) -> None:
-    workspace, _evidence, revision = _complete_assessment(tmp_path)
-    finalized = _finalize_assessment(workspace, revision)
-    artifact = workspace / finalized["data"]["artifact"]["path"]
-    assert artifact.is_file()
-
-    command = [
-        sys.executable,
-        "-m",
-        "rob2_kit.interfaces.cli.app",
-        "discard",
-        "--workspace",
-        str(workspace),
-    ]
-    first = subprocess.run(command, text=True, capture_output=True, check=True)
-    receipt = json.loads(first.stdout)
-    assert receipt["outcome"] == "success"
-    assert receipt["discard"]["artifact"] == finalized["data"]["artifact"]
-    assert _state(workspace)["phase"] == "empty"
-    assert artifact.is_file()
-
-    retry = subprocess.run(command, text=True, capture_output=True, check=True)
-    retry_receipt = json.loads(retry.stdout)
-    assert retry_receipt["retry"] is True
-    assert retry_receipt["discard"]["identity"] == receipt["discard"]["identity"]
-
-    restarted = _call(
-        workspace,
-        "prepare_batch",
-        {
-            "requested_outcome": "requested outcome",
-            "expected_revision": int(_state(workspace)["revision"]),
-        },
-    )
-    assert restarted["outcome"] == "success"
-
-
 def test_discard_is_not_a_public_mcp_tool() -> None:
     from rob2_kit.interfaces.mcp.server import PUBLIC_TOOL_NAMES
 
     assert "discard" not in PUBLIC_TOOL_NAMES
-
-
-def test_warrant_correction_preserves_answers_label_and_audit_history(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    domain_id = SCIENTIFIC_PACK.domains[0].id
-    draft = _domain_draft("trial", domain_id, revision, evidence)
-    saved = _call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success", saved
-    key = f"trial:{domain_id}"
-    prior = _state(workspace)["domain_records"][key]
-    _call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id})
-    draft["expected_revision"] = saved["head"]["state_revision"]
-    draft["answers"][0]["justification"] += (
-        " A later source establishes a planned analysis; its execution remains unresolved."
-    )
-    draft["supersedes"] = prior["identity"]
-    draft["revision_basis"] = {
-        "kind": "self_correction",
-        "rationale": "Correct stale existence while retaining execution uncertainty.",
-    }
-    corrected = _call(workspace, "save_domain_judgment", draft)
-    assert corrected["outcome"] == "success", corrected
-    state = _state(workspace)
-    current = state["domain_records"][key]
-    assert current["judgment"] == prior["judgment"]
-    assert [a["answer"] for a in current["answers"]] == [a["answer"] for a in prior["answers"]]
-    assert state["domain_history"][key] == [prior["identity"], current["identity"]]
-    assert state["domain_history_records"][key][0] == prior

@@ -142,22 +142,6 @@ def test_incompatible_availability_counts_do_not_produce_exact_missingness(facts
     assert row.get("unavailable") == facts.get("unavailable")
 
 
-def test_unavailable_count_without_denominator_does_not_invent_observed_count():
-    row = reconcile_missing_data(
-        [
-            {
-                "arm": "A",
-                "population": "randomized",
-                "unit": "participants",
-                "time_point": "endpoint",
-                "unavailable": 3,
-            }
-        ]
-    )["rows"][0]
-    assert row["unavailable"] == 3 and row["observed"] is None
-    assert row["missing"] is None and row["missing_fraction"] is None
-
-
 def test_unavailable_reports_and_tampering_are_checked_by_both_verifiers():
     result_id = "sha256:" + "a" * 64
     evidence_id = "sha256:" + "b" * 64

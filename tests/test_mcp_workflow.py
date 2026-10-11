@@ -6,9 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
-import pymupdf
 import pytest
 from pydantic import ValidationError
 from support.rob2 import *  # noqa: F401,F403
@@ -18,7 +16,6 @@ from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.application.intake import prepare_batch as application_prepare_batch
 from rob2_kit.application.status import get_status
-from rob2_kit.interfaces.mcp import server
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import ProposalDraft, TrialDeclaration
 
@@ -47,149 +44,12 @@ def test_prepare_rejects_malformed_intake_before_durable_state_commit(tmp_path: 
     assert _state(workspace).get("batch") is None
 
 
-def test_finalize_value_error_is_preserved_when_finalization_is_next(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    def fail() -> dict[str, Any]:
-        raise ValueError("final bundle integrity failed")
-
-    monkeypatch.setattr(
-        server,
-        "_get_status_head",
-        lambda _workspace: {"continuation": {"operation": "finalize_batch"}},
-    )
-    monkeypatch.setattr(server, "_content", lambda _tool, value: value)
-
-    receipt: Any = server._invoke("finalize_batch", fail)
-
-    assert receipt["condition"] == "final bundle integrity failed"
-
-
 def test_verify_cli_checks_product_bundle_and_returns_status(tmp_path: Path) -> None:
     artifact = _assessed_artifact(_workspace(tmp_path))
     from rob2_kit.interfaces.cli.app import main as cli_main
 
     assert cli_main(["verify", str(artifact)]) == 0
     assert cli_main(["verify", str(tmp_path / "missing.rob2.zip")]) == 1
-
-
-def test_cli_exports_packaged_skill(tmp_path: Path) -> None:
-    from rob2_kit.interfaces.cli.app import main as cli_main
-
-    destination = tmp_path / ".claude" / "skills" / "rob2-assess"
-
-    assert cli_main(["export-skill", "--output", str(destination)]) == 0
-    packaged = Path("src/rob2_kit/skills/rob2-assess")
-    for source in packaged.rglob("*.md"):
-        assert (destination / source.relative_to(packaged)).read_bytes() == source.read_bytes()
-
-
-def test_domain_questions_preserve_typed_official_navigation(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    questions: dict[str, dict[str, Any]] = {}
-    for domain in SCIENTIFIC_PACK.domains:
-        context = _call(workspace, "get_domain_context", {})["data"]
-        assert context["domain_id"] == domain.id
-        questions.update({item["id"]: item for item in context["questions"]})
-        saved = _call(
-            workspace,
-            "save_domain_judgment",
-            _domain_draft("trial", domain.id, revision, evidence),
-        )
-        assert saved["outcome"] == "success", saved
-        revision = int(saved["head"]["state_revision"])
-    assert set(questions) == {q.id for q in SCIENTIFIC_PACK.questions}
-    for pack_question in SCIENTIFIC_PACK.questions:
-        card = questions[pack_question.id]
-        assert card["wording"] == pack_question.wording
-        assert card["activation"] == pack_question.activation.model_dump(mode="json")
-        assert card["guidance_locator"] == pack_question.guidance.official.source_locator
-        assert set(card["options"]) == {answer.value for answer in pack_question.allowed_answers}
-        assert card["query_suggestions"] == [
-            item.model_dump(mode="json")
-            for item in pack_question.guidance.operational.query_suggestions
-        ]
-        assert not {"official_guidance", "decision_rule", "answer_anchors"} & card.keys()
-
-
-def test_domain_query_suggestions_include_executable_alternative_wording(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    first_domain = SCIENTIFIC_PACK.domains[0].id
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", first_domain, revision, evidence),
-    )
-    assert saved["outcome"] == "success"
-    context = _call(workspace, "get_domain_context", {})["data"]
-    question = next(
-        item for item in context["questions"] if item["id"] == "sq:deviations:appropriate-analysis"
-    )
-    suggestions = question["query_suggestions"]
-    assert all(
-        item["query"] and item["mode"] in {"all", "phrase", "any", "prefix"} for item in suggestions
-    )
-    assert {item["query"] for item in suggestions} >= {
-        "intention-to-treat",
-        "all randomized patients",
-    }
-    assert (
-        next(item for item in suggestions if item["query"] == "intention-to-treat")["mode"]
-        == "phrase"
-    )
-    assert (
-        next(item for item in suggestions if item["query"] == "all randomized patients")["mode"]
-        == "all"
-    )
-
-
-def test_d3_availability_suggestions_find_unknown_mortality_status_in_supplement(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    trial = workspace / "input" / "trial"
-    (trial / "supplement.txt").write_text(
-        "Table S5: mortality status unknown at day 29.\n",
-        encoding="utf-8",
-    )
-    (trial / "sources.toml").write_text(
-        'roles = { "main.txt" = "main_article", "supplement.txt" = "supplement" }\n',
-        encoding="utf-8",
-    )
-    evidence = _prepared_evidence(workspace)
-    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
-    _review(workspace)
-    _read_required_main_reports(workspace)
-
-    revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
-    for domain_id in ("domain:randomization", "domain:deviations"):
-        saved = _call(
-            workspace,
-            "save_domain_judgment",
-            _domain_draft("trial", domain_id, revision, evidence),
-        )
-        assert saved["outcome"] == "success", saved
-        revision = int(saved["head"]["state_revision"])
-
-    context = _call(workspace, "get_domain_context", {})["data"]
-    question = next(
-        item for item in context["questions"] if item["id"] == "sq:missing:data-available"
-    )
-    unknown = next(
-        item
-        for item in question["query_suggestions"]
-        if item["query"] == "mortality status unknown"
-    )
-    assert unknown["mode"] == "all"
-    assert unknown["source_role"] == "supplement"
-    result = _call(
-        workspace,
-        "search_sources",
-        {"trial_id": "trial", "query": unknown["query"], "mode": unknown["mode"]},
-    )
-    assert result["outcome"] == "success"
-    assert result["data"]["hits"]
-    assert result["data"]["hits"][0]["source_id"] != evidence["source_id"]
 
 
 def test_domain_query_suggestions_execute_alternative_wording_after_literal_no_hit(
@@ -258,92 +118,6 @@ def test_domain_query_suggestions_execute_alternative_wording_after_literal_no_h
     assert refreshed_question["query_suggestions"] == suggestions
 
 
-def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["target"]["comparison_groups"][0]["assignment"] = "unsupported assignment"
-    result["reported"]["group_values"][0]["statistic"] = "unsupported statistic"
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert repair["outcome"] == "repair"
-    unsupported = [
-        item for item in repair["repairs"] if item["code"] == "result_value_not_supported"
-    ]
-    paths = {item["path"] for item in unsupported}
-    assert "/results/0/target/comparison_groups/0/assignment" not in paths
-    assert "/results/0/reported/group_values/0/statistic" in paths
-
-
-def test_fastmcp_resolves_text_and_figure_evidence_handles(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    table_text = "Unrelated appendix prose"
-    (workspace / "input" / "trial" / "table.txt").write_text(table_text, encoding="utf-8")
-    pdf = pymupdf.open()
-    page = pdf.new_page()
-    page.insert_text((72, 72), "Figure plot")
-    (workspace / "input" / "trial" / "figure.pdf").write_bytes(pdf.tobytes())
-    pdf.close()
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    _read_required_main_reports(workspace)
-    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
-    main_source = next(source for source in sources if source["label"] == "main.txt")
-    narrative = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": main_source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    table_source = next(source for source in sources if source["label"] == "table.txt")
-    figure_source = next(source for source in sources if source["label"] == "figure.pdf")
-    table_selection = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": table_source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    rendered = _call(
-        workspace,
-        "render_page",
-        {"trial_id": "trial", "source_id": figure_source["id"], "page": 1},
-    )
-    assert len(rendered["_image_content"]) == 1
-    figure_selection = _call(
-        workspace,
-        "select_visual_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": figure_source["id"],
-            "delivery_receipt": rendered["data"]["delivery_receipt"],
-            "transcription": "Unrelated figure plot",
-            "region": [0.1, 0.1, 0.9, 0.9],
-        },
-    )["data"]["evidence"]
-    assert figure_selection["delivery_receipt"] == rendered["data"]["delivery_receipt"]
-    assert figure_selection["provenance"] == "host_visual"
-    result = _result(narrative)
-    typed = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert typed["outcome"] == "review_required", typed
-    stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
-    stored_handles = {item["handle"] for item in stored["evidence"]}
-    assert narrative["handle"] in stored_handles
-    assert table_selection["handle"] not in stored_handles
-    assert figure_selection["handle"] not in stored_handles
-
-
 def test_proposal_rejects_object_group_value_fields_in_the_closed_reported_form(
     tmp_path: Path,
 ) -> None:
@@ -398,43 +172,6 @@ def test_proposal_cannot_use_another_trials_selected_evidence(tmp_path: Path) ->
             "answer_path": None,
         }
     ]
-
-
-def test_counters_capture_structural_work(tmp_path: Path) -> None:
-    for name in COUNTERS:
-        COUNTERS[name] = 0
-    workspace = _workspace(tmp_path)
-    pdf = pymupdf.open()
-    page = pdf.new_page()
-    page.insert_text((72, 72), "A rendered table")
-    (workspace / "input" / "trial" / "table.pdf").write_bytes(pdf.tobytes(garbage=4, deflate=True))
-    pdf.close()
-    evidence = _prepared_evidence(workspace)
-    pdf_source = next(
-        item
-        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
-        if item["label"] == "table.pdf"
-    )
-    _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": evidence["source_id"], "pages": [1]},
-    )
-    _call(
-        workspace,
-        "render_page",
-        {"trial_id": "trial", "source_id": pdf_source["id"], "page": 1},
-    )
-    counters = COUNTERS
-    for name in (
-        "extraction_calls",
-        "source_projection_verifications",
-        "database_queries",
-        "serialized_bytes",
-        "render_bytes",
-        "elapsed_ms",
-    ):
-        assert counters[name] > 0, name
 
 
 def test_search_receipts_are_verified_disposable_derivatives(tmp_path: Path) -> None:

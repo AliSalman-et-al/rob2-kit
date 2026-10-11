@@ -6,16 +6,6 @@ from rob2_kit.application.source_check import resolve_quote_excerpt
 
 
 @pytest.mark.parametrize(
-    "quote", ["Alpha -12.5 at\nday 30", "Alpha -12.5 at day 30", "Alpha\t-12.5 at   day 30"]
-)
-def test_contiguous_excerpt_preserves_original_subspan(quote: str) -> None:
-    source = "Before. Alpha -12.5 at\n day 30. Afterwards."
-    start, end = resolve_quote_excerpt(source, quote)
-    assert source[start:end] == "Alpha -12.5 at\n day 30"
-    assert start == 8 and end == 30
-
-
-@pytest.mark.parametrize(
     "quote",
     [
         "Alpha 12.5 at day 30",

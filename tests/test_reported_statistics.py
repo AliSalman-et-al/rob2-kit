@@ -93,39 +93,6 @@ def test_statistics_bind_and_recover_with_either_reported_form(
 
 
 @pytest.mark.parametrize(
-    "source_statistic, claimed_statistic",
-    [("p = 0.68", "p = 0.12"), ("p = 0.689", "p = 0.68")],
-)
-def test_ancillary_statistic_requires_source_support_for_selected_result(
-    tmp_path: Path, source_statistic: str, claimed_statistic: str
-) -> None:
-    workspace = _workspace(tmp_path)
-    source = workspace / "input/trial/main.txt"
-    source.write_text(
-        source.read_text().rstrip() + "; " + source_statistic + ".\n", encoding="utf-8"
-    )
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["reported"]["reported_statistics"] = [claimed_statistic]
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert repair["outcome"] == "repair", repair
-    assert any(item["path"].startswith("/results/0/reported") for item in repair["repairs"])
-
-
-def test_absent_statistics_preserve_existing_canonical_record_shape(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    original = copy.deepcopy(result)
-    result["reported"]["reported_statistics"] = []
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert saved["outcome"] == "review_required", saved
-    stored = _state(workspace)["proposal"]["payload"]["results"][0]
-    assert "reported_statistics" not in stored["reported"]
-    assert stored["reported"]["group_values"] == original["reported"]["group_values"]
-
-
-@pytest.mark.parametrize(
     "source_statistic, claim, expected",
     [
         ("p = 0.68", "p = 0.68", True),

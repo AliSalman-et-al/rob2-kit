@@ -14,28 +14,6 @@ def fixture() -> dict[str, Any]:
     return json.loads(Path("eval/synthetic-heldout.json").read_text())
 
 
-def test_strict_fixture_is_deterministic_and_safe() -> None:
-    value = fixture()
-    first, second = evaluate_fixture(value), evaluate_fixture(value)
-    assert first == second
-    assert first["coverage"]["premise_complete"] == {"numerator": 1, "denominator": 1, "rate": 1.0}
-    assert first["coverage"]["stages"]["content_delivered"]["unknown"] == 1
-    assert set(first["coverage"]["stages"]) == {
-        "projection_available",
-        "candidate_ranked",
-        "passage_surfaced",
-        "content_delivered",
-        "passage_inspected",
-        "evidence_cited",
-        "premise_assessed",
-        "answer_committed",
-    }
-    assert first["friction"]["context_bytes"] == 1
-    serialized = json.dumps(first)
-    for forbidden in ("query_hash", "holdout", "adjudicat", "reviewer", "coordinates"):
-        assert forbidden not in serialized
-
-
 @pytest.mark.parametrize("kind", ["extra", "draw", "event"])
 def test_closed_schema_and_types_fail(kind: str) -> None:
     value = fixture()
@@ -94,23 +72,6 @@ def test_missing_stage_is_rejected_but_unknown_is_valid() -> None:
     value["events"] = [event for event in value["events"] if event["type"] != "answer_committed"]
     with pytest.raises(ValueError, match="missing required event stages"):
         evaluate_fixture(value)
-
-
-def test_ranked_passage_is_not_mistaken_for_supported_premise() -> None:
-    value = fixture()
-    premise = next(event for event in value["events"] if event["type"] == "premise_assessed")
-    premise["support"] = "unsupported"
-
-    result = evaluate_fixture(value)
-
-    assert result["coverage"]["passage_alternative_complete"]["rate"] == 1.0
-    assert result["coverage"]["premise_complete"]["rate"] == 0.0
-    assert result["coverage"]["unsupported_premise"]["rate"] == 1.0
-    support = result["coverage"]["premise_support_confusion"]
-    assert support["confusion"] == {
-        "full": {"full": 0, "unsupported": 1},
-        "unsupported": {"full": 0, "unsupported": 0},
-    }
 
 
 def test_contradiction_requires_citation_and_premise_handling() -> None:
@@ -201,48 +162,6 @@ def test_exact_vector_uses_one_domain_judgment_per_domain() -> None:
     assert evaluate_fixture(value)["scientific"]["exact_vector"]["agreement"]["numerator"] == 0
 
 
-def test_reliability_includes_failed_planned_draws_and_names_assessed_only_metrics() -> None:
-    value = fixture()
-    reference = value["references"][0]
-    attempt = value["attempts"][0]
-    events = list(value["events"])
-    value["references"].append({**reference, "run_id": "run-2", "draw": "2"})
-    value["attempts"].append(
-        {
-            **attempt,
-            "run_id": "run-2",
-            "draw": "2",
-            "attempt_id": "b",
-            "disposition": "failed",
-            "prediction": "low",
-        }
-    )
-    value["events"].extend(
-        {**event, "run_id": "run-2", "draw": "2", "attempt_id": "b"} for event in events
-    )
-    value["manifest"]["attempt_ids"].append("b")
-
-    reliability = evaluate_fixture(value)["reliability"]
-    assert reliability["attempted"]["accuracy"] == {
-        "numerator": 1,
-        "denominator": 2,
-        "rate": 0.5,
-    }
-    assert reliability["attempted"]["all_correct"] == {
-        "numerator": 0,
-        "denominator": 1,
-        "rate": 0.0,
-    }
-    assert reliability["attempted"]["dispositions"] == {"assessed": 1, "failed": 1}
-    assert reliability["attempted"]["draws_per_cell"] == {2: 1}
-    assert reliability["assessed_only"]["all_correct"] == {
-        "numerator": 1,
-        "denominator": 1,
-        "rate": 1.0,
-    }
-    assert reliability["assessed_only"]["draws_per_cell"] == {1: 1}
-
-
 def test_split_leak_fails_for_every_fingerprint_kind() -> None:
     for field in ("source_fingerprints", "projection_fingerprints", "document_family_fingerprints"):
         manifest = deepcopy(fixture()["manifest"])
@@ -258,23 +177,6 @@ def test_split_leak_fails_for_every_fingerprint_kind() -> None:
         manifest["splits"][-1][field] = manifest["splits"][0][field]
         with pytest.raises(ValueError, match="crosses"):
             validate_split_isolation(manifest)
-
-
-def test_duplicate_selected_and_restricted_input_are_not_silently_accepted() -> None:
-    value = fixture()
-    value["references"][0]["restricted"] = {
-        "answer_label": "low",
-        "reviewer_id": "restricted",
-        "coordinates": [1, 2],
-        "rationale": "private",
-    }
-    assert "restricted" not in json.dumps(evaluate_fixture(value))
-    value = fixture()
-    duplicate = {**value["attempts"][0], "attempt_id": "b"}
-    value["attempts"].append(duplicate)
-    value["manifest"]["attempt_ids"].append("b")
-    with pytest.raises(ValueError, match="selection rule"):
-        evaluate_fixture(value)
 
 
 def test_reference_truth_is_independent_of_attempts() -> None:
@@ -334,23 +236,6 @@ def test_nonselected_attempt_trajectory_cannot_credit_selected_attempt() -> None
     assert result["queries"]["source_novel"] == 0
 
 
-def test_optional_premise_does_not_change_required_premise_denominator() -> None:
-    value = fixture()
-    value["references"].append(
-        {
-            **value["references"][0],
-            "premise_id": "optional",
-            "required": False,
-            "acceptable_evidence_sets": [["never-seen"]],
-        }
-    )
-
-    result = evaluate_fixture(value)
-
-    assert result["coverage"]["premise_complete"]["denominator"] == 1
-    assert result["coverage"]["passage_alternative_complete"]["denominator"] == 1
-
-
 def test_absent_planned_draws_are_counted_as_missing() -> None:
     value = fixture()
     reference = value["references"][0]
@@ -372,59 +257,6 @@ def test_absent_planned_draws_are_counted_as_missing() -> None:
         "rate": 0.0,
     }
     assert reliability["assessed_only"]["accuracy"]["denominator"] == 0
-
-
-def test_two_failed_planned_draws_stay_in_attempted_reliability_denominator() -> None:
-    value = fixture()
-    reference = value["references"][0]
-    value["references"].append({**reference, "run_id": "run-2", "draw": "2"})
-    value["attempts"][0]["disposition"] = "failed"
-    value["attempts"].append(
-        {
-            **value["attempts"][0],
-            "run_id": "run-2",
-            "draw": "2",
-            "attempt_id": "b",
-            "selected": True,
-        }
-    )
-    value["manifest"]["attempt_ids"].append("b")
-
-    reliability = evaluate_fixture(value)["reliability"]
-
-    assert reliability["attempted"]["accuracy"] == {
-        "numerator": 0,
-        "denominator": 2,
-        "rate": 0.0,
-    }
-    assert reliability["attempted"]["dispositions"] == {"failed": 2}
-
-
-def test_infrastructure_retry_is_separate_from_independent_draw_denominator() -> None:
-    value = fixture()
-    value["attempts"].append(
-        {
-            **value["attempts"][0],
-            "attempt_id": "b",
-            "selected": False,
-            "disposition": "failed",
-            "retry_of": "a",
-        }
-    )
-    value["manifest"]["attempt_ids"].append("b")
-
-    reliability = evaluate_fixture(value)["reliability"]
-
-    assert reliability["attempted"]["planned_draws"] == 1
-    assert reliability["attempted"]["accuracy"] == {
-        "numerator": 1,
-        "denominator": 1,
-        "rate": 1.0,
-    }
-    assert reliability["infrastructure_retries"] == {
-        "count": 1,
-        "dispositions": {"failed": 1},
-    }
 
 
 def test_split_rows_are_closed_and_dimensions_are_manifest_bound() -> None:

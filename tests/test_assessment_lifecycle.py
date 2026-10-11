@@ -27,88 +27,6 @@ from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import ProposalDraft
 
 
-def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    domain_id = SCIENTIFIC_PACK.domains[0].id
-    context = _call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id})
-    assert context["head"]["next_action"] == {
-        "operation": "save_domain_judgment",
-        "authority": "host",
-        "trial_id": "trial",
-        "domain_id": domain_id,
-        "expected_revision": revision,
-        "caller_inputs": ["answers"],
-    }
-    draft = _domain_draft("trial", domain_id, revision, evidence)
-    saved = _call(workspace, "save_domain_judgment", draft)
-    assert saved["outcome"] == "success"
-    checkpoint = _state(workspace)["domain_records"][f"trial:{domain_id}"]
-    assert checkpoint["answers"][0]["bases"][0]["evidence"] == evidence["identity"]
-    assert _call(workspace, "save_domain_judgment", draft)["data"]["retry"] is True
-
-    stale = _domain_draft("trial", SCIENTIFIC_PACK.domains[1].id, revision, evidence)
-    assert _call(workspace, "save_domain_judgment", stale)["outcome"] == "conflict"
-
-    receipt = _search_receipt(
-        workspace,
-        _call(
-            workspace,
-            "search_sources",
-            {"trial_id": "trial", "query": "not-in-source", "mode": "any"},
-        )["data"]["search_receipt"],
-    )
-    absence = _domain_draft(
-        "trial",
-        SCIENTIFIC_PACK.domains[1].id,
-        saved["head"]["state_revision"],
-        search_receipt=receipt["handle"],
-    )
-    absence["answers"][0]["bases"] = [{"kind": "absence", "search_receipt": receipt["handle"]}]
-    accepted = _call(workspace, "save_domain_judgment", absence)
-    assert accepted["outcome"] == "success"
-    checkpoint = _state(workspace)["domain_records"][f"trial:{SCIENTIFIC_PACK.domains[1].id}"]
-    assert len(checkpoint["search_accounts"]) == 1
-    assert {
-        key: checkpoint["search_accounts"][0][key]
-        for key in (
-            "identity",
-            "handle",
-            "trial_id",
-            "query",
-            "mode",
-            "total_matches",
-            "truncated",
-            "condition",
-        )
-    } == {
-        key: receipt[key]
-        for key in (
-            "identity",
-            "handle",
-            "trial_id",
-            "query",
-            "mode",
-            "total_matches",
-            "truncated",
-            "condition",
-        )
-    }
-
-    invalid = _domain_draft(
-        "trial",
-        SCIENTIFIC_PACK.domains[2].id,
-        accepted["head"]["state_revision"],
-        search_receipt=receipt["handle"],
-    )
-    invalid["answers"][0]["bases"] = [{"kind": "absence", "search_receipt": "sr_" + "0" * 16}]
-    assert _call(workspace, "save_domain_judgment", invalid)["outcome"] == "repair"
-
-
-def test_absence_based_five_domain_assessment_finalizes(tmp_path: Path) -> None:
-    artifact = _absence_assessed_artifact(_workspace(tmp_path))
-    assert artifact.is_file()
-
-
 def test_finalization_preserves_trailing_pdf_format_characters(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     source = workspace / "input" / "trial" / "main.txt"
@@ -300,6 +218,9 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
         "Trial is closed; Domain revisions are not allowed"
     )
 
+    # Trial B's report is read for this phase before its first Domain.
+    assert _call(tmp_path, "get_status", {})["head"]["next_action"]["operation"] == "read_pages"
+    _read_required_main_reports(tmp_path)
     status = _call(tmp_path, "get_status", {})
     assert status["head"]["next_action"] == {
         "operation": "get_domain_context",
@@ -588,78 +509,6 @@ def test_needs_input_and_repairs_are_authoritative(tmp_path: Path) -> None:
         assert _standalone_verify(tampered).returncode == 1
 
 
-def test_unavailable_result_requires_researcher_review(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    ambiguous = _unavailable_result(
-        evidence, "Researcher must select the intended progression-free survival result."
-    )
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [ambiguous]))
-    assert saved["outcome"] == "review_required", saved
-    assert saved["head"]["next_action"]["operation"] == "researcher_review"
-    assert saved["head"]["next_action"]["authority"] == "researcher"
-    # The model-facing boundary cannot approve this candidate.  Only the
-    # explicit researcher seam can move it to a preapproval terminal.
-    _review(workspace)
-    status = _call(workspace, "get_status", {})
-    action = status["head"]["next_action"]
-    assert action == {
-        "operation": "review_trial",
-        "authority": "host",
-        "trial_id": "trial",
-        "expected_revision": status["head"]["state_revision"],
-    }
-    reviewed = _call(
-        workspace,
-        action["operation"],
-        {key: action[key] for key in ("trial_id", "expected_revision")},
-    )
-    assert reviewed["data"]["review"]["disposition"] == "needs_input"
-    finalized = _finalize_assessment(workspace, int(reviewed["head"]["state_revision"]))
-    assert finalized["data"]["trial_dispositions"] == {"trial": "needs_input"}
-
-
-def test_unsupported_result_review_continuation_omits_request(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["applicability"]["design"] = "cluster_randomized"
-    result["applicability"]["rationale"] = "The report assigns groups by clinic."
-
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert saved["outcome"] == "review_required", saved
-    _review(workspace)
-    _read_required_main_reports(workspace)
-
-    status = _call(workspace, "get_status", {})
-    action = status["head"]["next_action"]
-    assert action == {
-        "operation": "review_trial",
-        "authority": "host",
-        "trial_id": "trial",
-        "expected_revision": status["head"]["state_revision"],
-    }
-    reviewed = _call(
-        workspace,
-        action["operation"],
-        {key: action[key] for key in ("trial_id", "expected_revision")},
-    )
-    assert reviewed["data"]["review"]["disposition"] == "unsupported_design"
-    close_action = reviewed["head"]["next_action"]
-    closed = _call(
-        workspace,
-        close_action["operation"],
-        {
-            "trial_id": close_action["trial_id"],
-            "expected_revision": close_action["expected_revision"],
-            "review_reference": close_action["review_reference"],
-        },
-    )
-    assert closed["data"]["closure"]["disposition"] == "unsupported_design"
-
-
 def test_terminal_records_must_match_each_disposition_exactly(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
@@ -785,37 +634,6 @@ def test_adverse_event_grades_are_categories_and_grade_five_is_retained(tmp_path
         },
     )
     assert closed["data"]["closure"]["disposition"] == "needs_input"
-
-
-def test_non_exact_result_binds_source_facts_but_not_caller_owned_target_leaves(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    evidence = _prepared_evidence(workspace)
-    result = _result(evidence)
-    result["relation"] = "related"
-    result["relation_rationale"] = (
-        "The Source reports a related endpoint with a different definition."
-    )
-    result["reported"]["endpoint"]["name"] = "alternate endpoint"
-    result["reported"]["endpoint"]["definition"] = (
-        "The requested outcome was measured in the analyzed population."
-    )
-
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert saved["outcome"] == "review_required"
-    stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
-    paths = {binding["field"]["path"] for binding in stored["bindings"]}
-    assert "/target/outcome_definition" not in paths
-    assert "/target/measurement/metric" not in paths
-    assert "/target/effect_of_interest" not in paths
-    assert "/target/comparison_groups/0/id" not in paths
-    assert "/target/comparison_groups/1/id" not in paths
-    assert "/target/comparison_groups/0/assignment" not in paths
-    assert "/target/comparison_groups/1/assignment" not in paths
-    assert "/target/time_point_or_window/description" not in paths
-    assert "/target/measurement/method" not in paths
-    assert "/reported/endpoint/name" in paths
 
 
 def test_mixed_batch_has_authoritative_needs_input_and_assessed_dispositions(

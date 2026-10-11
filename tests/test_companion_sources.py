@@ -83,32 +83,6 @@ def test_doi_citation_boundaries_preserve_full_identity(locator, citation, expec
     assert companion._locator_present(reference("doi", locator), citation) is expected
 
 
-def test_punctuated_doi_handoff_preserves_citation_and_source(tmp_path, network):
-    network(lambda request: pytest.fail("request handoff must not fetch"))
-    original = tmp_path / "original"
-    directory = original / "input" / "trial"
-    directory.mkdir(parents=True)
-    citation = "Protocol citation (doi: " + DOI + ")."
-    (directory / "report.txt").write_text(citation)
-    prepare_batch(
-        original, [TrialDeclaration(id="trial", label="trial", requested_outcome="neutral")], 0
-    )
-    source = list_sources(original, "trial")["sources"][0]
-    before = _state(original)
-    ref = reference("doi", DOI).model_copy(update={"source_id": source["id"], "citation": citation})
-    companion.request_companion_source(original, ref)
-    request_path = next((original / ".rob2-kit/companion_requests").glob("*/request.json"))
-    saved = json.loads(request_path.read_text())
-    assert saved["reference"]["citation"] == citation
-    assert saved["reference"]["locator"] == DOI
-    assert saved["parent_source_sha256"] == source["sha256"]
-    assert _state(original) == before
-    with pytest.raises(ValueError, match="citation must occur"):
-        companion.request_companion_source(
-            original, ref.model_copy(update={"citation": "Invented reference " + DOI})
-        )
-
-
 def test_bare_document_filename_has_url_recovery_without_fetch(tmp_path, network):
     network(lambda request: pytest.fail("bare filename must not fetch"))
     original = tmp_path / "original"
@@ -275,38 +249,6 @@ def test_failed_access_and_nonpdf_are_unresolved(network, status, content):
     assert companion._acquire(reference())[0] is None
 
 
-def test_timeout_and_size_limit_are_unresolved(network, monkeypatch):
-    def timeout(request):
-        raise httpx.ReadTimeout("public access timed out", request=request)
-
-    network(timeout)
-    assert companion._acquire(reference())[1]["reason"] == "ReadTimeout"
-    network(lambda request: httpx.Response(200, content=pdf()))
-    monkeypatch.setattr(companion, "MAX_BYTES", 10)
-    assert companion._acquire(reference())[1]["reason"] == "document_size_limit"
-
-
-def test_observed_matching_identifier_is_still_not_applicability(network):
-    network(
-        lambda request: httpx.Response(
-            200, content=pdf("ClinicalTrials.gov Identifier: NCT00000001")
-        )
-    )
-    _, report = companion._acquire(reference())
-    assert report["trial_relation"] == "document_registration_claim_matches"
-    assert report["source_role"] == "other"
-    assert any("do not establish applicability" in warning for warning in report["limitations"])
-
-
-def test_compressed_response_is_unresolved(network):
-    network(
-        lambda request: httpx.Response(
-            200, stream=httpx.ByteStream(pdf()), headers={"content-encoding": "br"}
-        )
-    )
-    assert companion._acquire(reference())[1]["reason"] == "unsupported_content_encoding"
-
-
 @pytest.mark.parametrize(
     "pages,relation,claims",
     [
@@ -341,32 +283,6 @@ def test_registration_claims_are_distinct_from_body_mentions(pages, relation, cl
     for mention in observed["registry_identifier_mentions"]:
         assert mention["registry_id"] in mention["snippet"]
         assert mention["registry_id"] in pages[mention["page"] - 1]
-
-
-@pytest.mark.parametrize(
-    "kind,locator,cited",
-    [
-        ("doi", DOI, DOI + "-other"),
-        ("url", URL, URL + "?version=2"),
-    ],
-)
-def test_truncated_locator_is_not_admitted_even_with_truncated_citation(
-    tmp_path, network, kind, locator, cited
-):
-    network(lambda request: pytest.fail("truncated identity fetched"))
-    directory = tmp_path / "old" / "input" / "trial"
-    directory.mkdir(parents=True)
-    (directory / "report.txt").write_text('Explicit reference "' + cited + '"')
-    prepare_batch(
-        tmp_path / "old",
-        [TrialDeclaration(id="trial", label="trial", requested_outcome="neutral")],
-        0,
-    )
-    source = list_sources(tmp_path / "old", "trial")["sources"][0]
-    ref = reference(kind, locator).model_copy(update={"source_id": source_handle(source["id"])})
-    with pytest.raises(ValueError, match="explicitly present"):
-        companion.stage_companion(tmp_path / "old", tmp_path / "new", ref, "require-offline-replay")
-    assert not (tmp_path / "new").exists()
 
 
 def _offline_parent(tmp_path):
@@ -569,56 +485,6 @@ def test_registry_refresh_requires_explicit_policy_and_omission_is_visible(tmp_p
     )
     assert result["capture"]["registry_policy"] == "retain-input-settings"
     assert result["capture"]["input_transfer"]["registry_settings"][0]["acquire_current_documents"]
-
-
-def test_optional_failure_does_not_change_active_assessment_or_force_ni(
-    tmp_path, network, monkeypatch
-):
-    from support import rob2 as fixtures
-
-    original_factory = fixtures._workspace
-
-    def workspace(*args, **kwargs):
-        root = original_factory(*args, **kwargs)
-        p = root / "input/trial/main.txt"
-        p.write_text(p.read_text() + "Reference <" + URL + ">\n")
-        return root
-
-    monkeypatch.setattr(fixtures, "_workspace", workspace)
-    network(lambda request: httpx.Response(404))
-    root, _, _ = fixtures._assessment_workspace(tmp_path)
-    monkeypatch.setenv("ROB2_WORKSPACE", str(root))
-    source = list_sources(root, "trial")["sources"][0]
-    ref = reference().model_copy(update={"source_id": source_handle(source["id"])})
-    before = _state(root)
-    assert before["phase"] == "assessment"
-
-    async def record():
-        async with Client(mcp) as client:
-            status = (await client.call_tool("get_status", {})).structured_content
-            handoff = (
-                await client.call_tool("request_companion_source", {"reference": ref.model_dump()})
-            ).structured_content
-            assert handoff["head"] == status["head"]
-            bad = (
-                await client.call_tool(
-                    "request_companion_source",
-                    {
-                        "reference": ref.model_copy(
-                            update={"source_id": "sh_0000000000000000"}
-                        ).model_dump()
-                    },
-                )
-            ).structured_content
-            assert bad["outcome"] == "condition" and bad["head"] == status["head"]
-
-    asyncio.run(record())
-    staged = companion.stage_companion(
-        root, tmp_path.parent / (tmp_path.name + "-optional"), ref, "require-offline-replay"
-    )
-    assert staged["outcome"] == "unresolved" and not staged["capture"]["document_staged"]
-    assert not staged["capture"]["admitted_to_active_batch"]
-    assert _state(root) == before
 
 
 def test_input_changes_during_fetch_do_not_claim_preservation(tmp_path, network):

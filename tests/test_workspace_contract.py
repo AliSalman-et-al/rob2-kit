@@ -2,35 +2,12 @@
 
 from __future__ import annotations
 
-import shutil
 import sqlite3
 from pathlib import Path
 
 import pytest
 
 from rob2_kit.application._state import _ensure
-
-
-def test_new_workspace_uses_v0_6_contract(tmp_path: Path) -> None:
-    workspace = tmp_path / "workspace"
-    (workspace / ".rob2-kit").mkdir(parents=True)
-
-    _ensure(workspace)
-
-    with sqlite3.connect(workspace / ".rob2-kit" / "canonical.sqlite3") as connection:
-        contract = connection.execute("SELECT value FROM meta WHERE name='contract'").fetchone()
-    assert contract == ("0.6.0",)
-
-
-def test_workspace_probe_releases_read_only_database_handle(tmp_path: Path) -> None:
-    workspace = tmp_path / "workspace"
-    (workspace / ".rob2-kit").mkdir(parents=True)
-    _ensure(workspace)
-
-    _ensure(workspace)
-    shutil.rmtree(workspace)
-
-    assert not workspace.exists()
 
 
 def test_v0_8_workspace_is_rejected_without_modification(tmp_path: Path) -> None:

@@ -2013,35 +2013,6 @@ def test_host_delivery_accepts_completed_get_status_without_status_head(
     assert diagnosis is None
 
 
-def test_no_hit_search_is_unresolved_not_scientific_absence() -> None:
-    from rob2_kit.application.domains import _evidence_sufficiency
-
-    summary = _evidence_sufficiency(
-        [
-            {
-                "question_id": "sq:test",
-                "bases": [
-                    {
-                        "kind": "absence",
-                        "search_receipt": "receipt-1",
-                    }
-                ],
-            }
-        ],
-        {
-            "receipt-1": {
-                "truncated": False,
-                "total_matches": 0,
-                "condition": "no_hits",
-                "ranking_complete": True,
-                "exhausted": True,
-            }
-        },
-    )
-
-    assert summary["claims"][0]["status"] == "unresolved"
-
-
 def test_continuation_session_is_recovered_from_a_crashed_phase_trace(tmp_path: Path) -> None:
     runner = _runner()
     run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"

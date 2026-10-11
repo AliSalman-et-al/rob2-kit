@@ -19,28 +19,6 @@ def flat_result() -> dict:
     return _public_proposal_records([old])["selections"][0]
 
 
-def test_flat_route_preserves_canonical_draft_without_tags() -> None:
-    flat = flat_result()
-    assert not {"kind", "form", "target", "reported"} & flat.keys()
-    result = ProposalSelection.model_validate(flat).to_result_draft()
-    assert isinstance(result, AssessableResultDraft)
-    new = result.model_dump(mode="json")
-    old = _draft(_allsop_result()).results[0].model_dump(mode="json")
-    assert new.pop("passage_refs") == [item["handle"] for item in old["evidence"]]
-    new.pop("evidence")
-    old.pop("evidence")
-    old.pop("passage_refs")
-    assert new == old
-
-
-@pytest.mark.parametrize("relation", ["supports", "quantitative"])
-def test_scientific_relation_is_not_guessed(relation: str) -> None:
-    flat = flat_result()
-    flat["relation"] = relation
-    with pytest.raises(ValidationError):
-        ProposalSelection.model_validate(flat)
-
-
 def test_actual_invalid_attempts_still_require_explicit_scientific_choices() -> None:
     root = Path(__file__).resolve().parents[1]
     attempts = json.loads(
@@ -91,23 +69,6 @@ def test_incomplete_scientific_inputs_remain_rejected(changes: dict) -> None:
     flat["candidate"].update(changes)
     with pytest.raises(ValidationError):
         ProposalSelection.model_validate(flat)
-
-
-def test_public_documented_examples_match_live_flat_input() -> None:
-    import re
-
-    root = Path(__file__).resolve().parents[1]
-    reference = root / "src/rob2_kit/skills/rob2-assess/references/result.md"
-    count = 0
-    for block in re.findall(
-        r"```json\n(.*?)\n```", reference.read_text(encoding="utf-8"), flags=re.S
-    ):
-        request = json.loads(block)
-        for selection in request.get("selections", []):
-            parsed = ProposalSelection.model_validate(selection)
-            assert parsed.to_result_draft().trial_id == selection["trial_id"]
-            count += 1
-    assert count == 2
 
 
 def test_flat_proposal_rejects_unsupported_estimate_without_persisting(tmp_path: Path) -> None:

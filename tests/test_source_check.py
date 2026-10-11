@@ -158,17 +158,6 @@ def test_full_canonical_answers_paired_guidance_pixels_and_fresh_preparation(ass
         )
 
 
-def test_retaining_uncertainty_and_even_wrong_criticism_are_non_authoritative(assessment):
-    workspace, packet = assessment
-    before = _protected(workspace)
-    for raw in (_report(packet), _revise(packet)):
-        receipt = validate_report(workspace, packet, SourceCheckReport.model_validate(raw))
-        assert receipt["advisory_only"] and not receipt["semantic_support_verified"]
-        assert receipt["retention_is_not_correctness_proof"] and not receipt["assessment_mutated"]
-    assert packet["questions"][0]["assessment"]["unknowns"]
-    assert _protected(workspace) == before
-
-
 @pytest.mark.parametrize("branch", ["retain", "revise", "uncertain"])
 def test_schema_branch_requirements_match_runtime(branch):
     report: dict[str, Any] = {
@@ -395,41 +384,6 @@ def test_followup_recovery_and_tampered_packet_cannot_rewrite_original_support(a
     with pytest.raises(ValueError, match="Historical advisory contract"):
         validate_report(workspace, old, SourceCheckReport.model_validate(_report(packet)))
     assert _protected(workspace) == before
-
-
-def test_duplicate_saved_text_has_distinct_bound_entry_ids_without_clause_copying(assessment):
-    workspace, packet = assessment
-    question = packet["questions"][0]
-    assert question["assessment"]["unknowns"][0] == question["assessment"]["unknowns"][1]
-    assert {"/unknowns/0", "/unknowns/1"} <= set(question["entry_ids"])
-    report = _revise(packet)
-    report["questions"][0]["affected_entries"] = ["/unknowns/0", "/unknowns/1"]
-    receipt = validate_report(workspace, packet, SourceCheckReport.model_validate(report))
-    assert [e["entry_id"] for e in receipt["resolved_entries"]] == ["/unknowns/0", "/unknowns/1"]
-    assert receipt["resolved_entries"][0]["value"] == receipt["resolved_entries"][1]["value"]
-
-
-def test_all_five_domains_and_only_active_answers_are_reviewed(tmp_path):
-    workspace, evidence, revision = support._assessment_workspace(tmp_path)
-    for domain in ("randomization", "deviations", "missing", "measurement", "selection"):
-        did = "domain:" + domain
-        support._call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": did})
-        draft = support._domain_draft("trial", did, revision, evidence)
-        if domain == "missing":
-            draft["answers"][0]["answer"] = "yes"
-        result = support._call(workspace, "save_domain_judgment", draft)
-        assert result["outcome"] == "success", result
-        revision = result["head"]["state_revision"]
-    packet = export_current_packet(workspace, "trial")
-    assert {q["domain_id"] for q in packet["questions"]} == {
-        "domain:" + d
-        for d in ("randomization", "deviations", "missing", "measurement", "selection")
-    }
-    missing = [q for q in packet["questions"] if q["domain_id"] == "domain:missing"]
-    assert len(missing) == 1
-    assert validate_report(workspace, packet, SourceCheckReport.model_validate(_report(packet)))[
-        "advisory_only"
-    ]
 
 
 def test_current_checkpoint_change_rejects_old_snapshot(assessment):

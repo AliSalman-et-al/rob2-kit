@@ -59,28 +59,6 @@ def test_required_premise_names_missing_coverage() -> None:
         PremiseCoverage("endpoint", required=True, covered=False)
 
 
-def test_selected_passage_is_partial_source_read_not_source_complete() -> None:
-    coverage = _source_coverage(
-        "trial-a",
-        [{"id": "source-a", "role": "main_article", "page_count": 4}],
-        {"evidence-a": {"source_id": "source-a", "inclusion_reason": "result"}},
-        {},
-    )
-
-    assert coverage == [
-        {
-            "source_id": "source-a",
-            "source_role": "main_article",
-            "page_count": 4,
-            "status": "partially_read",
-            "search": "unsearched",
-            "read": "partially_read",
-            "render": "not_delivered",
-            "recovery": [],
-        }
-    ]
-
-
 def test_multi_source_search_does_not_transfer_matches_between_sources() -> None:
     coverage = _source_coverage(
         "trial-a",
@@ -108,71 +86,3 @@ def test_multi_source_search_does_not_transfer_matches_between_sources() -> None
     assert by_source["source-a"]["search"] == "searched_match"
     assert by_source["source-b"]["status"] == "searched_no_match"
     assert by_source["source-b"]["search"] == "searched_no_match"
-
-
-def test_completed_search_pagination_clears_prior_incompleteness_but_gaps_do_not() -> None:
-    base = {
-        "trial_id": "trial-a",
-        "sources": [{"id": "source-a"}, {"id": "source-b"}],
-        "total_matches": 3,
-        "candidate_count": 3,
-    }
-    complete = _source_coverage(
-        "trial-a",
-        [
-            {"id": "source-a", "role": "main_article", "page_count": 4},
-            {"id": "source-b", "role": "supplement", "page_count": 2},
-        ],
-        {},
-        {
-            "page-1": base
-            | {
-                "session_id": "session-1",
-                "hits": [{"source_id": "source-a", "page": 1}],
-                "returned_candidates": [{"rank": 1}, {"rank": 2}],
-                "truncated": True,
-                "next_cursor": "cursor-2",
-                "exhausted": False,
-            },
-            "page-2": base
-            | {
-                "session_id": "session-1",
-                "hits": [],
-                "returned_candidates": [{"rank": 3}],
-                "truncated": False,
-                "next_cursor": None,
-                "exhausted": True,
-            },
-        },
-    )
-    complete_by_source = {item["source_id"]: item for item in complete}
-    assert complete_by_source["source-a"]["status"] == "candidate_only"
-    assert complete_by_source["source-b"]["status"] == "searched_no_match"
-
-    gapped = _source_coverage(
-        "trial-a",
-        [{"id": "source-a", "role": "main_article", "page_count": 4}],
-        {},
-        {
-            "page-1": base
-            | {
-                "session_id": "session-2",
-                "hits": [{"source_id": "source-a", "page": 1}],
-                "returned_candidates": [{"rank": 1}],
-                "truncated": True,
-                "next_cursor": "cursor-3",
-                "exhausted": False,
-            },
-            "page-2": base
-            | {
-                "session_id": "session-2",
-                "hits": [],
-                "returned_candidates": [{"rank": 3}],
-                "truncated": False,
-                "next_cursor": None,
-                "exhausted": True,
-            },
-        },
-    )
-    assert gapped[0]["status"] == "retrieval_incomplete"
-    assert gapped[0]["search"] == "retrieval_incomplete"

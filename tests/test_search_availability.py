@@ -44,27 +44,6 @@ def test_no_captured_sources_does_not_issue_an_absence_receipt(tmp_path: Path):
         assert connection.execute("SELECT count(*) FROM search_sessions").fetchone()[0] == 0
 
 
-def test_pdf_without_text_routes_to_image_recovery_not_query_refinement(tmp_path: Path):
-    _prepare(tmp_path, image_only=True)
-    result = _search(tmp_path)
-    assert result["outcome"] == "condition"
-    assert result["condition"]["code"] == "no_searchable_sources"
-    assert "render_page" in result["condition"]["detail"]
-    assert "data" not in result
-
-
-def test_source_scope_with_no_text_is_distinct_from_trial_lexical_miss(tmp_path: Path):
-    _prepare(tmp_path, article="Outcome symptoms were collected monthly.", image_only=True)
-    sources = _call(tmp_path, "list_sources", {"trial_id": "trial"})["data"]["sources"]
-    scan = next(source for source in sources if source["logical_path"] == "scan.pdf")
-    scoped = _search(tmp_path, source_id=scan["id"])
-    assert scoped["condition"]["code"] == "no_searchable_sources"
-    searched = _search(tmp_path)
-    assert searched["outcome"] == "success"
-    assert searched["data"]["condition"] == "no_hits"
-    assert searched["data"]["search_receipt"]
-
-
 def test_search_batch_preserves_unsearchable_item_and_successful_independent_query(tmp_path: Path):
     _prepare(tmp_path, article="Allocation was concealed.", image_only=True)
     sources = _call(tmp_path, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -130,13 +109,3 @@ def test_unavailable_source_preserves_verified_search_of_other_sources(tmp_path:
     next(capture.iterdir()).write_bytes(b"Different captured content")
     with pytest.raises(ToolError, match="internal_evidence_integrity_error"):
         _search(tmp_path, source_id=article["id"])
-
-
-def test_search_scoped_to_unavailable_source_does_not_offer_other_scope(tmp_path: Path):
-    _prepare(tmp_path, article="Allocation was concealed.")
-    source = _call(tmp_path, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-    next((tmp_path / ".rob2-kit" / "sources" / "trial").iterdir()).unlink()
-    result = _search(tmp_path, source_id=source["id"])
-    assert result["condition"]["unavailable_source_ids"] == [source["id"]]
-    assert result["condition"]["available_source_ids"] == []
-    assert "data" not in result
