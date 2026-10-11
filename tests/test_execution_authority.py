@@ -24,7 +24,7 @@ if str(SCRIPTS) not in sys.path:
 
 
 def _runner() -> dict[str, Any]:
-    return runpy.run_path(str(SCRIPTS / "run_rsi_case.py"))
+    return runpy.run_path(str(SCRIPTS / "run_verification_case.py"))
 
 
 def _tools_list_response() -> dict[str, Any]:
@@ -782,7 +782,7 @@ def _write_host_tools_recovery_fixture(
         encoding="utf-8",
     )
     approved_scope = {
-        "schema": "rob2-kit.rsi-approved-scope.v1",
+        "schema": "rob2-kit.verification-approved-scope.v1",
         "approval_identity": "sha256:approval",
         "proposal_identity": "sha256:proposal",
         "results": [{"identity": "sha256:result", "trial_id": "trial-a"}],
@@ -1071,10 +1071,10 @@ def _write_host_tools_recovery_fixture(
             returncode=0, stdout=json.dumps(status), stderr=""
         ),
     )
-    prepare_rsi_workspace = importlib.import_module("prepare_rsi_workspace")
+    prepare_verification_workspace = importlib.import_module("prepare_verification_workspace")
 
     monkeypatch.setattr(
-        prepare_rsi_workspace,
+        prepare_verification_workspace,
         "approved_scope_record",
         lambda _workspace, _requested_scope: approved_scope,
     )
@@ -1578,7 +1578,7 @@ def test_scientific_terminal_status_requires_explicit_operator_command(
         sys,
         "argv",
         [
-            str(SCRIPTS / "run_rsi_case.py"),
+            str(SCRIPTS / "run_verification_case.py"),
             "--run-dir",
             str(run_dir),
             "--mark-scientific-terminal",

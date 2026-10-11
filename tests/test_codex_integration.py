@@ -22,7 +22,7 @@ def test_packaged_hosts_select_codex_compatibility_only():
 
 @pytest.mark.parametrize("command", ["mcp", "mcp-codex"])
 def test_runner_config_keeps_selected_binding(command, tmp_path):
-    runner = runpy.run_path("scripts/run_rsi_case.py")
+    runner = runpy.run_path("scripts/run_verification_case.py")
     config = tomllib.loads("\n".join(runner["_codex_mcp_config"]("rob2", tmp_path, command)))
     assert config["mcp_servers"]["rob2"]["args"] == [command]
 

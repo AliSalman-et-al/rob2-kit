@@ -1,26 +1,18 @@
 from __future__ import annotations
 
 import copy
-import json
-import zipfile
-from pathlib import Path
 
 import pytest
+from support.rob2 import _saved_result
 
 from rob2_kit.application.proposal import _proposal_shape_repairs
 from rob2_kit.application.result_scope import result_scope_review
 from rob2_kit.workflow_models import ProposalDraft
 
 
-def _allsop_result() -> dict:
-    root = Path(__file__).resolve().parents[1]
-    artifact = next(
-        (root / "tests/fixtures/historical-evaluation/2026-10-03-allsop-completion-544a523").glob(
-            "*.rob2.zip"
-        )
-    )
-    with zipfile.ZipFile(artifact) as archive:
-        return json.loads(archive.read("canonical.json"))["proposal"]["payload"]["results"][0]
+@pytest.fixture(scope="module")
+def saved_result(tmp_path_factory: pytest.TempPathFactory) -> dict:
+    return _saved_result(tmp_path_factory.mktemp("assessed"))
 
 
 def _draft(raw: dict) -> ProposalDraft:
@@ -62,9 +54,9 @@ def _draft(raw: dict) -> ProposalDraft:
     ],
 )
 def test_material_matching_conflicts_remain_visible_and_cannot_claim_exactness(
-    requested: str, reported: str, facet: str, mismatch: str
+    saved_result: dict, requested: str, reported: str, facet: str, mismatch: str
 ) -> None:
-    raw = _allsop_result()
+    raw = copy.deepcopy(saved_result)
     raw["requested_outcome"] = requested
     raw["target"]["outcome_definition"] = requested
     raw["target"]["measurement"]["metric"] = requested
@@ -82,12 +74,12 @@ def test_material_matching_conflicts_remain_visible_and_cannot_claim_exactness(
     assert raw == original
 
 
-def test_different_word_windows_are_not_certified_or_fuzzily_rejected() -> None:
-    raw = _allsop_result()
+def test_different_word_windows_are_not_certified_or_fuzzily_rejected(saved_result: dict) -> None:
+    raw = copy.deepcopy(saved_result)
     raw["relation_rationale"] = "Target days 1–6; reported model uses days 1–9."
     review = result_scope_review([raw])[0]
     assert review["relation_rationale"] == raw["relation_rationale"]
     assert review["reported_time_point_or_window"] is None
     assert review["verification"] == "requires_source_interpretation"
     # These are not two independently typed window bounds.
-    assert _proposal_shape_repairs(_draft(raw), {"allsop-2014": raw["requested_outcome"]}) == []
+    assert _proposal_shape_repairs(_draft(raw), {raw["trial_id"]: raw["requested_outcome"]}) == []

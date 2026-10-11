@@ -17,21 +17,22 @@ from pathlib import Path
 from typing import Any
 
 from fastmcp import Client
+from fastmcp.client.client import CallToolResult
 from fastmcp.client.transports import StdioTransport
-from mcp.types import TextContent, TextResourceContents
+from mcp.types import TextContent, TextResourceContents, Tool
 
 REPO = Path(__file__).resolve().parents[2]
 
 
 class Agent:
-    def __init__(self, workspace: Path) -> None:
+    def __init__(self, workspace: Path, server: str = "mcp") -> None:
         self.workspace = workspace
         self.trials: dict[str, dict[str, str]] = {}  # trial_id -> role -> source_id
         self.trial_id: str | None = None  # the Trial the next call concerns
         self.sources: dict[str, str] = {}
         self.calls: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
         self._loop = asyncio.new_event_loop()
-        if os.environ.get("ROB2_E2E_INPROCESS"):
+        if os.environ.get("ROB2_E2E_INPROCESS") and server == "mcp":
             # Coverage measurement only: a stdio server is killed on disconnect and
             # never saves its data, so serve the same MCP app in this process.
             from rob2_kit.interfaces.mcp.server import mcp
@@ -41,7 +42,7 @@ class Agent:
         else:
             transport = StdioTransport(
                 command=sys.executable,
-                args=["-m", "rob2_kit.interfaces.cli.app", "--workspace", str(workspace), "mcp"],
+                args=["-m", "rob2_kit.interfaces.cli.app", "--workspace", str(workspace), server],
                 env={
                     **os.environ,
                     "ROB2_WORKSPACE": str(workspace),
@@ -60,12 +61,20 @@ class Agent:
 
     # -- transport -------------------------------------------------------------
 
+    def raw(self, tool: str, arguments: dict[str, Any]) -> CallToolResult:
+        return self._loop.run_until_complete(
+            self._client.call_tool(tool, arguments, raise_on_error=False)
+        )
+
+    def tools(self) -> dict[str, Tool]:
+        return {
+            tool.name: tool for tool in self._loop.run_until_complete(self._client.list_tools())
+        }
+
     def call(self, tool: str, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
         """Call one tool; return its structured result, or {'error': text}."""
         arguments = arguments or {}
-        result = self._loop.run_until_complete(
-            self._client.call_tool(tool, arguments, raise_on_error=False)
-        )
+        result = self.raw(tool, arguments)
         text = " ".join(item.text for item in result.content if isinstance(item, TextContent))
         value = {"error": text} if result.is_error else dict(result.structured_content or {})
         self.calls.append((tool, arguments, value))

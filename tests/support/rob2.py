@@ -714,6 +714,12 @@ def _assessed_artifact(workspace: Path, requested_outcome: str = "requested outc
     return workspace / str(finalized["data"]["artifact"]["path"])
 
 
+def _saved_result(tmp_path: Path) -> dict[str, Any]:
+    """The canonical Result of a synthetic assessed bundle."""
+    with zipfile.ZipFile(_assessed_artifact(_workspace(tmp_path))) as archive:
+        return json.loads(archive.read("canonical.json"))["proposal"]["payload"]["results"][0]
+
+
 def _assessed_artifact_with_domain_evidence(workspace: Path) -> Path:
     return _assessed_artifact(workspace)
 

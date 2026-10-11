@@ -12,15 +12,12 @@ from fastmcp.exceptions import ToolError
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.workflow_models import ResultClarity
 
-_REPO = Path(__file__).resolve().parents[1]
-_AUDIT = _REPO / "tests/fixtures/historical-evaluation/2026-10-03-emperor-proposal-bef6a06"
+_HANDLES = ["eh_0000000000000001", "eh_0000000000000002"]
 
 
-def _request() -> dict:
-    handles = [
-        item["handle"] for item in json.loads((_AUDIT / "selected-evidence.json").read_text())
-    ]
-    request = {
+def _archived_request(handles: list[str] = _HANDLES) -> dict:
+    """The retired results/assessments request shape."""
+    return {
         "results": [
             {
                 "trial_id": "emperor-reduced",
@@ -64,6 +61,9 @@ def _request() -> dict:
         "expected_revision": 1,
     }
 
+
+def _request() -> dict:
+    request = _archived_request()
     card = request["results"][0]
     assessment = request["assessments"][0]
     selection = {
@@ -96,17 +96,9 @@ def _native(workspace: Path, arguments: dict, tool: str = "validate_proposal") -
     return asyncio.run(call())
 
 
-@pytest.mark.parametrize("ordinal", range(2))
-def test_archived_requests_are_rejected_without_public_compatibility(tmp_path: Path, ordinal: int):
-    attempts = json.loads(
-        (
-            _REPO
-            / "tests/fixtures/historical-evaluation/2026-10-03-emperor-recovery-687fb24"
-            / "proposal-attempts.json"
-        ).read_text()
-    )
+def test_archived_requests_are_rejected_without_public_compatibility(tmp_path: Path):
     with pytest.raises(ToolError) as caught:
-        _native(tmp_path, attempts[ordinal]["arguments"])
+        _native(tmp_path, _archived_request())
     feedback = json.loads(str(caught.value))
     assert feedback["code"] == "invalid_proposal_arguments"
     assert not feedback["saved"]
@@ -145,10 +137,16 @@ def test_arbitrary_invalid_batch_is_bounded_without_echo(tmp_path: Path):
 
 @pytest.fixture
 def source_request(tmp_path: Path) -> tuple[Path, dict]:
-    """Portable binding control: each retained Code source excerpt stays separate."""
+    """Portable binding control: each source excerpt stays separate."""
     from support.rob2 import _call
 
-    excerpts = json.loads((_AUDIT / "selected-evidence.json").read_text())
+    excerpts = [
+        {
+            "quote": "Patients were randomly assigned to empagliflozin or placebo.\n"
+            "The primary outcome was cardiovascular death or heart-failure hospitalization."
+        },
+        {"quote": "Hazard ratio 0.75 (95% CI 0.65 to 0.86)."},
+    ]
     folder = tmp_path / "input/emperor-reduced"
     folder.mkdir(parents=True)
     for n, excerpt in enumerate(excerpts):

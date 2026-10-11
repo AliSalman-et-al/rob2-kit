@@ -78,8 +78,8 @@ observation-capture slice in #295.
 
 ## Score and qualify a release
 
-After a frozen RSI wave, use the posthoc run analyzer described in
-[`rsi.md`](rsi.md#posthoc-run-analysis) to compute per-Domain and pooled
+After a frozen verification wave, use the posthoc run analyzer described in
+[`verification.md`](verification.md#posthoc-run-analysis) to compute per-Domain and pooled
 agreement, all-expected denominators, Trial-clustered intervals, completion,
 cost, and audited failure causes. Keep its label/annotation input outside every
 run workspace and join it only after the uncoached runs are complete. The
@@ -145,7 +145,7 @@ runs, and retain every failure. Repeat the complete eligible set for a
 reliability study; retry an individual attempt only for a documented external
 interruption before product or host behavior.
 
-The RSI case preparer accepts a source path relative to the case manifest when
+The verification case preparer accepts a source path relative to the case manifest when
 the path resolves to a file under the same evaluation root. This supports a
 manifest in `eval/runs` or `eval/reference/qualification-cases` reusing the
 retained corpus in `eval/reference/sources`. It still copies only the files
@@ -188,12 +188,12 @@ not estimate scientific accuracy from one model draw.
 The current Codex/Luna path closes a run with its phase metadata, retained
 JSONL/stderr/last-message files, approved-scope record, final status, and
 independently verified `.rob2.zip`. Analyze a frozen set of those attempts with
-`scripts/analyze_rsi_runs.py` as described in
-[`rsi.md`](rsi.md#posthoc-run-analysis). That analyzer is the current posthoc
+`scripts/analyze_verification_runs.py` as described in
+[`verification.md`](verification.md#posthoc-run-analysis). That analyzer is the current posthoc
 comparison surface; it does not require or emit the legacy Haiku receipt.
 
 For a controlled diagnostic comparison, add the closed `plan` described in
-[`rsi.md`](rsi.md#predeclared-retrieval-comparisons) and run:
+[`verification.md`](verification.md#predeclared-retrieval-comparisons) and run:
 
 ```powershell
 uv run python scripts/run_comparison.py `

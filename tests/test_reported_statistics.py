@@ -16,6 +16,7 @@ from support.rob2 import (
     _read_required_main_reports,
     _result,
     _review,
+    _saved_result,
     _standalone_verify,
     _workspace,
 )
@@ -29,7 +30,6 @@ from rob2_kit.application.finalization import (
 )
 from rob2_kit.application.proposal import _coherent_anchor_indices, _source_bound_leaves
 from rob2_kit.packs import SCIENTIFIC_PACK
-from tests.test_result_scope_review import _allsop_result
 
 
 @pytest.mark.parametrize("comparative", [False, True])
@@ -92,6 +92,11 @@ def test_statistics_bind_and_recover_with_either_reported_form(
     assert canonical["proposal"]["payload"]["results"][0]["reported"] == stored["reported"]
 
 
+@pytest.fixture(scope="module")
+def saved_result(tmp_path_factory: pytest.TempPathFactory) -> dict:
+    return _saved_result(tmp_path_factory.mktemp("assessed"))
+
+
 @pytest.mark.parametrize(
     "source_statistic, claim, expected",
     [
@@ -111,7 +116,7 @@ def test_statistics_bind_and_recover_with_either_reported_form(
     ],
 )
 def test_statistics_use_numeric_boundaries_and_do_not_gate_the_anchor(
-    source_statistic: str, claim: str, expected: bool
+    saved_result: dict, source_statistic: str, claim: str, expected: bool
 ) -> None:
     standalone = runpy.run_path("scripts/verify_bundle.py")
     path = "/reported/reported_statistics/0"
@@ -120,7 +125,7 @@ def test_statistics_use_numeric_boundaries_and_do_not_gate_the_anchor(
         # An unrelated textual field keeps its historical matching behavior.
         assert matcher("Endpoint 20", "Endpoint 2", "/reported/endpoint/name")
 
-    result = _allsop_result()
+    result = copy.deepcopy(saved_result)
     result["reported"]["reported_statistics"] = [claim]
     evidence: list[dict[str, object]] = [{"kind": "narrative", "handle": "eh_statistic"}]
     result["evidence"] = evidence

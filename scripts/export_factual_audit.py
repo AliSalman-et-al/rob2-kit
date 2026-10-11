@@ -15,7 +15,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from rob2_kit.application._state import _identity, _root, _state
+from rob2_kit.application._state import _root, _state
 from rob2_kit.application.evidence import _render_page_png
 from rob2_kit.application.source_check import (
     INSTRUCTION,
@@ -336,7 +336,7 @@ def prepare_native_review(
         "model_calls": 0,
         "launch_protocol": "Explicit researcher request only. For a paid scientific diagnostic, "
         "reuse diagnostic_evidence_preflight.launch_checked and "
-        "run_rsi_case._run_owned_codex; freeze research criteria/availability manifest first. "
+        "run_verification_case._run_owned_codex; freeze research criteria/availability manifest first. "
         "Preserve events, effective model, usage, stderr and protected hashes. "
         "No retry or canonical tool is part of this request.",
     }

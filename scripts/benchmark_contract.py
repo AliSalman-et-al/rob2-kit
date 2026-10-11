@@ -656,7 +656,7 @@ def probe_server_advertised_inventory(
         "params": {
             "protocolVersion": "2025-03-26",
             "capabilities": {},
-            "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            "clientInfo": {"name": "rob2-verification-preflight", "version": "1"},
         },
     }
     initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
@@ -1263,7 +1263,7 @@ def host_tools_infrastructure_recovery_diagnosis(
         approved_scope_record_data = json.loads(approved_scope_bytes)
         approved_scope_sha256 = hashlib.sha256(approved_scope_bytes).hexdigest()
         # Re-read the approval from workspace state; the copied file hash alone is not authority.
-        from prepare_rsi_workspace import approved_scope_record
+        from prepare_verification_workspace import approved_scope_record
 
         canonical_scope = approved_scope_record(
             run_dir / "workspace", run_inputs.get("approved_scope")
@@ -2475,7 +2475,7 @@ def audited_no_progress_continuation_diagnosis(
     approved_scope_path = run_dir / "approved-scope.json"
     try:
         approved_scope = json.loads(approved_scope_path.read_text(encoding="utf-8"))
-        from prepare_rsi_workspace import approved_scope_record
+        from prepare_verification_workspace import approved_scope_record
 
         canonical_scope = approved_scope_record(run_dir / "workspace", run_inputs.get("approved_scope"))
     except (ImportError, OSError, ValueError, json.JSONDecodeError):
@@ -2632,7 +2632,7 @@ def audited_status_only_no_progress_continuation_diagnosis(
     approved_scope_path = run_dir / "approved-scope.json"
     try:
         approved_scope = json.loads(approved_scope_path.read_text(encoding="utf-8"))
-        from prepare_rsi_workspace import approved_scope_record
+        from prepare_verification_workspace import approved_scope_record
 
         canonical_scope = approved_scope_record(run_dir / "workspace", run_inputs.get("approved_scope"))
     except (ImportError, OSError, ValueError, json.JSONDecodeError):
@@ -2885,7 +2885,7 @@ def _finalization_no_progress_continuation_guard(
     approved_scope_path = run_dir / "approved-scope.json"
     try:
         approved_scope = json.loads(approved_scope_path.read_text(encoding="utf-8"))
-        from prepare_rsi_workspace import approved_scope_record
+        from prepare_verification_workspace import approved_scope_record
 
         canonical_scope = approved_scope_record(run_dir / "workspace", run_inputs.get("approved_scope"))
     except (ImportError, OSError, ValueError, json.JSONDecodeError):
@@ -3671,7 +3671,7 @@ def _completion_reconciliation_check(run_dir: Path, phase: int) -> tuple[dict[st
         execution = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("completion reconciliation requires a valid execution.json") from error
-    if not isinstance(execution, dict) or execution.get("schema") != "rob2-kit.rsi-execution.v1":
+    if not isinstance(execution, dict) or execution.get("schema") != "rob2-kit.verification-execution.v1":
         raise ValueError("completion reconciliation requires a fresh execution record")
     phase_rows = execution.get("phases")
     phase_row = next(
@@ -3786,7 +3786,7 @@ def _completion_reconciliation_check(run_dir: Path, phase: int) -> tuple[dict[st
     approved_path = run_dir / "approved-scope.json"
     approved_bytes = approved_path.read_bytes()
     approved_scope = json.loads(approved_bytes)
-    from prepare_rsi_workspace import approved_scope_record
+    from prepare_verification_workspace import approved_scope_record
 
     canonical_scope = approved_scope_record(run_dir / "workspace", run_inputs.get("approved_scope"))
     if canonical_scope is None or approved_scope != canonical_scope:

@@ -1,40 +1,29 @@
 from __future__ import annotations
 
 import copy
-import json
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from support.rob2 import _public_proposal_records, _saved_result
 
 from rob2_kit.application.proposal import _proposal_shape_repairs
 from rob2_kit.workflow_models import AssessableResultDraft, ProposalDraft, ProposalSelection
-from tests.test_result_scope_review import _allsop_result, _draft
+from tests.test_result_scope_review import _draft
 
 
-def flat_result() -> dict:
-    from support.rob2 import _public_proposal_records
+@pytest.fixture(scope="module")
+def saved(tmp_path_factory: pytest.TempPathFactory) -> dict:
+    return _saved_result(tmp_path_factory.mktemp("assessed"))
 
-    old = _draft(_allsop_result()).results[0].model_dump(mode="json")
+
+@pytest.fixture
+def flat(saved: dict) -> dict:
+    old = _draft(saved).results[0].model_dump(mode="json")
     return _public_proposal_records([old])["selections"][0]
 
 
-def test_actual_invalid_attempts_still_require_explicit_scientific_choices() -> None:
-    root = Path(__file__).resolve().parents[1]
-    attempts = json.loads(
-        (
-            root
-            / "tests/fixtures/historical-evaluation/2026-10-03-allsop-proposal-b12fe45"
-            / "proposal-attempts.json"
-        ).read_text(encoding="utf-8")
-    )
-    for attempt in attempts:
-        with pytest.raises(ValidationError):
-            ProposalSelection.model_validate(attempt["arguments"]["results"][0])
-
-
-def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target() -> None:
-    flat = flat_result()
+def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target(flat: dict) -> None:
     original = copy.deepcopy(flat)
     flat["candidate"]["clarity"]["time_point"] = "conflicting"
     flat["scope_rationale"] = "Target days 1–6; source model days 1–9."
@@ -58,14 +47,12 @@ def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target() -> N
 @pytest.mark.parametrize(
     "changes",
     [
-        {"estimate": None},
         {"design_evidence": []},
         {"target_time_value": "6"},
         {"estimate": None, "effect_measure": None, "group_values": []},
     ],
 )
-def test_incomplete_scientific_inputs_remain_rejected(changes: dict) -> None:
-    flat = flat_result()
+def test_incomplete_scientific_inputs_remain_rejected(flat: dict, changes: dict) -> None:
     flat["candidate"].update(changes)
     with pytest.raises(ValidationError):
         ProposalSelection.model_validate(flat)

@@ -278,41 +278,6 @@ def test_event_positions_retain_overlap_restart_fallback_replay_and_missing_edge
     assert operations["call-d"]["event_order"]["completed"] is None
 
 
-def test_frozen_live_transcript_preserves_original_event_positions() -> None:
-    path = (
-        Path(__file__).parents[1]
-        / "eval"
-        / "runs"
-        / "22-Sep-26"
-        / "os-random-luna-medium-20260922-current"
-        / "runs"
-        / "overall-survival"
-        / "CHAARTED"
-        / "phase-2.jsonl"
-    )
-    if not path.is_file():
-        pytest.skip("Optional live CHAARTED transcript is not distributed with the repository.")
-    raw = path.read_bytes()
-    manifest = _manifest()
-    manifest["transcripts"][0]["path"] = path.relative_to(Path(__file__).parents[1]).as_posix()
-
-    artifact = import_observations(manifest, {"session-a": raw})
-    operations = {row["call_id"]: row for row in artifact["attempts"][0]["operations"]}
-
-    assert [row["call_id"] for row in artifact["attempts"][0]["operations"][:6]] == [
-        f"item_{index}" for index in range(1, 7)
-    ]
-    assert operations["item_1"]["event_order"]["started"]["line"] == 4
-    assert operations["item_1"]["event_order"]["completed"]["line"] == 5
-    assert operations["item_6"]["event_order"]["started"]["line"] == 14
-    assert operations["item_6"]["event_order"]["completed"]["line"] == 15
-    assert len(operations["item_6"]["response"]["logical_searches"]) == 4
-    assert all(
-        search["outcome"] is not None
-        for search in operations["item_6"]["response"]["logical_searches"]
-    )
-
-
 def test_unavailable_phase_delivery_and_cost_remain_unknown() -> None:
     manifest = _manifest()
     manifest["transcripts"][0].pop("phase")

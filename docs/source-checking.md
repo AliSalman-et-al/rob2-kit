@@ -72,7 +72,7 @@ acquisition, default model or paid runner is introduced.
 The exporter does not isolate the MCP host. Protect an isolated copy's Sources and
 canonical/working files at the OS boundary, allowing only disposable caches to write.
 Client read-only mode is insufficient. For any separately authorized paid diagnostic,
-reuse diagnostic_evidence_preflight.launch_checked and run_rsi_case._run_owned_codex;
+reuse diagnostic_evidence_preflight.launch_checked and run_verification_case._run_owned_codex;
 freeze research criteria and complete required evidence availability before launch.
 Retain actual delivery, effective settings, usage, errors and preservation checks.
 Do not impose arbitrary productive caps or claim completeness after a recovery limit.

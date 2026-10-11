@@ -211,5 +211,5 @@ measures, not independently adjudicated estimates of scientific accuracy.
 
 The [qualification ledger](docs/evaluation/issue-464-qualification.md) keeps
 qualification on hold. See the [evaluation guide](docs/evaluation/README.md)
-and the [recursive assessment improvement guide](docs/evaluation/rsi.md) for
+and the [verification run guide](docs/evaluation/verification.md) for
 the evaluation process.

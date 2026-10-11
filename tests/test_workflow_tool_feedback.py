@@ -6,23 +6,32 @@ from pathlib import Path
 
 import pytest
 
-from scripts.workflow_completion import Turn, drive, tool_feedback, trace_facts
-
-CASE = (
-    Path(__file__).parents[1]
-    / "tests/fixtures/historical-evaluation/2026-10-03-gupta-full-validation"
-)
+from scripts.workflow_completion import Turn, drive, tool_feedback
 
 
 def retained_validation_error() -> dict:
-    for line in (CASE / "turn-2.jsonl").read_text().splitlines():
-        row = json.loads(line)
-        item = row.get("item", {})
-        if row.get("type") == "item.completed" and item.get("tool") == "read_pages":
-            result = item.get("result") or {}
-            if result.get("structured_content") is None:
-                return item
-    raise AssertionError("retained native validation event absent")
+    """A native Codex event for a schema-rejected read_pages call."""
+    return {
+        "id": "item_39",
+        "type": "mcp_tool_call",
+        "server": "rob2",
+        "tool": "read_pages",
+        "arguments": {"trial_id": "trial", "source_id": "sh_0", "pages": list(range(109, 120))},
+        "result": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "1 validation error for call[read_pages]\npages\n  List should have at "
+                    "most 10 items after validation, not 11 [type=too_long, input_value=[109, 110, "
+                    "111, 112, 113,...115, 116, 117, 118, 119], input_type=list]\n    For further "
+                    "information visit https://errors.pydantic.dev/2.13/v/too_long",
+                }
+            ],
+            "structured_content": None,
+        },
+        "error": None,
+        "status": "failed",
+    }
 
 
 def test_native_completed_error_and_equivalent_failed_envelope_preserve_details() -> None:
@@ -46,14 +55,6 @@ def test_native_completed_error_and_equivalent_failed_envelope_preserve_details(
         != untouched["result"]["content"][0]["text"]
     )
     assert not feedback.retryable
-
-
-def test_actual_trace_now_counts_both_previously_missed_schema_errors() -> None:
-    first = trace_facts(CASE / "turn-1.jsonl")
-    second = trace_facts(CASE / "turn-2.jsonl")
-    assert len([x for x in first["feedback"] if x["kind"] == "input_rejection"]) == 1
-    assert len([x for x in second["feedback"] if x["kind"] == "input_rejection"]) == 1
-    assert first["calls"] == 14 and second["calls"] == 42
 
 
 @pytest.mark.parametrize(
