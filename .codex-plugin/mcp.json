@@ -2,7 +2,7 @@
   "mcpServers": {
     "rob2": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/AliSalman-et-al/rob2-kit@v0.12.0", "rob2", "mcp-codex"]
+      "args": ["--from", "git+https://github.com/AliSalman-et-al/rob2-kit@v0.13.0", "rob2", "mcp-codex"]
     }
   }
 }

@@ -34,7 +34,7 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.12.0":
+    if value["contract_version"] != "0.13.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "read_guidance",

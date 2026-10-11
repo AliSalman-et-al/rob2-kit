@@ -1,4 +1,4 @@
-{"contract_version":"0.12.0",
+{"contract_version":"0.13.0",
 "tools":[{"name":"read_guidance",
 "title":"Read packaged operational guidance",
 "description":"Read SKILL.md or a returned references/*.md document without filesystem access. Returns exact packaged instruction content, its hash and links to further guidance. Guidance is operational instruction, never Trial Source Evidence or an assessment answer.",

@@ -1,6 +1,6 @@
 [project]
 name = "rob2-kit"
-version = "0.12.0"
+version = "0.13.0"
 description = "Evidence-grounded Cochrane RoB 2 risk-of-bias assessment for AI agents: an MCP server and skill"
 readme = "README.md"
 requires-python = ">=3.11"
