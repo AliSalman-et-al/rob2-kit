@@ -6,6 +6,7 @@ authors:
   - family-names: Salman
     given-names: Ali
 version: 0.12.0
+license: MIT
 repository-code: "https://github.com/AliSalman-et-al/rob2-kit"
 abstract: >-
   rob2-kit is a model-free Model Context Protocol server and agent skill for

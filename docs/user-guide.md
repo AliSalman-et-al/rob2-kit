@@ -47,25 +47,10 @@ image-only PDF pages and transcribe what it sees as visual evidence.
 
 ### `sources.toml`
 
-This file is optional. It declares source roles and the trial's registry
-number:
-
-```toml
-nct = "NCT01234567"
-
-[roles]
-"article.pdf" = "main_article"
-"appendix.pdf" = "supplement"
-"analysis-plan.pdf" = "sap"
-```
-
-The valid roles are `main_article`, `registry`, `supplement`, `sap`,
-`protocol` and `other`. If you do not declare a `main_article`, the agent
-identifies the main report from file contents. It leaves the role unresolved
-rather than guessing.
-
-When `nct` is set, preparing the batch fetches that record from the public
-ClinicalTrials.gov API. Leave `nct` out to keep the run fully offline.
+A trial folder may declare source roles, its registration, files to skip and an
+offline registry record. The format is described in the
+[README](../README.md#sourcestoml). Declare the main report as `main_article`
+whenever you know it.
 
 ## Run the assessment
 
@@ -95,15 +80,15 @@ When the proposal is ready, the agent asks for approval:
   ```
 
   The command shows the proposal and records approval only after you type
-  `yes`. If you installed the CLI with `uv tool install`, run `rob2 review`.
+  `yes`. If the `rob2` CLI is installed, run `rob2 review`.
 
 If you want a different result, tell the agent. It revises the proposal, and
 you review the new version.
 
 ## Check, verify and archive
 
-These commands use the `rob2` CLI. Install it with `uv tool install
-git+https://github.com/AliSalman-et-al/rob2-kit`, or prefix each command with
+These commands use the `rob2` CLI. Install it as described under
+[Other MCP hosts](#other-mcp-hosts), or prefix each command with
 `uvx --from git+https://github.com/AliSalman-et-al/rob2-kit`.
 
 ```bash
@@ -114,8 +99,9 @@ rob2 status
 rob2 verify .rob2-kit/finalized/<bundle>.rob2.zip
 ```
 
-Each bundle contains the canonical assessment as JSON, a static HTML report,
-the selected evidence records and integrity hashes. `rob2 verify` checks every
+Each bundle is a zip file. It contains the canonical assessment
+(`canonical.json`), a static `report.html` that you can read in any browser after
+unzipping, the selected evidence records and integrity hashes. `rob2 verify` checks every
 hash, the scientific-pack descriptor and the RoB 2 algorithm outputs. The
 dependency-free [`scripts/verify_bundle.py`](../scripts/verify_bundle.py)
 performs the same checks without installing rob2-kit:
@@ -140,11 +126,18 @@ rob2 verify-sources sources.zip
 Any host that runs local stdio MCP servers and loads Agent Skills can use
 rob2-kit.
 
-1. Install the CLI:
+1. Install the CLI with uv, or with pip if you have Python 3.11 or later but not uv:
 
    ```bash
    uv tool install git+https://github.com/AliSalman-et-al/rob2-kit
    ```
+
+   ```bash
+   python -m pip install git+https://github.com/AliSalman-et-al/rob2-kit
+   ```
+
+   With pip, use a virtual environment. Register the server by the full path
+   of its `rob2` executable if that environment is not on the host's `PATH`.
 
 2. Register the server. The command is `rob2` and its argument is `mcp`. Set
    `ROB2_WORKSPACE` to the assessment folder if the host does not start

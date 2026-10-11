@@ -55,12 +55,20 @@ renv/staging/
 .env.*
 !.env.example
 
-# Assessment workspaces created while trying the tool locally
+# Assessment workspaces created while trying the tool locally, and the
+# evidence kept by the verify-rob2-kit skill
 /input/
+/.verify-evidence/
 
 # AI Agents
-.agents/
-.claude/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/verify-rob2-kit/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/verify-rob2-kit
 .claude-config/
 .codex/
 .rob2-kit/

@@ -64,7 +64,7 @@ def main() -> None:
     from rob2_kit.interfaces.mcp.server import mcp
 
     mcp.add_middleware(CodexImageContent())
-    mcp.run()
+    mcp.run(show_banner=False)
 
 
 if __name__ == "__main__":

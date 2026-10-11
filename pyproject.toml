@@ -5,6 +5,8 @@ description = "Evidence-grounded Cochrane RoB 2 risk-of-bias assessment for AI a
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "Ali Salman" }]
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["risk of bias", "rob2", "cochrane", "systematic review", "mcp", "agent skills"]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -46,7 +48,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = [".", "tests"]
+pythonpath = [".", "tests", "scripts"]
 addopts = "-n 4"
 
 [tool.ruff]

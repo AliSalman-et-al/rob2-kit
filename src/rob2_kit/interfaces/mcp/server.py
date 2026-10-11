@@ -4837,7 +4837,7 @@ def finalize_batch(
 
 
 def main() -> None:
-    mcp.run()
+    mcp.run(show_banner=False)
 
 
 __all__ = ["PUBLIC_TOOL_NAMES", "current_batch", "main", "mcp"]

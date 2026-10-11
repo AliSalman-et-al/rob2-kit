@@ -46,7 +46,6 @@ class Agent:
                 env={
                     **os.environ,
                     "ROB2_WORKSPACE": str(workspace),
-                    "FASTMCP_SHOW_CLI_BANNER": "false",
                     "FASTMCP_LOG_LEVEL": "WARNING",
                 },
             )

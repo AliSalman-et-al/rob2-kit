@@ -379,11 +379,21 @@ def _is_contained_source(directory: Path, path: Path) -> bool:
     return resolved_path.is_relative_to(resolved_directory)
 
 
-def _trial_directory(root: Path, label: str) -> Path:
-    """Resolve one declared Trial to its server-owned ``input/<name>`` dossier."""
+def _input_root(root: Path) -> Path:
     input_root = root / "input"
     if not input_root.is_dir() or _link_like(input_root):
-        raise ValueError("input directory is not available")
+        # The usual cause is a host started outside the assessment folder.
+        raise ValueError(
+            f"input directory is not available in workspace {root}: put each trial's "
+            "reports in input/<trial>/, then start the host in the workspace folder "
+            "or set ROB2_WORKSPACE to it"
+        )
+    return input_root
+
+
+def _trial_directory(root: Path, label: str) -> Path:
+    """Resolve one declared Trial to its server-owned ``input/<name>`` dossier."""
+    input_root = _input_root(root)
     candidates = [
         path
         for path in input_root.iterdir()
@@ -425,9 +435,7 @@ def _is_config_filename(name: str) -> bool:
 
 def _trial_directories(root: Path) -> list[Path]:
     """Return the researcher-owned Trial dossiers in deterministic order."""
-    input_root = root / "input"
-    if not input_root.is_dir() or _link_like(input_root):
-        raise ValueError("input directory is not available")
+    input_root = _input_root(root)
     return sorted(
         (
             path

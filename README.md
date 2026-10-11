@@ -23,8 +23,12 @@ assessed before any domain work begins.
 
 ## Install
 
-You need [uv](https://docs.astral.sh/uv/getting-started/installation/)
-(Python 3.11 or later is fetched automatically) and one of the hosts below.
+The plugins start the server with [uv](https://docs.astral.sh/uv/getting-started/installation/).
+uv is a single executable, and it downloads Python 3.11 or later if your machine
+doesn't have it. Claude Code and Codex do not ship a Python of their own. If you
+cannot install uv but have Python 3.11 or later, follow
+[Other MCP hosts](#other-mcp-hosts) instead; that route works in Claude Code and
+Codex too.
 
 ### Claude Code
 
@@ -50,10 +54,16 @@ reconnect it once the download finishes (`/mcp` in Claude Code).
 
 ### Other MCP hosts
 
-Install the command-line tool:
+Install the command-line tool with uv:
 
 ```bash
 uv tool install git+https://github.com/AliSalman-et-al/rob2-kit
+```
+
+or with Python 3.11 or later and pip, preferably inside a virtual environment:
+
+```bash
+python -m pip install git+https://github.com/AliSalman-et-al/rob2-kit
 ```
 
 Register `rob2 mcp` as a local stdio server, then export the skill into the
@@ -98,8 +108,62 @@ The [user guide](docs/user-guide.md#other-mcp-hosts) has the details.
 4. The agent assesses the five domains. When it finalizes, a verifiable
    `.rob2.zip` bundle is written to `.rob2-kit/finalized/`.
 
-The [user guide](docs/user-guide.md) covers supported source formats,
-`sources.toml`, the approval step, verification, archiving and troubleshooting.
+Supported source formats are PDF, DOCX, TXT, Markdown, CSV and JSON. The
+[user guide](docs/user-guide.md) covers the approval step, verification,
+archiving and troubleshooting.
+
+## `sources.toml`
+
+Each trial folder may contain a `sources.toml`. Every key is optional.
+
+```toml
+# The trial's registration. If you leave this out, rob2-kit looks for the
+# trial's own NCT number in the main report.
+nct = "NCT01234567"
+
+# Files in the trial folder that should not be captured. Give either a bare
+# path or a path with a reason (duplicate, irrelevant, unreadable, restricted
+# or other) and a rationale.
+omissions = [
+  "cover-letter.pdf",
+  { path = "old-version.pdf", reason = "duplicate", rationale = "Superseded by article.pdf" },
+]
+
+# Source roles, by path relative to the trial folder. Roles: main_article,
+# registry, supplement, sap, protocol, other.
+[roles]
+"article.pdf" = "main_article"
+"appendix.pdf" = "supplement"
+"analysis-plan.pdf" = "sap"
+
+[registry]
+# Also download the protocol and analysis-plan documents posted on
+# ClinicalTrials.gov.
+acquire_documents = true
+```
+
+TOML requires top-level keys (`nct`, `omissions`) to come before any `[table]`.
+
+- **Main report.** Declare it as `main_article`. If you don't, the agent
+  identifies it from file contents and leaves the role unresolved rather than
+  guessing. File names are only navigation hints.
+- **Registry lookup.** rob2-kit fetches the trial's ClinicalTrials.gov record
+  when it knows the trial's NCT number. To turn the lookup off for a trial, add
+  an empty `[registry]` table and no `nct`.
+- **Offline registry record.** To use a saved ClinicalTrials.gov API record
+  instead of fetching it, name the file and record where it came from:
+
+  ```toml
+  [registry]
+  nct = "NCT01234567"
+  replay = "registry.json"
+  captured_at = "2026-01-15T10:00:00Z"
+  sha256 = "<sha256 of registry.json>"
+  provenance = "ClinicalTrials.gov API v2, downloaded by the review team"
+  ```
+
+Declare the registration once, either at the top level or under `[registry]`.
+Unknown keys are rejected, so a typo fails loudly instead of being ignored.
 
 ## Scope
 
@@ -111,11 +175,12 @@ package does not include.
 
 ## Data handling
 
-Trial sources stay on your machine. The server contacts ClinicalTrials.gov only
-when a trial's `sources.toml` gives an NCT number. Finalized bundles contain the
+Trial sources stay on your machine. The only network request rob2-kit makes
+on its own is the ClinicalTrials.gov lookup for a trial's registration (see
+[`sources.toml`](#sourcestoml) to turn it off). Finalized bundles contain the
 assessment, the cited passages and integrity hashes. They never contain the
-source files, prompts, credentials or absolute paths. Your host's model provider
-sees whatever the agent reads, under that provider's terms.
+source files, prompts, credentials or absolute paths. Your host's model
+provider sees whatever the agent reads, under that provider's terms.
 
 ## RoB 2 guidance
 
@@ -132,6 +197,11 @@ source location for provenance. Cite the tool as:
 
 If you use rob2-kit, cite it using [`CITATION.cff`](CITATION.cff). GitHub's
 "Cite this repository" button gives the same citation.
+
+## License
+
+rob2-kit is released under the [MIT License](LICENSE). The packaged RoB 2
+guidance text is reproduced with permission and is not covered by that license.
 
 ## Development
 
