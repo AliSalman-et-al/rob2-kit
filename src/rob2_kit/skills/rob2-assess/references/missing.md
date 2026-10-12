@@ -43,6 +43,11 @@ event.
 - Dichotomous outcomes: compare missing participants with events. If observed
   events greatly outnumber participants with missing data, the bias is
   necessarily small.
+- "Whatever they were" can be checked. For a dichotomous outcome, recompute
+  each arm's risk with every missing participant counted first as having the
+  event and then as not having it (`calculate_arithmetic`). If neither extreme
+  materially changes the estimate, answer Probably yes even when some data are
+  missing.
 - **No information:** only if the reports give no information about the extent
   of missing data. If only an estimate is reported, look for a CONSORT diagram
   or other sources; a probable answer is often possible.
@@ -97,7 +102,11 @@ left the other. Reasons unrelated to the outcome (an operation cancelled for
 scheduling, moving away, a protocol violation, a failed device) do not suggest
 dependence even when they differ between groups. For reason 1, compare the
 counts with the numbers randomized: a difference of one or two participants is
-not by itself evidence that missingness depended on the outcome.
+not by itself evidence that missingness depended on the outcome. The guidance
+gives reason 1 because a difference makes the result sensitive to
+outcome-dependent missingness, so weigh it against the result: a modest
+difference that the extreme-case recalculation under 3.1 shows could not move
+the estimate materially is not, alone, a reason for Yes.
 
 ## Algorithm
 
