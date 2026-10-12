@@ -2079,8 +2079,9 @@ class ProposedReportedResult(StrictModel):
 
     category_group_id: NonBlankText | None = Field(
         default=None,
-        description="Descriptive profile group; one-arm descriptions cannot proceed to "
-        "comparative assessment.",
+        description="The one group a category profile describes; such a profile cannot proceed "
+        "to comparative assessment. Values reported for each randomized group, such as a "
+        "table row with n/N per arm, belong in group_values instead.",
     )
     category_denominator: NonBlankText | None = Field(
         default=None, description="Source-reported denominator basis for a category profile."
