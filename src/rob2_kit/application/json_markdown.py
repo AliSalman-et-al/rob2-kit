@@ -184,7 +184,7 @@ class _Renderer:
 
         self.lines += ["", "Groups:"]
         for group in groups:
-            text = group.get("description")
+            text = _text(group.get("description") or "")
             description = f": {text}" if text and text not in self.described else ""
             if description:
                 self.described.add(text)
