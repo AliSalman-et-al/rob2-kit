@@ -161,7 +161,7 @@ class _Renderer:
             if isinstance(item, dict) and item and set(item) <= {"date", "type"}:
                 kind = f" ({item['type']})" if "type" in item else ""
                 self.lines.append(f"- {self.name(key)}: {item.get('date', '')}{kind}")
-            elif isinstance(item, (dict, list)) and not _scalars(item):
+            elif (isinstance(item, dict) and item) or (isinstance(item, list) and not _scalars(item)):
                 nested.append((key, item))
             elif isinstance(item, (dict, list)) and not item:
                 self.lines.append(f"- {self.name(key)}: {'{}' if isinstance(item, dict) else '[]'}")

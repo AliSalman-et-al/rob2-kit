@@ -7,7 +7,8 @@ from rob2_kit.application._state import _json_pages
 
 STUDY = {
     "protocolSection": {
-        "identificationModule": {"nctId": "NCT00000001"},
+        "identificationModule": {"nctId": "NCT00000001", "orgStudyIdInfo": {"id": "s61596"}},
+        "oversightModule": {"isFdaRegulatedDrug": False},
         "statusModule": {
             "studyFirstSubmitDate": "2014-09-18",
             "startDateStruct": {"date": "2014-11-06", "type": "ACTUAL"},
@@ -68,6 +69,8 @@ def test_registry_record_reads_as_markdown_with_navigable_dates_and_outcomes(tmp
     lines = text.splitlines()
     assert "| STARTED | 328 | 165 |" in lines
     assert "- Study first submit date: 2014-09-18" in lines
+    assert "### Org study id info" in lines and "- Id: s61596" in lines
+    assert "- Is fda regulated drug: false" in lines
 
     navigation = _navigation(tmp_path, text)
     registration = navigation["registration"]
