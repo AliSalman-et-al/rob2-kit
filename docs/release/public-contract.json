@@ -141,7 +141,7 @@
 "destructive":false,
 "idempotent":true,
 "open_world":false,
-"schema_sha256":"sha256:e2058c5fde0c9e8facfd10fdd40ab2d093868bd5f5338d7f6ea27f236533ab16",
+"schema_sha256":"sha256:db099be10bc24ff69f42804cd48f452114996616dd834ab9593a6b246c1fb66a",
 "output_schema_sha256":"sha256:63ddaf22d9488274c54e60a52c15c582b65051b7eec020c4989a8cf208d8506a"},
 {"name":"save_proposal",
 "title":"Save Result proposal",

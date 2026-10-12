@@ -2992,7 +2992,11 @@ class ProposalSelection(StrictModel):
     )
     candidate: ProposedReportedResult | None = Field(
         description="One complete comparative "
-        "candidate, or null only when no complete candidate can proceed."
+        "candidate, or null only when no complete candidate can proceed. Values for each "
+        "randomized group (such as n/N or mean and spread per arm) are complete without a "
+        "between-group estimate. When the requested outcome is a composite with no reported "
+        "total but a component is reported per group, that component is the candidate, with "
+        "relation component."
     )
     scope_rationale: NonBlankText = Field(
         description="Why this candidate supports the chosen "
