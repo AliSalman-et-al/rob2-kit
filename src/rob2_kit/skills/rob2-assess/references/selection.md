@@ -54,19 +54,11 @@ samples across reports, or unusual composites.
   Unblinded data seen only by an independent data monitoring committee, for
   example at an interim analysis, are not available to the trial investigators
   (section 8.3.1).
-- **Probably yes** also applies when a source dated before enrolment (usually
-  the registry) fixes this outcome measurement and time point, and the report
-  analyses it in the way its own methods describe, with no sign of alternative
-  analyses (section 1.1.1: a judgement from the circumstances of the trial). A
-  registry that names the measurement but not the analysis, or an SAP filed
-  later, does not by itself make the answer No information.
 - **No / Probably no:** the plan for this measurement or analysis changed after
   unblinded data were available, or the report departs from the plan without a
-  result-independent reason. Missing or late documents are not a departure.
+  result-independent reason.
 - **No information:** no pre-specified intentions for this Result are available
-  in sufficient detail, or their timing cannot be placed relative to unblinding:
-  for example no protocol and no registration before enrolment, or a Result for
-  an outcome that no pre-specified source mentions.
+  in sufficient detail, or their timing cannot be placed relative to unblinding.
 
 ## 5.2 (`sq:selection:multiple-measurements`) Is the result likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (scales, definitions, time points)?
 
