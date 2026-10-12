@@ -65,7 +65,9 @@ samples across reports, or unusual composites.
   specifies this measurement. This includes a registry entry submitted after
   enrolment began (outcome data were already accruing, so it cannot show what
   was fixed beforehand) with no earlier protocol or SAP; an SAP dated after
-  follow-up ended; and an outcome that no pre-specified source mentions.
+  follow-up ended, unless a source dates its finalization before the
+  investigators had unblinded results (a masked statistician alone does not
+  date it); and an outcome that no pre-specified source mentions.
 - A result that looks unlikely to have been selected (null, a hard endpoint, a
   simple count) is a matter for 5.2 and 5.3. It is not a reason to answer 5.1
   Probably yes, and not a reason to depart from the algorithm.
