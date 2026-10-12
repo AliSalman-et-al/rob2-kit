@@ -15,7 +15,7 @@ import json
 import re
 from typing import Any
 
-# Module headings (`## ...`). Navigation finds modules by these exact titles.
+# Module headings (`## ...`) in reading order. Navigation finds modules by these titles.
 MODULE_TITLES = {
     "identificationModule": "Identification",
     "statusModule": "Status and dates",
@@ -137,7 +137,11 @@ class _Renderer:
             "adverseEventsModule": self.adverse,
         }
         for section in SECTIONS:
-            for key, module in (study.get(section) or {}).items():
+            modules = study.get(section) or {}
+            # Captured records are stored with sorted keys; read in MODULE_TITLES order.
+            order = [key for key in MODULE_TITLES if key in modules]
+            for key in order + sorted(set(modules) - set(order)):
+                module = modules[key]
                 self.lines += ["", f"## {MODULE_TITLES.get(key, label(key))}"]
                 special.get(key, lambda m: self.block(m, 3))(module)
         rest = {k: v for k, v in study.items() if k not in SECTIONS}
