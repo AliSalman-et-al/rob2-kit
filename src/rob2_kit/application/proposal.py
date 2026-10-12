@@ -254,10 +254,14 @@ def _proposal_shape_repairs(
                     "path": f"{path}/reported",
                     "code": "single_group_result_not_comparative",
                     "detail": (
-                        "A one-group descriptive profile cannot support a RoB 2 comparative "
-                        "assessment. Preserve its exact source passage as Evidence and submit "
-                        "an unavailable Result with a missing_comparator_result fact based on "
-                        "that Evidence."
+                        "A category profile describes one group and cannot support a RoB 2 "
+                        "comparative assessment. If the Sources report the requested outcome, "
+                        "or one of its components, for every randomized group (for example "
+                        "n/N per arm in a table row), submit those as group_values, one per "
+                        "comparison group, with relation component when it is a component. "
+                        "Only when no group-by-group data exist, preserve the passage as "
+                        "Evidence and submit an unavailable Result with a "
+                        "missing_comparator_result fact based on it."
                     ),
                 }
             )

@@ -165,10 +165,23 @@ For a result reported only as group values, replace `effect_measure`,
 Keep `comparison_groups` and `group_values` to the requested comparison; other
 arms stay in the Sources. A multi-arm joint comparison is allowed when requested.
 
+A Result does not need a printed between-group estimate. RoB 2 assesses the
+result a review would use, and a review computes the effect itself from data
+reported for each randomized group, such as participants with the event and
+the number analysed (`"statistic": "participants with event", "value": "16/33"`)
+or means with their spread. Such data, in a table, the text or the registry
+results, are a complete comparative Result. When the request pools arms the
+Trial reports separately, keep each reported arm as its own comparison group
+and state the pooling in `scope_rationale`. When the request is a composite the
+Sources do not total but they report a component per group, select that
+component with relation `component` and name the other components in
+`scope_rationale`. Missing time frames, tests or effect measures go in
+`unknowns`; they do not make the Result unavailable.
+
 ## Use unavailable only for a real missing premise
 
-Use `candidate: null` only when no complete comparative result exists for the
-requested outcome, with `missing_facts` grounded in a passage that shows what is
+Use `candidate: null` only when the Sources report no comparative result or
+per-group data for the requested outcome or any of its components, with `missing_facts` grounded in a passage that shows what is
 missing (`missing_reporting`), or `intake_condition` with
 `code:"no_supported_sources"` when the Trial has no Sources:
 

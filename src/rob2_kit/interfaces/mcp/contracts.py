@@ -2308,7 +2308,7 @@ class ComparisonPassageGroup(PublicModel):
     source_origin: SourceOrigin
     registry_url: str | None = None
     registry_retrieved_at: str | None = None
-    registry_field_paths: tuple[str, ...] = ()
+    registry_sections: tuple[str, ...] = ()
     registry_recovery: EvidenceRecovery | None = None
     registry_window_count: NonNegativeInt = 0
     registry_outcome_count: NonNegativeInt = 0

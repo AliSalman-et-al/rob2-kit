@@ -2079,8 +2079,9 @@ class ProposedReportedResult(StrictModel):
 
     category_group_id: NonBlankText | None = Field(
         default=None,
-        description="Descriptive profile group; one-arm descriptions cannot proceed to "
-        "comparative assessment.",
+        description="The one group a category profile describes; such a profile cannot proceed "
+        "to comparative assessment. Values reported for each randomized group, such as a "
+        "table row with n/N per arm, belong in group_values instead.",
     )
     category_denominator: NonBlankText | None = Field(
         default=None, description="Source-reported denominator basis for a category profile."
@@ -2991,7 +2992,11 @@ class ProposalSelection(StrictModel):
     )
     candidate: ProposedReportedResult | None = Field(
         description="One complete comparative "
-        "candidate, or null only when no complete candidate can proceed."
+        "candidate, or null only when no complete candidate can proceed. Values for each "
+        "randomized group (such as n/N or mean and spread per arm) are complete without a "
+        "between-group estimate. When the requested outcome is a composite with no reported "
+        "total but a component is reported per group, that component is the candidate, with "
+        "relation component."
     )
     scope_rationale: NonBlankText = Field(
         description="Why this candidate supports the chosen "

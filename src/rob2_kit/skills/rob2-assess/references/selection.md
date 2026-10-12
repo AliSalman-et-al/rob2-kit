@@ -54,11 +54,23 @@ samples across reports, or unusual composites.
   Unblinded data seen only by an independent data monitoring committee, for
   example at an interim analysis, are not available to the trial investigators
   (section 8.3.1).
+- A registry entry submitted before enrolment began that names this outcome
+  measurement and time point is a dated plan for it. When the report analyses
+  it as its own methods describe, answer Probably yes even though the entry
+  gives no analysis detail; the full protocol need not be among the Sources.
 - **No / Probably no:** the plan for this measurement or analysis changed after
   unblinded data were available, or the report departs from the plan without a
   result-independent reason.
-- **No information:** no pre-specified intentions for this Result are available
-  in sufficient detail, or their timing cannot be placed relative to unblinding.
+- **No information:** no source dated before outcome data could be seen
+  specifies this measurement. This includes a registry entry submitted after
+  enrolment began (outcome data were already accruing, so it cannot show what
+  was fixed beforehand) with no earlier protocol or SAP; an SAP dated after
+  follow-up ended, unless a source dates its finalization before the
+  investigators had unblinded results (a masked statistician alone does not
+  date it); and an outcome that no pre-specified source mentions.
+- A result that looks unlikely to have been selected (null, a hard endpoint, a
+  simple count) is a matter for 5.2 and 5.3. It is not a reason to answer 5.1
+  Probably yes, and not a reason to depart from the algorithm.
 
 ## 5.2 (`sq:selection:multiple-measurements`) Is the result likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (scales, definitions, time points)?
 

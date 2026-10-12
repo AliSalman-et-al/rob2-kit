@@ -20,11 +20,12 @@ from xml.etree import ElementTree
 from ..models import canonical_json_bytes, sha256
 from ..workflow_models import SourceRole
 from .contracts import COUNTERS, WorkflowConflict
+from .json_markdown import json_markdown
 
 _SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v7-porter-unicode61"
 _SEARCH_PROFILE = "porter-unicode61-v1"
 _SEARCH_FTS_TOKENIZER = "porter unicode61"
-_PAGE_PROJECTION_VERSION = "rob2-kit.page-projection.v4"
+_PAGE_PROJECTION_VERSION = "rob2-kit.page-projection.v5"
 _WORKSPACE_CONTRACT_VERSION = "0.6.0"
 
 # A physical source line can be arbitrarily long (for example, compact JSON
@@ -877,51 +878,8 @@ def _supported(path: Path, data: bytes) -> bool:
     }
 
 
-_JSON_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
-
-
-def _json_path(parent: str, key: str) -> str:
-    """Append one object key using a path form that cannot be ambiguous."""
-
-    key = _normalize_projected_text(key)
-    if _JSON_IDENTIFIER.fullmatch(key):
-        return key if parent == "$" else f"{parent}.{key}"
-    quoted = json.dumps(key, ensure_ascii=False, separators=(",", ":"))
-    return f"[{quoted}]" if parent == "$" else f"{parent}[{quoted}]"
-
-
-def _json_array_path(parent: str, index: int) -> str:
-    return f"[{index}]" if parent == "$" else f"{parent}[{index}]"
-
-
-def _append_json_leaves(value: Any, path: str, output: list[str]) -> None:
-    """Append deterministic scalar and empty-container leaves in JSON order."""
-
-    if isinstance(value, dict):
-        if not value:
-            output.append(f"{path}: {{}}")
-            return
-        for key in sorted(value):
-            _append_json_leaves(value[key], _json_path(path, key), output)
-        return
-    if isinstance(value, list):
-        if not value:
-            output.append(f"{path}: []")
-            return
-        for index, item in enumerate(value):
-            _append_json_leaves(item, _json_array_path(path, index), output)
-        return
-    if isinstance(value, str) and any(character in value for character in "\r\n"):
-        for segment in _normalize_projected_text(value).split("\n"):
-            output.append(f"{path}: {canonical_json_bytes(segment).decode('utf-8')}")
-        return
-    if isinstance(value, str):
-        value = _normalize_projected_text(value)
-    output.append(f"{path}: {canonical_json_bytes(value).decode('utf-8')}")
-
-
 def _json_pages(path: Path, data: bytes) -> tuple[str, ...]:
-    """Project valid JSON into stable, line-addressable leaf paths."""
+    """Project valid JSON as structured Markdown (`json_markdown`)."""
 
     def reject_non_json_constant(value: str) -> None:
         raise ValueError(f"non-standard JSON constant {value}")
@@ -930,9 +888,7 @@ def _json_pages(path: Path, data: bytes) -> tuple[str, ...]:
         value = json.loads(data.decode("utf-8"), parse_constant=reject_non_json_constant)
     except (UnicodeDecodeError, ValueError) as error:
         raise InvalidJSONSourceError(path, error) from error
-    lines: list[str] = []
-    _append_json_leaves(value, "$", lines)
-    return (_bound_projected_lines("\n".join(lines)),)
+    return (_bound_projected_lines(json_markdown(value, path.name)),)
 
 
 _DOCX_W_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
