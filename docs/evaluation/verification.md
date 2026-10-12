@@ -355,8 +355,9 @@ ceiling, and no candidate cohort is implied by declaring the configuration.
    `[registry]` declaration into the fresh workspace. Intake validates the
    retained response against that NCT and projects it as the same
    `registry/NCT...json` Source used for a live capture. The JSON projection is
-   deterministic sorted leaf paths on one line-addressable page, so search,
-   reads, navigation, and Evidence selection use the ordinary public seams.
+   deterministic structured Markdown on one line-addressable page (headings,
+   `- Field: value` lines and per-arm results tables), so search, reads,
+   navigation, and Evidence selection use the ordinary public seams.
    A manifest below `eval/runs` or `eval/reference` may point to another
    retained file under the same `eval` root. The preparer rejects paths outside
    that root and never copies an unlisted file.

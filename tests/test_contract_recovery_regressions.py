@@ -103,24 +103,26 @@ def test_v06_verifier_requires_nonnull_applicability_and_source_basis() -> None:
     )
 
 
-@pytest.mark.parametrize("bounded_projection", [False, True])
-def test_oversized_registry_metadata_keeps_complete_source_recovery(
-    tmp_path: Path, bounded_projection: bool
-) -> None:
+def test_oversized_registry_metadata_keeps_complete_source_recovery(tmp_path: Path) -> None:
     import json
 
-    from rob2_kit.application._state import _bound_projected_lines
+    from rob2_kit.application._state import _json_pages
     from rob2_kit.interfaces.mcp.server import _paginate_domain_context_transport
 
     internal = tmp_path / ".rob2-kit"
     internal.mkdir()
     source_id = "sh_" + "b" * 16
-    path = "resultsSection.outcomeMeasuresModule.outcomeMeasures[0]"
-    text = f'{path}.title: "Change in score"\n{path}.populationDescription: ' + json.dumps(
-        "x" * 140_000
-    )
-    if bounded_projection:
-        text = _bound_projected_lines(text)
+    study = {
+        "protocolSection": {"identificationModule": {"nctId": "NCT00000001"}},
+        "resultsSection": {
+            "outcomeMeasuresModule": {
+                "outcomeMeasures": [
+                    {"title": "Change in score", "populationDescription": "x" * 140_000}
+                ]
+            }
+        },
+    }
+    (text,) = _json_pages(Path("registry.json"), json.dumps(study).encode())
     with sqlite3.connect(internal / "derivative.sqlite3") as connection:
         connection.execute("CREATE TABLE pages (page INTEGER, text TEXT, source_id TEXT)")
         connection.execute("INSERT INTO pages VALUES (1, ?, ?)", (text, source_id))
@@ -132,10 +134,8 @@ def test_oversized_registry_metadata_keeps_complete_source_recovery(
     assert entry.populationDescription is None
     assert entry.not_inlined_fields == ("populationDescription",)
     window = entry.recovery.windows[0]
-    assert window.start_line == 1 and window.end_line == len(text.splitlines())
-    assert "".join(text.splitlines()) == (
-        f'{path}.title: "Change in score"{path}.populationDescription: ' + json.dumps("x" * 140_000)
-    )
+    covered = "".join(text.splitlines()[window.start_line - 1 : window.end_line])
+    assert "x" * 140_000 in covered
     value = {
         "outcome": "success",
         "head": {"phase": "assessment", "state_revision": 4},

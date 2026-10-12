@@ -30,7 +30,6 @@ from ..workflow_models import (
     WorkingSourceRange,
 )
 from ._state import (
-    _MAX_PROJECTED_LINE_LENGTH,
     _canonical_evidence_records,
     _canonical_search_text,
     _commit_records,
@@ -64,6 +63,7 @@ from .evidence import (
     source_reading_status,
 )
 from .guidance import read_guidance
+from .json_markdown import MODULE_TITLES, POSTED_OUTCOME, REGISTERED_OUTCOMES
 from .missing_data import missing_data_context
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .source_handles import source_handle
@@ -412,29 +412,38 @@ def _post_approval_reading(
     return _main_report_recovery(root, state, trial_id)
 
 
-# Registered plan fields that date the registration relative to the trial (Box 11, 5.1).
-_REGISTRATION_DATES = {
-    "first_submitted": "protocolSection.statusModule.studyFirstSubmitDate",
-    "first_posted": "protocolSection.statusModule.studyFirstPostDateStruct.date",
-    "start": "protocolSection.statusModule.startDateStruct.date",
-    "primary_completion": "protocolSection.statusModule.primaryCompletionDateStruct.date",
-    "completion": "protocolSection.statusModule.completionDateStruct.date",
-    "last_update_posted": "protocolSection.statusModule.lastUpdatePostDateStruct.date",
+# Registration dates (Box 11, 5.1) as the Markdown projection's Status lines.
+_DATE_FIELDS = {
+    "Study first submit date": "first_submitted",
+    "Study first post date": "first_posted",
+    "Start date": "start",
+    "Primary completion date": "primary_completion",
+    "Completion date": "completion",
+    "Last update post date": "last_update_posted",
 }
-_REGISTRY_FIELD_PATHS = {
-    "studyFirstPostDateStruct": "protocolSection.statusModule.studyFirstPostDateStruct",
-    "lastUpdatePostDateStruct": "protocolSection.statusModule.lastUpdatePostDateStruct",
-    "startDateStruct": "protocolSection.statusModule.startDateStruct",
-    "armsInterventionsModule": "protocolSection.armsInterventionsModule",
-    "statusModule": "protocolSection.statusModule",
-    "outcomesModule": "protocolSection.outcomesModule",
-    "designModule": "protocolSection.designModule",
-    "outcomeMeasuresModule": "resultsSection.outcomeMeasuresModule",
-    "participantFlowModule": "resultsSection.participantFlowModule",
-    "moreInfoModule": "resultsSection.moreInfoModule",
-    "versionHolder": "derivedSection.miscInfoModule.versionHolder",
+# Registry modules a Domain context points to, by their projected `## ` heading.
+_REGISTRY_SECTIONS = frozenset(
+    MODULE_TITLES[key]
+    for key in (
+        "statusModule",
+        "designModule",
+        "armsInterventionsModule",
+        "outcomesModule",
+        "participantFlowModule",
+        "outcomeMeasuresModule",
+        "moreInfoModule",
+        "miscInfoModule",
+    )
+)
+_REGISTRY_OUTCOME = re.compile(
+    rf"^### (?:(?P<registered>{'|'.join(REGISTERED_OUTCOMES.values())})"
+    rf"|{POSTED_OUTCOME}) \d+(?:: (?P<title>.*))?$"
+)
+_REGISTRY_OUTCOME_FIELDS = {
+    "Time frame": "timeFrame",
+    "Population description": "populationDescription",
+    "Type": "type",
 }
-
 
 # Generic RoB 2 vocabulary that appears on almost every report page.
 _LEAD_STOPWORDS = frozenset(
@@ -518,7 +527,12 @@ def _reading_leads(
 def _registry_navigation(
     root: Path, trial_id: str, sources: list[dict[str, Any]]
 ) -> dict[str, dict[str, Any]]:
-    """Expose captured JSON leaf paths with exact read-pages recovery windows."""
+    """Expose registry sections, outcomes and dates with exact read-pages windows.
+
+    Reads the Markdown projection of a ClinicalTrials.gov record
+    (`registry_markdown`): `## ` module headings, `### ` outcome headings and
+    `- Field: value` lines.
+    """
 
     registry_sources = {
         item["id"]
@@ -527,165 +541,111 @@ def _registry_navigation(
         and item.get("role") == "registry"
         and isinstance(item.get("id"), str)
     }
-    if not registry_sources:
-        return {}
     found: dict[str, dict[str, Any]] = {}
+    if not registry_sources:
+        return found
     with _db(root, "derivative.sqlite3") as connection:
         for source_id in sorted(registry_sources):
             rows = connection.execute(
                 "SELECT page, text FROM pages WHERE source_id=? ORDER BY page",
                 (source_id,),
             ).fetchall()
-            paths: set[str] = set()
-            ranges: dict[tuple[str, int], list[int]] = {}
-            outcomes: dict[str, dict[str, Any]] = {}
+            sections: list[tuple[str, int, int, int]] = []
+            outcomes: list[dict[str, Any]] = []
             dates: dict[str, str] = {}
             date_lines: dict[int, list[int]] = {}
-            page_line_counts: dict[int, int] = {}
             for row in rows:
                 page = int(row["page"])
                 lines = str(row["text"]).splitlines()
-                page_line_counts[page] = len(lines)
-                for line_number, line in enumerate(lines, 1):
-                    for name, date_path in _REGISTRATION_DATES.items():
-                        if line.startswith(date_path + ":"):
-                            value = line.split(":", 1)[1].strip()
-                            try:
-                                decoded = json.loads(value)
-                            except json.JSONDecodeError:
-                                decoded = value
-                            dates[name] = str(decoded)
-                            bounds = date_lines.setdefault(page, [line_number, line_number])
-                            bounds[0] = min(bounds[0], line_number)
-                            bounds[1] = max(bounds[1], line_number)
-                    outcome = re.match(
-                        r"(resultsSection\.outcomeMeasuresModule\.outcomeMeasures\[\d+\]|"
-                        r"protocolSection\.outcomesModule\.(primary|secondary|other)Outcomes\[\d+\])"
-                        r"\.([^:]+):\s*(.*)$",
-                        line,
-                    )
-                    if outcome:
-                        path, registered, field, value = outcome.groups()
-                        # A registered outcome's `measure` is its title; its list names its type.
-                        if registered and field == "measure":
-                            field = "title"
-                        entry = outcomes.setdefault(
-                            path,
-                            {
-                                "path": path,
-                                "ranges": {},
-                                "field_counts": {},
-                                "not_inlined_fields": set(),
-                                **(
-                                    {"type": f"REGISTERED {registered.upper()}"}
-                                    if registered
-                                    else {}
-                                ),
-                            },
-                        )
-                        bounds = entry["ranges"].setdefault(page, [line_number, line_number])
-                        bounds[1] = line_number
-                        if field in {"title", "type", "timeFrame", "populationDescription"}:
-                            counts = entry["field_counts"]
-                            counts[field] = counts.get(field, 0) + 1
-                            entry.pop(field, None)
-                            entry["not_inlined_fields"].add(field)
-                            try:
-                                decoded = json.loads(value)
-                            except json.JSONDecodeError:
-                                pass
-                            else:
-                                if (
-                                    isinstance(decoded, str)
-                                    and counts[field] == 1
-                                    and len(json.dumps(decoded, ensure_ascii=False).encode("utf-8"))
-                                    <= _MAX_PROJECTED_LINE_LENGTH
-                                ):
-                                    entry[field] = decoded
-                                    entry["not_inlined_fields"].discard(field)
-                    for path in _REGISTRY_FIELD_PATHS.values():
-                        if line.startswith(path + ".") or line.startswith(path + ":"):
-                            paths.add(path)
-                            bounds = ranges.setdefault((path, page), [line_number, line_number])
-                            bounds[0] = min(bounds[0], line_number)
-                            bounds[1] = max(bounds[1], line_number)
-                            break
-            if paths:
-                all_windows = [
+                section: str | None = None
+                section_start = 0
+                outcome: dict[str, Any] | None = None
+                for number, line in enumerate(lines + ["## "], 1):
+                    if line.startswith(("## ", "### ")) and outcome is not None:
+                        outcome["window"] = (page, outcome["window"], number - 1)
+                        outcomes.append(outcome)
+                        outcome = None
+                    if line.startswith("## "):
+                        if section in _REGISTRY_SECTIONS:
+                            sections.append((section, page, section_start, number - 1))
+                        section, section_start = line[3:], number
+                        continue
+                    heading = _REGISTRY_OUTCOME.match(line)
+                    if heading:
+                        registered = heading["registered"]
+                        outcome = {
+                            "path": f"{section} > {line[4:].split(':', 1)[0]}",
+                            "title": heading["title"],
+                            "not_inlined_fields": set(),
+                            "window": number,
+                            **(
+                                {"type": f"REGISTERED {registered.split()[0].upper()}"}
+                                if registered
+                                else {}
+                            ),
+                        }
+                        continue
+                    field, _, value = line[2:].partition(": ")
+                    if not line.startswith("- ") or not value:
+                        continue
+                    if section == MODULE_TITLES["statusModule"] and field in _DATE_FIELDS:
+                        dates[_DATE_FIELDS[field]] = value.split(" (", 1)[0]
+                        bounds = date_lines.setdefault(page, [number, number])
+                        bounds[0], bounds[1] = min(bounds[0], number), max(bounds[1], number)
+                    key = _REGISTRY_OUTCOME_FIELDS.get(field)
+                    if outcome is not None and key is not None and key not in outcome:
+                        following = lines[number] if number < len(lines) else ""
+                        # A value continuing on the next line is left to the read window.
+                        if following == "" or following.startswith(("- ", "#", "|")):
+                            outcome[key] = value
+                        else:
+                            outcome["not_inlined_fields"].add(key)
+            if not sections and not outcomes and not dates:
+                continue
+
+            def window(page: int, start: int, end: int) -> dict[str, Any]:
+                return {"source_id": source_id, "page": page, "start_line": start, "end_line": end}
+
+            found[source_id] = {
+                "paths": tuple(sorted({name for name, *_ in sections})),
+                "outcomes": tuple(
+                    {
+                        **{k: v for k, v in entry.items() if k != "window"},
+                        "not_inlined_fields": tuple(sorted(entry["not_inlined_fields"])),
+                        "recovery": {
+                            "operation": "read_pages",
+                            "trial_id": trial_id,
+                            "windows": (window(*entry["window"]),),
+                        },
+                        "source_id": source_id,
+                        "batch_index": 0,
+                        "batch_count": 1,
+                        "window_count": 1,
+                    }
+                    for entry in outcomes
+                ),
+                "recovery": {
+                    "operation": "read_pages",
+                    "trial_id": trial_id,
+                    "windows": tuple(window(*rest) for _, *rest in sections[:20]),
+                },
+                "window_count": len(sections),
+                "registration": (
                     {
                         "source_id": source_id,
-                        "page": page,
-                        "start_line": bounds[0],
-                        "end_line": bounds[1],
+                        **dates,
+                        "recovery": {
+                            "operation": "read_pages",
+                            "trial_id": trial_id,
+                            "windows": tuple(
+                                window(page, *bounds) for page, bounds in sorted(date_lines.items())
+                            ),
+                        },
                     }
-                    for (path, page), bounds in sorted(ranges.items())
-                ]
-                windows = tuple(all_windows[:20])
-                found[source_id] = {
-                    "paths": tuple(sorted(paths)),
-                    "outcomes": tuple(
-                        {
-                            **{
-                                key: value
-                                for key, value in entry.items()
-                                if key not in {"ranges", "field_counts", "not_inlined_fields"}
-                            },
-                            "not_inlined_fields": tuple(sorted(entry["not_inlined_fields"])),
-                            "recovery": {
-                                "operation": "read_pages",
-                                "trial_id": trial_id,
-                                "windows": tuple(
-                                    {
-                                        "source_id": source_id,
-                                        "page": page,
-                                        "start_line": 1
-                                        if entry["not_inlined_fields"]
-                                        else bounds[0],
-                                        "end_line": page_line_counts[page]
-                                        if entry["not_inlined_fields"]
-                                        else bounds[1],
-                                    }
-                                    for page, bounds in list(entry["ranges"].items())[
-                                        start : start + 20
-                                    ]
-                                ),
-                            },
-                            "source_id": source_id,
-                            "batch_index": start // 20,
-                            "batch_count": (len(entry["ranges"]) + 19) // 20,
-                            "window_count": len(entry["ranges"]),
-                        }
-                        for entry in outcomes.values()
-                        for start in range(0, len(entry["ranges"]), 20)
-                    ),
-                    "recovery": {
-                        "operation": "read_pages",
-                        "trial_id": trial_id,
-                        "windows": windows,
-                    },
-                    "window_count": len(all_windows),
-                    "registration": (
-                        {
-                            "source_id": source_id,
-                            **dates,
-                            "recovery": {
-                                "operation": "read_pages",
-                                "trial_id": trial_id,
-                                "windows": tuple(
-                                    {
-                                        "source_id": source_id,
-                                        "page": page,
-                                        "start_line": bounds[0],
-                                        "end_line": bounds[1],
-                                    }
-                                    for page, bounds in sorted(date_lines.items())
-                                ),
-                            },
-                        }
-                        if dates
-                        else None
-                    ),
-                }
+                    if dates
+                    else None
+                ),
+            }
     return found
 
 
@@ -1091,7 +1051,7 @@ def _comparison_cards(
                     and registry_capture.get("kind") == "matched"
                     else None
                 ),
-                "registry_field_paths": tuple(
+                "registry_sections": tuple(
                     (registry_navigation or {}).get(source_id, {}).get("paths", ())
                 ),
                 "registry_recovery": (registry_navigation or {}).get(source_id, {}).get("recovery"),
